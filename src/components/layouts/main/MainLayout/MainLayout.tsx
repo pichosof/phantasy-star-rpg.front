@@ -7,7 +7,6 @@ import * as S from './MainLayout.styles';
 import { Outlet, useLocation } from 'react-router-dom';
 import { MEDICAL_DASHBOARD_PATH, NFT_DASHBOARD_PATH } from '@app/components/router/AppRouter';
 import { useResponsive } from '@app/hooks/useResponsive';
-import { References } from '@app/components/common/References/References';
 
 const MainLayout: React.FC = () => {
   const [isTwoColumnsLayout, setIsTwoColumnsLayout] = useState(true);
@@ -32,7 +31,7 @@ const MainLayout: React.FC = () => {
           <div>
             <Outlet />
           </div>
-          {!isTwoColumnsLayout && <References />}
+          {!isTwoColumnsLayout}
         </MainContent>
       </S.LayoutMain>
     </S.LayoutMaster>

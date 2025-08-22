@@ -5,16 +5,12 @@ const KEY_STORAGE = 'gm_api_key';
 
 export const http = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: false,
 });
 
 export function setGMKey(key?: string) {
-  if (!key) {
-    localStorage.removeItem(KEY_STORAGE);
-    delete http.defaults.headers.common['x-api-key'];
-  } else {
-    localStorage.setItem(KEY_STORAGE, key);
-    http.defaults.headers.common['x-api-key'] = key;
-  }
+  if (key) localStorage.setItem(KEY_STORAGE, key);
+  else localStorage.removeItem(KEY_STORAGE);
 }
 
 export function resolveApiUrl(u?: string | null) {
@@ -27,16 +23,14 @@ export function initGMKeyFromStorage() {
   const stored = localStorage.getItem(KEY_STORAGE);
   if (stored) {
     http.defaults.headers.common['x-api-key'] = stored;
+    console.log(stored);
   }
 }
 
-http.interceptors.response.use(
-  (r) => r,
-  (err: AxiosError) => {
-    // feedback básico
-    if (err.response?.status === 401) {
-      console.warn('Unauthorized (GM key inválida?)');
-    }
-    return Promise.reject(err);
-  },
-);
+http.interceptors.request.use((config) => {
+  const key = localStorage.getItem(KEY_STORAGE);
+  if (key) {
+    (config.headers ??= {})['x-api-key'] = key;
+  }
+  return config;
+});

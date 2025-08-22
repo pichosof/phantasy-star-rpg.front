@@ -17,17 +17,17 @@ export const PlayersApi = {
   async uploadImage(id: ID, file: File, alt?: string): Promise<void> {
     const form = new FormData();
     form.append('image', file);
-    // cabeçalho opcional com alt (servidor aceita x-image-alt)
-    const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' };
-    if (alt) headers['x-image-alt'] = alt;
-    await http.patch(`/api/players/${id}/image`, form, { headers });
+
+    await http.patch(`/api/players/${id}/image`, form, {
+      // NÃO definir Content-Type aqui
+      headers: alt ? { 'x-image-alt': alt } : undefined,
+    });
   },
   async uploadSheet(id: ID, file: File): Promise<void> {
     const form = new FormData();
     form.append('sheet', file);
-    await http.patch(`/api/players/${id}/sheet`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+
+    await http.patch(`/api/players/${id}/sheet`, form);
   },
 };
 

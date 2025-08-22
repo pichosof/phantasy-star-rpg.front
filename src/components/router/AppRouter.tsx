@@ -1,9 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// no lazy loading for auth pages to avoid flickering
-const AuthLayout = React.lazy(() => import('@app/components/layouts/AuthLayout/AuthLayout'));
-
 import MainLayout from '@app/components/layouts/main/MainLayout/MainLayout';
 import ProfileLayout from '@app/components/profile/ProfileLayout';
 import { withLoading } from '@app/hocs/withLoading.hoc';

@@ -7,6 +7,7 @@ export type Player = WithVisibility & {
   name: string;
   level: number;
   background?: string | null;
+  imageAlt?: string | null;
   imageUrl?: string | null;
   sheetUrl?: string | null;
   createdAt: string;
