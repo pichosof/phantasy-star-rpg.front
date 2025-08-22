@@ -9,3 +9,6 @@ console.error = (errObj, ...args) => {
 };
 
 export default {};
+
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3010';
+export const UPLOAD_MAX_MB = Number(process.env.REACT_APP_UPLOAD_MAX_MB || 30);
