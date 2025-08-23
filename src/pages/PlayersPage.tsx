@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import { message, Collapse as AntdCollapse } from 'antd';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Input } from '@app/components/common/inputs/Input/Input';
@@ -11,18 +12,18 @@ import { Collapse } from '@app/components/common/Collapse/Collapse';
 import { useResponsive } from '@app/hooks/useResponsive';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
-import { resolveApiUrl } from '@app/api/http.api';
 
 import type { Player } from '@app/types/rpg';
 import { PlayersApi } from '@app/api/rpg.api';
 import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
-import styled from 'styled-components';
-import * as S from '@app/pages/uiComponentsPages//UIComponentsPage.styles';
+import * as S from '@app/pages/uiComponentsPages/UIComponentsPage.styles';
+import { resolveApiUrl } from '@app/api/http.api';
 
 type AltMap = Record<number, string>;
 
-const Card = styled(S.Card)`
+const UICard = styled(S.Card)`
   .ant-card-body {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
@@ -35,7 +36,7 @@ const GRID: React.CSSProperties = {
 };
 
 export const PlayersPage: React.FC = () => {
-  const { mobileOnly } = useResponsive();
+  useResponsive(); // mantemos se quisermos reações por breakpoint
 
   const [items, setItems] = React.useState<Player[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -54,16 +55,9 @@ export const PlayersPage: React.FC = () => {
   const [level, setLevel] = React.useState<number>(1);
   const [background, setBackground] = React.useState<string>('');
 
-  // alt para imagem
+  // alt por player (para upload)
   const [altById, setAltById] = React.useState<AltMap>({});
-
-  // expandir/colapsar background por player
-  const [bgExpanded, setBgExpanded] = React.useState<Record<number, boolean>>({});
-  const toggleBg = (id: number) =>
-    setBgExpanded((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const setAlt = (id: number, v: string) => setAltById((prev) => ({ ...prev, [id]: v }));
 
   const toFile = (f: RcCustomRequestOptions['file']): File => f as File;
 
@@ -111,10 +105,6 @@ export const PlayersPage: React.FC = () => {
     }
   }
 
-  function setAlt(id: number, v: string) {
-    setAltById((prev) => ({ ...prev, [id]: v }));
-  }
-
   // Uploads
   const imageProps = (player: Player): UploadProps => ({
     name: 'image',
@@ -158,7 +148,7 @@ export const PlayersPage: React.FC = () => {
     },
   });
 
-  // Normaliza URLs para o host da API
+  // Normaliza URLs de imagem/pdf (para ambientes diferentes)
   const normalizedItems = React.useMemo(
     () =>
       items.map((p) => ({
@@ -169,38 +159,13 @@ export const PlayersPage: React.FC = () => {
     [items],
   );
 
-  // Renderiza background com parágrafos/linhas preservados
-  const renderBackground = (text: string, expanded: boolean) => {
-    const norm = text.replace(/\r\n/g, '\n');
-    const paragraphs = norm.split(/\n{2,}/);
-
-    // quando colapsado: mostra só o 1º parágrafo (com \n → <br/>) e corta em ~240 chars
-    if (!expanded) {
-      const first = paragraphs[0] ?? '';
-      const trimmed = first.length > 240 ? first.slice(0, 240).trimEnd() + '…' : first;
-
-      return <p style={{ whiteSpace: 'pre-wrap', margin: 0, color: 'var(--text-secondary-color)' }}>{trimmed}</p>;
-    }
-
-    // expandido: mostra todos os parágrafos e quebras de linha
-    return (
-      <div style={{ display: 'grid', gap: 8, color: 'var(--text-secondary-color)' }}>
-        {paragraphs.map((para, idx) => (
-          <p key={idx} style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-            {para}
-          </p>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <>
       <PageTitle>Players</PageTitle>
 
       {/* Form de criação: somente GM */}
       {isGM && (
-        <Card
+        <UICard
           title="Novo Player"
           autoHeight={false}
           extra={<Button onClick={() => setCreating((v) => !v)}>{creating ? 'Fechar' : 'Abrir'}</Button>}
@@ -225,7 +190,7 @@ export const PlayersPage: React.FC = () => {
               </div>
             </form>
           )}
-        </Card>
+        </UICard>
       )}
 
       {loading ? (
@@ -234,24 +199,9 @@ export const PlayersPage: React.FC = () => {
         <div style={GRID}>
           {normalizedItems.map((p) => (
             <div key={p.id} style={{ display: 'grid', gap: 8 }}>
-              {/* Card bonito com modal + toggle visibilidade */}
               <PlayerCard player={p} gm={isGM} onToggleVisible={toggleVisible} />
 
-              {/* Background com parágrafos/linhas + ver mais/menos */}
-              {p.background && (
-                <Card style={{ padding: 12 }}>
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    {renderBackground(p.background, !!bgExpanded[p.id])}
-                    <div>
-                      <Button type="text" onClick={() => toggleBg(p.id)}>
-                        {bgExpanded[p.id] ? 'Ver menos' : 'Ver mais'}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              {/* Painel extra de GM para upload/alt */}
+              {/* Painel de GM para upload/alt */}
               {isGM && (
                 <Collapse>
                   <AntdCollapse.Panel header="Gerenciar (imagem & ficha)" key={`gm-${p.id}`}>
