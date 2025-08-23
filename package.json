@@ -1,14 +1,14 @@
 {
-  "name": "lightence-admin",
+  "name": "Picho.RPG",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "Free and easy-to-use admin template based on React 17+",
+  "description": "Picho.RPG",
   "repository": {
     "type": "git",
-    "url": "git+github.com:altence/lightence-admin.git"
+    "url": "git+github.com:phantasy-star-rpg.front.git"
   },
   "bugs": {
-    "url": "https://github.com/altence/lightence-admin/issues"
+    "url": "https://github.com/phantasy-star-rpg.front/issues"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",

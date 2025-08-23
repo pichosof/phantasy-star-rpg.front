@@ -35,27 +35,35 @@ export const Card = styled(BaseCard)<CardInternalProps>`
 
 export const PlayerImage = styled.img`
   width: 100%;
-  height: 200px;            /* desktop */
-  object-fit: cover;        /* desktop: pode cortar pra preencher */
+  height: 200px; /* desktop */
+  object-fit: cover; /* desktop: pode cortar pra preencher */
   animation: imgOut 0.5s;
 
   /* MOBILE: mostrar a imagem inteira (sem corte) com limite de altura */
   @media only screen and (max-width: ${BREAKPOINTS.md - 0.02}px) {
-    height: auto;           /* respeita proporção natural */
-    max-height: 320px;      /* ajustável: 280–360px funciona bem */
-    object-fit: contain;    /* mostra a imagem inteira */
+    height: auto; /* respeita proporção natural */
+    max-height: 320px; /* ajustável: 280–360px funciona bem */
+    object-fit: contain; /* mostra a imagem inteira */
     background: var(--secondary-background-color); /* fundo atrás de PNG/WebP transpar. */
     display: block;
   }
 
   @keyframes imgIn {
-    99% { transform: scale(2); }
-    100% { opacity: 0; }
+    99% {
+      transform: scale(2);
+    }
+    100% {
+      opacity: 0;
+    }
   }
 
   @keyframes imgOut {
-    0% { transform: scale(2); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(2);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   /* Zoom/fade só no desktop */
@@ -75,10 +83,10 @@ export const TopOverlay = styled.div`
 
   background: linear-gradient(
     to top,
-    rgba(0,0,0,0.00) 0%,
-    rgba(0,0,0,0.15) 35%,
-    rgba(0,0,0,0.35) 70%,
-    rgba(0,0,0,0.55) 100%
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.15) 35%,
+    rgba(0, 0, 0, 0.35) 70%,
+    rgba(0, 0, 0, 0.55) 100%
   );
 
   /* MOBILE: sem overlay (altura da imagem é variável) */
@@ -117,7 +125,7 @@ export const Title = styled.div`
   @media (hover: hover) and (pointer: fine) {
     ${Card}:hover & {
       color: var(--text-secondary-color);
-      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     }
   }
 `;
@@ -126,14 +134,14 @@ export const LevelBadge = styled.span`
   font-weight: 700;
   padding: 2px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   color: #fff;
   font-size: 12px;
   white-space: nowrap;
 `;
 
 export const BackgroundPreview = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-primary-color);
   opacity: 0.9;
 `;
 

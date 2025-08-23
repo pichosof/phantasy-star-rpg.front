@@ -59,9 +59,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
             <S.LevelBadge>LV {player.level}</S.LevelBadge>
           </S.HeaderRow>
 
-          {!!previewBg && (
-            <S.BackgroundPreview title={player.background || ''}>{previewBg}</S.BackgroundPreview>
-          )}
+          {!!previewBg && <S.BackgroundPreview title={player.background || ''}>{previewBg}</S.BackgroundPreview>}
 
           <S.ActionsRow>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -112,8 +110,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
               style={{
                 position: 'absolute',
                 inset: 0,
-                background:
-                  'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0) 100%)',
+                background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0) 100%)',
               }}
             />
             <div
@@ -190,7 +187,12 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
       >
         {hasSheet ? (
           <S.PdfFrameWrapper>
-            <iframe title={`sheet-${player.id}`} src={sheetUrl!} frameBorder={0} style={{ width: '100%', height: '100%' }} />
+            <iframe
+              title={`sheet-${player.id}`}
+              src={sheetUrl!}
+              frameBorder={0}
+              style={{ width: '100%', height: '100%' }}
+            />
           </S.PdfFrameWrapper>
         ) : (
           <div style={{ padding: 16 }}>Sem ficha anexada.</div>

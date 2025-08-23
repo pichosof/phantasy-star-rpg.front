@@ -3,111 +3,117 @@ import { graphic } from 'echarts';
 import { BASE_COLORS } from '../constants';
 import { ITheme } from '../types';
 
+/** Dezolis Dark — aurora / gelo / noite polar */
 const chartColors = {
-  chartTooltipLabel: '#6a7985',
-  chartColor1: '#339CFD',
-  chartColor1Tint: '#339CFD', // update
-  chartColor2: '#dc88f5',
-  chartColor2Tint: '#dc88f5', // update
-  chartColor3: '#FFB765',
-  chartColor3Tint: '#FFB765', // update
-  chartColor4: '#306955',
-  chartColor4Tint: '#306955', // update
-  chartColor5: '#ff3d71',
-  chartColor5Tint: '#ff3d71', // update
+  chartTooltipLabel: '#AAB6D6',
+  chartColor1: '#00D7E9', // Arctic Cyan (primária)
+  chartColor1Tint: '#5BE9F0',
+  chartColor2: '#8E7CFF', // Aurora Violet
+  chartColor2Tint: '#C3B8FF',
+  chartColor3: '#6DE2C3', // Frost Mint
+  chartColor3Tint: '#A9F5E2',
+  chartColor4: '#7AE0FF', // Ice Blue
+  chartColor4Tint: '#BEEFFF',
+  chartColor5: '#FF4D6D', // Cold Red (erro/acento)
+  chartColor5Tint: '#FF9BB0',
+
   chartPrimaryGradient: new graphic.LinearGradient(0, 0, 0, 1, [
-    {
-      offset: 0,
-      color: 'rgba(51, 156, 253, 0.35)',
-    },
-    {
-      offset: 1,
-      color: 'rgba(51, 156, 253, 0)',
-    },
+    { offset: 0, color: 'rgba(0, 215, 233, 0.40)' },
+    { offset: 1, color: 'rgba(0, 215, 233, 0.00)' },
   ]),
   chartSecondaryGradient: new graphic.LinearGradient(0, 0, 0, 1, [
-    {
-      offset: 0,
-      color: 'rgba(255, 82, 82, 0.35)',
-    },
-    {
-      offset: 1,
-      color: 'rgba(255, 82, 82, 0)',
-    },
+    { offset: 0, color: 'rgba(142, 124, 255, 0.35)' },
+    { offset: 1, color: 'rgba(142, 124, 255, 0.00)' },
   ]),
   chartSecondaryGradientSpecular: new graphic.LinearGradient(0, 0, 0, 1, [
-    {
-      offset: 0,
-      color: 'rgba(255, 255, 255, 0)',
-    },
-    {
-      offset: 1,
-      color: 'rgba(255, 82, 82, 0.5)',
-    },
+    { offset: 0, color: 'rgba(255, 255, 255, 0.00)' },
+    { offset: 1, color: 'rgba(255, 77, 109, 0.45)' },
   ]),
 };
 
 export const darkColorsTheme: ITheme = {
-  primary: '#339CFD',
-  primary1: '#7568f6',
-  primaryGradient: 'linear-gradient(211.49deg, #dc88f5 15.89%, #339CFD 48.97%)',
-  light: '#696969',
-  secondary: '#0072DD',
-  error: '#FF5252',
-  warning: '#FFB765',
-  success: '#57D682',
-  background: '#25284B',
-  secondaryBackground: '#1c2137',
-  secondaryBackgroundSelected: shadeColor('#1c2137', -5),
-  additionalBackground: '#1D203E',
-  collapseBackground: '#1D203E',
-  timelineBackground: '#f5f5f5',
-  siderBackground: '#121430',
-  spinnerBase: '#339CFD',
-  scroll: '#797C9A',
-  border: '#ffffff',
-  borderNft: '#797C9A',
-  textMain: '#ffffff',
-  textLight: '#9A9B9F',
-  textSuperLight: '#444',
-  textSecondary: '#ffffff',
-  textDark: '#404040',
-  textNftLight: '#797C9A',
-  textSiderPrimary: '#339CFD',
-  textSiderSecondary: '#797C9A',
-  subText: '#a9a9a9',
-  shadow: 'rgba(0, 0, 0, 0.07)',
+  primary: '#00D7E9',
+  primary1: '#8E7CFF', // acento secundário (links/realces)
+  primaryGradient: 'linear-gradient(211.49deg, #00D7E9 15.89%, #8E7CFF 48.97%)',
+  light: '#5A6B86',
+  secondary: '#6DE2C3',
+  error: '#FF4D6D',
+  warning: '#FFC857',
+  success: '#35E38A',
+
+  // Fundos
+  background: '#0B1020',
+  secondaryBackground: '#0F1A33',
+  secondaryBackgroundSelected: shadeColor('#0F1A33', -5),
+  additionalBackground: '#0A1326',
+  collapseBackground: '#0A1326',
+  timelineBackground: '#0E162C',
+  siderBackground: '#0A0F1C',
+
+  // UI misc
+  spinnerBase: '#00D7E9',
+  scroll: '#3C4B6B',
+  border: '#2A3758',
+  borderNft: '#5A6B86',
+
+  // Tipografia
+  textMain: '#E6F1FF',
+  textLight: '#A2A9C6',
+  textSuperLight: '#6E7797',
+  textSecondary: BASE_COLORS.white,
+  textDark: '#C9DEF7',
+  textNftLight: '#9BA6C7',
+  textSiderPrimary: '#6DE2C3',
+  textSiderSecondary: '#9BA6C7',
+  subText: '#A2A9C6',
+
+  // Sombras
+  shadow: 'rgba(0, 0, 0, 0.55)',
   boxShadow: 'none',
-  boxShadowHover: 'none',
-  boxShadowNft: '0px 16px 24px rgba(0, 0, 0, 0.06), 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 0px 1px rgba(0, 0, 0, 0.04)',
+  boxShadowHover: '0 0 0 1px rgba(110, 243, 255, 0.08)',
+  boxShadowNft: '0px 16px 24px rgba(0, 0, 0, 0.30), 0px 2px 6px rgba(0, 0, 0, 0.20), 0px 0px 1px rgba(0, 0, 0, 0.15)',
   boxShadowNftSecondary:
-    '0px 10px 20px rgba(0, 0, 0, 0.04), 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 0px 1px rgba(0, 0, 0, 0.04)',
-  dashboardMapBackground: '#25284b',
-  dashboardMapCircleColor: '#ACAEC1',
-  dashboardMapControlDisabledBackground: '#7e7e7e',
-  notificationSuccess: '#EFFFF4',
-  notificationPrimary: '#D7EBFF',
-  notificationWarning: '#FFF4E7',
-  notificationError: '#FFE2E2',
+    '0px 10px 20px rgba(0, 0, 0, 0.25), 0px 2px 6px rgba(0, 0, 0, 0.18), 0px 0px 1px rgba(0, 0, 0, 0.12)',
+
+  // Map/dashboard
+  dashboardMapBackground: '#0F1830',
+  dashboardMapCircleColor: '#7EA6FF',
+  dashboardMapControlDisabledBackground: '#3E4560',
+
+  // Notificações (tinted escuro p/ dark)
+  notificationSuccess: '#113A2E',
+  notificationPrimary: '#0E2638',
+  notificationWarning: '#3A2D12',
+  notificationError: '#3A1118',
+
+  // Layout
   heading: BASE_COLORS.white,
-  borderBase: '#a9a9a9',
-  disable: '#7e7e7e',
-  disabledBg: '#1c2137',
-  layoutBodyBg: '#1e2142',
-  layoutHeaderBg: '#1e2142',
-  layoutSiderBg: '#121430',
-  inputPlaceholder: 'rgba(255, 255, 255, 0.5)',
-  itemHoverBg: '#1c2137',
-  backgroundColorBase: '#1c2137',
-  avatarBg: '#1c2137',
-  alertTextColor: '#000',
-  breadcrumb: '#a9a9a9',
-  icon: '#a9a9a9',
-  iconHover: '#ffffff',
+  borderBase: '#283454',
+  disable: '#5A6B86',
+  disabledBg: '#121A2F',
+  layoutBodyBg: '#0B1020',
+  layoutHeaderBg: '#0B1020',
+
+  // Sider com aurora de Dezolis
+  layoutSiderBg: 'linear-gradient(228deg, #0B1020 -20%, #0E1B33 55%, #174C63 120%)',
+
+  // Inputs/itens
+  inputPlaceholder: 'rgba(230, 241, 255, 0.55)',
+  itemHoverBg: '#151D33',
+  backgroundColorBase: '#0F1A33',
+  avatarBg: '#202B44',
+
+  // Ícones/breadcrumb/alertas
+  alertTextColor: '#E6F1FF',
+  breadcrumb: '#A2A9C6',
+  icon: '#9BA6C7',
+  iconHover: '#EAF6FF',
+
   ...chartColors,
 };
 
 export const antDarkColorsTheme = {
-  successBg: '#e6fff2',
-  successBorder: '#79fcc4',
+  // Mantém contraste no dark: fundo escuro com borda saturada
+  successBg: '#113A2E',
+  successBorder: '#1F6F52',
 };
