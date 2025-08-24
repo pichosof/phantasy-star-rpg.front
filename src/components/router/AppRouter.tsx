@@ -51,6 +51,7 @@ const PigeonsMaps = React.lazy(() => import('@app/pages/maps/PigeonsMapsPage/Pig
 
 const CitiesPage = React.lazy(() => import('@app/pages/CitiesPage'));
 const PlayersPage = React.lazy(() => import('@app/pages/PlayersPage'));
+const MapPage = React.lazy(() => import('@app/pages/MapPage'));
 
 export const NFT_DASHBOARD_PATH = '/';
 export const MEDICAL_DASHBOARD_PATH = '/medical-dashboard';
@@ -62,6 +63,7 @@ const Kanban = withLoading(KanbanPage);
 const AdvancedForm = withLoading(AdvancedFormsPage);
 const Cities = withLoading(CitiesPage);
 const Players = withLoading(PlayersPage);
+const Map = withLoading(MapPage);
 
 // UI Components
 const Buttons = withLoading(ButtonsPage);
@@ -134,6 +136,7 @@ export const AppRouter: React.FC = () => {
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />
           <Route path="maps">
+            <Route path="worlds" element={<Map />} />
             <Route path="google-maps" element={<Google />} />
             <Route path="leaflet-maps" element={<Leaflet />} />
             <Route path="react-simple-maps" element={<ReactSimple />} />
