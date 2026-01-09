@@ -30,6 +30,14 @@ export type City = WithVisibility & {
   updatedAt: string;
 };
 
+export type CityForAdmin = {
+  id: number;
+  name: string;
+  visible?: boolean;
+  discovered?: boolean;
+  worldId?: number | null;
+};
+
 export type CreateCityDTO = {
   name: string;
   description?: string | null;

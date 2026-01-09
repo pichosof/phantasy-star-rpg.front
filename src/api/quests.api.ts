@@ -16,9 +16,9 @@ export async function listQuests(): Promise<Quest[]> {
 }
 
 export async function linkQuestToCity(questId: number, cityId: number): Promise<void> {
-  await http.patch(`/api/quests/${questId}/cities/${cityId}/link`);
+  await http.post(`/api/quests/${questId}/cities/${cityId}`);
 }
 
 export async function unlinkQuestFromCity(questId: number, cityId: number): Promise<void> {
-  await http.patch(`/api/quests/${questId}/cities/${cityId}/unlink`);
+  await http.delete(`/api/quests/${questId}/cities/${cityId}`);
 }

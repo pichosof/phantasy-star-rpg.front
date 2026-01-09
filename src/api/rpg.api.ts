@@ -50,6 +50,16 @@ export const CitiesApi = {
   async remove(id: ID): Promise<void> {
     await http.delete(`/api/cities/${id}`);
   },
+  async setWorld(cityId: number, worldId: number | null): Promise<void> {
+    await http.patch(`/api/cities/${cityId}/world`, { worldId });
+  },
+  async assignToWorld(cityId: number, worldId: number): Promise<void> {
+    await http.patch(`/api/cities/${cityId}/world`, { worldId });
+  },
+
+  async removeFromWorld(cityId: number): Promise<void> {
+    await http.patch(`/api/cities/${cityId}/world`, { worldId: null });
+  },
 };
 
 // ---------- Quests ----------

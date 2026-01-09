@@ -10,8 +10,12 @@ import { Switch } from '@app/components/common/Switch/Switch';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 
-import type { City } from '../types/rpg';
-import { CitiesApi } from '../api/rpg.api';
+import type { City } from '@app/types/rpg';
+import { CitiesApi } from '@app/api/rpg.api';
+import type { Lore } from '@app/api/lore.api';
+import type { Quest } from '@app/api/quests.api';
+import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
+import { CityAdminDrawer } from '@app/components/rpg/City/CityAdminDrawer';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -49,6 +53,10 @@ function formatDate(v?: string | null) {
 }
 
 export const CitiesPage: React.FC = () => {
+  const [cityLores, setCityLores] = React.useState<Lore[]>([]);
+  const [cityQuests, setCityQuests] = React.useState<Quest[]>([]);
+  const [linksLoading, setLinksLoading] = React.useState(false);
+
   const { mobileOnly } = useResponsive();
 
   const [items, setItems] = React.useState<City[]>([]);
@@ -65,6 +73,21 @@ export const CitiesPage: React.FC = () => {
   const [viewMode, setViewMode] = React.useState<ViewMode>(() =>
     Boolean(localStorage.getItem(GM_KEY_STORAGE)) ? 'gm' : 'players',
   );
+
+  const [adminOpen, setAdminOpen] = React.useState(false);
+  const [adminCityId, setAdminCityId] = React.useState<number | null>(null);
+
+  const adminCity = React.useMemo(() => items.find((x) => x.id === adminCityId) ?? null, [items, adminCityId]);
+
+  function openAdmin(c: City) {
+    setAdminCityId(c.id);
+    setAdminOpen(true);
+  }
+
+  function closeAdmin() {
+    setAdminOpen(false);
+    setAdminCityId(null);
+  }
 
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -95,6 +118,41 @@ export const CitiesPage: React.FC = () => {
   }, [load]);
 
   const openCity = React.useMemo(() => items.find((x) => x.id === openCityId) ?? null, [items, openCityId]);
+
+  React.useEffect(() => {
+    if (!openCity) return;
+
+    // players só “lê” se descoberta (alinha com tua regra atual)
+    if (!openCity.discovered) {
+      setCityLores([]);
+      setCityQuests([]);
+      return;
+    }
+
+    let alive = true;
+    setLinksLoading(true);
+
+    Promise.all([listLoresByCityId(openCity.id), listQuestsByCityId(openCity.id)])
+      .then(([lores, quests]) => {
+        if (!alive) return;
+        setCityLores(lores);
+        setCityQuests(quests);
+      })
+      .catch(() => {
+        if (!alive) return;
+        message.error('Falha ao carregar lores/quests da cidade.');
+        setCityLores([]);
+        setCityQuests([]);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setLinksLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [openCity?.id, openCity?.discovered]);
 
   const q = search.trim().toLowerCase();
 
@@ -228,9 +286,15 @@ export const CitiesPage: React.FC = () => {
                 </Space>
               }
               extra={
-                <Button size="small" onClick={() => setOpenCityId(c.id)}>
-                  Ver
-                </Button>
+                mode === 'gm' ? (
+                  <Button size="small" onClick={() => openAdmin(c)}>
+                    Admin
+                  </Button>
+                ) : (
+                  <Button size="small" onClick={() => setOpenCityId(c.id)}>
+                    Ver
+                  </Button>
+                )
               }
             >
               <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
@@ -273,7 +337,7 @@ export const CitiesPage: React.FC = () => {
           style={{ minWidth: 900 }}
           scroll={{ x: 900 }}
           onRow={(c: City) => ({
-            onClick: () => setOpenCityId(c.id),
+            onClick: () => openAdmin(c),
           })}
           columns={[
             { title: '#', dataIndex: 'id', key: 'id', width: 70 },
@@ -430,7 +494,7 @@ export const CitiesPage: React.FC = () => {
 
     return (
       <Drawer
-        open={!!openCity}
+        visible={!!openCity}
         onClose={() => setOpenCityId(null)}
         width={mobileOnly ? '100%' : 560}
         title={
@@ -449,41 +513,101 @@ export const CitiesPage: React.FC = () => {
           </Space>
         }
       >
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
-          <Card density="comfy" title="Descrição">
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-              {isPlayersView
-                ? playerCanRead
-                  ? openCity.description?.trim() || 'Sem descrição ainda.'
-                  : 'Informações indisponíveis.'
-                : openCity.description?.trim() || 'Sem descrição.'}
-            </Typography.Paragraph>
-          </Card>
+        <Tabs defaultActiveKey="desc">
+          <Tabs.TabPane tab="Descrição" key="desc">
+            <Card density="comfy" title="Descrição">
+              <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                {isPlayersView
+                  ? playerCanRead
+                    ? openCity.description?.trim() || 'Sem descrição ainda.'
+                    : 'Informações indisponíveis.'
+                  : openCity.description?.trim() || 'Sem descrição.'}
+              </Typography.Paragraph>
+            </Card>
+          </Tabs.TabPane>
+
+          <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
+            {!playerCanRead ? (
+              <Card density="comfy">
+                <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+              </Card>
+            ) : linksLoading ? (
+              <Spinner />
+            ) : !cityLores.length ? (
+              <Card density="comfy">
+                <Empty description="Nenhuma lore vinculada a esta cidade." />
+              </Card>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {cityLores.map((l) => (
+                  <Card key={l.id} density="comfy" title={l.title}>
+                    {l.category ? <Tag>{l.category}</Tag> : null}
+                    <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                      {l.content?.trim() || '—'}
+                    </Typography.Paragraph>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </Tabs.TabPane>
+
+          <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
+            {!playerCanRead ? (
+              <Card density="comfy">
+                <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+              </Card>
+            ) : linksLoading ? (
+              <Spinner />
+            ) : !cityQuests.length ? (
+              <Card density="comfy">
+                <Empty description="Nenhuma quest vinculada a esta cidade." />
+              </Card>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {cityQuests.map((q) => (
+                  <Card key={q.id} density="comfy" title={q.title}>
+                    {q.status ? <Tag>{q.status}</Tag> : null}
+                    {q.reward ? <Tag color="gold">Reward</Tag> : null}
+                    <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                      {q.description?.trim() || '—'}
+                    </Typography.Paragraph>
+                    {q.reward ? (
+                      <Typography.Text type="secondary" style={{ display: 'block' }}>
+                        Recompensa: {q.reward}
+                      </Typography.Text>
+                    ) : null}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </Tabs.TabPane>
 
           {isGM && viewMode === 'gm' && (
-            <Card density="dense" title="Ações do Mestre">
-              <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                  <Typography.Text>Visível para jogadores</Typography.Text>
-                  <Switch checked={isCityVisible(openCity)} onChange={() => void toggleVisible(openCity)} />
+            <Tabs.TabPane tab="Ações do Mestre" key="gm">
+              <Card density="dense" title="Ações do Mestre">
+                <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                  <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                    <Typography.Text>Visível para jogadores</Typography.Text>
+                    <Switch checked={isCityVisible(openCity)} onChange={() => void toggleVisible(openCity)} />
+                  </Space>
+
+                  <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                    <Typography.Text>Marcada como descoberta</Typography.Text>
+                    <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
+                  </Space>
+
+                  <Divider style={{ margin: '6px 0' }} />
+
+                  <Typography.Text type="secondary">
+                    Criado: {formatDate((openCity as any).createdAt)}
+                    <br />
+                    Atualizado: {formatDate((openCity as any).updatedAt)}
+                  </Typography.Text>
                 </Space>
-
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                  <Typography.Text>Marcada como descoberta</Typography.Text>
-                  <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
-                </Space>
-
-                <Divider style={{ margin: '6px 0' }} />
-
-                <Typography.Text type="secondary">
-                  Criado: {formatDate((openCity as any).createdAt)}
-                  <br />
-                  Atualizado: {formatDate((openCity as any).updatedAt)}
-                </Typography.Text>
-              </Space>
-            </Card>
+              </Card>
+            </Tabs.TabPane>
           )}
-        </Space>
+        </Tabs>
       </Drawer>
     );
   };
@@ -518,7 +642,7 @@ export const CitiesPage: React.FC = () => {
             </Tabs.TabPane>
           </Tabs>
 
-          <CityDrawer />
+          <CityAdminDrawer open={adminOpen} city={adminCity} isGM={isGM} onClose={closeAdmin} onChanged={load} />
         </>
       )}
 

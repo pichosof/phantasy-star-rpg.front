@@ -16,9 +16,9 @@ export async function listLores(): Promise<Lore[]> {
 }
 
 export async function linkLoreToCity(loreId: number, cityId: number): Promise<void> {
-  await http.patch(`/api/lores/${loreId}/cities/${cityId}/link`);
+  await http.post(`/api/lores/${loreId}/cities/${cityId}`);
 }
 
 export async function unlinkLoreFromCity(loreId: number, cityId: number): Promise<void> {
-  await http.patch(`/api/lores/${loreId}/cities/${cityId}/unlink`);
+  await http.delete(`/api/lores/${loreId}/cities/${cityId}`);
 }
