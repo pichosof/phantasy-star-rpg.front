@@ -44,8 +44,8 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         listWorlds(),
         listLores(),
         listQuests(),
-        listLoresByCityId(city.id),
-        listQuestsByCityId(city.id),
+        listLoresByCityId(city.id, { gm: true }),
+        listQuestsByCityId(city.id, { gm: true }),
       ]);
 
       setWorlds(ws);

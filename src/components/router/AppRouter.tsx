@@ -12,6 +12,7 @@ const QuestsPage = React.lazy(() => import('@app/pages/QuestsPage'));
 const MapPage = React.lazy(() => import('@app/pages/MapPage'));
 const ServerErrorPage = React.lazy(() => import('@app/pages/ServerErrorPage'));
 const Error404Page = React.lazy(() => import('@app/pages/Error404Page'));
+const LoresAdminPage = React.lazy(() => import('@app/pages/LoresAdminPage'));
 
 // Página genérica “em construção” (cria esse arquivo, mostro abaixo)
 const ComingSoonPage = React.lazy(() => import('@app/pages/ComingSoonPage'));
@@ -23,6 +24,7 @@ const Quests = withLoading(QuestsPage);
 const ServerError = withLoading(ServerErrorPage);
 const Error404 = withLoading(Error404Page);
 const ComingSoon = withLoading(ComingSoonPage);
+const Lores = withLoading(LoresAdminPage);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = <MainLayout />;
@@ -38,9 +40,9 @@ export const AppRouter: React.FC = () => {
           <Route path={ROUTES.CITIES} element={<Cities />} />
           <Route path={ROUTES.QUESTS} element={<Quests />} />
           <Route path={ROUTES.WORLDS} element={<Map />} />
+          <Route path={ROUTES.LORES} element={<Lores />} />
 
           {/* Backend já existe, UI ainda não: deixa WIP */}
-          <Route path={ROUTES.LORES} element={<ComingSoon title="Lores" />} />
           <Route path={ROUTES.NPCS} element={<ComingSoon title="NPCs" />} />
           <Route path={ROUTES.MONSTERS} element={<ComingSoon title="Monsters" />} />
           <Route path={ROUTES.MAP_MARKERS} element={<ComingSoon title="Map Markers" />} />
