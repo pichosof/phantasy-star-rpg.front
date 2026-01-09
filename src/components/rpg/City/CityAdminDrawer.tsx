@@ -5,6 +5,7 @@ import { listWorlds, World } from '@app/api/worlds.api';
 import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
 import { listQuests, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
+import { useResponsive } from '@app/hooks/useResponsive';
 
 import { CitiesApi } from '@app/api/rpg.api';
 
@@ -17,6 +18,8 @@ type Props = {
 };
 
 export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, onChanged }) => {
+  const { mobileOnly } = useResponsive();
+  const isMobile = mobileOnly;
   const [loading, setLoading] = React.useState(false);
 
   const [worlds, setWorlds] = React.useState<World[]>([]);
@@ -138,17 +141,47 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     }
   }
 
+  const DrawerTitle = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'Cidade'}</span>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {city?.visible === false && <Tag color="red">Invisível</Tag>}
+        {city?.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+        {/* se quiser tags extras aqui (mapped/hidden etc), é aqui */}
+      </div>
+    </div>
+  );
+
   return (
     <Drawer
       visible={open}
       onClose={onClose}
-      width={720}
+      placement={mobileOnly ? 'bottom' : 'right'}
+      width={mobileOnly ? undefined : 720}
+      height={mobileOnly ? '92vh' : undefined}
+      headerStyle={
+        isMobile
+          ? {
+              padding: `calc(12px + env(safe-area-inset-top)) 12px 8px`,
+              alignItems: 'flex-start',
+            }
+          : undefined
+      }
+      bodyStyle={isMobile ? { padding: 12, paddingBottom: `calc(12px + env(safe-area-inset-bottom))` } : undefined}
+      destroyOnClose
       title={
-        <Space>
-          <span>Admin · {city?.name ?? 'Cidade'}</span>
-          {city?.visible === false && <Tag color="red">Invisível</Tag>}
-          {city?.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
-        </Space>
+        isMobile ? (
+          DrawerTitle
+        ) : (
+          <Space>
+            <span>Admin · {city?.name ?? 'Cidade'}</span>
+            {city?.visible === false && <Tag color="red">Invisível</Tag>}
+            {city?.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+          </Space>
+        )
       }
     >
       {!city ? null : (
@@ -164,13 +197,14 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               <Typography.Text strong>Vinculadas</Typography.Text>
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedLores.map((l) => (
-                  <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ minWidth: 0 }}>
-                      <Typography.Text ellipsis>{l.title}</Typography.Text>
-                      {l.category && <Tag style={{ marginLeft: 8 }}>{l.category}</Tag>}
+                  <div key={l.id} style={{ display: 'grid', gap: 6 }}>
+                    <Space wrap size={6}>
+                      <Typography.Text style={{ fontWeight: 600 }}>{l.title}</Typography.Text>
+                      {l.category && <Tag>{l.category}</Tag>}
                       {(l as any).visible === false && <Tag color="red">hidden</Tag>}
-                    </div>
-                    <Button danger size="small" onClick={() => void doUnlinkLore(l.id)}>
+                    </Space>
+
+                    <Button danger size="small" block={mobileOnly} onClick={() => void doUnlinkLore(l.id)}>
                       Desvincular
                     </Button>
                   </div>
@@ -183,15 +217,24 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               <Typography.Text strong>Vincular nova</Typography.Text>
               <Input allowClear placeholder="Buscar lore..." value={qLore} onChange={(e) => setQLore(e.target.value)} />
 
-              <div style={{ display: 'grid', gap: 8, maxHeight: 320, overflow: 'auto' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 10,
+                  maxHeight: mobileOnly ? '45vh' : 320,
+                  overflow: 'auto',
+                  paddingRight: 4,
+                }}
+              >
                 {availableLores.map((l) => (
-                  <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ minWidth: 0 }}>
-                      <Typography.Text ellipsis>{l.title}</Typography.Text>
-                      {l.category && <Tag style={{ marginLeft: 8 }}>{l.category}</Tag>}
+                  <div key={l.id} style={{ display: 'grid', gap: 6 }}>
+                    <Space wrap size={6}>
+                      <Typography.Text style={{ fontWeight: 600 }}>{l.title}</Typography.Text>
+                      {l.category && <Tag>{l.category}</Tag>}
                       {(l as any).visible === false && <Tag color="red">hidden</Tag>}
-                    </div>
-                    <Button type="primary" size="small" onClick={() => void doLinkLore(l.id)}>
+                    </Space>
+
+                    <Button type="primary" size="small" block={mobileOnly} onClick={() => void doLinkLore(l.id)}>
                       Vincular
                     </Button>
                   </div>
@@ -212,13 +255,13 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               <Typography.Text strong>Vinculadas</Typography.Text>
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedQuests.map((q) => (
-                  <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ minWidth: 0 }}>
-                      <Typography.Text ellipsis>{q.title}</Typography.Text>
+                  <div key={q.id} style={{ display: 'grid', gap: 6 }}>
+                    <Space wrap size={6}>
+                      <Typography.Text style={{ fontWeight: 600 }}>{q.title}</Typography.Text>
                       {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
-                    </div>
-                    <Button danger size="small" onClick={() => void doUnlinkQuest(q.id)}>
+                    </Space>
+                    <Button danger size="small" block={mobileOnly} onClick={() => void doUnlinkQuest(q.id)}>
                       Desvincular
                     </Button>
                   </div>
@@ -236,15 +279,23 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 onChange={(e) => setQQuest(e.target.value)}
               />
 
-              <div style={{ display: 'grid', gap: 8, maxHeight: 320, overflow: 'auto' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gap: 10,
+                  maxHeight: mobileOnly ? '45vh' : 320,
+                  overflow: 'auto',
+                  paddingRight: 4,
+                }}
+              >
                 {availableQuests.map((q) => (
-                  <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ minWidth: 0 }}>
-                      <Typography.Text ellipsis>{q.title}</Typography.Text>
+                  <div key={q.id} style={{ display: 'grid', gap: 6 }}>
+                    <Space wrap size={6}>
+                      <Typography.Text style={{ fontWeight: 600 }}>{q.title}</Typography.Text>
                       {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
-                    </div>
-                    <Button type="primary" size="small" onClick={() => void doLinkQuest(q.id)}>
+                    </Space>
+                    <Button type="primary" size="small" block={mobileOnly} onClick={() => void doLinkQuest(q.id)}>
                       Vincular
                     </Button>
                   </div>
@@ -255,23 +306,17 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="Mundo" key="world">
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
-              <Typography.Text type="secondary">Associe a cidade a um mundo (ou remova o vínculo).</Typography.Text>
-
-              <Space wrap>
-                <span>Mundo:</span>
-                <Select
-                  style={{ minWidth: 260 }}
-                  value={city.worldId ?? null}
-                  onChange={(v) => void setCityWorld(v)}
-                  options={[
-                    { label: '(Sem mundo)', value: null },
-                    ...worlds.map((w) => ({ label: `#${w.id} — ${w.name}`, value: w.id })),
-                  ]}
-                />
-              </Space>
-
-              {loading && <Typography.Text type="secondary">Carregando...</Typography.Text>}
+            <Space direction={mobileOnly ? 'vertical' : 'horizontal'} wrap style={{ width: '100%' }}>
+              <span>Mundo:</span>
+              <Select
+                style={{ width: mobileOnly ? '100%' : 260 }}
+                value={city.worldId ?? null}
+                onChange={(v) => void setCityWorld(v)}
+                options={[
+                  { label: '(Sem mundo)', value: null },
+                  ...worlds.map((w) => ({ label: `#${w.id} — ${w.name}`, value: w.id })),
+                ]}
+              />
             </Space>
           </Tabs.TabPane>
         </Tabs>

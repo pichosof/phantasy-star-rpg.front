@@ -641,8 +641,16 @@ export const CitiesPage: React.FC = () => {
               </Space>
             </Tabs.TabPane>
           </Tabs>
-
-          <CityAdminDrawer open={adminOpen} city={adminCity} isGM={isGM} onClose={closeAdmin} onChanged={load} />
+          <CityAdminDrawer
+            open={adminOpen}
+            city={adminCity}
+            isGM={isGM}
+            onClose={() => {
+              setAdminOpen(false);
+              setAdminCityId(null);
+            }}
+            onChanged={load}
+          />
         </>
       )}
 
