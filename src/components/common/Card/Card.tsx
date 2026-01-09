@@ -1,6 +1,6 @@
 import React from 'react';
 import { CardProps as AntCardProps } from 'antd';
-import { defaultPaddings } from '@app/constants/defaultPaddings';
+import { defaultPaddings, PaddingDensity } from '@app/constants/defaultPaddings';
 import { useResponsive } from '@app/hooks/useResponsive';
 import * as S from './Card.styles';
 
@@ -8,21 +8,36 @@ export interface CardProps extends AntCardProps {
   className?: string;
   padding?: string | number | [number, number];
   autoHeight?: boolean;
+  density?: PaddingDensity; // comfy | dense
 }
 
-export const Card: React.FC<CardProps> = ({ className, padding, size, autoHeight = true, children, ...props }) => {
+export const Card: React.FC<CardProps> = ({
+  className,
+  padding,
+  size,
+  autoHeight = false,
+  density = 'comfy',
+  children,
+  ...props
+}) => {
   const { isTablet, isDesktop } = useResponsive();
+
+  const responsivePadding: [number, number] = isDesktop
+    ? defaultPaddings[density].desktop
+    : isTablet
+    ? defaultPaddings[density].tablet
+    : defaultPaddings[density].mobile;
+
+  const resolvedPadding = padding || padding === 0 ? padding : responsivePadding;
+
+  const resolvedSize = size ? size : isTablet ? 'default' : 'small';
 
   return (
     <S.Card
-      size={size ? size : isTablet ? 'default' : 'small'}
+      size={resolvedSize}
       className={className}
       bordered={false}
-      $padding={
-        padding || padding === 0
-          ? padding
-          : (isDesktop && defaultPaddings.desktop) || (isTablet && defaultPaddings.tablet) || defaultPaddings.mobile
-      }
+      $padding={resolvedPadding}
       $autoHeight={autoHeight}
       {...props}
     >

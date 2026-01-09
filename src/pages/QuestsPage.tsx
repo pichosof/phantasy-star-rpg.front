@@ -79,7 +79,7 @@ export const QuestsPage: React.FC = () => {
   }
 
   const DesktopTable: React.FC = () => (
-    <Card>
+    <Card density="dense">
       <Table
         rowKey="id"
         dataSource={items}
@@ -121,7 +121,7 @@ export const QuestsPage: React.FC = () => {
       {loading && <Spinner />}
       {!loading &&
         items.map((q) => (
-          <Card key={q.id} title={`#${q.id} — ${q.title}`}>
+          <Card density="dense" key={q.id} title={`#${q.id} — ${q.title}`}>
             <div style={{ display: 'grid', gap: 8 }}>
               <div>Recompensa: {q.reward || '-'}</div>
               <div>
@@ -145,6 +145,7 @@ export const QuestsPage: React.FC = () => {
       <PageTitle>Quests</PageTitle>
 
       <Card
+        density="dense"
         title="Nova Quest"
         extra={<Button onClick={() => setCreating((v) => !v)}>{creating ? 'Fechar' : 'Abrir'}</Button>}
       >

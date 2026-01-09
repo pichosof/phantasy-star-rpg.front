@@ -1,11 +1,20 @@
-interface DefaultPadding {
+export type DefaultPadding = {
   mobile: [number, number];
   tablet: [number, number];
   desktop: [number, number];
-}
+};
 
-export const defaultPaddings: DefaultPadding = {
-  mobile: [30, 16],
-  tablet: [40, 30],
-  desktop: [50, 60],
+export type PaddingDensity = 'comfy' | 'dense';
+
+export const defaultPaddings: Record<PaddingDensity, DefaultPadding> = {
+  comfy: {
+    mobile: [16, 12],
+    tablet: [20, 16],
+    desktop: [24, 24],
+  },
+  dense: {
+    mobile: [12, 10],
+    tablet: [14, 12],
+    desktop: [16, 16],
+  },
 };
