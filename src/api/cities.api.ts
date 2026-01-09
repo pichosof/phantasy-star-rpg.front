@@ -14,7 +14,7 @@ export async function listCities(): Promise<City[]> {
   return data;
 }
 
-export async function updateCityCoords(id: number, u: number, v: number) {
-  const coordinates = `${u.toFixed(6)},${v.toFixed(6)}`;
-  await http.patch(`/api/cities/${id}`, { coordinates });
+export async function updateCityCoords(cityId: number, u: number | null, v: number | null) {
+  const coordinates = `${u?.toFixed(6) ?? ''},${v?.toFixed(6) ?? ''}`;
+  await http.patch(`/api/cities/${cityId}`, { coordinates });
 }

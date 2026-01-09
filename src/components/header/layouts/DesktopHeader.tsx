@@ -1,10 +1,6 @@
 import React from 'react';
 import { Col, Row } from 'antd';
-import { NotificationsDropdown } from '../components/notificationsDropdown/NotificationsDropdown';
-import { ProfileDropdown } from '../components/profileDropdown/ProfileDropdown/ProfileDropdown';
-import { HeaderSearch } from '../components/HeaderSearch/HeaderSearch';
 import { SettingsDropdown } from '../components/settingsDropdown/SettingsDropdown';
-import { HeaderFullscreen } from '../components/HeaderFullscreen/HeaderFullscreen';
 import * as S from '../Header.styles';
 import { Popover } from '@app/components/common/Popover/Popover';
 import GMSwitchPanel from '@app/components/GMSwitchPanel';
@@ -16,24 +12,11 @@ interface DesktopHeaderProps {
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout }) => {
   const leftSide = isTwoColumnsLayout ? (
-    <S.SearchColumn xl={16} xxl={17}>
-      <Row justify="space-between">
-        <Col xl={15} xxl={12}>
-          <HeaderSearch />
-        </Col>
-        <Col>
-          <S.GHButton />
-        </Col>
-      </Row>
-    </S.SearchColumn>
+    <Col></Col>
   ) : (
     <>
-      <Col lg={10} xxl={8}>
-        <HeaderSearch />
-      </Col>
-      <Col>
-        <S.GHButton />
-      </Col>
+      <Col lg={10} xxl={8}></Col>
+      <Col></Col>
     </>
   );
 
@@ -45,13 +28,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout
         <Row align="middle" justify="end" gutter={[10, 10]}>
           <Col>
             <Row gutter={[{ xxl: 10 }, { xxl: 10 }]}>
-              <Col>
-                <HeaderFullscreen />
-              </Col>
-
-              <Col>
-                <NotificationsDropdown />
-              </Col>
+              <Col></Col>
 
               <Col>
                 <SettingsDropdown />
@@ -62,10 +39,6 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout
                 </Popover>
               </Col>
             </Row>
-          </Col>
-
-          <Col>
-            <ProfileDropdown />
           </Col>
         </Row>
       </S.ProfileColumn>
