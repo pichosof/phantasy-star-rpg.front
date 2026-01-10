@@ -1,43 +1,41 @@
+// src/pages/Map/MapPage.tsx
 import React from 'react';
 import {
+  Badge,
   Button,
-  message,
-  Spin,
-  Typography,
-  Space,
   Divider,
   Drawer,
-  Tabs,
+  Empty,
   Input,
-  Tag,
-  Select,
-  Badge,
+  message,
   Modal,
+  Select,
+  Space,
+  Spin,
+  Tabs,
+  Tag,
+  Typography,
 } from 'antd';
-import { listWorlds, resolveWorldImage, World } from '@app/api/worlds.api';
-import { City, listCities, updateCityCoords } from '@app/api/cities.api';
-import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
-import { listQuestsPublic, listQuestsAdmin, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
+
+import { listWorlds, resolveWorldImage, type World } from '@app/api/worlds.api';
+import { type City, listCities, updateCityCoords } from '@app/api/cities.api';
+import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
+import type { Lore } from '@app/api/lore.api';
+import type { Quest } from '@app/api/quests.api';
 import { resolveApiUrl } from '@app/api/http.api';
+import { useResponsive } from '@app/hooks/useResponsive';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
-type Marker = { id: number; label: string; u: number; v: number; visible?: boolean; discovered?: boolean };
-
-function parseCoordinates(s?: string | null): { u: number; v: number } | null {
-  if (!s) return null;
-  const parts = s.split(',').map((x) => Number(x.trim()));
-  if (parts.length !== 2 || parts.some((n) => !Number.isFinite(n))) return null;
-  const [u, v] = parts;
-  if (u < 0 || u > 1 || v < 0 || v > 1) return null;
-  return { u, v };
-}
-
-function cityKind(name: string) {
-  if (name?.startsWith('Kol-')) return 'Kol';
-  if (name?.startsWith('Kor-')) return 'Kor';
-  return 'Outro';
-}
+type Marker = {
+  id: number;
+  label: string;
+  u: number;
+  v: number;
+  visible?: boolean;
+  discovered?: boolean;
+  region?: string | null;
+};
 
 type Stage = {
   offsetX: number;
@@ -48,29 +46,45 @@ type Stage = {
   containerHeight: number;
 };
 
+function parseCoordinates(s?: string | null): { u: number; v: number } | null {
+  if (!s) return null;
+  const parts = s.split(',').map((x) => Number(x.trim()));
+  if (parts.length !== 2 || parts.some((n) => !Number.isFinite(n))) return null;
+  const [u, v] = parts;
+  if (u < 0 || u > 1 || v < 0 || v > 1) return null;
+  return { u, v };
+}
+
+function formatDate(v?: string | null) {
+  if (!v) return '-';
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v;
+  return d.toLocaleString();
+}
+
+function isCityVisible(c: any) {
+  return (c?.visible ?? true) === true;
+}
+
 export default function MapPage() {
+  const { mobileOnly } = useResponsive();
+
   // -------- base data --------
   const [loading, setLoading] = React.useState(true);
   const [world, setWorld] = React.useState<World | null>(null);
   const [worldImg, setWorldImg] = React.useState<string | undefined>();
   const [cities, setCities] = React.useState<City[]>([]);
-  const [pickingCity, setPickingCity] = React.useState<City | null>(null);
 
-  const [openCityId, setOpenCityId] = React.useState<number | null>(null);
-  const openCity = React.useMemo(
-    () => cities.find((c: any) => ('props' in (c as any) ? (c as any).props.id : c.id) === openCityId) ?? null,
-    [cities, openCityId],
-  );
-
-  const isGM = Boolean(localStorage.getItem(GM_KEY_STORAGE));
+  // GM mode (reage a storage)
+  const [isGM, setIsGM] = React.useState<boolean>(() => Boolean(localStorage.getItem(GM_KEY_STORAGE)));
 
   // -------- UI / hover --------
   const [hoverMarkerId, setHoverMarkerId] = React.useState<number | null>(null);
 
   // -------- filters --------
-  const [filterKind, setFilterKind] = React.useState<'all' | 'Kol' | 'Kor'>('all');
   const [filterVisible, setFilterVisible] = React.useState<'all' | 'visible' | 'hidden'>('all');
   const [filterDiscover, setFilterDiscover] = React.useState<'all' | 'discovered' | 'undiscovered'>('all');
+  const [filterRegion, setFilterRegion] = React.useState<string>('all');
   const [search, setSearch] = React.useState('');
 
   // -------- ruler --------
@@ -78,27 +92,47 @@ export default function MapPage() {
   const [measureA, setMeasureA] = React.useState<{ u: number; v: number } | null>(null);
   const [measureB, setMeasureB] = React.useState<{ u: number; v: number } | null>(null);
 
-  // -------- lores / quests --------
-  const [allLores, setAllLores] = React.useState<Lore[]>([]);
-  const [allQuests, setAllQuests] = React.useState<Quest[]>([]);
-  const [linkedLoreIdsByCity, setLinkedLoreIdsByCity] = React.useState<Record<number, Set<number>>>({});
-  const [linkedQuestIdsByCity, setLinkedQuestIdsByCity] = React.useState<Record<number, Set<number>>>({});
-
   // -------- map refs / fullscreen / stage --------
   const mapRef = React.useRef<HTMLDivElement | null>(null);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
-  const [presentMode, setPresentMode] = React.useState(false); // modo “mesa”
-  const [isFullscreen, setIsFullscreen] = React.useState(false); // fullscreen real (Fullscreen API)
+  const [presentMode, setPresentMode] = React.useState(false);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
   const [stage, setStage] = React.useState<Stage | null>(null);
 
-  // Stage ROBUSTO: baseado no DOM real renderizado (não em matemática de aspect ratio)
+  // -------- GM positioning --------
+  const [pickingCityId, setPickingCityId] = React.useState<number | null>(null);
+  const pickingCity = React.useMemo(
+    () => cities.find((c: any) => c.id === pickingCityId) ?? null,
+    [cities, pickingCityId],
+  );
+
+  // -------- open city drawer --------
+  const [openCityId, setOpenCityId] = React.useState<number | null>(null);
+  const openCity = React.useMemo(() => cities.find((c: any) => c.id === openCityId) ?? null, [cities, openCityId]);
+
+  // -------- city links (read-only here) --------
+  const [linksLoading, setLinksLoading] = React.useState(false);
+  const [cityLores, setCityLores] = React.useState<Lore[]>([]);
+  const [cityQuests, setCityQuests] = React.useState<Quest[]>([]);
+
+  // GM key changes in runtime
+  React.useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === GM_KEY_STORAGE) {
+        setIsGM(Boolean(e.newValue));
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // Stage robusto (DOM real)
   const recalcStage = React.useCallback(() => {
     const wrap = mapRef.current;
     const img = imgRef.current;
     if (!wrap || !img) return;
 
-    // força leitura depois do layout estabilizar
     requestAnimationFrame(() => {
       const wrapRect = wrap.getBoundingClientRect();
       const imgRect = img.getBoundingClientRect();
@@ -119,13 +153,14 @@ export default function MapPage() {
     });
   }, []);
 
-  // Load everything
+  // Load base data
   React.useEffect(() => {
     let mounted = true;
+
     (async () => {
       try {
         setLoading(true);
-        const [ws, cs, ls, qs] = await Promise.all([listWorlds(), listCities(), listLores(), listQuestsPublic()]);
+        const [ws, cs] = await Promise.all([listWorlds(), listCities()]);
         if (!mounted) return;
 
         const unwrap = (x: any) => (x && typeof x === 'object' && 'props' in x ? x.props : x);
@@ -135,12 +170,9 @@ export default function MapPage() {
         setWorld(w ?? null);
         setWorldImg(resolveWorldImage(w?.imageUrl ?? undefined));
         setCities(cs2);
-
-        setAllLores(ls);
-        setAllQuests(qs);
       } catch (e) {
         console.error(e);
-        message.error('Falha ao carregar mundo/cidades/lores/quests.');
+        message.error('Falha ao carregar mundo/cidades.');
       } finally {
         setLoading(false);
       }
@@ -159,7 +191,6 @@ export default function MapPage() {
     };
 
     const onFsError = () => {
-      // Se fullscreen falhar/cancelar, fica no overlay mesmo
       setIsFullscreen(false);
       setPresentMode(true);
       recalcStage();
@@ -174,7 +205,7 @@ export default function MapPage() {
     };
   }, [recalcStage]);
 
-  // trava scroll quando overlay (presentMode sem fullscreen real)
+  // trava scroll quando overlay
   React.useEffect(() => {
     if (presentMode && !isFullscreen) {
       const prev = document.body.style.overflow;
@@ -185,15 +216,12 @@ export default function MapPage() {
     }
   }, [presentMode, isFullscreen]);
 
-  // ESC sai do modo apresentação (mesmo no fallback overlay)
+  // ESC sai do modo apresentação
   React.useEffect(() => {
     if (!presentMode) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        // No fullscreen real o browser já sai, mas a gente garante o presentMode também
-        void exitPresentMode();
-      }
+      if (e.key === 'Escape') void exitPresentMode();
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -224,7 +252,7 @@ export default function MapPage() {
   }, [presentMode, isFullscreen, worldImg, recalcStage]);
 
   async function enterPresentMode() {
-    setPresentMode(true); // garante overlay primeiro (sem piscada)
+    setPresentMode(true);
     recalcStage();
 
     const el = mapRef.current;
@@ -235,7 +263,7 @@ export default function MapPage() {
         await el.requestFullscreen();
       }
     } catch (e) {
-      console.warn('Fullscreen failed, staying in present mode overlay.', e);
+      console.warn('Fullscreen failed, staying in overlay.', e);
     } finally {
       recalcStage();
     }
@@ -243,9 +271,7 @@ export default function MapPage() {
 
   async function exitPresentMode() {
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      }
+      if (document.fullscreenElement) await document.exitFullscreen();
     } catch (e) {
       console.warn('Exit fullscreen failed.', e);
     } finally {
@@ -257,12 +283,70 @@ export default function MapPage() {
     }
   }
 
+  // Carrega lores/quests quando abre a cidade (read-only)
+  React.useEffect(() => {
+    if (!openCity) {
+      setCityLores([]);
+      setCityQuests([]);
+      return;
+    }
+
+    const playerCanRead = isGM || (openCity as any).discovered === true;
+    if (!playerCanRead) {
+      setCityLores([]);
+      setCityQuests([]);
+      return;
+    }
+
+    let alive = true;
+    setLinksLoading(true);
+
+    Promise.all([listLoresByCityId((openCity as any).id), listQuestsByCityId((openCity as any).id)])
+      .then(([lores, quests]) => {
+        if (!alive) return;
+        setCityLores(lores);
+        setCityQuests(quests);
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!alive) return;
+        message.error('Falha ao carregar lores/quests da cidade.');
+        setCityLores([]);
+        setCityQuests([]);
+      })
+      .finally(() => {
+        if (!alive) return;
+        setLinksLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [openCity?.id, (openCity as any)?.discovered, isGM]);
+
+  // -------- regions options --------
+  const regionOptions = React.useMemo(() => {
+    const regions = Array.from(
+      new Set(
+        cities.map((c: any) => ((c as any).region as string | null | undefined) ?? null).filter((x) => Boolean(x)),
+      ),
+    ) as string[];
+
+    regions.sort((a, b) => a.localeCompare(b));
+
+    return [{ value: 'all', label: 'Todas' }, ...regions.map((r) => ({ value: r, label: r }))];
+  }, [cities]);
+
   // -------- derived markers --------
   const markers = React.useMemo<Marker[]>(() => {
     const list = cities
-      .map((c) => {
+      .map((c: any) => {
+        // PCs nunca devem ver cidades hidden
+        if (!isGM && !isCityVisible(c)) return null;
+
         const p = parseCoordinates((c as any).coordinates);
         if (!p) return null;
+
         return {
           id: (c as any).id,
           label: (c as any).name,
@@ -270,13 +354,12 @@ export default function MapPage() {
           v: p.v,
           visible: (c as any).visible,
           discovered: (c as any).discovered,
+          region: ((c as any).region as string | null | undefined) ?? null,
         } as Marker;
       })
       .filter(Boolean) as Marker[];
 
     let filtered = list;
-
-    if (filterKind !== 'all') filtered = filtered.filter((m) => cityKind(m.label) === filterKind);
 
     if (filterVisible !== 'all') {
       filtered = filtered.filter((m) => (filterVisible === 'visible' ? m.visible !== false : m.visible === false));
@@ -288,13 +371,27 @@ export default function MapPage() {
       );
     }
 
+    if (filterRegion !== 'all') {
+      filtered = filtered.filter((m) => (m.region ?? '') === filterRegion);
+    }
+
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       filtered = filtered.filter((m) => m.label.toLowerCase().includes(q));
     }
 
     return filtered;
-  }, [cities, filterKind, filterVisible, filterDiscover, search]);
+  }, [cities, filterVisible, filterDiscover, filterRegion, search, isGM]);
+
+  // ✅ IMPORTANTE: este useMemo PRECISA ficar antes de qualquer return condicional
+  const gmCityOptions = React.useMemo(() => {
+    return cities
+      .slice()
+      .sort((a: any, b: any) => String(a.name).localeCompare(String(b.name)))
+      .map((c: any) => ({ value: c.id, label: c.name }));
+  }, [cities]);
+
+  const drawerZIndex = presentMode ? 10002 : undefined;
 
   // -------- clicks on map --------
   const onMapClick = async (ev: React.MouseEvent<HTMLDivElement>) => {
@@ -330,12 +427,12 @@ export default function MapPage() {
       return;
     }
 
-    // GM positioning
+    // GM positioning (admin do mapa = só isso)
     if (!isGM || !pickingCity) return;
 
     try {
       await updateCityCoords((pickingCity as any).id, u, v);
-      setCities((prev) =>
+      setCities((prev: any[]) =>
         prev.map((c: any) => (c.id === (pickingCity as any).id ? { ...c, coordinates: `${u},${v}` } : c)),
       );
       message.success(`Coords gravadas para "${(pickingCity as any).name}".`);
@@ -343,7 +440,7 @@ export default function MapPage() {
       console.error(e);
       message.error('Erro ao salvar coordenadas.');
     } finally {
-      setPickingCity(null);
+      setPickingCityId(null);
     }
   };
 
@@ -354,6 +451,30 @@ export default function MapPage() {
     return `${pct.toFixed(2)}% do mapa`;
   }
 
+  function confirmClearCoords(city: any) {
+    if (!city) return;
+
+    Modal.confirm({
+      title: 'Remover coordenadas?',
+      content: `A cidade "${city.name}" vai sair do mapa (o marker some). Você pode reposicionar depois.`,
+      okText: 'Remover',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await updateCityCoords(city.id, null, null);
+          setCities((prev: any[]) => prev.map((c: any) => (c.id === city.id ? { ...c, coordinates: null } : c)));
+          setPickingCityId((prev) => (prev === city.id ? null : prev));
+          message.success(`Coordenadas removidas de "${city.name}".`);
+        } catch (e) {
+          console.error(e);
+          message.error('Falha ao remover coordenadas.');
+        }
+      },
+    });
+  }
+
+  // ✅ agora pode ter returns condicionais, porque nenhum hook vem depois daqui
   if (loading) return <Spin style={{ display: 'block', margin: '64px auto' }} />;
 
   if (!world || !worldImg) {
@@ -367,35 +488,6 @@ export default function MapPage() {
     );
   }
 
-  const drawerZIndex = presentMode ? 10002 : undefined;
-
-  function confirmClearCoords(city: any) {
-    console.log('confirmClearCoords', city);
-    Modal.confirm({
-      title: 'Remover coordenadas?',
-      content: `A cidade "${city.name}" vai sair do mapa (o marker some). Você pode reposicionar depois.`,
-      okText: 'Remover',
-      cancelText: 'Cancelar',
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await updateCityCoords(city.id, null, null);
-          setCities((prev) => prev.map((c: any) => (c.id === city.id ? { ...c, coordinates: null } : c)));
-
-          setCities((prev) => prev.map((c: any) => (c.id === city.id ? { ...c, coordinates: null } : c)));
-
-          // se estava selecionada pra pick, limpa
-          setPickingCity((prev) => ((prev as any)?.id === city.id ? null : prev));
-
-          message.success(`Coordenadas removidas de "${city.name}".`);
-        } catch (e) {
-          console.error(e);
-          message.error('Falha ao remover coordenadas.');
-        }
-      },
-    });
-  }
-
   return (
     <div style={{ padding: 16 }}>
       <Space direction="vertical" style={{ width: '100%' }} size={12}>
@@ -405,7 +497,6 @@ export default function MapPage() {
           </Typography.Title>
         )}
 
-        {/* Controles (fora do overlay) */}
         {!presentMode && (
           <Space wrap>
             <Button onClick={enterPresentMode}>Apresentação (Tela cheia)</Button>
@@ -413,7 +504,6 @@ export default function MapPage() {
           </Space>
         )}
 
-        {/* Filtros */}
         {!presentMode && (
           <>
             <Space wrap align="center">
@@ -426,17 +516,13 @@ export default function MapPage() {
               />
 
               <Space size={8}>
-                <span>Tipo:</span>
+                <span>Região:</span>
                 <Select
                   size="small"
-                  style={{ width: 120 }}
-                  value={filterKind}
-                  onChange={(v) => setFilterKind(v)}
-                  options={[
-                    { value: 'all', label: 'Todos' },
-                    { value: 'Kol', label: 'Kol (sagrado)' },
-                    { value: 'Kor', label: 'Kor (funcional)' },
-                  ]}
+                  style={{ width: 180 }}
+                  value={filterRegion}
+                  onChange={(v) => setFilterRegion(v)}
+                  options={regionOptions}
                 />
               </Space>
 
@@ -455,41 +541,44 @@ export default function MapPage() {
                 />
               </Space>
 
+              {isGM && (
+                <Space size={8}>
+                  <span>Visibilidade:</span>
+                  <Select
+                    size="small"
+                    style={{ width: 160 }}
+                    value={filterVisible}
+                    onChange={(v) => setFilterVisible(v)}
+                    options={[
+                      { value: 'all', label: 'Todas' },
+                      { value: 'visible', label: 'Visíveis' },
+                      { value: 'hidden', label: 'Invisíveis' },
+                    ]}
+                  />
+                </Space>
+              )}
+
               <Space size={8}>
-                <span>Visibilidade:</span>
-                <Select
-                  size="small"
-                  style={{ width: 160 }}
-                  value={filterVisible}
-                  onChange={(v) => setFilterVisible(v)}
-                  options={[
-                    { value: 'all', label: 'Todas' },
-                    { value: 'visible', label: 'Visíveis' },
-                    { value: 'hidden', label: 'Invisíveis' },
-                  ]}
-                />
+                <Badge count={markers.length} showZero />
+                <Typography.Text type="secondary">marcadores</Typography.Text>
               </Space>
 
               {isGM && (
                 <>
                   <Divider type="vertical" />
-                  <Space wrap>
-                    <Button size="small" danger onClick={() => confirmClearCoords(pickingCity as any)}>
-                      Remover do mapa
-                    </Button>
-                    {cities.map((c: any) => (
-                      <Button
-                        key={c.id}
-                        size="small"
-                        type={pickingCity && (pickingCity as any).id === c.id ? 'primary' : 'default'}
-                        onClick={() => setPickingCity((prev) => ((prev as any)?.id === c.id ? null : c))}
-                      >
-                        Selecionar: {c.name}
-                      </Button>
-                    ))}
-                    <Button size="small" onClick={() => setPickingCity(null)}>
-                      Cancelar seleção
-                    </Button>
+                  <Space wrap align="center" size={8}>
+                    <Select
+                      showSearch
+                      allowClear
+                      size="small"
+                      style={{ width: 260 }}
+                      placeholder="Selecionar cidade para posicionar..."
+                      value={pickingCityId ?? undefined}
+                      onChange={(v) => setPickingCityId(v ?? null)}
+                      options={gmCityOptions}
+                      filterOption={(input, opt) => (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                    />
+
                     <Button
                       size="small"
                       type={measureMode ? 'primary' : 'default'}
@@ -501,6 +590,14 @@ export default function MapPage() {
                     >
                       Régua {measureMode ? 'ON' : 'OFF'}
                     </Button>
+
+                    {pickingCity ? (
+                      <Tag color="gold" style={{ margin: 0 }}>
+                        Clique no mapa para posicionar: <b>{(pickingCity as any).name}</b>
+                      </Tag>
+                    ) : (
+                      <Tag style={{ margin: 0 }}>Selecione uma cidade para marcar no mapa</Tag>
+                    )}
                   </Space>
                 </>
               )}
@@ -530,7 +627,6 @@ export default function MapPage() {
             cursor: measureMode || (isGM && pickingCity) ? 'crosshair' : 'default',
           }}
         >
-          {/* Barra flutuante DENTRO do mapa (sempre clicável) */}
           {presentMode && (
             <div
               style={{
@@ -564,12 +660,11 @@ export default function MapPage() {
                 Régua {measureMode ? 'ON' : 'OFF'}
               </Button>
 
-              {isFullscreen && (
+              {isFullscreen ? (
                 <Tag color="green" style={{ margin: 0 }}>
                   Fullscreen
                 </Tag>
-              )}
-              {!isFullscreen && (
+              ) : (
                 <Tag color="gold" style={{ margin: 0 }}>
                   Overlay
                 </Tag>
@@ -595,26 +690,23 @@ export default function MapPage() {
 
           {/* Markers */}
           {markers.map((m) => {
-            const kind = cityKind(m.label);
-
-            const bg =
-              kind === 'Kol'
-                ? 'rgba(0, 102, 255, 0.95)'
-                : kind === 'Kor'
-                ? 'rgba(0, 170, 85, 0.95)'
-                : 'rgba(255,255,255,0.95)';
-
-            const border = '2px solid rgba(0,0,0,0.85)';
-
             const leftPx = stage ? stage.offsetX + m.u * stage.width : null;
             const topPx = stage ? stage.offsetY + m.v * stage.height : null;
 
             const leftCss = stage ? `${leftPx}px` : `${m.u * 100}%`;
             const topCss = stage ? `${topPx}px` : `${m.v * 100}%`;
 
+            const bg =
+              isGM && m.visible === false
+                ? 'rgba(255, 70, 70, 0.95)'
+                : m.discovered
+                ? 'rgba(255,255,255,0.95)'
+                : 'rgba(180,180,180,0.95)';
+
+            const outline = openCityId === m.id ? '3px solid rgba(255,255,0,0.8)' : 'none';
+
             return (
               <React.Fragment key={m.id}>
-                {/* hover label */}
                 {hoverMarkerId === m.id && (
                   <div
                     style={{
@@ -632,7 +724,8 @@ export default function MapPage() {
                       zIndex: 20,
                     }}
                   >
-                    {m.label} · {kind}
+                    {m.label}
+                    {m.region ? ` · ${m.region}` : ''}
                   </div>
                 )}
 
@@ -643,7 +736,7 @@ export default function MapPage() {
                     e.stopPropagation();
                     setOpenCityId(m.id);
                   }}
-                  title={`${m.label} · ${kind}`}
+                  title={m.label}
                   style={{
                     position: 'absolute',
                     left: leftCss,
@@ -653,11 +746,11 @@ export default function MapPage() {
                     height: 18,
                     borderRadius: '50%',
                     background: bg,
-                    border,
+                    border: '2px solid rgba(0,0,0,0.85)',
                     boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
                     cursor: 'pointer',
                     zIndex: 10,
-                    outline: openCityId === m.id ? '3px solid rgba(255,255,0,0.8)' : 'none',
+                    outline,
                     outlineOffset: 2,
                   }}
                 />
@@ -665,25 +758,7 @@ export default function MapPage() {
             );
           })}
 
-          {/* HUD pick (só fora do modo apresentação) */}
-          {isGM && pickingCity && !presentMode && (
-            <div
-              style={{
-                position: 'absolute',
-                left: 8,
-                top: 8,
-                background: 'rgba(0,0,0,0.6)',
-                color: '#fff',
-                padding: '6px 8px',
-                borderRadius: 6,
-                fontSize: 12,
-              }}
-            >
-              Clique no mapa para posicionar: <b>{(pickingCity as any).name}</b>
-            </div>
-          )}
-
-          {/* Régua (stage robusto) */}
+          {/* Régua */}
           {measureA && measureB && stage && (
             <svg
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
@@ -713,63 +788,26 @@ export default function MapPage() {
               })()}
             </svg>
           )}
-
-          {/* fallback régua (se stage não existir ainda) */}
-          {measureA && measureB && !stage && (
-            <svg style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} viewBox="0 0 1000 1000">
-              <line
-                x1={measureA.u * 1000}
-                y1={measureA.v * 1000}
-                x2={measureB.u * 1000}
-                y2={measureB.v * 1000}
-                stroke="white"
-                strokeWidth={4}
-                opacity={0.85}
-              />
-              <circle cx={measureA.u * 1000} cy={measureA.v * 1000} r={6} fill="white" opacity={0.95} />
-              <circle cx={measureB.u * 1000} cy={measureB.v * 1000} r={6} fill="white" opacity={0.95} />
-              <rect
-                x={(measureA.u + measureB.u) * 500 - 90}
-                y={(measureA.v + measureB.v) * 500 - 22}
-                width={180}
-                height={28}
-                fill="rgba(0,0,0,0.6)"
-                rx={6}
-              />
-              <text
-                x={(measureA.u + measureB.u) * 500}
-                y={(measureA.v + measureB.v) * 500 - 2}
-                fontSize="16"
-                textAnchor="middle"
-                fill="white"
-              >
-                {distanceText(measureA, measureB)}
-              </text>
-            </svg>
-          )}
         </div>
 
         {/* Drawer da cidade */}
         <Drawer
           zIndex={drawerZIndex}
+          visible={!!openCity}
+          onClose={() => setOpenCityId(null)}
+          width={mobileOnly ? '100%' : 560}
           title={
             openCity ? (
-              <Space>
-                <span>{(openCity as any).name}</span>
-                <Badge
-                  color={cityKind((openCity as any).name) === 'Kol' ? 'blue' : 'green'}
-                  text={cityKind((openCity as any).name)}
-                />
-                {(openCity as any).visible === false && <Tag color="red">Invisível</Tag>}
-                {(openCity as any).discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+              <Space wrap size={8}>
+                <span style={{ fontWeight: 800 }}>{(openCity as any).name}</span>
+                {(openCity as any).region ? <Tag>{(openCity as any).region}</Tag> : null}
+                {(openCity as any).visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
+                {(openCity as any).discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
               </Space>
             ) : (
               'Cidade'
             )
           }
-          open={!!openCity}
-          onClose={() => setOpenCityId(null)}
-          width={560}
         >
           {!openCity ? null : (
             <Tabs defaultActiveKey="details">
@@ -778,270 +816,124 @@ export default function MapPage() {
                   <Typography.Text type="secondary">
                     {(openCity as any).region || 'Região não informada'}
                   </Typography.Text>
+
                   <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>
-                    {(openCity as any).description || 'Sem descrição.'}
+                    {isGM || (openCity as any).discovered
+                      ? (openCity as any).description || 'Sem descrição.'
+                      : 'Informações indisponíveis.'}
                   </Typography.Paragraph>
 
                   {isGM && (
                     <>
                       <Divider style={{ margin: '8px 0' }} />
-                      <Typography.Text strong>Ações GM</Typography.Text>
+                      <Typography.Text strong>Admin do mapa (GM)</Typography.Text>
+
                       <Space wrap>
                         <Button
                           size="small"
+                          type="primary"
                           onClick={() => {
-                            setPickingCity(openCity as any);
-                            message.info('Clique no mapa para reposicionar.');
+                            setPickingCityId((openCity as any).id);
+                            message.info('Clique no mapa para posicionar.');
                           }}
                         >
-                          Reposicionar
+                          Reposicionar no mapa
+                        </Button>
+
+                        <Button size="small" danger onClick={() => confirmClearCoords(openCity as any)}>
+                          Remover do mapa
                         </Button>
                       </Space>
+
+                      <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                        Criado: {formatDate((openCity as any).createdAt)}
+                        <br />
+                        Atualizado: {formatDate((openCity as any).updatedAt)}
+                      </Typography.Text>
                     </>
                   )}
                 </Space>
               </Tabs.TabPane>
 
-              <Tabs.TabPane tab="Lores" key="lores">
-                <LoresTab
-                  isGM={isGM}
-                  cityId={(openCity as any).id}
-                  allLores={allLores}
-                  linkedMap={linkedLoreIdsByCity}
-                  setLinkedMap={setLinkedLoreIdsByCity}
-                />
+              <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
+                {!isGM && !(openCity as any).discovered ? (
+                  <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+                ) : linksLoading ? (
+                  <Spin />
+                ) : !cityLores.length ? (
+                  <Empty description="Nenhuma lore vinculada a esta cidade." />
+                ) : (
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    {cityLores.map((l) => (
+                      <div
+                        key={l.id}
+                        style={{
+                          border: '1px solid #f0f0f0',
+                          borderRadius: 10,
+                          padding: 12,
+                          background: '#fff',
+                        }}
+                      >
+                        <Space wrap size={8}>
+                          <Typography.Text strong>{l.title}</Typography.Text>
+                          {l.category ? <Tag>{l.category}</Tag> : <Tag>(sem categoria)</Tag>}
+                        </Space>
+                        <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                          {l.content?.trim() || '—'}
+                        </Typography.Paragraph>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Tabs.TabPane>
 
-              <Tabs.TabPane tab="Quests" key="quests">
-                <QuestsTab
-                  isGM={isGM}
-                  cityId={(openCity as any).id}
-                  allQuests={allQuests}
-                  linkedMap={linkedQuestIdsByCity}
-                  setLinkedMap={setLinkedQuestIdsByCity}
-                />
+              <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
+                {!isGM && !(openCity as any).discovered ? (
+                  <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+                ) : linksLoading ? (
+                  <Spin />
+                ) : !cityQuests.length ? (
+                  <Empty description="Nenhuma quest vinculada a esta cidade." />
+                ) : (
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    {cityQuests.map((q) => (
+                      <div
+                        key={q.id}
+                        style={{
+                          border: '1px solid #f0f0f0',
+                          borderRadius: 10,
+                          padding: 12,
+                          background: '#fff',
+                        }}
+                      >
+                        <Space wrap size={8}>
+                          <Typography.Text strong>{q.title}</Typography.Text>
+                          {q.status ? (
+                            <Tag color={q.status === 'active' ? 'blue' : q.status === 'completed' ? 'green' : 'red'}>
+                              {q.status}
+                            </Tag>
+                          ) : null}
+                          {q.reward ? <Tag color="gold">Reward</Tag> : null}
+                        </Space>
+
+                        <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                          {q.description?.trim() || '—'}
+                        </Typography.Paragraph>
+
+                        {q.reward ? (
+                          <Typography.Text type="secondary" style={{ display: 'block' }}>
+                            Recompensa: {q.reward}
+                          </Typography.Text>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Tabs.TabPane>
             </Tabs>
           )}
         </Drawer>
       </Space>
     </div>
-  );
-}
-
-/** ---------- Aba LORES ---------- */
-function LoresTab({
-  isGM,
-  cityId,
-  allLores,
-  linkedMap,
-  setLinkedMap,
-}: {
-  isGM: boolean;
-  cityId: number;
-  allLores: Lore[];
-  linkedMap: Record<number, Set<number>>;
-  setLinkedMap: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
-}) {
-  const [q, setQ] = React.useState('');
-  const filtered = React.useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return !s ? allLores : allLores.filter((l) => l.title.toLowerCase().includes(s));
-  }, [q, allLores]);
-
-  const linked = linkedMap[cityId] ?? new Set<number>();
-
-  async function doLink(loreId: number) {
-    try {
-      await linkLoreToCity(loreId, cityId);
-      setLinkedMap((prev) => {
-        const next = { ...prev };
-        const set = new Set(next[cityId] ?? []);
-        set.add(loreId);
-        next[cityId] = set;
-        return next;
-      });
-      message.success('Lore vinculada.');
-    } catch (e) {
-      console.error(e);
-      message.error('Falha ao vincular lore.');
-    }
-  }
-
-  async function doUnlink(loreId: number) {
-    try {
-      await unlinkLoreFromCity(loreId, cityId);
-      setLinkedMap((prev) => {
-        const next = { ...prev };
-        const set = new Set(next[cityId] ?? []);
-        set.delete(loreId);
-        next[cityId] = set;
-        return next;
-      });
-      message.success('Lore desvinculada.');
-    } catch (e) {
-      console.error(e);
-      message.error('Falha ao desvincular lore.');
-    }
-  }
-
-  return (
-    <Space direction="vertical" style={{ width: '100%' }}>
-      <Input
-        allowClear
-        placeholder="Buscar lore..."
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        style={{ width: 260 }}
-      />
-      <div style={{ maxHeight: 320, overflow: 'auto', paddingRight: 6 }}>
-        {filtered.map((l) => {
-          const isLinked = linked.has(l.id);
-          return (
-            <div
-              key={l.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '6px 0',
-                borderBottom: '1px dashed #eee',
-              }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <Typography.Text ellipsis>{l.title}</Typography.Text>
-                {l.category && <Tag style={{ marginLeft: 8 }}>{l.category}</Tag>}
-              </div>
-              {isGM && (
-                <Space>
-                  {isLinked ? (
-                    <Button size="small" onClick={() => doUnlink(l.id)}>
-                      Desvincular
-                    </Button>
-                  ) : (
-                    <Button size="small" type="primary" onClick={() => doLink(l.id)}>
-                      Vincular
-                    </Button>
-                  )}
-                </Space>
-              )}
-            </div>
-          );
-        })}
-        {!filtered.length && <Typography.Text type="secondary">Nenhuma lore.</Typography.Text>}
-      </div>
-    </Space>
-  );
-}
-
-/** ---------- Aba QUESTS ---------- */
-function QuestsTab({
-  isGM,
-  cityId,
-  allQuests,
-  linkedMap,
-  setLinkedMap,
-}: {
-  isGM: boolean;
-  cityId: number;
-  allQuests: Quest[];
-  linkedMap: Record<number, Set<number>>;
-  setLinkedMap: React.Dispatch<React.SetStateAction<Record<number, Set<number>>>>;
-}) {
-  const [q, setQ] = React.useState('');
-  const filtered = React.useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return !s ? allQuests : allQuests.filter((x) => x.title.toLowerCase().includes(s));
-  }, [q, allQuests]);
-
-  const linked = linkedMap[cityId] ?? new Set<number>();
-
-  async function doLink(questId: number) {
-    try {
-      await linkQuestToCity(questId, cityId);
-      setLinkedMap((prev) => {
-        const next = { ...prev };
-        const set = new Set(next[cityId] ?? []);
-        set.add(questId);
-        next[cityId] = set;
-        return next;
-      });
-      message.success('Quest vinculada.');
-    } catch (e) {
-      console.error(e);
-      message.error('Falha ao vincular quest.');
-    }
-  }
-
-  async function doUnlink(questId: number) {
-    try {
-      await unlinkQuestFromCity(questId, cityId);
-      setLinkedMap((prev) => {
-        const next = { ...prev };
-        const set = new Set(next[cityId] ?? []);
-        set.delete(questId);
-        next[cityId] = set;
-        return next;
-      });
-      message.success('Quest desvinculada.');
-    } catch (e) {
-      console.error(e);
-      message.error('Falha ao desvincular quest.');
-    }
-  }
-
-  return (
-    <Space direction="vertical" style={{ width: '100%' }}>
-      <Input
-        allowClear
-        placeholder="Buscar quest..."
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        style={{ width: 260 }}
-      />
-      <div style={{ maxHeight: 320, overflow: 'auto', paddingRight: 6 }}>
-        {filtered.map((x) => {
-          const isLinked = linked.has(x.id);
-          return (
-            <div
-              key={x.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '6px 0',
-                borderBottom: '1px dashed #eee',
-              }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <Typography.Text ellipsis>{x.title}</Typography.Text>
-                {x.status && (
-                  <Tag
-                    color={x.status === 'active' ? 'blue' : x.status === 'completed' ? 'green' : 'red'}
-                    style={{ marginLeft: 8 }}
-                  >
-                    {x.status}
-                  </Tag>
-                )}
-              </div>
-              {isGM && (
-                <Space>
-                  {isLinked ? (
-                    <Button size="small" onClick={() => doUnlink(x.id)}>
-                      Desvincular
-                    </Button>
-                  ) : (
-                    <Button size="small" type="primary" onClick={() => doLink(x.id)}>
-                      Vincular
-                    </Button>
-                  )}
-                </Space>
-              )}
-            </div>
-          );
-        })}
-        {!filtered.length && <Typography.Text type="secondary">Nenhuma quest.</Typography.Text>}
-      </div>
-    </Space>
   );
 }
