@@ -17,7 +17,7 @@ import {
 import { listWorlds, resolveWorldImage, World } from '@app/api/worlds.api';
 import { City, listCities, updateCityCoords } from '@app/api/cities.api';
 import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
-import { listQuests, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
+import { listQuestsPublic, listQuestsAdmin, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
 import { resolveApiUrl } from '@app/api/http.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
@@ -125,7 +125,7 @@ export default function MapPage() {
     (async () => {
       try {
         setLoading(true);
-        const [ws, cs, ls, qs] = await Promise.all([listWorlds(), listCities(), listLores(), listQuests()]);
+        const [ws, cs, ls, qs] = await Promise.all([listWorlds(), listCities(), listLores(), listQuestsPublic()]);
         if (!mounted) return;
 
         const unwrap = (x: any) => (x && typeof x === 'object' && 'props' in x ? x.props : x);

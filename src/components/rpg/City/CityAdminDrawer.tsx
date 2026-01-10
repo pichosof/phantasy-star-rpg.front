@@ -3,7 +3,7 @@ import { Drawer, Tabs, Space, Input, Button, Tag, Divider, Select, message, Typo
 import type { CityForAdmin } from '@app/types/rpg';
 import { listWorlds, World } from '@app/api/worlds.api';
 import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
-import { listQuests, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
+import { listQuestsPublic, linkQuestToCity, unlinkQuestFromCity, Quest } from '@app/api/quests.api';
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
 import { useResponsive } from '@app/hooks/useResponsive';
 
@@ -43,7 +43,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       const [ws, loresAll, questsAll, loresLinked, questsLinked] = await Promise.all([
         listWorlds(),
         listLores(),
-        listQuests(),
+        listQuestsPublic(),
         listLoresByCityId(city.id, { gm: true }),
         listQuestsByCityId(city.id, { gm: true }),
       ]);
