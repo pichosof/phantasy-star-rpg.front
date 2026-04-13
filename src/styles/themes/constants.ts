@@ -13,6 +13,13 @@ export const BASE_COLORS = {
   blue: '#0000ff',
   skyblue: '#35a0dc',
   red: '#ff5252',
+  // Algol worlds palette
+  dezoIce: '#00C8E8', // Dezolis — Arctic Cyan
+  crystalVoid: '#7722DD', // Mundo Cristal — Deep Violet
+  motaviaEmber: '#D45A08', // Motavia — Desert Ember
+  palmaAsh: '#CC2233', // Cinturão de Palma — Fractured Crimson
+  frostMint: '#22EFC8', // Gelo Mineral — Frost Teal
+  algolGold: '#C8A020', // Algol — Ancient Gold
 };
 
 export const LAYOUT = {

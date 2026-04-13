@@ -21,8 +21,8 @@ import type { TimelineEvent } from '@app/api/timeline.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
-// 6 cores temáticas rotativas — sci-fi / Phantasy Star palette
-const EVENT_COLORS = ['#722ed1', '#1677ff', '#13c2c2', '#52c41a', '#fa8c16', '#eb2f96'];
+// 6 cores dos mundos de Algol — Dezo / Crystal / Motavia / Palma / Frost / Gold
+const EVENT_COLORS = ['#00C8E8', '#7722DD', '#FF6B1A', '#FF2244', '#22EFC8', '#C8A020'];
 const eventColor = (id: number) => EVENT_COLORS[id % EVENT_COLORS.length];
 
 function isVisible(e: TimelineEvent) {
@@ -67,13 +67,13 @@ const EventCard: React.FC<{
     onMouseLeave={() => onHover(false)}
     onClick={onClick}
     style={{
-      background: 'var(--background-color, #1c1c2e)',
-      border: `1px solid ${hovered ? color : 'rgba(255,255,255,0.08)'}`,
+      background: 'var(--additional-background-color)',
+      border: `1px solid ${hovered ? color : 'var(--border-color)'}`,
       borderRadius: 10,
       padding: '14px 16px',
       cursor: 'pointer',
       transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-      boxShadow: hovered ? `0 8px 24px ${color}30, 0 0 0 1px ${color}40` : '0 2px 8px rgba(0,0,0,0.3)',
+      boxShadow: hovered ? `0 8px 24px ${color}40, 0 0 0 1px ${color}55` : 'var(--box-shadow)',
       transition: 'all 0.2s ease',
       textAlign: side === 'right' ? 'left' : 'right',
     }}
@@ -105,13 +105,15 @@ const EventCard: React.FC<{
       </div>
     )}
 
-    <Typography.Text strong style={{ fontSize: 15, display: 'block', lineHeight: 1.4, color: 'inherit' }}>
+    <Typography.Text
+      strong
+      style={{ fontSize: 15, display: 'block', lineHeight: 1.4, color: 'var(--text-main-color)' }}
+    >
       {event.title}
     </Typography.Text>
 
     {event.description && (
       <Typography.Text
-        type="secondary"
         style={{
           fontSize: 13,
           display: '-webkit-box',
@@ -120,6 +122,7 @@ const EventCard: React.FC<{
           overflow: 'hidden',
           marginTop: 6,
           lineHeight: 1.5,
+          color: 'var(--text-light-color)',
         }}
       >
         {event.description}
@@ -477,7 +480,7 @@ export const TimelinePage: React.FC = () => {
               bottom: 0,
               width: 2,
               background:
-                'linear-gradient(180deg, transparent 0%, #722ed1 5%, #1677ff 35%, #13c2c2 60%, #52c41a 85%, transparent 100%)',
+                'linear-gradient(180deg, transparent 0%, #00C8E8 5%, #7722DD 30%, #FF6B1A 58%, #FF2244 82%, transparent 100%)',
               borderRadius: 1,
             }}
           />
@@ -491,7 +494,7 @@ export const TimelinePage: React.FC = () => {
               width: 2,
               transform: 'translateX(-50%)',
               background:
-                'linear-gradient(180deg, transparent 0%, #722ed1 5%, #1677ff 35%, #13c2c2 60%, #52c41a 85%, transparent 100%)',
+                'linear-gradient(180deg, transparent 0%, #00C8E8 5%, #7722DD 30%, #FF6B1A 58%, #FF2244 82%, transparent 100%)',
               borderRadius: 1,
             }}
           />
@@ -588,17 +591,21 @@ export const TimelinePage: React.FC = () => {
               <Space direction="vertical" size={14} style={{ width: '100%' }}>
                 <div>
                   <Typography.Text
-                    type="secondary"
-                    style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}
+                    style={{
+                      fontSize: 12,
+                      textTransform: 'uppercase',
+                      letterSpacing: 1,
+                      color: 'var(--text-light-color)',
+                    }}
                   >
                     Data
                   </Typography.Text>
                   <div>
-                    <Typography.Text strong style={{ fontSize: 15 }}>
+                    <Typography.Text strong style={{ fontSize: 15, color: 'var(--text-main-color)' }}>
                       {formatDate(openEvent.date)}
                     </Typography.Text>
                     {openEvent.date !== formatDate(openEvent.date) && (
-                      <Typography.Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                      <Typography.Text style={{ fontSize: 12, marginLeft: 8, color: 'var(--text-light-color)' }}>
                         ({openEvent.date})
                       </Typography.Text>
                     )}
@@ -614,8 +621,12 @@ export const TimelinePage: React.FC = () => {
                 {openEvent.description && (
                   <div>
                     <Typography.Text
-                      type="secondary"
-                      style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}
+                      style={{
+                        fontSize: 12,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
+                        color: 'var(--text-light-color)',
+                      }}
                     >
                       Descrição
                     </Typography.Text>

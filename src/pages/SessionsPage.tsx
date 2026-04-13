@@ -16,15 +16,16 @@ import type { Session } from '@app/api/sessions.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
+// Gradientes dos 4 mundos de Algol — Dezo / Crystal / Motavia / Palma / variações
 const SESSION_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-  'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
-  'linear-gradient(135deg, #200122 0%, #6f0000 50%, #200122 100%)',
-  'linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #1b4332 100%)',
-  'linear-gradient(135deg, #4a0a77 0%, #8e0e00 50%, #4a0a77 100%)',
-  'linear-gradient(135deg, #0a3d62 0%, #1e3799 50%, #0a3d62 100%)',
-  'linear-gradient(135deg, #2c003e 0%, #6a0572 50%, #2c003e 100%)',
-  'linear-gradient(135deg, #1b1b2f 0%, #162447 50%, #1f4068 100%)',
+  'linear-gradient(135deg, #040A18 0%, #0A1C3A 50%, #0E2A58 100%)', // Dezolis — noite ártica
+  'linear-gradient(135deg, #08041C 0%, #1E0A50 50%, #2E0E72 100%)', // Mundo Cristal — vazio violeta
+  'linear-gradient(135deg, #1C0A04 0%, #4A1E08 50%, #7A2E06 100%)', // Motavia — deserto brasa
+  'linear-gradient(135deg, #0C0808 0%, #2A0C0C 50%, #180808 100%)', // Cinturão de Palma — cinza e sangue
+  'linear-gradient(135deg, #050C1E 0%, #082240 50%, #0A2A58 100%)', // Dezo profundo — abismo glacial
+  'linear-gradient(135deg, #0A041C 0%, #1E0840 50%, #0C0428 100%)', // Vazio Cristal — roxo void
+  'linear-gradient(135deg, #04100C 0%, #082820 50%, #0A1E18 100%)', // Frost Teal — gelo mineral
+  'linear-gradient(135deg, #0C0A10 0%, #1A1428 50%, #22183A 100%)', // Espaço profundo — entre mundos
 ];
 const STAR_SYMBOLS = ['✦', '✧', '⋆', '★', '☆', '✶', '✸', '✹'];
 
