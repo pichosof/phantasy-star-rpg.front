@@ -26,6 +26,8 @@ export type City = WithVisibility & {
   description?: string | null;
   discovered: boolean;
   worldId?: number | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -36,6 +38,8 @@ export type CityForAdmin = {
   visible?: boolean;
   discovered?: boolean;
   worldId?: number | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
 };
 
 export type CreateCityDTO = {

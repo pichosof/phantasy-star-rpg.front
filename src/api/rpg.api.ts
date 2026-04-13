@@ -60,6 +60,13 @@ export const CitiesApi = {
   async removeFromWorld(cityId: number): Promise<void> {
     await http.patch(`/api/cities/${cityId}/world`, { worldId: null });
   },
+  async uploadImage(id: ID, file: File, alt?: string): Promise<void> {
+    const form = new FormData();
+    form.append('image', file);
+    await http.patch(`/api/cities/${id}/image`, form, {
+      headers: alt ? { 'x-image-alt': alt } : undefined,
+    });
+  },
 };
 
 // ---------- Quests ----------
