@@ -35,6 +35,8 @@ export type City = WithVisibility & {
 export type CityForAdmin = {
   id: number;
   name: string;
+  description?: string | null;
+  region?: string | null;
   visible?: boolean;
   discovered?: boolean;
   worldId?: number | null;
@@ -87,6 +89,25 @@ export type MonsterForAdmin = {
   discovered?: boolean;
   imageUrl?: string | null;
   imageAlt?: string | null;
+};
+
+export type Npc = WithVisibility & {
+  id: ID;
+  name: string;
+  role?: string | null;
+  description?: string | null;
+  location?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type CreateNpcDTO = {
+  name: string;
+  role?: string | null;
+  description?: string | null;
+  location?: string | null;
 };
 
 export type CreateMonsterDTO = {

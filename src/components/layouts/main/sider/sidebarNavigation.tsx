@@ -12,6 +12,11 @@ import {
   CalendarOutlined,
   ProfileOutlined,
   ReadOutlined,
+  ExperimentOutlined,
+  LockOutlined,
+  FileTextOutlined,
+  PictureOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 import { ROUTES } from '@app/constants/routes';
 
@@ -69,6 +74,14 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
         { title: 'Monsters', key: 'monsters', url: ROUTES.MONSTERS },
       ],
     },
+    {
+      title: 'Ferramentas',
+      key: 'tools',
+      icon: <ExperimentOutlined />,
+      children: [
+        { title: 'Dados', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
+      ],
+    },
   ];
 
   // ✅ GM extras (aparecem somente com GM mode ligado)
@@ -88,6 +101,19 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       // se tiver rota separada:
       // { title: 'Lores (GM)', key: 'lores-gm', url: ROUTES.LORES_GM, icon: <BookOutlined /> },
     );
+  }
+
+  if (isGM) {
+    nav.push({
+      title: 'GM Area',
+      key: 'gm-area',
+      icon: <LockOutlined />,
+      children: [
+        { title: 'Anotações', key: 'gm-notes', url: ROUTES.GM_NOTES, icon: <FileTextOutlined /> },
+        { title: 'Imagens', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
+        { title: 'Fichas', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
+      ],
+    });
   }
 
   return nav;

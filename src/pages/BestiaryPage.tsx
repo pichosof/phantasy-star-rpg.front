@@ -145,25 +145,25 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
     },
   };
 
-  if (!monster) return null;
-
   return (
     <Drawer
-      open={open}
+      visible={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 520}
       title={
-        <Space size={8} wrap>
-          <span style={{ fontWeight: 700 }}>{monster.name}</span>
-          {monster.type ? <Tag color={typeColor(monster.type)}>{monster.type}</Tag> : null}
-          <Tag color={monster.visible ? 'green' : 'red'}>{monster.visible ? 'Visível' : 'Oculto'}</Tag>
-          <Tag color={monster.discovered ? 'gold' : 'default'}>
-            {monster.discovered ? 'Descoberto' : 'Não descoberto'}
-          </Tag>
-        </Space>
+        monster ? (
+          <Space size={8} wrap>
+            <span style={{ fontWeight: 700 }}>{monster.name}</span>
+            {monster.type ? <Tag color={typeColor(monster.type)}>{monster.type}</Tag> : null}
+            <Tag color={monster.visible ? 'green' : 'red'}>{monster.visible ? 'Visível' : 'Oculto'}</Tag>
+            <Tag color={monster.discovered ? 'gold' : 'default'}>
+              {monster.discovered ? 'Descoberto' : 'Não descoberto'}
+            </Tag>
+          </Space>
+        ) : 'Monstro'
       }
     >
-      <Tabs defaultActiveKey="edit">
+      {monster ? <Tabs defaultActiveKey="edit">
         {/* ── Editar ── */}
         <Tabs.TabPane tab="Editar" key="edit">
           <Form layout="vertical" style={{ gap: 0 }}>
@@ -272,7 +272,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
             </Space>
           </Space>
         </Tabs.TabPane>
-      </Tabs>
+      </Tabs> : null}
     </Drawer>
   );
 };
@@ -753,57 +753,6 @@ export const BestiaryPage: React.FC = () => {
     </Card>
   );
 
-  // ── Player Detail Drawer ──────────────────────────────────────────────────
-  const DetailDrawer = openMonster ? (
-    <Drawer
-      open
-      onClose={() => setOpenId(null)}
-      width={mobileOnly ? '100%' : 540}
-      title={
-        <Space wrap size={8}>
-          <span style={{ fontWeight: 800 }}>{openMonster.name}</span>
-          {openMonster.type ? <Tag color={typeColor(openMonster.type)}>{openMonster.type}</Tag> : null}
-        </Space>
-      }
-    >
-      {openMonster.discovered && openMonster.imageUrl && (
-        <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', maxHeight: 240 }}>
-          <img
-            src={resolveApiUrl(openMonster.imageUrl)}
-            alt={openMonster.imageAlt ?? openMonster.name}
-            style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-      )}
-
-      {openMonster.discovered ? (
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
-          {openMonster.habitat && (
-            <Card density="dense" title="Habitat">
-              <Typography.Text>{openMonster.habitat}</Typography.Text>
-            </Card>
-          )}
-          {openMonster.weaknesses && (
-            <Card density="dense" title="Fraquezas / Comportamento">
-              <Typography.Text>{openMonster.weaknesses}</Typography.Text>
-            </Card>
-          )}
-          <Card density="comfy" title="Descrição">
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-              {openMonster.description?.trim() || 'Sem descrição ainda.'}
-            </Typography.Paragraph>
-          </Card>
-        </Space>
-      ) : (
-        <Card density="comfy">
-          <Typography.Text type="secondary">
-            Informações sobre esta criatura ainda não foram reveladas.
-          </Typography.Text>
-        </Card>
-      )}
-    </Drawer>
-  ) : null;
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
@@ -833,7 +782,61 @@ export const BestiaryPage: React.FC = () => {
       ) : (
         <>
           {loading ? <Spinner /> : <MonsterCards data={playerItems} mode="players" />}
-          {DetailDrawer}
+
+          {/* Player Detail Drawer — always mounted, visible prop drives animation */}
+          <Drawer
+            visible={openId !== null}
+            onClose={() => setOpenId(null)}
+            width={mobileOnly ? '100%' : 540}
+            title={
+              openMonster ? (
+                <Space wrap size={8}>
+                  <span style={{ fontWeight: 800 }}>{openMonster.name}</span>
+                  {openMonster.type ? <Tag color={typeColor(openMonster.type)}>{openMonster.type}</Tag> : null}
+                </Space>
+              ) : null
+            }
+          >
+            {openMonster && (
+              <>
+                {openMonster.discovered && openMonster.imageUrl && (
+                  <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', maxHeight: 240 }}>
+                    <img
+                      src={resolveApiUrl(openMonster.imageUrl)}
+                      alt={openMonster.imageAlt ?? openMonster.name}
+                      style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                )}
+
+                {openMonster.discovered ? (
+                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    {openMonster.habitat && (
+                      <Card density="dense" title="Habitat">
+                        <Typography.Text>{openMonster.habitat}</Typography.Text>
+                      </Card>
+                    )}
+                    {openMonster.weaknesses && (
+                      <Card density="dense" title="Fraquezas / Comportamento">
+                        <Typography.Text>{openMonster.weaknesses}</Typography.Text>
+                      </Card>
+                    )}
+                    <Card density="comfy" title="Descrição">
+                      <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                        {openMonster.description?.trim() || 'Sem descrição ainda.'}
+                      </Typography.Paragraph>
+                    </Card>
+                  </Space>
+                ) : (
+                  <Card density="comfy">
+                    <Typography.Text type="secondary">
+                      Informações sobre esta criatura ainda não foram reveladas.
+                    </Typography.Text>
+                  </Card>
+                )}
+              </>
+            )}
+          </Drawer>
         </>
       )}
     </>

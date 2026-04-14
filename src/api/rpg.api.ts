@@ -53,6 +53,9 @@ export const CitiesApi = {
   async remove(id: ID): Promise<void> {
     await http.delete(`/api/cities/${id}`);
   },
+  async update(id: ID, body: { name?: string; description?: string | null; region?: string | null }): Promise<void> {
+    await http.patch(`/api/cities/${id}`, body);
+  },
   async setWorld(cityId: number, worldId: number | null): Promise<void> {
     await http.patch(`/api/cities/${cityId}/world`, { worldId });
   },

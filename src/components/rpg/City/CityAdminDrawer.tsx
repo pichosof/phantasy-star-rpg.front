@@ -1,6 +1,6 @@
 import React from 'react';
 import { Drawer, Tabs, Space, Input, Button, Tag, Divider, Select, message, Typography, Upload } from 'antd';
-import { PictureOutlined } from '@ant-design/icons';
+import { PictureOutlined, SaveOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import type { CityForAdmin } from '@app/types/rpg';
@@ -38,6 +38,11 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
   const [qQuest, setQQuest] = React.useState('');
   const [imgAlt, setImgAlt] = React.useState('');
 
+  const [editName, setEditName] = React.useState('');
+  const [editDesc, setEditDesc] = React.useState('');
+  const [editRegion, setEditRegion] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
+
   const cityId = city?.id ?? 0;
 
   const reload = React.useCallback(async () => {
@@ -69,6 +74,14 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
   React.useEffect(() => {
     void reload();
   }, [reload]);
+
+  React.useEffect(() => {
+    if (city) {
+      setEditName(city.name ?? '');
+      setEditDesc(city.description ?? '');
+      setEditRegion(city.region ?? '');
+    }
+  }, [city?.id]);
 
   const linkedLoreIds = React.useMemo(() => new Set(linkedLores.map((x) => x.id)), [linkedLores]);
   const linkedQuestIds = React.useMemo(() => new Set(linkedQuests.map((x) => x.id)), [linkedQuests]);
@@ -133,6 +146,26 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     }
   }
 
+  async function saveEdit() {
+    if (!city) return;
+    const n = editName.trim();
+    if (!n) return message.warning('Nome não pode ser vazio.');
+    setSaving(true);
+    try {
+      await CitiesApi.update(city.id, {
+        name: n,
+        description: editDesc.trim() || null,
+        region: editRegion.trim() || null,
+      });
+      message.success('Cidade atualizada.');
+      await onChanged();
+    } catch {
+      message.error('Falha ao salvar (GM key?)');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function setCityWorld(worldId: number | null) {
     if (!city) return;
 
@@ -190,7 +223,53 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       }
     >
       {!city ? null : (
-        <Tabs defaultActiveKey="lores">
+        <Tabs defaultActiveKey="edit">
+          <Tabs.TabPane tab="✏️ Editar" key="edit">
+            <Space direction="vertical" size={14} style={{ width: '100%' }}>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  Nome *
+                </Typography.Text>
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nome da cidade"
+                />
+              </div>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  Região
+                </Typography.Text>
+                <Input
+                  value={editRegion}
+                  onChange={(e) => setEditRegion(e.target.value)}
+                  placeholder="Ex: Motávia, Palma..."
+                />
+              </div>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  Descrição
+                </Typography.Text>
+                <Input.TextArea
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  placeholder="Descrição da cidade..."
+                  rows={6}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={saving}
+                onClick={() => void saveEdit()}
+                block={mobileOnly}
+              >
+                Salvar alterações
+              </Button>
+            </Space>
+          </Tabs.TabPane>
+
           <Tabs.TabPane tab="Lores" key="lores">
             <Space direction="vertical" style={{ width: '100%' }} size={12}>
               <Typography.Text type="secondary">
