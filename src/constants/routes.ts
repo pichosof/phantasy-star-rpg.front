@@ -10,5 +10,6 @@ export const ROUTES = {
   MAP_MARKERS: '/map-markers',
   SESSIONS: '/sessions',
   TIMELINE: '/timeline',
+  WIKI: '/wiki',
   SERVER_ERROR: '/server-error',
 } as const;

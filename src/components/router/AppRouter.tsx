@@ -15,6 +15,7 @@ const Error404Page = React.lazy(() => import('@app/pages/Error404Page'));
 const LoresAdminPage = React.lazy(() => import('@app/pages/LoresAdminPage'));
 const SessionsPage = React.lazy(() => import('@app/pages/SessionsPage'));
 const TimelinePage = React.lazy(() => import('@app/pages/TimelinePage'));
+const WikiPageComponent = React.lazy(() => import('@app/pages/WikiPage'));
 
 // Página genérica “em construção” (cria esse arquivo, mostro abaixo)
 const ComingSoonPage = React.lazy(() => import('@app/pages/ComingSoonPage'));
@@ -29,6 +30,7 @@ const ComingSoon = withLoading(ComingSoonPage);
 const Lores = withLoading(LoresAdminPage);
 const Sessions = withLoading(SessionsPage);
 const Timeline = withLoading(TimelinePage);
+const Wiki = withLoading(WikiPageComponent);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = <MainLayout />;
@@ -52,6 +54,7 @@ export const AppRouter: React.FC = () => {
           <Route path={ROUTES.MAP_MARKERS} element={<ComingSoon title="Map Markers" />} />
           <Route path={ROUTES.SESSIONS} element={<Sessions />} />
           <Route path={ROUTES.TIMELINE} element={<Timeline />} />
+          <Route path={ROUTES.WIKI} element={<Wiki />} />
 
           <Route path={ROUTES.SERVER_ERROR} element={<ServerError />} />
 

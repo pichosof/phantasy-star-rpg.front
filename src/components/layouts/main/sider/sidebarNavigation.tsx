@@ -11,6 +11,7 @@ import {
   AimOutlined,
   CalendarOutlined,
   ProfileOutlined,
+  ReadOutlined,
 } from '@ant-design/icons';
 import { ROUTES } from '@app/constants/routes';
 
@@ -46,6 +47,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
         // Ele verá quests via vínculos (ex: City Drawer / Player views)
         { title: 'Sessions', key: 'sessions', url: ROUTES.SESSIONS, icon: <CalendarOutlined /> },
         { title: 'Timeline', key: 'timeline', url: ROUTES.TIMELINE, icon: <ProfileOutlined /> },
+        { title: 'Wiki', key: 'wiki', url: ROUTES.WIKI, icon: <ReadOutlined /> },
       ],
     },
     {
