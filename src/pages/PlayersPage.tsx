@@ -21,6 +21,8 @@ import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
 import { resolveApiUrl } from '@app/api/http.api';
 
 type AltMap = Record<number, string>;
+type EditMap = Record<number, { name: string; level: number; background: string }>;
+type EditingSet = Record<number, boolean>;
 
 function isPlayerVisible(p: Player) {
   return (p.visible ?? true) === true;
@@ -49,6 +51,39 @@ export const PlayersPage: React.FC = () => {
 
   const [altById, setAltById] = React.useState<AltMap>({});
   const setAlt = (id: number, v: string) => setAltById((prev) => ({ ...prev, [id]: v }));
+
+  const [editById, setEditById] = React.useState<EditMap>({});
+  const [editingSet, setEditingSet] = React.useState<EditingSet>({});
+
+  function startEdit(p: Player) {
+    setEditById((prev) => ({
+      ...prev,
+      [p.id]: { name: p.name, level: p.level, background: p.background ?? '' },
+    }));
+    setEditingSet((prev) => ({ ...prev, [p.id]: true }));
+  }
+
+  function cancelEdit(id: number) {
+    setEditingSet((prev) => ({ ...prev, [id]: false }));
+  }
+
+  async function saveEdit(id: number) {
+    const e = editById[id];
+    if (!e) return;
+    if (!e.name.trim()) return message.warning('Nome obrigatório');
+    try {
+      await PlayersApi.update(id, {
+        name: e.name.trim(),
+        level: e.level,
+        background: e.background.trim() || null,
+      });
+      setEditingSet((prev) => ({ ...prev, [id]: false }));
+      await load();
+      message.success('Player atualizado');
+    } catch {
+      message.error('Falha ao atualizar (GM key?)');
+    }
+  }
 
   const toFile = (f: RcCustomRequestOptions['file']): File => f as File;
 
@@ -306,6 +341,66 @@ export const PlayersPage: React.FC = () => {
                           unCheckedChildren={<EyeInvisibleOutlined />}
                         />
                       </Space>
+                      <Divider style={{ margin: '4px 0' }} />
+
+                      {/* ── Edição de dados ── */}
+                      {editingSet[p.id] ? (
+                        <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                          <Space wrap size={8}>
+                            <Input
+                              placeholder="Nome *"
+                              value={editById[p.id]?.name ?? ''}
+                              onChange={(e) =>
+                                setEditById((prev) => ({
+                                  ...prev,
+                                  [p.id]: { ...prev[p.id], name: e.target.value },
+                                }))
+                              }
+                              style={{ minWidth: 180 }}
+                            />
+                            <Space size={4}>
+                              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                                Nível:
+                              </Typography.Text>
+                              <InputNumber
+                                min={1}
+                                value={editById[p.id]?.level ?? 1}
+                                onChange={(n) =>
+                                  setEditById((prev) => ({
+                                    ...prev,
+                                    [p.id]: { ...prev[p.id], level: Number(n) || 1 },
+                                  }))
+                                }
+                                style={{ width: 70 }}
+                              />
+                            </Space>
+                          </Space>
+                          <TextArea
+                            placeholder="Background"
+                            rows={3}
+                            value={editById[p.id]?.background ?? ''}
+                            onChange={(e) =>
+                              setEditById((prev) => ({
+                                ...prev,
+                                [p.id]: { ...prev[p.id], background: e.target.value },
+                              }))
+                            }
+                          />
+                          <Space size={6}>
+                            <Button size="small" type="primary" onClick={() => void saveEdit(p.id)}>
+                              Salvar
+                            </Button>
+                            <Button size="small" onClick={() => cancelEdit(p.id)}>
+                              Cancelar
+                            </Button>
+                          </Space>
+                        </Space>
+                      ) : (
+                        <Button size="small" onClick={() => startEdit(p)}>
+                          Editar nome / nível / background
+                        </Button>
+                      )}
+
                       <Divider style={{ margin: '4px 0' }} />
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <Input

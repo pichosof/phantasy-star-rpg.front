@@ -62,3 +62,37 @@ export type CreateQuestDTO = {
   description?: string | null;
   reward?: string | null;
 };
+
+export type Monster = WithVisibility & {
+  id: ID;
+  name: string;
+  type?: string | null;
+  habitat?: string | null;
+  weaknesses?: string | null;
+  description?: string | null;
+  discovered: boolean;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  createdAt: string;
+};
+
+export type MonsterForAdmin = {
+  id: ID;
+  name: string;
+  type?: string | null;
+  habitat?: string | null;
+  weaknesses?: string | null;
+  description?: string | null;
+  visible?: boolean;
+  discovered?: boolean;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+};
+
+export type CreateMonsterDTO = {
+  name: string;
+  type?: string | null;
+  habitat?: string | null;
+  weaknesses?: string | null;
+  description?: string | null;
+};

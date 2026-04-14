@@ -23,6 +23,9 @@ export const PlayersApi = {
       headers: alt ? { 'x-image-alt': alt } : undefined,
     });
   },
+  async update(id: ID, body: { name?: string; level?: number; background?: string | null }): Promise<void> {
+    await http.patch(`/api/players/${id}`, body);
+  },
   async uploadSheet(id: ID, file: File): Promise<void> {
     const form = new FormData();
     form.append('sheet', file);

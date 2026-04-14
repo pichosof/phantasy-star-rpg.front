@@ -7,6 +7,7 @@ import { withLoading } from '@app/hocs/withLoading.hoc';
 import { ROUTES } from '@app/constants/routes';
 
 const PlayersPage = React.lazy(() => import('@app/pages/PlayersPage'));
+const BestiaryPage = React.lazy(() => import('@app/pages/BestiaryPage'));
 const CitiesPage = React.lazy(() => import('@app/pages/CitiesPage'));
 const QuestsPage = React.lazy(() => import('@app/pages/QuestsPage'));
 const MapPage = React.lazy(() => import('@app/pages/MapPage'));
@@ -27,6 +28,7 @@ const Quests = withLoading(QuestsPage);
 const ServerError = withLoading(ServerErrorPage);
 const Error404 = withLoading(Error404Page);
 const ComingSoon = withLoading(ComingSoonPage);
+const Bestiary = withLoading(BestiaryPage);
 const Lores = withLoading(LoresAdminPage);
 const Sessions = withLoading(SessionsPage);
 const Timeline = withLoading(TimelinePage);
@@ -50,7 +52,7 @@ export const AppRouter: React.FC = () => {
 
           {/* Backend já existe, UI ainda não: deixa WIP */}
           <Route path={ROUTES.NPCS} element={<ComingSoon title="NPCs" />} />
-          <Route path={ROUTES.MONSTERS} element={<ComingSoon title="Monsters" />} />
+          <Route path={ROUTES.MONSTERS} element={<Bestiary />} />
           <Route path={ROUTES.MAP_MARKERS} element={<ComingSoon title="Map Markers" />} />
           <Route path={ROUTES.SESSIONS} element={<Sessions />} />
           <Route path={ROUTES.TIMELINE} element={<Timeline />} />
