@@ -14,7 +14,6 @@ export const Error: React.FC<ErrorProps> = ({ img, msg }) => {
       <S.ContentWrapper>
         <S.Title>Oops!</S.Title>
         <S.Text>{msg}</S.Text>
-        {/*TODO make common component */}
         <Link to="/" className="ant-btn ant-btn-link">
           Return to Home
         </Link>

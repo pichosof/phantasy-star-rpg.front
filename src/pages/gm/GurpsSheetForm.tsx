@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, Collapse, Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Collapse, Divider, Input, InputNumber, Modal, Space, Switch, Typography, message } from 'antd';
+import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import type { GurpsSheetData, GurpsWeapon, GurpsRangedWeapon, GurpsPossession, GurpsListItem, GurpsSkill, GurpsLanguage } from '@app/api/character-sheets.api';
+import { importGcaFile } from '@app/utils/gca-import';
 
 // ── GURPS Calculations ────────────────────────────────────────────────────────
 
@@ -154,6 +155,33 @@ interface Props { data: GurpsSheetData; onChange: (d: GurpsSheetData) => void }
 export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
   const calc = React.useMemo(() => calcGurps(data), [data]);
   const set = (patch: Partial<GurpsSheetData>) => onChange({ ...data, ...patch });
+  const importRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    let imported: Awaited<ReturnType<typeof importGcaFile>>;
+    try {
+      imported = await importGcaFile(file);
+    } catch (err) {
+      message.error((err as Error).message);
+      return;
+    }
+    Modal.confirm({
+      title: 'Importar dados do GCA',
+      content: 'Isso irá substituir todos os dados atuais da ficha. Continuar?',
+      okText: 'Importar', cancelText: 'Cancelar',
+      onOk: () => {
+        onChange(imported.data as GurpsSheetData);
+        if (imported.warnings.length > 0) {
+          imported.warnings.forEach((w) => message.warning(w));
+        } else {
+          message.success('Ficha importada com sucesso!');
+        }
+      },
+    });
+  }
 
   const adv = data.advantages ?? [];
   const dis = data.disadvantages ?? [];
@@ -165,6 +193,13 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
   const poss = data.possessions ?? [];
 
   return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
+        <input ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" style={{ display: 'none' }} onChange={handleImport} />
+        <Button size="small" icon={<UploadOutlined />} onClick={() => importRef.current?.click()}>
+          Importar GCA (.gca5 / .txt)
+        </Button>
+      </div>
     <Collapse defaultActiveKey={['identity','attrs']} style={{ width: '100%' }}>
 
       {/* Identity */}
@@ -317,5 +352,6 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
       </Collapse.Panel>
 
     </Collapse>
+    </div>
   );
 };

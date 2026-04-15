@@ -1,6 +1,5 @@
 import React from 'react';
 import { ConfigProvider } from 'antd';
-import deDe from 'antd/lib/locale/de_DE';
 import enUS from 'antd/lib/locale/en_US';
 import GlobalStyle from './styles/GlobalStyle';
 import 'typeface-montserrat';
