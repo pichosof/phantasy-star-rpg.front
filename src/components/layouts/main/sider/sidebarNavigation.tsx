@@ -75,11 +75,11 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       ],
     },
     {
-      title: 'Ferramentas',
+      title: 'Tools',
       key: 'tools',
       icon: <ExperimentOutlined />,
       children: [
-        { title: 'Dados', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
+        { title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
       ],
     },
   ];
@@ -109,9 +109,9 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       key: 'gm-area',
       icon: <LockOutlined />,
       children: [
-        { title: 'Anotações', key: 'gm-notes', url: ROUTES.GM_NOTES, icon: <FileTextOutlined /> },
-        { title: 'Imagens', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
-        { title: 'Fichas', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
+        { title: 'Notes', key: 'gm-notes', url: ROUTES.GM_NOTES, icon: <FileTextOutlined /> },
+        { title: 'Images', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
+        { title: 'Sheets', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
       ],
     });
   }

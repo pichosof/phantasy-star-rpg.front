@@ -9,7 +9,7 @@ const ComingSoonPage: React.FC<Props> = ({ title }) => {
   return (
     <>
       <PageTitle>{title}</PageTitle>
-      <Typography.Paragraph type="secondary">WIP. O backend já existe; a tela ainda não.</Typography.Paragraph>
+      <Typography.Paragraph type="secondary">WIP. Backend already exists; UI coming soon.</Typography.Paragraph>
     </>
   );
 };

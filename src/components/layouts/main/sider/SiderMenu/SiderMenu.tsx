@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import * as S from './SiderMenu.styles';
 import { sidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
@@ -16,7 +15,6 @@ const sidebarNavFlat = sidebarNavigation.reduce(
 );
 
 const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
-  const { t } = useTranslation();
   const location = useLocation();
 
   const currentMenuItem = sidebarNavFlat.find(({ url }) => url === location.pathname);
@@ -38,20 +36,20 @@ const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
         nav.children && nav.children.length > 0 ? (
           <Menu.SubMenu
             key={nav.key}
-            title={t(nav.title)}
+            title={nav.title}
             icon={nav.icon}
             onTitleClick={() => setCollapsed(false)}
             popupClassName="d-none"
           >
             {nav.children.map((childNav) => (
               <Menu.Item key={childNav.key} title="">
-                <Link to={childNav.url || ''}>{t(childNav.title)}</Link>
+                <Link to={childNav.url || ''}>{childNav.title}</Link>
               </Menu.Item>
             ))}
           </Menu.SubMenu>
         ) : (
           <Menu.Item key={nav.key} title="" icon={nav.icon}>
-            <Link to={nav.url || ''}>{t(nav.title)}</Link>
+            <Link to={nav.url || ''}>{nav.title}</Link>
           </Menu.Item>
         ),
       )}

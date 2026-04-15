@@ -2,7 +2,6 @@ import React from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import * as S from './CalendarSwitch.styles';
 import { Button } from '../buttons/Button/Button';
-import { useTranslation } from 'react-i18next';
 
 interface CalendarSwitchProps {
   dateFormatted: string;
@@ -12,8 +11,6 @@ interface CalendarSwitchProps {
 }
 
 export const CalendarSwitch: React.FC<CalendarSwitchProps> = ({ dateFormatted, onIncrease, onDecrease, onToday }) => {
-  const { t } = useTranslation();
-
   return (
     <S.CalendarSwitch>
       <S.Text>{dateFormatted}</S.Text>
@@ -22,7 +19,7 @@ export const CalendarSwitch: React.FC<CalendarSwitchProps> = ({ dateFormatted, o
           <LeftOutlined />
         </Button>
         <Button type="text" onClick={onToday} size="small">
-          {t('common.today').toUpperCase()}
+          TODAY
         </Button>
         <Button type="text" onClick={onIncrease} size="small">
           <RightOutlined />

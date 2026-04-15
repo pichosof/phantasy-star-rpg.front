@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { Button, Tooltip } from 'antd';
-import { useTranslation } from 'react-i18next';
 import { CopyOutlined } from '@ant-design/icons';
 import { SuffixInput } from '../SuffixInput/SuffixInput';
 import { InputProps } from '../Input/Input';
@@ -11,21 +10,19 @@ interface ClipboardInputProps extends InputProps {
 }
 
 export const ClipboardInput: React.FC<ClipboardInputProps> = ({ valueToCopy, ...props }) => {
-  const { t } = useTranslation();
-
   const handleCopy = useCallback(
     () =>
       valueToCopy &&
       navigator.clipboard.writeText(valueToCopy).then(() => {
-        notificationController.info({ message: t('common.copied') });
+        notificationController.info({ message: 'Copied' });
       }),
-    [valueToCopy, t],
+    [valueToCopy],
   );
 
   return (
     <SuffixInput
       suffix={
-        <Tooltip title={t('common.copy')}>
+        <Tooltip title="Copy">
           <Button size="small" disabled={!valueToCopy} type="text" icon={<CopyOutlined />} onClick={handleCopy} />
         </Tooltip>
       }

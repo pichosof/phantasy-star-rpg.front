@@ -45,7 +45,7 @@ function buildLabel(groups: DiceGroup[]): string {
 }
 
 function formatTime(d: Date): string {
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 // ── Die shapes & colors ───────────────────────────────────────────────────────
@@ -288,8 +288,8 @@ function HistoryRow({
             {formatTime(entry.timestamp)}
           </Typography.Text>
           <Tag style={{ margin: 0, fontFamily: 'monospace', fontSize: 12 }}>{entry.label}</Tag>
-          {maxes > 0 && <Tag color="gold"  style={{ margin: 0, fontSize: 11 }}>{maxes}× máx</Tag>}
-          {mins  > 0 && <Tag color="red"   style={{ margin: 0, fontSize: 11 }}>{mins}× mín</Tag>}
+          {maxes > 0 && <Tag color="gold"  style={{ margin: 0, fontSize: 11 }}>{maxes}× max</Tag>}
+          {mins  > 0 && <Tag color="red"   style={{ margin: 0, fontSize: 11 }}>{mins}× min</Tag>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 20, fontWeight: 800, color: totalColor, whiteSpace: 'nowrap' }}>
@@ -297,7 +297,7 @@ function HistoryRow({
           </span>
           <button
             onClick={() => onReplay(entry)}
-            title="Rolar novamente com os mesmos dados"
+            title="Roll again with the same dice"
             style={{
               width: 24, height: 24, borderRadius: 4, border: 'none',
               background: replayBg, color: replayIconColor,
@@ -355,7 +355,7 @@ export const DiceRollerPage: React.FC = () => {
       ALL_DICE.filter((d) => selection[d] > 0).map((d) => ({ type: d, count: selection[d] }));
 
     if (!groups.length) {
-      message.warning('Selecione ao menos um dado para rolar.');
+      message.warning('Select at least one die to roll.');
       return;
     }
 
@@ -390,14 +390,14 @@ export const DiceRollerPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>Dados</PageTitle>
+      <PageTitle>Dice Roller</PageTitle>
 
       <div style={{ display: 'grid', gap: 16, maxWidth: 860, margin: '0 auto' }}>
 
         {/* ── Selector ── */}
         <Card density="comfy">
           <Typography.Title level={4} style={{ margin: '0 0 16px' }}>
-            Rolagem de Dados
+            Dice Roller
           </Typography.Title>
 
           <div
@@ -430,11 +430,11 @@ export const DiceRollerPage: React.FC = () => {
                 onClick={() => doRoll()}
                 style={{ minWidth: 120, fontWeight: 700, fontSize: 16 }}
               >
-                🎲 Rolar{totalDice > 0 ? ` (${totalDice})` : ''}
+                🎲 Roll{totalDice > 0 ? ` (${totalDice})` : ''}
               </Button>
               {totalDice > 0 && (
                 <Button size="small" onClick={clearSelection}>
-                  Limpar seleção
+                  Clear selection
                 </Button>
               )}
             </Space>
@@ -460,10 +460,11 @@ export const DiceRollerPage: React.FC = () => {
               }}
             >
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Último resultado · {lastEntry.label}
+                Last result · {lastEntry.label}
               </Typography.Text>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span style={{ fontSize: 13, color: totalLabelColor }}>Total</span>
+
                 <span style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: totalValueColor, letterSpacing: -1 }}>
                   {lastEntry.total}
                 </span>
@@ -485,13 +486,13 @@ export const DiceRollerPage: React.FC = () => {
               if (allMax)
                 return (
                   <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,197,61,0.12)', border: '1px solid rgba(255,197,61,0.3)' }}>
-                    <Typography.Text style={{ color: '#ffc53d', fontWeight: 700 }}>✨ Todos os dados no máximo!</Typography.Text>
+                    <Typography.Text style={{ color: '#ffc53d', fontWeight: 700 }}>✨ All dice at maximum!</Typography.Text>
                   </div>
                 );
               if (allMin)
                 return (
                   <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,77,79,0.12)', border: '1px solid rgba(255,77,79,0.3)' }}>
-                    <Typography.Text style={{ color: '#ff4d4f', fontWeight: 700 }}>💀 Fumble total — todos os dados no mínimo!</Typography.Text>
+                    <Typography.Text style={{ color: '#ff4d4f', fontWeight: 700 }}>💀 Total fumble — all dice at minimum!</Typography.Text>
                   </div>
                 );
               return null;
@@ -505,10 +506,10 @@ export const DiceRollerPage: React.FC = () => {
             density="dense"
             title={
               <Space size={10}>
-                <span>Histórico</span>
+                <span>History</span>
                 <Badge count={history.length} style={{ backgroundColor: 'rgba(128,128,128,0.3)', color: isDark ? '#fff' : '#000' }} />
                 <Tag style={{ margin: 0 }}>
-                  Soma total: <span style={{ fontWeight: 700, marginLeft: 4 }}>{historySum}</span>
+                  Total sum: <span style={{ fontWeight: 700, marginLeft: 4 }}>{historySum}</span>
                 </Tag>
               </Space>
             }

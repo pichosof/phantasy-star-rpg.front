@@ -96,7 +96,7 @@ export const GmNotesPage: React.FC = () => {
 
   const load = React.useCallback(async () => {
     try { setNotes(await listGmNotes()); }
-    catch { message.error('Falha ao carregar anotações'); }
+    catch { message.error('Failed to load notes'); }
     finally { setLoading(false); }
   }, []);
 
@@ -118,20 +118,20 @@ export const GmNotesPage: React.FC = () => {
   }
 
   async function save() {
-    if (!editTitle.trim()) return message.warning('Título é obrigatório');
+    if (!editTitle.trim()) return message.warning('Title is required');
     setSaving(true);
     try {
       if (activeId) {
         await updateGmNote(activeId, { title: editTitle, content: editContent || null, tags: editTags || null });
-        message.success('Anotação atualizada');
+        message.success('Note updated');
       } else {
         const created = await createGmNote({ title: editTitle, content: editContent || null, tags: editTags || null });
         setActiveId(created.id);
-        message.success('Anotação criada');
+        message.success('Note created');
       }
       await load();
       setEditing(false);
-    } catch { message.error('Falha ao salvar (GM key?)'); }
+    } catch { message.error('Failed to save (GM key?)'); }
     finally { setSaving(false); }
   }
 
@@ -139,7 +139,7 @@ export const GmNotesPage: React.FC = () => {
     try {
       await updateGmNote(note.id, { pinned: !note.pinned });
       await load();
-    } catch { message.error('Falha'); }
+    } catch { message.error('Failed'); }
   }
 
   async function doDelete(id: number) {
@@ -147,14 +147,14 @@ export const GmNotesPage: React.FC = () => {
       await deleteGmNote(id);
       if (activeId === id) { setActiveId(null); setEditing(false); }
       await load();
-      message.success('Anotação removida');
-    } catch { message.error('Falha ao deletar'); }
+      message.success('Note removed');
+    } catch { message.error('Failed to delete'); }
   }
 
   function confirmDelete(note: GmNote) {
     Modal.confirm({
-      title: `Apagar "${note.title}"?`,
-      okText: 'Apagar', okType: 'danger', cancelText: 'Cancelar',
+      title: `Delete "${note.title}"?`,
+      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
       onOk: () => doDelete(note.id),
     });
   }
@@ -165,9 +165,9 @@ export const GmNotesPage: React.FC = () => {
 
   const sidebar = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <Button type="primary" size="small" block onClick={startNew}>+ Nova anotação</Button>
+      <Button type="primary" size="small" block onClick={startNew}>+ New note</Button>
 
-      <Input allowClear placeholder="Buscar…" value={searchQ} onChange={(e) => setSearchQ(e.target.value)} size="small" />
+      <Input allowClear placeholder="Search…" value={searchQ} onChange={(e) => setSearchQ(e.target.value)} size="small" />
 
       {allTags.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -187,7 +187,7 @@ export const GmNotesPage: React.FC = () => {
       <Divider style={{ margin: '4px 0', borderColor: dividerColor }} />
 
       {filteredNotes.length === 0
-        ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>Nenhuma anotação.</Typography.Text>
+        ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>No notes.</Typography.Text>
         : filteredNotes.map((n) => (
             <NoteCard key={n.id} note={n} active={n.id === activeId}
               onClick={() => { setActiveId(n.id); setEditing(false); }} />
@@ -198,27 +198,27 @@ export const GmNotesPage: React.FC = () => {
   const mainArea = editing ? (
     <div style={{ display: 'grid', gap: 12 }}>
       <Input
-        placeholder="Título *"
+        placeholder="Title *"
         value={editTitle}
         onChange={(e) => setEditTitle(e.target.value)}
         size="large"
       />
       <Input
-        placeholder="Tags (separadas por vírgula)"
+        placeholder="Tags (comma separated)"
         value={editTags}
         onChange={(e) => setEditTags(e.target.value)}
         size="small"
       />
       <TextArea
-        placeholder="Conteúdo da anotação..."
+        placeholder="Note content..."
         value={editContent}
         onChange={(e) => setEditContent(e.target.value)}
         rows={16}
         style={{ resize: 'vertical', fontFamily: 'monospace' }}
       />
       <Space>
-        <Button type="primary" loading={saving} onClick={() => void save()}>Salvar</Button>
-        <Button onClick={() => setEditing(false)}>Cancelar</Button>
+        <Button type="primary" loading={saving} onClick={() => void save()}>Save</Button>
+        <Button onClick={() => setEditing(false)}>Cancel</Button>
       </Space>
     </div>
   ) : activeNote ? (
@@ -233,24 +233,24 @@ export const GmNotesPage: React.FC = () => {
         <Space size={8}>
           <Button size="small" icon={activeNote.pinned ? <PushpinFilled /> : <PushpinOutlined />}
             onClick={() => void togglePin(activeNote)}>
-            {activeNote.pinned ? 'Desafixar' : 'Fixar'}
+            {activeNote.pinned ? 'Unpin' : 'Pin'}
           </Button>
-          <Button size="small" onClick={() => startEdit(activeNote)}>Editar</Button>
+          <Button size="small" onClick={() => startEdit(activeNote)}>Edit</Button>
           <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(activeNote)} />
         </Space>
       </div>
       <Divider style={{ margin: '8px 0', borderColor: dividerColor }} />
       <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
-        {activeNote.content || <Typography.Text type="secondary">Sem conteúdo.</Typography.Text>}
+        {activeNote.content || <Typography.Text type="secondary">No content.</Typography.Text>}
       </Typography.Paragraph>
     </div>
   ) : (
-    <Empty description="Selecione ou crie uma anotação." style={{ marginTop: 60 }} />
+    <Empty description="Select or create a note." style={{ marginTop: 60 }} />
   );
 
   return (
     <>
-      <PageTitle>GM — Anotações</PageTitle>
+      <PageTitle>GM — Notes</PageTitle>
       <div style={{ display: mobileOnly ? 'block' : 'grid', gridTemplateColumns: '260px 1fr', gap: 16 }}>
         <Card density="dense">{sidebar}</Card>
         <Card density="comfy">{mainArea}</Card>

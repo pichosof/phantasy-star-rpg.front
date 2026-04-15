@@ -24,11 +24,11 @@ const CATEGORY_COLOR: Record<string, string> = {
   myth: 'gold',
 };
 const CATEGORY_LABEL: Record<string, string> = {
-  history: 'História',
-  culture: 'Cultura',
-  tech: 'Tecnologia',
-  biology: 'Biologia',
-  myth: 'Mito',
+  history: 'History',
+  culture: 'Culture',
+  tech: 'Technology',
+  biology: 'Biology',
+  myth: 'Myth',
 };
 const CATEGORY_STRIP: Record<string, string> = {
   history: '#fa8c16',
@@ -39,12 +39,12 @@ const CATEGORY_STRIP: Record<string, string> = {
 };
 
 const categoryOptions: { value: LoreCategory | 'null'; label: string }[] = [
-  { value: 'history', label: 'História' },
-  { value: 'culture', label: 'Cultura' },
-  { value: 'tech', label: 'Tecnologia' },
-  { value: 'biology', label: 'Biologia' },
-  { value: 'myth', label: 'Mito' },
-  { value: 'null', label: '(Sem categoria)' },
+  { value: 'history', label: 'History' },
+  { value: 'culture', label: 'Culture' },
+  { value: 'tech', label: 'Technology' },
+  { value: 'biology', label: 'Biology' },
+  { value: 'myth', label: 'Myth' },
+  { value: 'null', label: '(No category)' },
 ];
 
 function isVisible(l: Lore) {
@@ -54,13 +54,13 @@ function formatDate(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 function formatDateTime(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString('pt-BR');
+  return d.toLocaleString();
 }
 
 export const LoresAdminPage: React.FC = () => {
@@ -102,7 +102,7 @@ export const LoresAdminPage: React.FC = () => {
       const data = await listLores();
       setItems(data);
     } catch {
-      message.error('Falha ao carregar lores');
+      message.error('Failed to load lores');
     } finally {
       setLoading(false);
     }
@@ -163,7 +163,7 @@ export const LoresAdminPage: React.FC = () => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
-    if (!title) return message.warning('Informe um título');
+    if (!title) return message.warning('Title is required');
     try {
       const created = await createLore({
         title,
@@ -175,9 +175,9 @@ export const LoresAdminPage: React.FC = () => {
       setNewCategory(null);
       setNewContent('');
       setItems((prev) => [...prev, created].sort((a, b) => a.id - b.id));
-      message.success('Lore criada');
+      message.success('Lore created');
     } catch {
-      message.error('Falha ao criar lore (GM key?)');
+      message.error('Failed to create lore (GM key?)');
     }
   }
 
@@ -186,9 +186,9 @@ export const LoresAdminPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === l.id ? { ...x, visible: next } : x)));
     try {
       await setLoreVisibility(l.id, next);
-      message.success(next ? 'Lore visível para jogadores' : 'Lore ocultada');
+      message.success(next ? 'Lore visible to players' : 'Lore hidden');
     } catch {
-      message.error('Falha ao mudar visibilidade (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
@@ -196,7 +196,7 @@ export const LoresAdminPage: React.FC = () => {
   async function saveEdit() {
     if (!openLore) return;
     const title = editTitle.trim();
-    if (!title) return message.warning('Título não pode ser vazio');
+    if (!title) return message.warning('Title cannot be empty');
     try {
       await updateLore(openLore.id, {
         title,
@@ -208,9 +208,9 @@ export const LoresAdminPage: React.FC = () => {
           x.id === openLore.id ? { ...x, title, category: editCategory, content: editContent.trim() || null } : x,
         ),
       );
-      message.success('Lore atualizada');
+      message.success('Lore updated');
     } catch {
-      message.error('Falha ao atualizar lore (GM key?)');
+      message.error('Failed to update lore (GM key?)');
     }
   }
 
@@ -219,9 +219,9 @@ export const LoresAdminPage: React.FC = () => {
       await deleteLore(id);
       setItems((prev) => prev.filter((x) => x.id !== id));
       if (openId === id) setOpenId(null);
-      message.success('Lore removida');
+      message.success('Lore removed');
     } catch {
-      message.error('Falha ao remover lore (GM key?)');
+      message.error('Failed to remove lore (GM key?)');
     }
   }
 
@@ -234,12 +234,12 @@ export const LoresAdminPage: React.FC = () => {
         <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
           <div>
             <Typography.Title level={4} style={{ margin: 0 }}>
-              {viewMode === 'admin' ? '⚙️ Painel GM — Lores' : 'Arquivo de Lore'}
+              {viewMode === 'admin' ? '⚙️ GM Panel — Lores' : 'Lore Archive'}
             </Typography.Title>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
               {viewMode === 'admin'
-                ? 'Crie, edite, ative ou remova entradas de lore.'
-                : 'Registros históricos, culturais e científicos do sistema Algol.'}
+                ? 'Create, edit, activate or remove lore entries.'
+                : 'Historical, cultural and scientific records of the Algol system.'}
             </Typography.Text>
           </div>
           <Space size={8} wrap>
@@ -257,13 +257,13 @@ export const LoresAdminPage: React.FC = () => {
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ Painel GM
+                  ⚙️ GM Panel
                 </Button>
               </Space>
             )}
             {isGM && viewMode === 'admin' && (
               <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-                {creating ? 'Fechar' : '+ Nova Lore'}
+                {creating ? 'Close' : '+ New Lore'}
               </Button>
             )}
           </Space>
@@ -271,14 +271,14 @@ export const LoresAdminPage: React.FC = () => {
 
         <Space wrap size={8}>
           <Tag>{stats.total} lores</Tag>
-          {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-          {isGM && <Tag color="red">{stats.hidden} ocultas</Tag>}
+          {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+          {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
         </Space>
 
         <Space wrap size={8} style={{ width: '100%' }}>
           <Input
             allowClear
-            placeholder="Buscar por título ou conteúdo…"
+            placeholder="Search by title or content…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360 }}
@@ -289,7 +289,7 @@ export const LoresAdminPage: React.FC = () => {
               type={filterCategory === 'all' ? 'primary' : 'default'}
               onClick={() => setFilterCategory('all')}
             >
-              Todas
+              All
             </Button>
             {(['history', 'culture', 'tech', 'biology', 'myth'] as LoreCategory[]).map((c) => (
               <Button
@@ -311,7 +311,7 @@ export const LoresAdminPage: React.FC = () => {
                   type={filterVis === v ? 'primary' : 'default'}
                   onClick={() => setFilterVis(v)}
                 >
-                  {v === 'all' ? 'Todas' : v === 'visible' ? 'Visíveis' : 'Ocultas'}
+                  {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                 </Button>
               ))}
             </Space>
@@ -322,10 +322,10 @@ export const LoresAdminPage: React.FC = () => {
           <>
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 720 }}>
-              <Typography.Text strong>Nova Lore</Typography.Text>
+              <Typography.Text strong>New Lore</Typography.Text>
               <Space wrap size={8}>
                 <Input
-                  placeholder="Título *"
+                  placeholder="Title *"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   style={{ minWidth: 280 }}
@@ -339,16 +339,16 @@ export const LoresAdminPage: React.FC = () => {
                 />
               </Space>
               <TextArea
-                placeholder="Conteúdo (texto livre ou markdown)"
+                placeholder="Content (free text or markdown)"
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 rows={mobileOnly ? 6 : 4}
               />
               <Space>
                 <Button type="primary" htmlType="submit">
-                  Criar Lore
+                  Create Lore
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -357,7 +357,7 @@ export const LoresAdminPage: React.FC = () => {
     </Card>
   );
 
-  // ── Visão Pública ─────────────────────────────────────────────────────────
+  // ── Public View ───────────────────────────────────────────────────────────
   const displayItems = viewMode === 'admin' ? filtered : publicFiltered;
 
   const PublicView = (
@@ -366,7 +366,7 @@ export const LoresAdminPage: React.FC = () => {
         <Spinner />
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
-          <Empty description="Nenhuma lore encontrada." />
+          <Empty description="No lores found." />
         </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 16, alignItems: 'start' }}>
@@ -408,11 +408,11 @@ export const LoresAdminPage: React.FC = () => {
                 >
                   <Space size={6} style={{ justifyContent: 'space-between', width: '100%' }}>
                     <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
-                      {cat ? CATEGORY_LABEL[cat] ?? cat : 'Sem categoria'}
+                      {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                     </Tag>
                     {isGM && (
                       <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
-                        {vis ? 'Visível' : 'Oculta'}
+                        {vis ? 'Visible' : 'Hidden'}
                       </Tag>
                     )}
                   </Space>
@@ -435,7 +435,7 @@ export const LoresAdminPage: React.FC = () => {
                     <Space size={6} onClick={(e) => e.stopPropagation()}>
                       {isGM && <Switch size="small" checked={vis} onChange={() => void toggleVisible(l)} />}
                       <Button size="small" type="link" style={{ padding: 0, fontSize: 12 }}>
-                        Ver lore →
+                        View lore →
                       </Button>
                     </Space>
                   </Space>
@@ -460,19 +460,19 @@ export const LoresAdminPage: React.FC = () => {
               <Space style={{ justifyContent: 'space-between', width: '100%' }} wrap>
                 <Space size={6}>
                   <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
-                    {cat ? CATEGORY_LABEL[cat] ?? cat : 'Sem categoria'}
+                    {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                   </Tag>
                   <Tag color={vis ? 'green' : 'red'} style={{ margin: 0 }}>
-                    {vis ? 'Visível' : 'Oculta'}
+                    {vis ? 'Visible' : 'Hidden'}
                   </Tag>
                 </Space>
                 <Space size={4}>
                   <Switch size="small" checked={vis} onChange={() => void toggleVisible(l)} />
                   <Button size="small" icon={<EditOutlined />} onClick={() => openForEdit(l.id)} />
                   <Popconfirm
-                    title="Remover esta lore permanentemente?"
-                    okText="Remover"
-                    cancelText="Cancelar"
+                    title="Remove this lore permanently?"
+                    okText="Remove"
+                    cancelText="Cancel"
                     onConfirm={() => void removeLore(l.id)}
                   >
                     <Button size="small" danger icon={<DeleteOutlined />} />
@@ -496,7 +496,7 @@ export const LoresAdminPage: React.FC = () => {
 
   // ── Admin Desktop Table ───────────────────────────────────────────────────
   const AdminDesktopTable = (
-    <Card density="dense" title="Gerenciar Lores">
+    <Card density="dense" title="Manage Lores">
       <div style={{ overflowX: 'auto' }}>
         <Table
           rowKey="id"
@@ -513,7 +513,7 @@ export const LoresAdminPage: React.FC = () => {
               render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag>,
             },
             {
-              title: 'Visível',
+              title: 'Visible',
               key: 'visible',
               width: 90,
               render: (_: any, l: Lore) => (
@@ -538,7 +538,7 @@ export const LoresAdminPage: React.FC = () => {
                         {l.title}
                       </Typography.Text>
                       <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
-                        {cat ? CATEGORY_LABEL[cat] ?? cat : 'Sem categoria'}
+                        {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                       </Tag>
                     </Space>
                     {l.content && (
@@ -551,7 +551,7 @@ export const LoresAdminPage: React.FC = () => {
               },
             },
             {
-              title: 'Criado em',
+              title: 'Created at',
               dataIndex: 'createdAt',
               key: 'createdAt',
               width: 160,
@@ -562,16 +562,16 @@ export const LoresAdminPage: React.FC = () => {
               ),
             },
             {
-              title: 'Ações',
+              title: 'Actions',
               key: 'actions',
               width: 100,
               render: (_: any, l: Lore) => (
                 <Space size={4}>
                   <Button size="small" icon={<EditOutlined />} onClick={() => openForEdit(l.id)} />
                   <Popconfirm
-                    title="Remover esta lore permanentemente?"
-                    okText="Remover"
-                    cancelText="Cancelar"
+                    title="Remove this lore permanently?"
+                    okText="Remove"
+                    cancelText="Cancel"
                     onConfirm={() => void removeLore(l.id)}
                   >
                     <Button size="small" danger icon={<DeleteOutlined />} />
@@ -582,7 +582,7 @@ export const LoresAdminPage: React.FC = () => {
           ]}
         />
       </div>
-      {!filtered.length && !loading && <Empty description="Nenhuma lore encontrada." style={{ marginTop: 16 }} />}
+      {!filtered.length && !loading && <Empty description="No lores found." style={{ marginTop: 16 }} />}
     </Card>
   );
 
@@ -593,7 +593,7 @@ export const LoresAdminPage: React.FC = () => {
       ) : mobileOnly ? (
         filtered.length === 0 ? (
           <Card density="comfy">
-            <Empty description="Nenhuma lore encontrada." />
+            <Empty description="No lores found." />
           </Card>
         ) : (
           AdminMobileCards
@@ -618,7 +618,7 @@ export const LoresAdminPage: React.FC = () => {
               {CATEGORY_LABEL[openLore.category] ?? openLore.category}
             </Tag>
           )}
-          <Tag color={isVisible(openLore) ? 'green' : 'red'}>{isVisible(openLore) ? 'Visível' : 'Oculta'}</Tag>
+          <Tag color={isVisible(openLore) ? 'green' : 'red'}>{isVisible(openLore) ? 'Visible' : 'Hidden'}</Tag>
           <Badge count={`#${openLore.id}`} style={{ backgroundColor: '#595959' }} />
         </Space>
       }
@@ -626,18 +626,18 @@ export const LoresAdminPage: React.FC = () => {
         isGM ? (
           <Space>
             <Popconfirm
-              title="Remover esta lore permanentemente?"
-              okText="Remover"
-              cancelText="Cancelar"
+              title="Remove this lore permanently?"
+              okText="Remove"
+              cancelText="Cancel"
               onConfirm={() => void removeLore(openLore.id)}
             >
               <Button danger size="small" icon={<DeleteOutlined />}>
-                Remover
+                Remove
               </Button>
             </Popconfirm>
             {drawerTab === 'edit' && (
               <Button type="primary" size="small" onClick={() => void saveEdit()}>
-                Salvar
+                Save
               </Button>
             )}
           </Space>
@@ -655,47 +655,47 @@ export const LoresAdminPage: React.FC = () => {
               )}
               {isGM && (
                 <Space size={6}>
-                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publicar:</span>
+                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publish:</span>
                   <Switch size="small" checked={isVisible(openLore)} onChange={() => void toggleVisible(openLore)} />
                 </Space>
               )}
             </Space>
             <Divider style={{ margin: '4px 0' }} />
             {openLore.content ? (
-              <Card density="dense" title="Conteúdo">
+              <Card density="dense" title="Content">
                 <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75, fontSize: 14 }}>
                   {openLore.content}
                 </Typography.Paragraph>
               </Card>
             ) : (
-              <Typography.Text type="secondary">Sem conteúdo registrado.</Typography.Text>
+              <Typography.Text type="secondary">No content recorded.</Typography.Text>
             )}
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Criado em: {formatDateTime((openLore as any).createdAt)}
+              Created: {formatDateTime((openLore as any).createdAt)}
               {'  ·  '}
-              Atualizado: {formatDateTime((openLore as any).updatedAt)}
+              Updated: {formatDateTime((openLore as any).updatedAt)}
             </Typography.Text>
           </Space>
         </Tabs.TabPane>
 
         {isGM && (
-          <Tabs.TabPane tab="✏️ Editar" key="edit">
+          <Tabs.TabPane tab="✏️ Edit" key="edit">
             <Space direction="vertical" size={12} style={{ width: '100%' }}>
-              <Card density="dense" title="Dados da Lore">
+              <Card density="dense" title="Lore Data">
                 <Space direction="vertical" size={10} style={{ width: '100%' }}>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Título
+                      Title
                     </Typography.Text>
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="Título da lore"
+                      placeholder="Lore title"
                     />
                   </div>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Categoria
+                      Category
                     </Typography.Text>
                     <Select
                       style={{ width: '100%' }}
@@ -706,25 +706,25 @@ export const LoresAdminPage: React.FC = () => {
                   </div>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Conteúdo
+                      Content
                     </Typography.Text>
                     <TextArea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      placeholder="Conteúdo da lore (texto livre ou markdown)"
+                      placeholder="Lore content (free text or markdown)"
                       rows={mobileOnly ? 14 : 12}
                     />
                   </div>
                 </Space>
               </Card>
 
-              <Card density="dense" title="Visibilidade">
+              <Card density="dense" title="Visibility">
                 <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                   <div>
-                    <Typography.Text>Visível para jogadores</Typography.Text>
+                    <Typography.Text>Visible to players</Typography.Text>
                     <br />
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Lores ocultas só aparecem para o Mestre.
+                      Hidden lores only appear to the GM.
                     </Typography.Text>
                   </div>
                   <Switch
@@ -737,7 +737,7 @@ export const LoresAdminPage: React.FC = () => {
               </Card>
 
               <Button type="primary" block onClick={() => void saveEdit()}>
-                Salvar Alterações
+                Save Changes
               </Button>
             </Space>
           </Tabs.TabPane>

@@ -19,10 +19,10 @@ function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen:
   return (
     <Card density="dense"
       title={<Space size={8}><span style={{ fontWeight: 700 }}>{sheet.name}</span><Tag color={sheet.type === 'gurps' ? 'gold' : 'blue'}>{sheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag></Space>}
-      extra={<Space size={4}><Button size="small" onClick={onOpen}>Abrir</Button><Button size="small" danger icon={<DeleteOutlined />} onClick={onDelete} /></Space>}
+      extra={<Space size={4}><Button size="small" onClick={onOpen}>Open</Button><Button size="small" danger icon={<DeleteOutlined />} onClick={onDelete} /></Space>}
     >
       <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-        Atualizado: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString('pt-BR') : '—'}
+        Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '—'}
       </Typography.Text>
     </Card>
   );
@@ -52,7 +52,7 @@ export const GmSheetsPage: React.FC = () => {
 
   const load = React.useCallback(async () => {
     try { setSheets(await listCharacterSheets()); }
-    catch { message.error('Falha ao carregar fichas'); }
+    catch { message.error('Failed to load sheets'); }
     finally { setLoading(false); }
   }, []);
 
@@ -69,7 +69,7 @@ export const GmSheetsPage: React.FC = () => {
       setSheetData(full.data ?? {});
       setSheetName(full.name);
       setDrawerOpen(true);
-    } catch { message.error('Falha ao carregar ficha'); }
+    } catch { message.error('Failed to load sheet'); }
   }
 
   async function saveSheet() {
@@ -78,13 +78,13 @@ export const GmSheetsPage: React.FC = () => {
     try {
       await updateCharacterSheet(activeSheet.id, { name: sheetName, data: sheetData });
       await load();
-      message.success('Ficha salva');
-    } catch { message.error('Falha ao salvar (GM key?)'); }
+      message.success('Sheet saved');
+    } catch { message.error('Failed to save (GM key?)'); }
     finally { setSavingSheet(false); }
   }
 
   async function doCreate() {
-    if (!newName.trim()) return message.warning('Informe um nome');
+    if (!newName.trim()) return message.warning('Enter a name');
     setCreating(true);
     try {
       const created = await createCharacterSheet({ type: newType, name: newName.trim(), data: {} });
@@ -96,22 +96,22 @@ export const GmSheetsPage: React.FC = () => {
       setSheetData({});
       setSheetName(full.name);
       setDrawerOpen(true);
-      message.success('Ficha criada');
-    } catch { message.error('Falha ao criar (GM key?)'); }
+      message.success('Sheet created');
+    } catch { message.error('Failed to create (GM key?)'); }
     finally { setCreating(false); }
   }
 
   function confirmDelete(sheet: CharacterSheet) {
     Modal.confirm({
-      title: `Apagar ficha "${sheet.name}"?`,
-      okText: 'Apagar', okType: 'danger', cancelText: 'Cancelar',
+      title: `Delete sheet "${sheet.name}"?`,
+      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
       onOk: async () => {
         try {
           await deleteCharacterSheet(sheet.id);
           if (activeSheet?.id === sheet.id) { setDrawerOpen(false); setActiveSheet(null); }
           await load();
-          message.success('Ficha removida');
-        } catch { message.error('Falha ao remover'); }
+          message.success('Sheet removed');
+        } catch { message.error('Failed to remove'); }
       },
     });
   }
@@ -120,22 +120,22 @@ export const GmSheetsPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>GM — Fichas</PageTitle>
+      <PageTitle>GM — Sheets</PageTitle>
 
       <Card density="comfy">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-          <Typography.Title level={4} style={{ margin: 0 }}>Fichas de Personagem · {sheets.length}</Typography.Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>Nova ficha</Button>
+          <Typography.Title level={4} style={{ margin: 0 }}>Character Sheets · {sheets.length}</Typography.Title>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>New sheet</Button>
         </div>
 
         <Tabs activeKey={typeFilter} onChange={(k) => setTypeFilter(k as SheetType | 'all')} style={{ marginBottom: 16 }}>
-          <Tabs.TabPane key="all" tab="Todas" />
+          <Tabs.TabPane key="all" tab="All" />
           <Tabs.TabPane key="gurps" tab="⚙️ GURPS" />
           <Tabs.TabPane key="starfinder" tab="🚀 Starfinder" />
         </Tabs>
 
         {filtered.length === 0
-          ? <Typography.Text type="secondary">Nenhuma ficha. Crie uma!</Typography.Text>
+          ? <Typography.Text type="secondary">No sheets. Create one!</Typography.Text>
           : <div style={{ display: 'grid', gap: 10, gridTemplateColumns: mobileOnly ? '1fr' : 'repeat(auto-fill,minmax(280px,1fr))' }}>
               {filtered.map((s) => (
                 <SheetCard key={s.id} sheet={s} onOpen={() => void openSheet(s)} onDelete={() => confirmDelete(s)} />
@@ -157,10 +157,10 @@ export const GmSheetsPage: React.FC = () => {
               <Input value={sheetName} onChange={(e) => setSheetName(e.target.value)} style={{ width: 220, fontWeight: 700 }} />
               <Tag color={activeSheet.type === 'gurps' ? 'gold' : 'blue'}>{activeSheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag>
             </Space>
-          ) : 'Ficha'
+          ) : 'Sheet'
         }
         extra={
-          <Button type="primary" loading={savingSheet} onClick={() => void saveSheet()}>Salvar</Button>
+          <Button type="primary" loading={savingSheet} onClick={() => void saveSheet()}>Save</Button>
         }
         destroyOnClose
       >
@@ -181,16 +181,16 @@ export const GmSheetsPage: React.FC = () => {
       {/* ── Create modal ── */}
       <Modal
         visible={createOpen}
-        title="Nova Ficha de Personagem"
+        title="New Character Sheet"
         onCancel={() => setCreateOpen(false)}
         footer={[
-          <Button key="cancel" onClick={() => setCreateOpen(false)}>Cancelar</Button>,
-          <Button key="ok" type="primary" loading={creating} onClick={() => void doCreate()}>Criar</Button>,
+          <Button key="cancel" onClick={() => setCreateOpen(false)}>Cancel</Button>,
+          <Button key="ok" type="primary" loading={creating} onClick={() => void doCreate()}>Create</Button>,
         ]}
       >
         <Space direction="vertical" style={{ width: '100%' }} size={12}>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Nome do personagem</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Character name</Typography.Text>
             <Input
               placeholder="Ex: Alis Landale"
               value={newName}
@@ -199,7 +199,7 @@ export const GmSheetsPage: React.FC = () => {
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Sistema</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>System</Typography.Text>
             <Space size={12}>
               <Button type={newType === 'starfinder' ? 'primary' : 'default'} onClick={() => setNewType('starfinder')}>🚀 Starfinder</Button>
               <Button type={newType === 'gurps' ? 'primary' : 'default'} onClick={() => setNewType('gurps')}>⚙️ GURPS</Button>

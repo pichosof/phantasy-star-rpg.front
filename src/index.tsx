@@ -1,6 +1,5 @@
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import './i18n';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import 'config/config';
 import { Provider } from 'react-redux';

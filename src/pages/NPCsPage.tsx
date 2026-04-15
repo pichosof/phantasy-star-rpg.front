@@ -41,17 +41,17 @@ const GM_KEY = 'gm_api_key';
 // ── Role enum ─────────────────────────────────────────────────────────────────
 
 export const NPC_ROLES = [
-  'Aliado',
-  'Inimigo',
-  'Mercador',
-  'Contratante',
-  'Informante',
-  'Guia',
-  'Guardião',
-  'Curandeiro',
-  'Líder',
-  'Mestre',
-  'Neutro',
+  'Ally',
+  'Enemy',
+  'Merchant',
+  'Contractor',
+  'Informant',
+  'Guide',
+  'Guardian',
+  'Healer',
+  'Leader',
+  'Sage',
+  'Neutral',
 ] as const;
 
 export type NpcRole = (typeof NPC_ROLES)[number];
@@ -135,7 +135,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
   async function save() {
     if (!npc) return;
-    if (!name.trim()) return message.warning('Nome obrigatório');
+    if (!name.trim()) return message.warning('Name is required');
     setSaving(true);
     try {
       await NpcApi.update(npc.id, {
@@ -145,20 +145,20 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
         description: desc.trim() || null,
       });
       await onChanged();
-      message.success('NPC atualizado');
-    } catch { message.error('Falha ao salvar'); }
+      message.success('NPC updated');
+    } catch { message.error('Failed to save'); }
     finally { setSaving(false); }
   }
 
   async function remove() {
     if (!npc) return;
-    if (!window.confirm(`Excluir "${npc.name}"?`)) return;
+    if (!window.confirm(`Delete "${npc.name}"?`)) return;
     try {
       await NpcApi.remove(npc.id);
       await onChanged();
       onClose();
-      message.success('NPC excluído');
-    } catch { message.error('Falha ao excluir'); }
+      message.success('NPC deleted');
+    } catch { message.error('Failed to delete'); }
   }
 
   const uploadProps: UploadProps = {
@@ -169,10 +169,10 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       try {
         await NpcApi.uploadImage(npc.id, opts.file as File, imgAlt || undefined);
         await onChanged();
-        message.success('Retrato enviado');
+        message.success('Portrait uploaded');
         opts.onSuccess?.({});
       } catch {
-        message.error('Falha no upload');
+        message.error('Upload failed');
         opts.onError?.(new Error('Upload failed'));
       }
     },
@@ -206,17 +206,17 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
     >
       {npc ? (
         <Tabs defaultActiveKey="edit">
-          {/* ── Editar ── */}
-          <Tabs.TabPane tab="Editar" key="edit">
+          {/* ── Edit ── */}
+          <Tabs.TabPane tab="Edit" key="edit">
             <Form layout="vertical">
-              <Form.Item label="Nome" required>
+              <Form.Item label="Name" required>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
               </Form.Item>
-              <Form.Item label="Papel / Role">
+              <Form.Item label="Role">
                 <Select
                   value={role || undefined}
                   onChange={(v) => setRole(v ?? '')}
-                  placeholder="Selecione um papel…"
+                  placeholder="Select a role…"
                   allowClear
                   style={{ width: '100%' }}
                   options={NPC_ROLES.map((r) => {
@@ -238,31 +238,31 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   })}
                 />
               </Form.Item>
-              <Form.Item label="Localização" extra="Nome da cidade onde costuma aparecer">
+              <Form.Item label="Location" extra="City name where this NPC usually appears">
                 <Input
                   prefix={<EnvironmentOutlined style={{ color: '#8c8c8c' }} />}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Ex: Aiedo, Piata…"
+                  placeholder="E.g.: Aiedo, Piata…"
                 />
               </Form.Item>
-              <Form.Item label="Descrição / Background">
+              <Form.Item label="Description / Background">
                 <Input.TextArea
                   rows={6}
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
-                  placeholder="História, motivações, comportamento…"
+                  placeholder="History, motivations, behavior…"
                 />
               </Form.Item>
               <Space>
-                <Button type="primary" loading={saving} onClick={() => void save()}>Salvar</Button>
-                <Button danger onClick={() => void remove()}>Excluir</Button>
+                <Button type="primary" loading={saving} onClick={() => void save()}>Save</Button>
+                <Button danger onClick={() => void remove()}>Delete</Button>
               </Space>
             </Form>
           </Tabs.TabPane>
 
-          {/* ── Retrato ── */}
-          <Tabs.TabPane tab="Retrato" key="image">
+          {/* ── Portrait ── */}
+          <Tabs.TabPane tab="Portrait" key="image">
             <Space direction="vertical" size={12} style={{ width: '100%' }}>
               {npc.imageUrl ? (
                 <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 260 }}>
@@ -287,21 +287,21 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               </Form.Item>
               <Upload {...uploadProps}>
                 <Button icon={<PictureOutlined />}>
-                  {npc.imageUrl ? 'Trocar retrato' : 'Enviar retrato'}
+                  {npc.imageUrl ? 'Change portrait' : 'Upload portrait'}
                 </Button>
               </Upload>
             </Space>
           </Tabs.TabPane>
 
-          {/* ── Controles ── */}
-          <Tabs.TabPane tab="Visibilidade" key="ctrl">
+          {/* ── Visibility ── */}
+          <Tabs.TabPane tab="Visibility" key="ctrl">
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
               <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                 <div>
-                  <Typography.Text>Visível para jogadores</Typography.Text>
+                  <Typography.Text>Visible to players</Typography.Text>
                   <br />
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    NPCs ocultos não aparecem no codex.
+                    Hidden NPCs do not appear in the codex.
                   </Typography.Text>
                 </div>
                 <Switch
@@ -403,7 +403,7 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
         {/* GM status badge */}
         {gmMode && (
           <div style={{ position: 'absolute', top: 8, right: 8 }}>
-            <Tooltip title={vis ? 'Visível' : 'Oculto'}>
+            <Tooltip title={vis ? 'Visible' : 'Hidden'}>
               <Tag
                 style={{ margin: 0, cursor: 'pointer', fontSize: 11 }}
                 color={vis ? 'green' : 'red'}
@@ -445,7 +445,7 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
           {!gmMode ? (
             <Button size="small" type="link" style={{ padding: 0, height: 'auto', color: meta.hex }} onClick={onView}>
-              Ver perfil →
+              View profile →
             </Button>
           ) : (
             <Space size={6}>
@@ -567,7 +567,7 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
                 {npc.description}
               </Typography.Paragraph>
             ) : (
-              <Typography.Text type="secondary">Sem informações disponíveis.</Typography.Text>
+              <Typography.Text type="secondary">No information available.</Typography.Text>
             )}
           </div>
         </>
@@ -611,7 +611,7 @@ export const NPCsPage: React.FC = () => {
   const load = React.useCallback(async () => {
     setLoading(true);
     try { setNpcs(await NpcApi.list()); }
-    catch { message.error('Falha ao carregar NPCs'); }
+    catch { message.error('Failed to load NPCs'); }
     finally { setLoading(false); }
   }, []);
 
@@ -662,20 +662,20 @@ export const NPCsPage: React.FC = () => {
     const next = !isVisible(n);
     setNpcs((prev) => prev.map((x) => x.id === n.id ? { ...x, visible: next } : x));
     try { await NpcApi.setVisible(n.id, next); }
-    catch { message.error('Falha ao mudar visibilidade'); await load(); }
+    catch { message.error('Failed to change visibility'); await load(); }
   }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const n = newName.trim();
-    if (!n) return message.warning('Nome obrigatório');
+    if (!n) return message.warning('Name is required');
     try {
       await NpcApi.create({ name: n, role: newRole || null, location: newLoc.trim() || null, description: newDesc.trim() || null } as CreateNpcDTO);
       setCreating(false);
       setNewName(''); setNewRole(''); setNewLoc(''); setNewDesc('');
       await load();
-      message.success('NPC criado');
-    } catch { message.error('Falha ao criar NPC'); }
+      message.success('NPC created');
+    } catch { message.error('Failed to create NPC'); }
   }
 
   const detailNpc = npcs.find((x) => x.id === openId) ?? null;
@@ -694,28 +694,28 @@ export const NPCsPage: React.FC = () => {
           <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
             <div>
               <Typography.Title level={4} style={{ margin: 0 }}>
-                {isGM ? '⚙️ Codex — Painel GM' : 'Codex de Personagens'}
+                {isGM ? '⚙️ Codex — GM Panel' : 'Character Codex'}
               </Typography.Title>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                 {isGM
-                  ? 'Gerencie NPCs, retratos, roles e visibilidade.'
-                  : 'Personagens conhecidos pelos aventureiros no sistema Algol.'}
+                  ? 'Manage NPCs, portraits, roles and visibility.'
+                  : 'Characters known to the adventurers in the Algol system.'}
               </Typography.Text>
             </div>
             {isGM && (
               <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-                {creating ? 'Fechar' : '+ Novo NPC'}
+                {creating ? 'Close' : '+ New NPC'}
               </Button>
             )}
           </Space>
 
           {/* Stats chips */}
           <Space wrap size={6}>
-            <Tag icon={<UserOutlined />}>{stats.total} personagens</Tag>
-            {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-            {isGM && stats.hidden > 0 && <Tag color="red">{stats.hidden} ocultos</Tag>}
+            <Tag icon={<UserOutlined />}>{stats.total} characters</Tag>
+            {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+            {isGM && stats.hidden > 0 && <Tag color="red">{stats.hidden} hidden</Tag>}
             {filtered.length !== npcs.length && (
-              <Tag color="blue">{filtered.length} exibidos</Tag>
+              <Tag color="blue">{filtered.length} shown</Tag>
             )}
           </Space>
 
@@ -724,7 +724,7 @@ export const NPCsPage: React.FC = () => {
             {/* Text search */}
             <Input
               allowClear
-              placeholder="Buscar personagem…"
+              placeholder="Search character…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ maxWidth: 240 }}
@@ -738,7 +738,7 @@ export const NPCsPage: React.FC = () => {
                 type={!filterRole ? 'primary' : 'default'}
                 onClick={() => setFilterRole(null)}
               >
-                Todos
+                All
               </Button>
               {allRoles.map((r) => {
                 const m = getRoleMeta(r);
@@ -760,7 +760,7 @@ export const NPCsPage: React.FC = () => {
             {allLocations.length > 0 && (
               <Select
                 allowClear
-                placeholder={<><EnvironmentOutlined /> Localização</>}
+                placeholder={<><EnvironmentOutlined /> Location</>}
                 value={filterLoc ?? undefined}
                 onChange={(v) => setFilterLoc(v ?? null)}
                 style={{ minWidth: 160 }}
@@ -778,7 +778,7 @@ export const NPCsPage: React.FC = () => {
                     type={filterVis === v ? 'primary' : 'default'}
                     onClick={() => setFilterVis(v)}
                   >
-                    {v === 'all' ? 'Todos' : v === 'visible' ? 'Visíveis' : 'Ocultos'}
+                    {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                   </Button>
                 ))}
               </Space>
@@ -790,7 +790,7 @@ export const NPCsPage: React.FC = () => {
             <>
               <Divider style={{ margin: '4px 0' }} />
               <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-                <Typography.Text strong>Novo NPC</Typography.Text>
+                <Typography.Text strong>New NPC</Typography.Text>
                 <Space wrap size={8}>
                   <Input
                     placeholder="Nome *"
@@ -802,7 +802,7 @@ export const NPCsPage: React.FC = () => {
                   <Select
                     value={newRole || undefined}
                     onChange={(v) => setNewRole(v ?? '')}
-                    placeholder="Papel…"
+                    placeholder="Role…"
                     allowClear
                     style={{ minWidth: 160 }}
                     options={NPC_ROLES.map((r) => {
@@ -826,19 +826,19 @@ export const NPCsPage: React.FC = () => {
                 </Space>
                 <Input
                   prefix={<EnvironmentOutlined style={{ color: '#bfbfbf' }} />}
-                  placeholder="Localização (ex: Aiedo)"
+                  placeholder="Location (ex: Aiedo)"
                   value={newLoc}
                   onChange={(e) => setNewLoc(e.target.value)}
                 />
                 <Input.TextArea
-                  placeholder="Descrição / Background"
+                  placeholder="Description / Background"
                   rows={3}
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                 />
                 <Space>
-                  <Button type="primary" htmlType="submit">Criar</Button>
-                  <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                  <Button type="primary" htmlType="submit">Create</Button>
+                  <Button onClick={() => setCreating(false)}>Cancel</Button>
                 </Space>
               </form>
             </>
@@ -855,10 +855,10 @@ export const NPCsPage: React.FC = () => {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               search || filterRole || filterLoc
-                ? 'Nenhum personagem corresponde aos filtros.'
+                ? 'No characters match the filters.'
                 : isGM
-                ? 'Nenhum NPC cadastrado ainda.'
-                : 'Nenhum personagem revelado ainda.'
+                ? 'No NPCs registered yet.'
+                : 'No characters revealed yet.'
             }
           />
         </Card>

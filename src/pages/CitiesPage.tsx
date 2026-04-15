@@ -26,7 +26,7 @@ type ViewMode = 'players' | 'gm';
 function cityKind(name: string) {
   if (name?.startsWith('Kol-')) return 'Kol';
   if (name?.startsWith('Kor-')) return 'Kor';
-  return 'Outro';
+  return 'Other';
 }
 
 function isCityVisible(c: City) {
@@ -51,7 +51,7 @@ function formatDate(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString('pt-BR');
+  return d.toLocaleString();
 }
 
 export const CitiesPage: React.FC = () => {
@@ -104,7 +104,7 @@ export const CitiesPage: React.FC = () => {
       const data = await CitiesApi.list();
       setItems(data);
     } catch {
-      message.error('Falha ao carregar cidades');
+      message.error('Failed to load cities');
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export const CitiesPage: React.FC = () => {
       })
       .catch(() => {
         if (!alive) return;
-        message.error('Falha ao carregar lores/quests da cidade.');
+        message.error('Failed to load city lores/quests.');
         setCityLores([]);
         setCityQuests([]);
       })
@@ -183,16 +183,16 @@ export const CitiesPage: React.FC = () => {
     e.preventDefault();
     const n = name.trim();
     const d = desc.trim();
-    if (!n) return message.warning('Informe um nome');
+    if (!n) return message.warning('Name is required');
     try {
       await CitiesApi.create({ name: n, description: d || null });
       setCreating(false);
       setName('');
       setDesc('');
       await load();
-      message.success('Cidade criada');
+      message.success('City created');
     } catch {
-      message.error('Falha ao criar cidade (GM key?)');
+      message.error('Failed to create city (GM key?)');
     }
   }
 
@@ -201,9 +201,9 @@ export const CitiesPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === c.id ? { ...x, visible: next } : x)));
     try {
       await CitiesApi.setVisible(c.id, next);
-      message.success(next ? 'Cidade visível para jogadores' : 'Cidade ocultada');
+      message.success(next ? 'City visible to players' : 'City hidden');
     } catch {
-      message.error('Falha ao mudar visibilidade (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
@@ -213,9 +213,9 @@ export const CitiesPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === c.id ? { ...x, discovered: next } : x)));
     try {
       await CitiesApi.setDiscovered(c.id, next);
-      message.success(next ? 'Cidade marcada como descoberta' : 'Cidade marcada como não descoberta');
+      message.success(next ? 'City marked as discovered' : 'City marked as undiscovered');
     } catch {
-      message.error('Falha ao mudar descoberta (GM key?)');
+      message.error('Failed to change discovered status (GM key?)');
       await load();
     }
   }
@@ -227,12 +227,12 @@ export const CitiesPage: React.FC = () => {
         <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
           <div>
             <Typography.Title level={4} style={{ margin: 0 }}>
-              {viewMode === 'gm' ? '⚙️ Painel GM — Cidades' : 'Cidades'}
+              {viewMode === 'gm' ? '⚙️ GM Panel — Cities' : 'Cities'}
             </Typography.Title>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
               {viewMode === 'gm'
-                ? 'Controle visibilidade, descoberta e conteúdo das cidades.'
-                : 'Cidades visíveis — detalhes aparecem quando o mestre marcar como descoberta.'}
+                ? 'Control visibility, discovery and city content.'
+                : 'Visible cities — details appear when the GM marks as discovered.'}
             </Typography.Text>
           </div>
           <Space size={8} wrap>
@@ -243,34 +243,34 @@ export const CitiesPage: React.FC = () => {
                   type={viewMode === 'players' ? 'primary' : 'default'}
                   onClick={() => setViewMode('players')}
                 >
-                  📖 Cidades
+                  📖 Cities
                 </Button>
                 <Button size="small" type={viewMode === 'gm' ? 'primary' : 'default'} onClick={() => setViewMode('gm')}>
-                  ⚙️ Painel GM
+                  ⚙️ GM Panel
                 </Button>
               </Space>
             )}
             {isGM && viewMode === 'gm' && (
               <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-                {creating ? 'Fechar' : '+ Nova Cidade'}
+                {creating ? 'Close' : '+ New City'}
               </Button>
             )}
           </Space>
         </Space>
 
         <Space wrap size={8}>
-          <Tag>{stats.total} cidades</Tag>
-          {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-          {isGM && <Tag color="red">{stats.hidden} ocultas</Tag>}
-          {isGM && <Tag color="gold">{stats.discovered} descobertas</Tag>}
-          {isGM && <Tag>{stats.undiscovered} não descobertas</Tag>}
-          {isGM && <Tag color="cyan">{stats.mapped} mapeadas</Tag>}
+          <Tag>{stats.total} cities</Tag>
+          {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+          {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
+          {isGM && <Tag color="gold">{stats.discovered} discovered</Tag>}
+          {isGM && <Tag>{stats.undiscovered} undiscovered</Tag>}
+          {isGM && <Tag color="cyan">{stats.mapped} mapped</Tag>}
         </Space>
 
         <Space wrap size={8} style={{ width: '100%' }}>
           <Input
             allowClear
-            placeholder="Buscar cidade…"
+            placeholder="Search city…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360 }}
@@ -284,7 +284,7 @@ export const CitiesPage: React.FC = () => {
                   type={filterVis === v ? 'primary' : 'default'}
                   onClick={() => setFilterVis(v)}
                 >
-                  {v === 'all' ? 'Todas' : v === 'visible' ? 'Visíveis' : 'Ocultas'}
+                  {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                 </Button>
               ))}
             </Space>
@@ -295,24 +295,24 @@ export const CitiesPage: React.FC = () => {
           <>
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-              <Typography.Text strong>Nova Cidade</Typography.Text>
+              <Typography.Text strong>New City</Typography.Text>
               <Input
-                placeholder="Nome (ex: Kol-Aiedo) *"
+                placeholder="Name (e.g.: Kol-Aiedo) *"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
               <TextArea
-                placeholder="Descrição (opcional)"
+                placeholder="Description (optional)"
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 rows={3}
               />
               <Space>
                 <Button type="primary" htmlType="submit">
-                  Criar Cidade
+                  Create City
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -329,7 +329,7 @@ export const CitiesPage: React.FC = () => {
         <Card density="comfy">
           <Empty
             description={
-              mode === 'players' ? 'Nenhuma cidade visível para os jogadores ainda.' : 'Nenhuma cidade encontrada.'
+              mode === 'players' ? 'No cities visible to players yet.' : 'No cities found.'
             }
           />
         </Card>
@@ -360,11 +360,11 @@ export const CitiesPage: React.FC = () => {
                   {region ? <Tag>{region}</Tag> : null}
                   {mode === 'gm' && (
                     <>
-                      <Tag color={vis ? 'green' : 'red'}>{vis ? 'Visível' : 'Oculta'}</Tag>
+                      <Tag color={vis ? 'green' : 'red'}>{vis ? 'Visible' : 'Hidden'}</Tag>
                       <Tag color={c.discovered ? 'gold' : 'default'}>
-                        {c.discovered ? 'Descoberta' : 'Não descoberta'}
+                        {c.discovered ? 'Discovered' : 'Not discovered'}
                       </Tag>
-                      {isCityMapped(c) ? <Tag color="cyan">Mapeada</Tag> : <Tag>Não mapeada</Tag>}
+                      {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : <Tag>Not mapped</Tag>}
                     </>
                   )}
                 </Space>
@@ -376,7 +376,7 @@ export const CitiesPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Button size="small" onClick={() => setOpenCityId(c.id)}>
-                    Ver
+                    View
                   </Button>
                 )
               }
@@ -395,8 +395,8 @@ export const CitiesPage: React.FC = () => {
               <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
-                    ? c.description?.trim() || 'Sem descrição ainda.'
-                    : 'Informações indisponíveis.'
+                    ? c.description?.trim() || 'No description yet.'
+                    : 'Information unavailable.'
                   : c.description?.trim() || '—'}
               </Typography.Paragraph>
 
@@ -405,7 +405,7 @@ export const CitiesPage: React.FC = () => {
                   <Divider style={{ margin: '8px 0' }} />
                   <Space wrap size={16}>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visível:</span>
+                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visible:</span>
                       <Switch
                         size="small"
                         checked={vis}
@@ -415,7 +415,7 @@ export const CitiesPage: React.FC = () => {
                       />
                     </Space>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Descoberta:</span>
+                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Discovered:</span>
                       <Switch size="small" checked={c.discovered} onChange={() => void toggleDiscovered(c)} />
                     </Space>
                   </Space>
@@ -430,7 +430,7 @@ export const CitiesPage: React.FC = () => {
 
   // ── Desktop GM Table ──────────────────────────────────────────────────────
   const DesktopAdminTable = (
-    <Card density="dense" title="Gerenciar Cidades">
+    <Card density="dense" title="Manage Cities">
       <div style={{ width: '100%', overflowX: 'auto' }}>
         <Table
           rowKey="id"
@@ -447,7 +447,7 @@ export const CitiesPage: React.FC = () => {
               render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag>,
             },
             {
-              title: 'Visível',
+              title: 'Visible',
               key: 'visible',
               width: 90,
               render: (_: any, c: City) => (
@@ -461,7 +461,7 @@ export const CitiesPage: React.FC = () => {
               ),
             },
             {
-              title: 'Descoberta',
+              title: 'Discovered',
               key: 'discovered',
               width: 110,
               render: (_: any, c: City) => (
@@ -469,7 +469,7 @@ export const CitiesPage: React.FC = () => {
               ),
             },
             {
-              title: 'Cidade',
+              title: 'City',
               key: 'name',
               render: (_: any, c: City) => {
                 const kind = cityKind(c.name);
@@ -478,9 +478,9 @@ export const CitiesPage: React.FC = () => {
                     <Space size={8} wrap>
                       <Typography.Text strong>{c.name}</Typography.Text>
                       <Tag color={kind === 'Kol' ? 'blue' : kind === 'Kor' ? 'green' : 'default'}>{kind}</Tag>
-                      {!isCityVisible(c) ? <Tag color="red">Oculta</Tag> : <Tag color="green">Visível</Tag>}
-                      {c.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
-                      {isCityMapped(c) ? <Tag color="cyan">Mapeada</Tag> : null}
+                      {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
+                      {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
+                      {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
                     </Space>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
                       {c.description?.trim() ? c.description : '—'}
@@ -490,7 +490,7 @@ export const CitiesPage: React.FC = () => {
               },
             },
             {
-              title: 'Criado em',
+              title: 'Created at',
               dataIndex: 'createdAt',
               key: 'createdAt',
               width: 160,
@@ -501,7 +501,7 @@ export const CitiesPage: React.FC = () => {
               ),
             },
             {
-              title: 'Ações',
+              title: 'Actions',
               key: 'actions',
               width: 90,
               render: (_: any, c: City) => (
@@ -513,7 +513,7 @@ export const CitiesPage: React.FC = () => {
           ]}
         />
       </div>
-      {!gmItems.length && !loading && <Empty description="Nenhuma cidade encontrada." style={{ marginTop: 16 }} />}
+      {!gmItems.length && !loading && <Empty description="No cities found." style={{ marginTop: 16 }} />}
     </Card>
   );
 
@@ -533,16 +533,16 @@ export const CitiesPage: React.FC = () => {
           {isGM && viewMode === 'gm' && (
             <>
               <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>
-                {isCityVisible(openCity) ? 'Visível' : 'Oculta'}
+                {isCityVisible(openCity) ? 'Visible' : 'Hidden'}
               </Tag>
-              {openCity.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+              {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
             </>
           )}
         </Space>
       }
     >
       <Tabs defaultActiveKey="desc">
-        <Tabs.TabPane tab="Descrição" key="desc">
+        <Tabs.TabPane tab="Description" key="desc">
           {openCity.discovered && (openCity as any).imageUrl && (
             <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
               <img
@@ -552,13 +552,13 @@ export const CitiesPage: React.FC = () => {
               />
             </div>
           )}
-          <Card density="comfy" title="Descrição">
+          <Card density="comfy" title="Description">
             <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
               {viewMode === 'players'
                 ? openCity.discovered === true
-                  ? openCity.description?.trim() || 'Sem descrição ainda.'
-                  : 'Informações indisponíveis.'
-                : openCity.description?.trim() || 'Sem descrição.'}
+                  ? openCity.description?.trim() || 'No description yet.'
+                  : 'Information unavailable.'
+                : openCity.description?.trim() || 'No description.'}
             </Typography.Paragraph>
           </Card>
         </Tabs.TabPane>
@@ -566,13 +566,13 @@ export const CitiesPage: React.FC = () => {
         <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
           {!openCity.discovered ? (
             <Card density="comfy">
-              <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
             </Card>
           ) : linksLoading ? (
             <Spinner />
           ) : !cityLores.length ? (
             <Card density="comfy">
-              <Empty description="Nenhuma lore vinculada a esta cidade." />
+              <Empty description="No lores linked to this city." />
             </Card>
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
@@ -591,26 +591,26 @@ export const CitiesPage: React.FC = () => {
         <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
           {!openCity.discovered ? (
             <Card density="comfy">
-              <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
             </Card>
           ) : linksLoading ? (
             <Spinner />
           ) : !cityQuests.length ? (
             <Card density="comfy">
-              <Empty description="Nenhuma quest vinculada a esta cidade." />
+              <Empty description="No quests linked to this city." />
             </Card>
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
               {cityQuests.map((qst) => (
                 <Card key={qst.id} density="comfy" title={qst.title}>
                   {qst.status ? <Tag>{qst.status}</Tag> : null}
-                  {qst.reward ? <Tag color="gold">Recompensa</Tag> : null}
+                  {qst.reward ? <Tag color="gold">Reward</Tag> : null}
                   <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
                     {qst.description?.trim() || '—'}
                   </Typography.Paragraph>
                   {qst.reward ? (
                     <Typography.Text type="secondary" style={{ display: 'block' }}>
-                      Recompensa: {qst.reward}
+                      Reward: {qst.reward}
                     </Typography.Text>
                   ) : null}
                 </Card>
@@ -620,15 +620,15 @@ export const CitiesPage: React.FC = () => {
         </Tabs.TabPane>
 
         {isGM && viewMode === 'gm' && (
-          <Tabs.TabPane tab="Ações do Mestre" key="gm">
-            <Card density="dense" title="Controles">
+          <Tabs.TabPane tab="GM Actions" key="gm">
+            <Card density="dense" title="Controls">
               <Space direction="vertical" size={12} style={{ width: '100%' }}>
                 <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                   <div>
-                    <Typography.Text>Visível para jogadores</Typography.Text>
+                    <Typography.Text>Visible to players</Typography.Text>
                     <br />
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Cidades ocultas não aparecem na lista.
+                      Hidden cities do not appear in the list.
                     </Typography.Text>
                   </div>
                   <Switch
@@ -640,19 +640,19 @@ export const CitiesPage: React.FC = () => {
                 </Space>
                 <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                   <div>
-                    <Typography.Text>Marcada como descoberta</Typography.Text>
+                    <Typography.Text>Marked as discovered</Typography.Text>
                     <br />
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Libera descrição, lores e quests para jogadores.
+                      Unlocks description, lores and quests for players.
                     </Typography.Text>
                   </div>
                   <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
                 </Space>
                 <Divider style={{ margin: '4px 0' }} />
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Criado: {formatDate((openCity as any).createdAt)}
+                  Created: {formatDate((openCity as any).createdAt)}
                   {'  ·  '}
-                  Atualizado: {formatDate((openCity as any).updatedAt)}
+                  Updated: {formatDate((openCity as any).updatedAt)}
                 </Typography.Text>
               </Space>
             </Card>
@@ -665,7 +665,7 @@ export const CitiesPage: React.FC = () => {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <PageTitle>Cidades</PageTitle>
+      <PageTitle>Cities</PageTitle>
 
       {Header}
 

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Tooltip } from 'antd';
 import { SuffixInput } from '../SuffixInput/SuffixInput';
-import { useTranslation } from 'react-i18next';
 import { FileTextOutlined } from '@ant-design/icons';
 import { InputProps } from '../Input/Input';
 import { websitePattern } from 'constants/patterns';
@@ -13,14 +12,12 @@ interface OpenURLInputProps extends InputProps {
 }
 
 export const OpenURLInput: React.FC<OpenURLInputProps> = ({ href, target = '_blank', ...props }) => {
-  const { t } = useTranslation();
-
   const isMatch = useMemo(() => new RegExp(websitePattern).test(href || ' '), [href]);
 
   return (
     <SuffixInput
       suffix={
-        <Tooltip title={t('common.openInNewTab')}>
+        <Tooltip title="Open in new tab">
           <Button
             size="small"
             href={href}

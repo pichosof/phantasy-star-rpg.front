@@ -59,7 +59,7 @@ function formatDate(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString('pt-BR');
+  return d.toLocaleString();
 }
 
 // ── Admin Drawer ─────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
   async function handleSave() {
     if (!monster) return;
     const n = name.trim();
-    if (!n) return message.warning('Nome obrigatório');
+    if (!n) return message.warning('Name is required');
     setSaving(true);
     try {
       await BestiaryApi.update(monster.id, {
@@ -106,9 +106,9 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
         description: desc.trim() || null,
       });
       await onChanged();
-      message.success('Monstro atualizado');
+      message.success('Monster updated');
     } catch {
-      message.error('Falha ao salvar');
+      message.error('Failed to save');
     } finally {
       setSaving(false);
     }
@@ -116,14 +116,14 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
 
   async function handleDelete() {
     if (!monster) return;
-    if (!window.confirm(`Excluir "${monster.name}"?`)) return;
+    if (!window.confirm(`Delete "${monster.name}"?`)) return;
     try {
       await BestiaryApi.remove(monster.id);
       await onChanged();
       onClose();
-      message.success('Monstro excluído');
+      message.success('Monster deleted');
     } catch {
-      message.error('Falha ao excluir');
+      message.error('Failed to delete');
     }
   }
 
@@ -136,10 +136,10 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       try {
         await BestiaryApi.uploadImage(monster.id, file, imgAlt || undefined);
         await onChanged();
-        message.success('Imagem enviada');
+        message.success('Image uploaded');
         options.onSuccess?.({});
       } catch {
-        message.error('Falha no upload');
+        message.error('Upload failed');
         options.onError?.(new Error('Upload failed'));
       }
     },
@@ -155,59 +155,59 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           <Space size={8} wrap>
             <span style={{ fontWeight: 700 }}>{monster.name}</span>
             {monster.type ? <Tag color={typeColor(monster.type)}>{monster.type}</Tag> : null}
-            <Tag color={monster.visible ? 'green' : 'red'}>{monster.visible ? 'Visível' : 'Oculto'}</Tag>
+            <Tag color={monster.visible ? 'green' : 'red'}>{monster.visible ? 'Visible' : 'Hidden'}</Tag>
             <Tag color={monster.discovered ? 'gold' : 'default'}>
-              {monster.discovered ? 'Descoberto' : 'Não descoberto'}
+              {monster.discovered ? 'Discovered' : 'Not discovered'}
             </Tag>
           </Space>
-        ) : 'Monstro'
+        ) : 'Monster'
       }
     >
       {monster ? <Tabs defaultActiveKey="edit">
-        {/* ── Editar ── */}
-        <Tabs.TabPane tab="Editar" key="edit">
+        {/* ── Edit ── */}
+        <Tabs.TabPane tab="Edit" key="edit">
           <Form layout="vertical" style={{ gap: 0 }}>
-            <Form.Item label="Nome" required>
+            <Form.Item label="Name" required>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </Form.Item>
-            <Form.Item label="Tipo" extra="Ex: Predador, Doméstico, Enxame…">
-              <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="Tipo (opcional)" />
+            <Form.Item label="Type" extra="E.g.: Predator, Domestic, Swarm…">
+              <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" />
             </Form.Item>
             <Form.Item label="Habitat">
               <Input
                 value={habitat}
                 onChange={(e) => setHabitat(e.target.value)}
-                placeholder="Ex: Dunas, Cânions, Aquíferos…"
+                placeholder="E.g.: Dunes, Canyons, Aquifers…"
               />
             </Form.Item>
-            <Form.Item label="Fraquezas / Comportamento">
+            <Form.Item label="Weaknesses / Behavior">
               <Input
                 value={weaknesses}
                 onChange={(e) => setWeaknesses(e.target.value)}
-                placeholder="Ex: fogo, luz, som…"
+                placeholder="E.g.: fire, light, sound…"
               />
             </Form.Item>
-            <Form.Item label="Descrição">
+            <Form.Item label="Description">
               <Input.TextArea
                 rows={6}
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                placeholder="Descrição completa para jogadores…"
+                placeholder="Full description for players…"
               />
             </Form.Item>
             <Space>
               <Button type="primary" loading={saving} onClick={() => void handleSave()}>
-                Salvar
+                Save
               </Button>
               <Button danger onClick={() => void handleDelete()}>
-                Excluir
+                Delete
               </Button>
             </Space>
           </Form>
         </Tabs.TabPane>
 
-        {/* ── Imagem ── */}
-        <Tabs.TabPane tab="Imagem" key="image">
+        {/* ── Image ── */}
+        <Tabs.TabPane tab="Image" key="image">
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             {monster.imageUrl && (
               <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
@@ -218,7 +218,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                 />
               </div>
             )}
-            <Form.Item label="Alt text da imagem" style={{ marginBottom: 8 }}>
+            <Form.Item label="Image alt text" style={{ marginBottom: 8 }}>
               <Input
                 value={imgAlt}
                 onChange={(e) => setImgAlt(e.target.value)}
@@ -227,21 +227,21 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
             </Form.Item>
             <Upload {...uploadProps}>
               <Button icon={<PictureOutlined />}>
-                {monster.imageUrl ? 'Trocar imagem' : 'Enviar imagem'}
+                {monster.imageUrl ? 'Change image' : 'Upload image'}
               </Button>
             </Upload>
           </Space>
         </Tabs.TabPane>
 
-        {/* ── Controles ── */}
-        <Tabs.TabPane tab="Controles" key="controls">
+        {/* ── Controls ── */}
+        <Tabs.TabPane tab="Controls" key="controls">
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space style={{ justifyContent: 'space-between', width: '100%' }}>
               <div>
-                <Typography.Text>Visível para jogadores</Typography.Text>
+                <Typography.Text>Visible to players</Typography.Text>
                 <br />
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Monstros ocultos não aparecem na lista.
+                  Hidden monsters do not appear in the list.
                 </Typography.Text>
               </div>
               <Switch
@@ -256,10 +256,10 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
             </Space>
             <Space style={{ justifyContent: 'space-between', width: '100%' }}>
               <div>
-                <Typography.Text>Marcado como descoberto</Typography.Text>
+                <Typography.Text>Marked as discovered</Typography.Text>
                 <br />
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Libera descrição completa para jogadores.
+                  Unlocks full description for players.
                 </Typography.Text>
               </div>
               <Switch
@@ -330,7 +330,7 @@ export const BestiaryPage: React.FC = () => {
       const data = await BestiaryApi.list();
       setItems(data);
     } catch {
-      message.error('Falha ao carregar bestiário');
+      message.error('Failed to load bestiary');
     } finally {
       setLoading(false);
     }
@@ -353,7 +353,7 @@ export const BestiaryPage: React.FC = () => {
               (m.habitat ?? '').toLowerCase().includes(q)
             : true,
         )
-        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [items, q],
   );
 
@@ -386,7 +386,7 @@ export const BestiaryPage: React.FC = () => {
     try {
       await BestiaryApi.setVisible(m.id, next);
     } catch {
-      message.error('Falha ao mudar visibilidade');
+      message.error('Failed to change visibility');
       await load();
     }
   }
@@ -397,7 +397,7 @@ export const BestiaryPage: React.FC = () => {
     try {
       await BestiaryApi.setDiscovered(m.id, next);
     } catch {
-      message.error('Falha ao mudar descoberto');
+      message.error('Failed to change discovered status');
       await load();
     }
   }
@@ -405,7 +405,7 @@ export const BestiaryPage: React.FC = () => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const n = newName.trim();
-    if (!n) return message.warning('Nome obrigatório');
+    if (!n) return message.warning('Name is required');
     try {
       await BestiaryApi.create({
         name: n,
@@ -419,9 +419,9 @@ export const BestiaryPage: React.FC = () => {
       setNewHabitat('');
       setNewDesc('');
       await load();
-      message.success('Monstro criado');
+      message.success('Monster created');
     } catch {
-      message.error('Falha ao criar monstro');
+      message.error('Failed to create monster');
     }
   }
 
@@ -432,12 +432,12 @@ export const BestiaryPage: React.FC = () => {
         <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
           <div>
             <Typography.Title level={4} style={{ margin: 0 }}>
-              {viewMode === 'gm' ? '⚙️ Painel GM — Bestiário' : 'Bestiário'}
+              {viewMode === 'gm' ? '⚙️ GM Panel — Bestiary' : 'Bestiary'}
             </Typography.Title>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
               {viewMode === 'gm'
-                ? 'Controle visibilidade, descoberta e dados dos monstros.'
-                : 'Criaturas de Motávia — detalhes aparecem quando o mestre marcar como descoberto.'}
+                ? 'Control visibility, discovery and monster data.'
+                : 'Motavia creatures — details appear when the GM marks as discovered.'}
             </Typography.Text>
           </div>
           <Space size={8} wrap>
@@ -448,37 +448,37 @@ export const BestiaryPage: React.FC = () => {
                   type={viewMode === 'players' ? 'primary' : 'default'}
                   onClick={() => setViewMode('players')}
                 >
-                  📖 Bestiário
+                  📖 Bestiary
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'gm' ? 'primary' : 'default'}
                   onClick={() => setViewMode('gm')}
                 >
-                  ⚙️ Painel GM
+                  ⚙️ GM Panel
                 </Button>
               </Space>
             )}
             {isGM && viewMode === 'gm' && (
               <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-                {creating ? 'Fechar' : '+ Novo Monstro'}
+                {creating ? 'Close' : '+ New Monster'}
               </Button>
             )}
           </Space>
         </Space>
 
         <Space wrap size={8}>
-          <Tag>{stats.total} criaturas</Tag>
-          {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-          {isGM && <Tag color="red">{stats.hidden} ocultas</Tag>}
-          {isGM && <Tag color="gold">{stats.discovered} descobertas</Tag>}
-          {isGM && <Tag>{stats.undiscovered} não descobertas</Tag>}
+          <Tag>{stats.total} creatures</Tag>
+          {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+          {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
+          {isGM && <Tag color="gold">{stats.discovered} discovered</Tag>}
+          {isGM && <Tag>{stats.undiscovered} undiscovered</Tag>}
         </Space>
 
         <Space wrap size={8} style={{ width: '100%' }}>
           <Input
             allowClear
-            placeholder="Buscar criatura…"
+            placeholder="Search creature…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360 }}
@@ -492,7 +492,7 @@ export const BestiaryPage: React.FC = () => {
                   type={filterVis === v ? 'primary' : 'default'}
                   onClick={() => setFilterVis(v)}
                 >
-                  {v === 'all' ? 'Todas' : v === 'visible' ? 'Visíveis' : 'Ocultas'}
+                  {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                 </Button>
               ))}
             </Space>
@@ -503,29 +503,29 @@ export const BestiaryPage: React.FC = () => {
           <>
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-              <Typography.Text strong>Nova Criatura</Typography.Text>
-              <Input placeholder="Nome *" value={newName} onChange={(e) => setNewName(e.target.value)} required />
+              <Typography.Text strong>New Creature</Typography.Text>
+              <Input placeholder="Name *" value={newName} onChange={(e) => setNewName(e.target.value)} required />
               <Input
-                placeholder="Tipo (ex: Predador, Doméstico, Enxame…)"
+                placeholder="Type (e.g.: Predator, Domestic, Swarm…)"
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
               />
               <Input
-                placeholder="Habitat (ex: Dunas, Cânions…)"
+                placeholder="Habitat (e.g.: Dunes, Canyons…)"
                 value={newHabitat}
                 onChange={(e) => setNewHabitat(e.target.value)}
               />
               <Input.TextArea
-                placeholder="Descrição (opcional)"
+                placeholder="Description (optional)"
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
                 rows={3}
               />
               <Space>
                 <Button type="primary" htmlType="submit">
-                  Criar
+                  Create
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -543,8 +543,8 @@ export const BestiaryPage: React.FC = () => {
           <Empty
             description={
               mode === 'players'
-                ? 'Nenhuma criatura visível para os jogadores ainda.'
-                : 'Nenhuma criatura encontrada.'
+                ? 'No creatures visible to players yet.'
+                : 'No creatures found.'
             }
           />
         </Card>
@@ -573,9 +573,9 @@ export const BestiaryPage: React.FC = () => {
                   {m.habitat ? <Tag>{m.habitat}</Tag> : null}
                   {mode === 'gm' && (
                     <>
-                      <Tag color={vis ? 'green' : 'red'}>{vis ? 'Visível' : 'Oculto'}</Tag>
+                      <Tag color={vis ? 'green' : 'red'}>{vis ? 'Visible' : 'Hidden'}</Tag>
                       <Tag color={m.discovered ? 'gold' : 'default'}>
-                        {m.discovered ? 'Descoberto' : 'Não descoberto'}
+                        {m.discovered ? 'Discovered' : 'Not discovered'}
                       </Tag>
                     </>
                   )}
@@ -594,7 +594,7 @@ export const BestiaryPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Button size="small" onClick={() => setOpenId(m.id)}>
-                    Ver
+                    View
                   </Button>
                 )
               }
@@ -613,8 +613,8 @@ export const BestiaryPage: React.FC = () => {
               <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
-                    ? m.description?.trim() || 'Sem descrição ainda.'
-                    : 'Informações indisponíveis.'
+                    ? m.description?.trim() || 'No description yet.'
+                    : 'Information unavailable.'
                   : m.description?.trim() || '—'}
               </Typography.Paragraph>
 
@@ -623,7 +623,7 @@ export const BestiaryPage: React.FC = () => {
                   <Divider style={{ margin: '8px 0' }} />
                   <Space wrap size={16}>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visível:</span>
+                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visible:</span>
                       <Switch
                         size="small"
                         checked={vis}
@@ -633,7 +633,7 @@ export const BestiaryPage: React.FC = () => {
                       />
                     </Space>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Descoberto:</span>
+                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Discovered:</span>
                       <Switch size="small" checked={m.discovered} onChange={() => void toggleDiscovered(m)} />
                     </Space>
                   </Space>
@@ -648,7 +648,7 @@ export const BestiaryPage: React.FC = () => {
 
   // ── Desktop GM Table ──────────────────────────────────────────────────────
   const DesktopAdminTable = (
-    <Card density="dense" title="Gerenciar Bestiário">
+    <Card density="dense" title="Manage Bestiary">
       <div style={{ width: '100%', overflowX: 'auto' }}>
         <Table
           rowKey="id"
@@ -679,7 +679,7 @@ export const BestiaryPage: React.FC = () => {
               ),
             },
             {
-              title: 'Desc.',
+              title: 'Disc.',
               key: 'discovered',
               width: 80,
               render: (_: unknown, m: Monster) => (
@@ -687,7 +687,7 @@ export const BestiaryPage: React.FC = () => {
               ),
             },
             {
-              title: 'Nome',
+              title: 'Name',
               key: 'name',
               render: (_: unknown, m: Monster) => (
                 <Space direction="vertical" size={2}>
@@ -702,14 +702,14 @@ export const BestiaryPage: React.FC = () => {
                   )}
                   {m.weaknesses && (
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Fraquezas: {m.weaknesses}
+                      Weaknesses: {m.weaknesses}
                     </Typography.Text>
                   )}
                 </Space>
               ),
             },
             {
-              title: 'Descrição',
+              title: 'Description',
               key: 'description',
               render: (_: unknown, m: Monster) => (
                 <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
@@ -718,7 +718,7 @@ export const BestiaryPage: React.FC = () => {
               ),
             },
             {
-              title: 'Criado em',
+              title: 'Created at',
               dataIndex: 'createdAt',
               key: 'createdAt',
               width: 150,
@@ -729,7 +729,7 @@ export const BestiaryPage: React.FC = () => {
               ),
             },
             {
-              title: 'Ações',
+              title: 'Actions',
               key: 'actions',
               width: 80,
               render: (_: unknown, m: Monster) => (
@@ -748,7 +748,7 @@ export const BestiaryPage: React.FC = () => {
         />
       </div>
       {!gmItems.length && !loading && (
-        <Empty description="Nenhuma criatura encontrada." style={{ marginTop: 16 }} />
+        <Empty description="No creatures found." style={{ marginTop: 16 }} />
       )}
     </Card>
   );
@@ -756,7 +756,7 @@ export const BestiaryPage: React.FC = () => {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <PageTitle>Bestiário</PageTitle>
+      <PageTitle>Bestiary</PageTitle>
 
       {Header}
 
@@ -817,20 +817,20 @@ export const BestiaryPage: React.FC = () => {
                       </Card>
                     )}
                     {openMonster.weaknesses && (
-                      <Card density="dense" title="Fraquezas / Comportamento">
+                      <Card density="dense" title="Weaknesses / Behavior">
                         <Typography.Text>{openMonster.weaknesses}</Typography.Text>
                       </Card>
                     )}
-                    <Card density="comfy" title="Descrição">
+                    <Card density="comfy" title="Description">
                       <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-                        {openMonster.description?.trim() || 'Sem descrição ainda.'}
+                        {openMonster.description?.trim() || 'No description yet.'}
                       </Typography.Paragraph>
                     </Card>
                   </Space>
                 ) : (
                   <Card density="comfy">
                     <Typography.Text type="secondary">
-                      Informações sobre esta criatura ainda não foram reveladas.
+                      Information about this creature has not been revealed yet.
                     </Typography.Text>
                   </Card>
                 )}

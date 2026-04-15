@@ -24,7 +24,7 @@ export const GmImagesPage: React.FC = () => {
 
   const load = React.useCallback(async () => {
     try { setImages(await listGmImages()); }
-    catch { message.error('Falha ao carregar imagens'); }
+    catch { message.error('Failed to load images'); }
     finally { setLoading(false); }
   }, []);
 
@@ -38,21 +38,21 @@ export const GmImagesPage: React.FC = () => {
     try {
       await uploadGmImage(file);
       await load();
-      message.success('Imagem enviada');
-    } catch { message.error('Falha ao enviar (GM key?)'); }
+      message.success('Image uploaded');
+    } catch { message.error('Failed to upload (GM key?)'); }
     finally { setUploading(false); }
   }
 
   function confirmDelete(img: GmImage) {
     Modal.confirm({
-      title: `Apagar "${img.filename}"?`,
-      okText: 'Apagar', okType: 'danger', cancelText: 'Cancelar',
+      title: `Delete "${img.filename}"?`,
+      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
       onOk: async () => {
         try {
           await deleteGmImage(img.id);
           await load();
-          message.success('Imagem removida');
-        } catch { message.error('Falha ao remover'); }
+          message.success('Image removed');
+        } catch { message.error('Failed to remove'); }
       },
     });
   }
@@ -61,11 +61,11 @@ export const GmImagesPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>GM — Imagens</PageTitle>
+      <PageTitle>GM — Images</PageTitle>
       <Card density="comfy">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <Typography.Title level={4} style={{ margin: 0 }}>
-            Galeria GM · {images.length} imagens
+            GM Gallery · {images.length} images
           </Typography.Title>
           <Button
             type="primary"
@@ -73,14 +73,14 @@ export const GmImagesPage: React.FC = () => {
             loading={uploading}
             onClick={() => inputRef.current?.click()}
           >
-            Enviar imagem
+            Upload image
           </Button>
           <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" style={{ display: 'none' }} onChange={onFileChange} />
         </div>
 
         {images.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <Typography.Text type="secondary">Nenhuma imagem ainda. Envie a primeira!</Typography.Text>
+            <Typography.Text type="secondary">No images yet. Upload the first one!</Typography.Text>
           </div>
         ) : (
           <div style={{
@@ -107,9 +107,9 @@ export const GmImagesPage: React.FC = () => {
                     <Button
                       size="small"
                       style={{ flex: 1, fontSize: 11 }}
-                      onClick={() => { navigator.clipboard.writeText(resolveGmImageUrl(img.url) ?? ''); message.success('URL copiada'); }}
+                      onClick={() => { navigator.clipboard.writeText(resolveGmImageUrl(img.url) ?? ''); message.success('URL copied'); }}
                     >
-                      Copiar URL
+                      Copy URL
                     </Button>
                     <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(img)} />
                   </div>
