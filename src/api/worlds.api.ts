@@ -13,18 +13,12 @@ export async function listWorlds(): Promise<World[]> {
   return data;
 }
 
-export async function createWorld(body: {
-  name: string;
-  description?: string | null;
-}): Promise<World> {
+export async function createWorld(body: { name: string; description?: string | null }): Promise<World> {
   const { data } = await http.post('/api/worlds', body);
   return data;
 }
 
-export async function updateWorld(
-  id: number,
-  body: { name?: string; description?: string | null },
-): Promise<void> {
+export async function updateWorld(id: number, body: { name?: string; description?: string | null }): Promise<void> {
   await http.patch(`/api/worlds/${id}`, body);
 }
 

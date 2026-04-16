@@ -54,34 +54,34 @@ export const NPC_ROLES = [
   'Neutral',
 ] as const;
 
-export type NpcRole = (typeof NPC_ROLES)[number];
+export type NpcRole = typeof NPC_ROLES[number];
 
 // ── Role colour system ────────────────────────────────────────────────────────
 
 const ROLE_META: Record<string, { color: string; hex: string }> = {
-  aliado:      { color: 'green',    hex: '#52c41a' },
-  ally:        { color: 'green',    hex: '#52c41a' },
-  amigo:       { color: 'green',    hex: '#52c41a' },
-  mercador:    { color: 'blue',     hex: '#1677ff' },
-  vendor:      { color: 'blue',     hex: '#1677ff' },
-  comerciante: { color: 'blue',     hex: '#1677ff' },
-  contratante: { color: 'gold',     hex: '#faad14' },
-  'quest giver':{ color: 'gold',   hex: '#faad14' },
-  informante:  { color: 'purple',   hex: '#722ed1' },
-  inimigo:     { color: 'red',      hex: '#f5222d' },
-  antagonista: { color: 'red',      hex: '#f5222d' },
-  enemy:       { color: 'red',      hex: '#f5222d' },
-  líder:       { color: 'orange',   hex: '#fa8c16' },
-  lider:       { color: 'orange',   hex: '#fa8c16' },
-  guia:        { color: 'cyan',     hex: '#13c2c2' },
-  guide:       { color: 'cyan',     hex: '#13c2c2' },
-  guardião:    { color: 'geekblue', hex: '#2f54eb' },
-  guardiao:    { color: 'geekblue', hex: '#2f54eb' },
-  curandeiro:  { color: 'volcano',  hex: '#fa541c' },
-  mestre:      { color: 'magenta',  hex: '#eb2f96' },
-  sábio:       { color: 'magenta',  hex: '#eb2f96' },
-  sabio:       { color: 'magenta',  hex: '#eb2f96' },
-  neutro:      { color: 'default',  hex: '#8c8c8c' },
+  aliado: { color: 'green', hex: '#52c41a' },
+  ally: { color: 'green', hex: '#52c41a' },
+  amigo: { color: 'green', hex: '#52c41a' },
+  mercador: { color: 'blue', hex: '#1677ff' },
+  vendor: { color: 'blue', hex: '#1677ff' },
+  comerciante: { color: 'blue', hex: '#1677ff' },
+  contratante: { color: 'gold', hex: '#faad14' },
+  'quest giver': { color: 'gold', hex: '#faad14' },
+  informante: { color: 'purple', hex: '#722ed1' },
+  inimigo: { color: 'red', hex: '#f5222d' },
+  antagonista: { color: 'red', hex: '#f5222d' },
+  enemy: { color: 'red', hex: '#f5222d' },
+  líder: { color: 'orange', hex: '#fa8c16' },
+  lider: { color: 'orange', hex: '#fa8c16' },
+  guia: { color: 'cyan', hex: '#13c2c2' },
+  guide: { color: 'cyan', hex: '#13c2c2' },
+  guardião: { color: 'geekblue', hex: '#2f54eb' },
+  guardiao: { color: 'geekblue', hex: '#2f54eb' },
+  curandeiro: { color: 'volcano', hex: '#fa541c' },
+  mestre: { color: 'magenta', hex: '#eb2f96' },
+  sábio: { color: 'magenta', hex: '#eb2f96' },
+  sabio: { color: 'magenta', hex: '#eb2f96' },
+  neutro: { color: 'default', hex: '#8c8c8c' },
 };
 
 function getRoleMeta(role?: string | null): { color: string; hex: string } {
@@ -115,12 +115,12 @@ type AdminProps = {
 
 const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged }) => {
   const { mobileOnly } = useResponsive();
-  const [name, setName]         = React.useState('');
-  const [role, setRole]         = React.useState('');
+  const [name, setName] = React.useState('');
+  const [role, setRole] = React.useState('');
   const [location, setLocation] = React.useState('');
-  const [desc, setDesc]         = React.useState('');
-  const [imgAlt, setImgAlt]     = React.useState('');
-  const [saving, setSaving]     = React.useState(false);
+  const [desc, setDesc] = React.useState('');
+  const [imgAlt, setImgAlt] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!npc) return;
@@ -146,8 +146,11 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       });
       await onChanged();
       message.success('NPC updated');
-    } catch { message.error('Failed to save'); }
-    finally { setSaving(false); }
+    } catch {
+      message.error('Failed to save');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function remove() {
@@ -158,7 +161,9 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       await onChanged();
       onClose();
       message.success('NPC deleted');
-    } catch { message.error('Failed to delete'); }
+    } catch {
+      message.error('Failed to delete');
+    }
   }
 
   const uploadProps: UploadProps = {
@@ -186,10 +191,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       title={
         npc ? (
           <Space size={10} align="center">
-            <Avatar
-              size={36}
-              style={{ background: meta.hex, flexShrink: 0, fontWeight: 700, fontSize: 14 }}
-            >
+            <Avatar size={36} style={{ background: meta.hex, flexShrink: 0, fontWeight: 700, fontSize: 14 }}>
               {initials(npc.name)}
             </Avatar>
             <div>
@@ -201,7 +203,9 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               )}
             </div>
           </Space>
-        ) : 'NPC'
+        ) : (
+          'NPC'
+        )
       }
     >
       {npc ? (
@@ -227,8 +231,11 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                         <Space size={6}>
                           <span
                             style={{
-                              display: 'inline-block', width: 8, height: 8,
-                              borderRadius: '50%', background: m.hex,
+                              display: 'inline-block',
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background: m.hex,
                             }}
                           />
                           {r}
@@ -255,8 +262,12 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                 />
               </Form.Item>
               <Space>
-                <Button type="primary" loading={saving} onClick={() => void save()}>Save</Button>
-                <Button danger onClick={() => void remove()}>Delete</Button>
+                <Button type="primary" loading={saving} onClick={() => void save()}>
+                  Save
+                </Button>
+                <Button danger onClick={() => void remove()}>
+                  Delete
+                </Button>
               </Space>
             </Form>
           </Tabs.TabPane>
@@ -273,10 +284,17 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   />
                 </div>
               ) : (
-                <div style={{
-                  height: 140, borderRadius: 8, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', background: meta.hex + '20', border: `1px dashed ${meta.hex}`,
-                }}>
+                <div
+                  style={{
+                    height: 140,
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: meta.hex + '20',
+                    border: `1px dashed ${meta.hex}`,
+                  }}
+                >
                   <Avatar size={80} style={{ background: meta.hex, fontSize: 28, fontWeight: 700 }}>
                     {initials(npc.name)}
                   </Avatar>
@@ -286,9 +304,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                 <Input value={imgAlt} onChange={(e) => setImgAlt(e.target.value)} placeholder={npc.name} />
               </Form.Item>
               <Upload {...uploadProps}>
-                <Button icon={<PictureOutlined />}>
-                  {npc.imageUrl ? 'Change portrait' : 'Upload portrait'}
-                </Button>
+                <Button icon={<PictureOutlined />}>{npc.imageUrl ? 'Change portrait' : 'Upload portrait'}</Button>
               </Upload>
             </Space>
           </Tabs.TabPane>
@@ -306,7 +322,10 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                 </div>
                 <Switch
                   checked={isVisible(npc)}
-                  onChange={async (v) => { await NpcApi.setVisible(npc.id, v); await onChanged(); }}
+                  onChange={async (v) => {
+                    await NpcApi.setVisible(npc.id, v);
+                    await onChanged();
+                  }}
                   checkedChildren={<EyeOutlined />}
                   unCheckedChildren={<EyeInvisibleOutlined />}
                 />
@@ -331,7 +350,7 @@ type CardProps = {
 
 const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onToggleVisible }) => {
   const meta = getRoleMeta(npc.role);
-  const vis  = isVisible(npc);
+  const vis = isVisible(npc);
 
   return (
     <div
@@ -340,9 +359,7 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
         overflow: 'hidden',
         background: 'var(--background-color, #fff)',
         border: `1px solid ${gmMode && !vis ? '#ff4d4f40' : meta.hex + '40'}`,
-        boxShadow: gmMode && !vis
-          ? 'none'
-          : `0 2px 12px ${meta.hex}18, 0 1px 3px rgba(0,0,0,.08)`,
+        boxShadow: gmMode && !vis ? 'none' : `0 2px 12px ${meta.hex}18, 0 1px 3px rgba(0,0,0,.08)`,
         transition: 'box-shadow .2s, transform .15s',
         opacity: gmMode && !vis ? 0.65 : 1,
         display: 'flex',
@@ -364,11 +381,16 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
-          <div style={{
-            width: '100%', height: '100%',
-            background: `linear-gradient(135deg, ${meta.hex}30 0%, ${meta.hex}10 100%)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: `linear-gradient(135deg, ${meta.hex}30 0%, ${meta.hex}10 100%)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Avatar
               size={80}
               style={{
@@ -389,10 +411,13 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
             <Tag
               color={meta.color}
               style={{
-                margin: 0, fontSize: 11, fontWeight: 600,
+                margin: 0,
+                fontSize: 11,
+                fontWeight: 600,
                 backdropFilter: 'blur(4px)',
                 background: meta.hex + 'dd',
-                border: 'none', color: '#fff',
+                border: 'none',
+                color: '#fff',
               }}
             >
               {npc.role}
@@ -407,7 +432,10 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
               <Tag
                 style={{ margin: 0, cursor: 'pointer', fontSize: 11 }}
                 color={vis ? 'green' : 'red'}
-                onClick={(e) => { e.stopPropagation(); onToggleVisible(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleVisible();
+                }}
               >
                 {vis ? <EyeOutlined /> : <EyeInvisibleOutlined />}
               </Tag>
@@ -449,7 +477,13 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
             </Button>
           ) : (
             <Space size={6}>
-              <Button size="small" onClick={(e) => { e.stopPropagation(); onAdmin(); }}>
+              <Button
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAdmin();
+                }}
+              >
                 Admin
               </Button>
               <Switch
@@ -463,7 +497,9 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
           )}
           <div
             style={{
-              width: 8, height: 8, borderRadius: '50%',
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
               background: meta.hex,
               boxShadow: `0 0 6px ${meta.hex}`,
             }}
@@ -504,29 +540,35 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
                 />
               </div>
             ) : (
-              <div style={{
-                height: 180,
-                background: `linear-gradient(135deg, ${meta.hex}50 0%, ${meta.hex}15 100%)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+              <div
+                style={{
+                  height: 180,
+                  background: `linear-gradient(135deg, ${meta.hex}50 0%, ${meta.hex}15 100%)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Avatar size={100} style={{ background: meta.hex, fontSize: 36, fontWeight: 700 }}>
                   {initials(npc.name)}
                 </Avatar>
               </div>
             )}
             {/* Close button */}
-            <Button
-              size="small"
-              style={{ position: 'absolute', top: 10, right: 10 }}
-              onClick={onClose}
-            >
+            <Button size="small" style={{ position: 'absolute', top: 10, right: 10 }} onClick={onClose}>
               ✕
             </Button>
             {/* Gradient fade */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
-              background: 'linear-gradient(transparent, var(--background-color, #fff))',
-            }} />
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 60,
+                background: 'linear-gradient(transparent, var(--background-color, #fff))',
+              }}
+            />
           </div>
 
           {/* Content */}
@@ -540,8 +582,12 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
                   <Tag
                     color={meta.color}
                     style={{
-                      fontSize: 12, fontWeight: 600, padding: '2px 10px',
-                      background: meta.hex + '20', borderColor: meta.hex, color: meta.hex,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: '2px 10px',
+                      background: meta.hex + '20',
+                      borderColor: meta.hex,
+                      color: meta.hex,
                     }}
                   >
                     {npc.role}
@@ -556,11 +602,14 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
               </Space>
             </Space>
 
-            <div style={{
-              height: 3, borderRadius: 2,
-              background: `linear-gradient(90deg, ${meta.hex}, ${meta.hex}20)`,
-              marginBottom: 16,
-            }} />
+            <div
+              style={{
+                height: 3,
+                borderRadius: 2,
+                background: `linear-gradient(90deg, ${meta.hex}, ${meta.hex}20)`,
+                marginBottom: 16,
+              }}
+            />
 
             {npc.description ? (
               <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, color: '#262626' }}>
@@ -581,24 +630,24 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
 export const NPCsPage: React.FC = () => {
   const { mobileOnly, isTablet } = useResponsive();
 
-  const [npcs, setNpcs]       = React.useState<Npc[]>([]);
+  const [npcs, setNpcs] = React.useState<Npc[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [isGM, setIsGM]       = React.useState(() => Boolean(localStorage.getItem(GM_KEY)));
+  const [isGM, setIsGM] = React.useState(() => Boolean(localStorage.getItem(GM_KEY)));
 
-  const [search, setSearch]         = React.useState('');
+  const [search, setSearch] = React.useState('');
   const [filterRole, setFilterRole] = React.useState<string | null>(null);
-  const [filterLoc, setFilterLoc]   = React.useState<string | null>(null);
-  const [filterVis, setFilterVis]   = React.useState<'all' | 'visible' | 'hidden'>('all');
+  const [filterLoc, setFilterLoc] = React.useState<string | null>(null);
+  const [filterVis, setFilterVis] = React.useState<'all' | 'visible' | 'hidden'>('all');
 
-  const [openId, setOpenId]       = React.useState<number | null>(null);
-  const [adminId, setAdminId]     = React.useState<number | null>(null);
+  const [openId, setOpenId] = React.useState<number | null>(null);
+  const [adminId, setAdminId] = React.useState<number | null>(null);
   const [adminOpen, setAdminOpen] = React.useState(false);
 
   const [creating, setCreating] = React.useState(false);
-  const [newName, setNewName]   = React.useState('');
-  const [newRole, setNewRole]   = React.useState('');
-  const [newLoc, setNewLoc]     = React.useState('');
-  const [newDesc, setNewDesc]   = React.useState('');
+  const [newName, setNewName] = React.useState('');
+  const [newRole, setNewRole] = React.useState('');
+  const [newLoc, setNewLoc] = React.useState('');
+  const [newDesc, setNewDesc] = React.useState('');
 
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -610,23 +659,33 @@ export const NPCsPage: React.FC = () => {
 
   const load = React.useCallback(async () => {
     setLoading(true);
-    try { setNpcs(await NpcApi.list()); }
-    catch { message.error('Failed to load NPCs'); }
-    finally { setLoading(false); }
+    try {
+      setNpcs(await NpcApi.list());
+    } catch {
+      message.error('Failed to load NPCs');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
 
   // Derived filter lists
   const allRoles = React.useMemo(() => {
     const s = new Set<string>();
-    npcs.forEach((n) => { if (n.role) s.add(n.role); });
+    npcs.forEach((n) => {
+      if (n.role) s.add(n.role);
+    });
     return Array.from(s).sort();
   }, [npcs]);
 
   const allLocations = React.useMemo(() => {
     const s = new Set<string>();
-    npcs.forEach((n) => { if (n.location) s.add(n.location); });
+    npcs.forEach((n) => {
+      if (n.location) s.add(n.location);
+    });
     return Array.from(s).sort();
   }, [npcs]);
 
@@ -652,17 +711,24 @@ export const NPCsPage: React.FC = () => {
     [npcs, isGM, filterVis, filterRole, filterLoc, q],
   );
 
-  const stats = React.useMemo(() => ({
-    total: npcs.length,
-    visible: npcs.filter(isVisible).length,
-    hidden: npcs.filter((n) => !isVisible(n)).length,
-  }), [npcs]);
+  const stats = React.useMemo(
+    () => ({
+      total: npcs.length,
+      visible: npcs.filter(isVisible).length,
+      hidden: npcs.filter((n) => !isVisible(n)).length,
+    }),
+    [npcs],
+  );
 
   async function toggleVisible(n: Npc) {
     const next = !isVisible(n);
-    setNpcs((prev) => prev.map((x) => x.id === n.id ? { ...x, visible: next } : x));
-    try { await NpcApi.setVisible(n.id, next); }
-    catch { message.error('Failed to change visibility'); await load(); }
+    setNpcs((prev) => prev.map((x) => (x.id === n.id ? { ...x, visible: next } : x)));
+    try {
+      await NpcApi.setVisible(n.id, next);
+    } catch {
+      message.error('Failed to change visibility');
+      await load();
+    }
   }
 
   async function onCreate(e: React.FormEvent) {
@@ -670,16 +736,26 @@ export const NPCsPage: React.FC = () => {
     const n = newName.trim();
     if (!n) return message.warning('Name is required');
     try {
-      await NpcApi.create({ name: n, role: newRole || null, location: newLoc.trim() || null, description: newDesc.trim() || null } as CreateNpcDTO);
+      await NpcApi.create({
+        name: n,
+        role: newRole || null,
+        location: newLoc.trim() || null,
+        description: newDesc.trim() || null,
+      } as CreateNpcDTO);
       setCreating(false);
-      setNewName(''); setNewRole(''); setNewLoc(''); setNewDesc('');
+      setNewName('');
+      setNewRole('');
+      setNewLoc('');
+      setNewDesc('');
       await load();
       message.success('NPC created');
-    } catch { message.error('Failed to create NPC'); }
+    } catch {
+      message.error('Failed to create NPC');
+    }
   }
 
   const detailNpc = npcs.find((x) => x.id === openId) ?? null;
-  const adminNpc  = npcs.find((x) => x.id === adminId) ?? null;
+  const adminNpc = npcs.find((x) => x.id === adminId) ?? null;
   const cols = mobileOnly ? 1 : isTablet ? 2 : 3;
 
   return (
@@ -689,7 +765,6 @@ export const NPCsPage: React.FC = () => {
       {/* ── Header card ── */}
       <Card density="dense" style={{ marginBottom: 20 }}>
         <Space direction="vertical" size={12} style={{ width: '100%' }}>
-
           {/* Title row */}
           <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
             <div>
@@ -714,9 +789,7 @@ export const NPCsPage: React.FC = () => {
             <Tag icon={<UserOutlined />}>{stats.total} characters</Tag>
             {isGM && <Tag color="green">{stats.visible} visible</Tag>}
             {isGM && stats.hidden > 0 && <Tag color="red">{stats.hidden} hidden</Tag>}
-            {filtered.length !== npcs.length && (
-              <Tag color="blue">{filtered.length} shown</Tag>
-            )}
+            {filtered.length !== npcs.length && <Tag color="blue">{filtered.length} shown</Tag>}
           </Space>
 
           {/* Filter bar */}
@@ -733,11 +806,7 @@ export const NPCsPage: React.FC = () => {
 
             {/* Role filter — buttons (limited set, coloured) */}
             <Space size={4} wrap>
-              <Button
-                size="small"
-                type={!filterRole ? 'primary' : 'default'}
-                onClick={() => setFilterRole(null)}
-              >
+              <Button size="small" type={!filterRole ? 'primary' : 'default'} onClick={() => setFilterRole(null)}>
                 All
               </Button>
               {allRoles.map((r) => {
@@ -760,7 +829,11 @@ export const NPCsPage: React.FC = () => {
             {allLocations.length > 0 && (
               <Select
                 allowClear
-                placeholder={<><EnvironmentOutlined /> Location</>}
+                placeholder={
+                  <>
+                    <EnvironmentOutlined /> Location
+                  </>
+                }
                 value={filterLoc ?? undefined}
                 onChange={(v) => setFilterLoc(v ?? null)}
                 style={{ minWidth: 160 }}
@@ -813,8 +886,11 @@ export const NPCsPage: React.FC = () => {
                           <Space size={6}>
                             <span
                               style={{
-                                display: 'inline-block', width: 8, height: 8,
-                                borderRadius: '50%', background: m.hex,
+                                display: 'inline-block',
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                background: m.hex,
                               }}
                             />
                             {r}
@@ -837,7 +913,9 @@ export const NPCsPage: React.FC = () => {
                   onChange={(e) => setNewDesc(e.target.value)}
                 />
                 <Space>
-                  <Button type="primary" htmlType="submit">Create</Button>
+                  <Button type="primary" htmlType="submit">
+                    Create
+                  </Button>
                   <Button onClick={() => setCreating(false)}>Cancel</Button>
                 </Space>
               </form>
@@ -876,7 +954,10 @@ export const NPCsPage: React.FC = () => {
               npc={n}
               gmMode={isGM}
               onView={() => setOpenId(n.id)}
-              onAdmin={() => { setAdminId(n.id); setAdminOpen(true); }}
+              onAdmin={() => {
+                setAdminId(n.id);
+                setAdminOpen(true);
+              }}
               onToggleVisible={() => void toggleVisible(n)}
             />
           ))}
@@ -884,15 +965,14 @@ export const NPCsPage: React.FC = () => {
       )}
 
       {/* ── Drawers — always mounted, driven by open prop ── */}
-      <NpcDetailDrawer
-        open={openId !== null}
-        npc={detailNpc}
-        onClose={() => setOpenId(null)}
-      />
+      <NpcDetailDrawer open={openId !== null} npc={detailNpc} onClose={() => setOpenId(null)} />
       <NpcAdminDrawer
         open={adminOpen}
         npc={adminNpc}
-        onClose={() => { setAdminOpen(false); setAdminId(null); }}
+        onClose={() => {
+          setAdminOpen(false);
+          setAdminId(null);
+        }}
         onChanged={load}
       />
     </>

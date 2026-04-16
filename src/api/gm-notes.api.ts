@@ -15,12 +15,20 @@ export async function listGmNotes(tag?: string): Promise<GmNote[]> {
   return data;
 }
 
-export async function createGmNote(body: { title: string; content?: string | null; tags?: string | null; pinned?: boolean }): Promise<GmNote> {
+export async function createGmNote(body: {
+  title: string;
+  content?: string | null;
+  tags?: string | null;
+  pinned?: boolean;
+}): Promise<GmNote> {
   const { data } = await http.post('/api/gm/notes', body);
   return data;
 }
 
-export async function updateGmNote(id: number, body: { title?: string; content?: string | null; tags?: string | null; pinned?: boolean }): Promise<void> {
+export async function updateGmNote(
+  id: number,
+  body: { title?: string; content?: string | null; tags?: string | null; pinned?: boolean },
+): Promise<void> {
   await http.patch(`/api/gm/notes/${id}`, body);
 }
 

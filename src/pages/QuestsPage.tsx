@@ -160,7 +160,7 @@ export const QuestsPage: React.FC = () => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
-  if (!title) return message.warning('Please provide a title');
+    if (!title) return message.warning('Please provide a title');
     try {
       const created = await createQuest({
         title,
@@ -174,9 +174,9 @@ export const QuestsPage: React.FC = () => {
       setNewDescription('');
       setNewReward('');
       setItems((prev) => [...prev, created].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)));
-  message.success('Quest created');
+      message.success('Quest created');
     } catch {
-  message.error('Failed to create quest (GM key?)');
+      message.error('Failed to create quest (GM key?)');
     }
   }
 
@@ -185,9 +185,9 @@ export const QuestsPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === qt.id ? { ...x, visible: next } : x)));
     try {
       await setQuestVisibility(qt.id, next);
-  message.success(next ? 'Quest visible to players' : 'Quest hidden');
+      message.success(next ? 'Quest visible to players' : 'Quest hidden');
     } catch {
-  message.error('Failed to change visibility (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
@@ -195,7 +195,7 @@ export const QuestsPage: React.FC = () => {
   async function saveEdit() {
     if (!openQuest) return;
     const title = editTitle.trim();
-  if (!title) return message.warning('Title cannot be empty');
+    if (!title) return message.warning('Title cannot be empty');
     try {
       await updateQuest(openQuest.id, {
         title,
@@ -216,9 +216,9 @@ export const QuestsPage: React.FC = () => {
             : x,
         ),
       );
-  message.success('Quest updated');
+      message.success('Quest updated');
     } catch {
-  message.error('Failed to update quest (GM key?)');
+      message.error('Failed to update quest (GM key?)');
     }
   }
 
@@ -295,27 +295,27 @@ export const QuestsPage: React.FC = () => {
             style={{ maxWidth: 360 }}
           />
           <Space size={4}>
-        {(['all', 'active', 'completed', 'failed'] as const).map((v) => (
+            {(['all', 'active', 'completed', 'failed'] as const).map((v) => (
               <Button
                 key={v}
                 size="small"
                 type={filterStatus === v ? 'primary' : 'default'}
                 onClick={() => setFilterStatus(v)}
               >
-          {v === 'all' ? 'All' : STATUS_LABEL[v]}
+                {v === 'all' ? 'All' : STATUS_LABEL[v]}
               </Button>
             ))}
           </Space>
           {isGM && (
             <Space size={4}>
-        {(['all', 'visible', 'hidden'] as const).map((v) => (
+              {(['all', 'visible', 'hidden'] as const).map((v) => (
                 <Button
                   key={v}
                   size="small"
                   type={filterVis === v ? 'primary' : 'default'}
                   onClick={() => setFilterVis(v)}
                 >
-          {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
+                  {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                 </Button>
               ))}
             </Space>
@@ -348,11 +348,7 @@ export const QuestsPage: React.FC = () => {
                 onChange={(e) => setNewDescription(e.target.value)}
                 rows={mobileOnly ? 6 : 4}
               />
-              <Input
-                placeholder="Reward (optional)"
-                value={newReward}
-                onChange={(e) => setNewReward(e.target.value)}
-              />
+              <Input placeholder="Reward (optional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
               <Space>
                 <Button type="primary" htmlType="submit">
                   Create Quest
@@ -373,9 +369,9 @@ export const QuestsPage: React.FC = () => {
     <>
       {loading ? (
         <Spinner />
-    ) : displayItems.length === 0 ? (
+      ) : displayItems.length === 0 ? (
         <Card density="comfy">
-      <Empty description="No quests found." />
+          <Empty description="No quests found." />
         </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 16, alignItems: 'start' }}>
@@ -420,8 +416,8 @@ export const QuestsPage: React.FC = () => {
                       {STATUS_LABEL[status] ?? status}
                     </Tag>
                     {isGM && (
-            <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
-              {vis ? 'Visible' : 'Hidden'}
+                      <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
+                        {vis ? 'Visible' : 'Hidden'}
                       </Tag>
                     )}
                   </Space>
@@ -484,13 +480,13 @@ export const QuestsPage: React.FC = () => {
                   <Switch size="small" checked={vis} onChange={() => void toggleVisible(qt)} />
                   <Button size="small" icon={<EditOutlined />} onClick={() => openForEdit(qt.id)} />
                   <Popconfirm
-                      title="Remove this quest permanently?"
-                      okText="Remove"
-                      cancelText="Cancel"
-                      onConfirm={() => void removeQuest(qt.id)}
-                    >
-                      <Button size="small" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    title="Remove this quest permanently?"
+                    okText="Remove"
+                    cancelText="Cancel"
+                    onConfirm={() => void removeQuest(qt.id)}
+                  >
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
                 </Space>
               </Space>
               <Typography.Text
@@ -519,7 +515,7 @@ export const QuestsPage: React.FC = () => {
 
   // ── Admin Desktop Table ───────────────────────────────────────────────────
   const AdminDesktopTable = (
-  <Card density="dense" title="Manage Quests">
+    <Card density="dense" title="Manage Quests">
       <div style={{ overflowX: 'auto' }}>
         <Table
           rowKey="id"
@@ -607,7 +603,7 @@ export const QuestsPage: React.FC = () => {
           ]}
         />
       </div>
-  {!filtered.length && !loading && <Empty description="No quests found." style={{ marginTop: 16 }} />}
+      {!filtered.length && !loading && <Empty description="No quests found." style={{ marginTop: 16 }} />}
     </Card>
   );
 
@@ -618,8 +614,8 @@ export const QuestsPage: React.FC = () => {
       ) : mobileOnly ? (
         filtered.length === 0 ? (
           <Card density="comfy">
-              <Empty description="No quests found." />
-            </Card>
+            <Empty description="No quests found." />
+          </Card>
         ) : (
           AdminMobileCards
         )
@@ -679,7 +675,7 @@ export const QuestsPage: React.FC = () => {
               )}
             </Space>
             <Divider style={{ margin: '4px 0' }} />
-                {openQuest.description ? (
+            {openQuest.description ? (
               <Card density="dense" title="Description">
                 <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75, fontSize: 14 }}>
                   {openQuest.description}
@@ -702,14 +698,10 @@ export const QuestsPage: React.FC = () => {
               <Card density="dense" title="Quest Data">
                 <Space direction="vertical" size={10} style={{ width: '100%' }}>
                   <div>
-                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       Title
                     </Typography.Text>
-                    <Input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="Quest title"
-                    />
+                    <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Quest title" />
                   </div>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>

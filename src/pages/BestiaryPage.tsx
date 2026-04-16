@@ -1,18 +1,5 @@
 import React from 'react';
-import {
-  Divider,
-  Drawer,
-  Empty,
-  Form,
-  Input,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  Typography,
-  Upload,
-  message,
-} from 'antd';
+import { Divider, Drawer, Empty, Form, Input, Space, Switch, Tabs, Tag, Typography, Upload, message } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
@@ -160,119 +147,117 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
               {monster.discovered ? 'Discovered' : 'Not discovered'}
             </Tag>
           </Space>
-        ) : 'Monster'
+        ) : (
+          'Monster'
+        )
       }
     >
-      {monster ? <Tabs defaultActiveKey="edit">
-        {/* ── Edit ── */}
-        <Tabs.TabPane tab="Edit" key="edit">
-          <Form layout="vertical" style={{ gap: 0 }}>
-            <Form.Item label="Name" required>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </Form.Item>
-            <Form.Item label="Type" extra="E.g.: Predator, Domestic, Swarm…">
-              <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" />
-            </Form.Item>
-            <Form.Item label="Habitat">
-              <Input
-                value={habitat}
-                onChange={(e) => setHabitat(e.target.value)}
-                placeholder="E.g.: Dunes, Canyons, Aquifers…"
-              />
-            </Form.Item>
-            <Form.Item label="Weaknesses / Behavior">
-              <Input
-                value={weaknesses}
-                onChange={(e) => setWeaknesses(e.target.value)}
-                placeholder="E.g.: fire, light, sound…"
-              />
-            </Form.Item>
-            <Form.Item label="Description">
-              <Input.TextArea
-                rows={6}
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                placeholder="Full description for players…"
-              />
-            </Form.Item>
-            <Space>
-              <Button type="primary" loading={saving} onClick={() => void handleSave()}>
-                Save
-              </Button>
-              <Button danger onClick={() => void handleDelete()}>
-                Delete
-              </Button>
-            </Space>
-          </Form>
-        </Tabs.TabPane>
-
-        {/* ── Image ── */}
-        <Tabs.TabPane tab="Image" key="image">
-          <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            {monster.imageUrl && (
-              <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
-                <img
-                  src={resolveApiUrl(monster.imageUrl)}
-                  alt={monster.imageAlt ?? monster.name}
-                  style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+      {monster ? (
+        <Tabs defaultActiveKey="edit">
+          {/* ── Edit ── */}
+          <Tabs.TabPane tab="Edit" key="edit">
+            <Form layout="vertical" style={{ gap: 0 }}>
+              <Form.Item label="Name" required>
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </Form.Item>
+              <Form.Item label="Type" extra="E.g.: Predator, Domestic, Swarm…">
+                <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (optional)" />
+              </Form.Item>
+              <Form.Item label="Habitat">
+                <Input
+                  value={habitat}
+                  onChange={(e) => setHabitat(e.target.value)}
+                  placeholder="E.g.: Dunes, Canyons, Aquifers…"
                 />
-              </div>
-            )}
-            <Form.Item label="Image alt text" style={{ marginBottom: 8 }}>
-              <Input
-                value={imgAlt}
-                onChange={(e) => setImgAlt(e.target.value)}
-                placeholder={monster.name}
-              />
-            </Form.Item>
-            <Upload {...uploadProps}>
-              <Button icon={<PictureOutlined />}>
-                {monster.imageUrl ? 'Change image' : 'Upload image'}
-              </Button>
-            </Upload>
-          </Space>
-        </Tabs.TabPane>
+              </Form.Item>
+              <Form.Item label="Weaknesses / Behavior">
+                <Input
+                  value={weaknesses}
+                  onChange={(e) => setWeaknesses(e.target.value)}
+                  placeholder="E.g.: fire, light, sound…"
+                />
+              </Form.Item>
+              <Form.Item label="Description">
+                <Input.TextArea
+                  rows={6}
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  placeholder="Full description for players…"
+                />
+              </Form.Item>
+              <Space>
+                <Button type="primary" loading={saving} onClick={() => void handleSave()}>
+                  Save
+                </Button>
+                <Button danger onClick={() => void handleDelete()}>
+                  Delete
+                </Button>
+              </Space>
+            </Form>
+          </Tabs.TabPane>
 
-        {/* ── Controls ── */}
-        <Tabs.TabPane tab="Controls" key="controls">
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-              <div>
-                <Typography.Text>Visible to players</Typography.Text>
-                <br />
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Hidden monsters do not appear in the list.
-                </Typography.Text>
-              </div>
-              <Switch
-                checked={monster.visible ?? true}
-                onChange={async (v) => {
-                  await BestiaryApi.setVisible(monster.id, v);
-                  await onChanged();
-                }}
-                checkedChildren={<EyeOutlined />}
-                unCheckedChildren={<EyeInvisibleOutlined />}
-              />
+          {/* ── Image ── */}
+          <Tabs.TabPane tab="Image" key="image">
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              {monster.imageUrl && (
+                <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
+                  <img
+                    src={resolveApiUrl(monster.imageUrl)}
+                    alt={monster.imageAlt ?? monster.name}
+                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+              )}
+              <Form.Item label="Image alt text" style={{ marginBottom: 8 }}>
+                <Input value={imgAlt} onChange={(e) => setImgAlt(e.target.value)} placeholder={monster.name} />
+              </Form.Item>
+              <Upload {...uploadProps}>
+                <Button icon={<PictureOutlined />}>{monster.imageUrl ? 'Change image' : 'Upload image'}</Button>
+              </Upload>
             </Space>
-            <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-              <div>
-                <Typography.Text>Marked as discovered</Typography.Text>
-                <br />
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Unlocks full description for players.
-                </Typography.Text>
-              </div>
-              <Switch
-                checked={monster.discovered ?? false}
-                onChange={async (v) => {
-                  await BestiaryApi.setDiscovered(monster.id, v);
-                  await onChanged();
-                }}
-              />
+          </Tabs.TabPane>
+
+          {/* ── Controls ── */}
+          <Tabs.TabPane tab="Controls" key="controls">
+            <Space direction="vertical" size={16} style={{ width: '100%' }}>
+              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                <div>
+                  <Typography.Text>Visible to players</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Hidden monsters do not appear in the list.
+                  </Typography.Text>
+                </div>
+                <Switch
+                  checked={monster.visible ?? true}
+                  onChange={async (v) => {
+                    await BestiaryApi.setVisible(monster.id, v);
+                    await onChanged();
+                  }}
+                  checkedChildren={<EyeOutlined />}
+                  unCheckedChildren={<EyeInvisibleOutlined />}
+                />
+              </Space>
+              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                <div>
+                  <Typography.Text>Marked as discovered</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Unlocks full description for players.
+                  </Typography.Text>
+                </div>
+                <Switch
+                  checked={monster.discovered ?? false}
+                  onChange={async (v) => {
+                    await BestiaryApi.setDiscovered(monster.id, v);
+                    await onChanged();
+                  }}
+                />
+              </Space>
             </Space>
-          </Space>
-        </Tabs.TabPane>
-      </Tabs> : null}
+          </Tabs.TabPane>
+        </Tabs>
+      ) : null}
     </Drawer>
   );
 };
@@ -450,11 +435,7 @@ export const BestiaryPage: React.FC = () => {
                 >
                   📖 Bestiary
                 </Button>
-                <Button
-                  size="small"
-                  type={viewMode === 'gm' ? 'primary' : 'default'}
-                  onClick={() => setViewMode('gm')}
-                >
+                <Button size="small" type={viewMode === 'gm' ? 'primary' : 'default'} onClick={() => setViewMode('gm')}>
                   ⚙️ GM Panel
                 </Button>
               </Space>
@@ -540,13 +521,7 @@ export const BestiaryPage: React.FC = () => {
     if (!data.length) {
       return (
         <Card density="comfy">
-          <Empty
-            description={
-              mode === 'players'
-                ? 'No creatures visible to players yet.'
-                : 'No creatures found.'
-            }
-          />
+          <Empty description={mode === 'players' ? 'No creatures visible to players yet.' : 'No creatures found.'} />
         </Card>
       );
     }
@@ -747,9 +722,7 @@ export const BestiaryPage: React.FC = () => {
           ]}
         />
       </div>
-      {!gmItems.length && !loading && (
-        <Empty description="No creatures found." style={{ marginTop: 16 }} />
-      )}
+      {!gmItems.length && !loading && <Empty description="No creatures found." style={{ marginTop: 16 }} />}
     </Card>
   );
 
@@ -762,13 +735,7 @@ export const BestiaryPage: React.FC = () => {
 
       {viewMode === 'gm' && isGM ? (
         <>
-          {loading ? (
-            <Spinner />
-          ) : mobileOnly ? (
-            <MonsterCards data={gmItems} mode="gm" />
-          ) : (
-            DesktopAdminTable
-          )}
+          {loading ? <Spinner /> : mobileOnly ? <MonsterCards data={gmItems} mode="gm" /> : DesktopAdminTable}
           <MonsterAdminDrawer
             open={adminOpen}
             monster={adminMonster}

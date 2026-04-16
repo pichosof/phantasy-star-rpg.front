@@ -51,32 +51,32 @@ function formatTime(d: Date): string {
 // ── Die shapes & colors ───────────────────────────────────────────────────────
 
 const DIE_SHAPES: Record<DiceType, string> = {
-  2:   'circle(48% at 50% 50%)',
-  4:   'polygon(50% 0%, 0% 100%, 100% 100%)',
-  6:   'polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%)',
-  8:   'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-  10:  'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)',
-  12:  'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)',
-  16:  'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-  20:  'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
-  24:  'polygon(50% 0%, 83% 7%, 100% 37%, 100% 63%, 83% 93%, 50% 100%, 17% 93%, 0% 63%, 0% 37%, 17% 7%)',
-  30:  'polygon(50% 0%, 79% 9%, 98% 35%, 98% 65%, 79% 91%, 50% 100%, 21% 91%, 2% 65%, 2% 35%, 21% 9%)',
-  60:  'circle(48% at 50% 50%)',
+  2: 'circle(48% at 50% 50%)',
+  4: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+  6: 'polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%)',
+  8: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+  10: 'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)',
+  12: 'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)',
+  16: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+  20: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
+  24: 'polygon(50% 0%, 83% 7%, 100% 37%, 100% 63%, 83% 93%, 50% 100%, 17% 93%, 0% 63%, 0% 37%, 17% 7%)',
+  30: 'polygon(50% 0%, 79% 9%, 98% 35%, 98% 65%, 79% 91%, 50% 100%, 21% 91%, 2% 65%, 2% 35%, 21% 9%)',
+  60: 'circle(48% at 50% 50%)',
   100: 'circle(48% at 50% 50%)',
 };
 
 const DIE_COLORS: Record<DiceType, string> = {
-  2:   '#597ef7',
-  4:   '#36cfc9',
-  6:   '#73d13d',
-  8:   '#ffc53d',
-  10:  '#ff7a45',
-  12:  '#f759ab',
-  16:  '#9254de',
-  20:  '#ff4d4f',
-  24:  '#13c2c2',
-  30:  '#52c41a',
-  60:  '#fa8c16',
+  2: '#597ef7',
+  4: '#36cfc9',
+  6: '#73d13d',
+  8: '#ffc53d',
+  10: '#ff7a45',
+  12: '#f759ab',
+  16: '#9254de',
+  20: '#ff4d4f',
+  24: '#13c2c2',
+  30: '#52c41a',
+  60: '#fa8c16',
   100: '#40a9ff',
 };
 
@@ -158,17 +158,9 @@ function DieSelectorCard({
   const color = DIE_COLORS[type];
   const active = count > 0;
 
-  const cardBg = active
-    ? `${color}18`
-    : isDark
-    ? 'rgba(255,255,255,0.03)'
-    : 'rgba(0,0,0,0.03)';
+  const cardBg = active ? `${color}18` : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
 
-  const cardBorder = active
-    ? `${color}66`
-    : isDark
-    ? 'rgba(255,255,255,0.1)'
-    : 'rgba(0,0,0,0.12)';
+  const cardBorder = active ? `${color}66` : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)';
 
   // Inactive die shape: use the die's color at low opacity so it's visible on any bg
   const dieBg = active ? color : isDark ? `${color}45` : `${color}35`;
@@ -207,7 +199,15 @@ function DieSelectorCard({
           flexShrink: 0,
         }}
       >
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#fff', userSelect: 'none', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: '#fff',
+            userSelect: 'none',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          }}
+        >
           d{type}
         </span>
       </div>
@@ -217,21 +217,32 @@ function DieSelectorCard({
           onClick={() => onChange(-1)}
           disabled={count === 0}
           style={{
-            width: 22, height: 22, borderRadius: 4, border: 'none',
+            width: 22,
+            height: 22,
+            borderRadius: 4,
+            border: 'none',
             background: count === 0 ? btnDisabledBg : btnBg,
             color: count === 0 ? btnDisabledColor : btnColor,
             cursor: count === 0 ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, lineHeight: 1, padding: 0, transition: 'all 0.12s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 16,
+            lineHeight: 1,
+            padding: 0,
+            transition: 'all 0.12s',
           }}
         >
           −
         </button>
         <span
           style={{
-            minWidth: 18, textAlign: 'center',
-            fontWeight: 700, fontSize: 15,
-            color: countColor, transition: 'color 0.15s',
+            minWidth: 18,
+            textAlign: 'center',
+            fontWeight: 700,
+            fontSize: 15,
+            color: countColor,
+            transition: 'color 0.15s',
           }}
         >
           {count}
@@ -239,11 +250,20 @@ function DieSelectorCard({
         <button
           onClick={() => onChange(1)}
           style={{
-            width: 22, height: 22, borderRadius: 4, border: 'none',
-            background: btnBg, color: btnColor,
-            cursor: 'pointer', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 16, lineHeight: 1,
-            padding: 0, transition: 'all 0.12s',
+            width: 22,
+            height: 22,
+            borderRadius: 4,
+            border: 'none',
+            background: btnBg,
+            color: btnColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 16,
+            lineHeight: 1,
+            padding: 0,
+            transition: 'all 0.12s',
           }}
         >
           +
@@ -265,12 +285,12 @@ function HistoryRow({
   isDark: boolean;
 }) {
   const maxes = entry.rolls.flatMap((r) => r.values.filter((v) => v === r.type)).length;
-  const mins  = entry.rolls.flatMap((r) => r.values.filter((v) => v === 1)).length;
+  const mins = entry.rolls.flatMap((r) => r.values.filter((v) => v === 1)).length;
 
-  const rowBg     = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
+  const rowBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
   const rowBorder = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)';
-  const totalColor      = isDark ? '#fff' : 'rgba(0,0,0,0.85)';
-  const replayBg        = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const totalColor = isDark ? '#fff' : 'rgba(0,0,0,0.85)';
+  const replayBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
   const replayIconColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
 
   return (
@@ -288,21 +308,34 @@ function HistoryRow({
             {formatTime(entry.timestamp)}
           </Typography.Text>
           <Tag style={{ margin: 0, fontFamily: 'monospace', fontSize: 12 }}>{entry.label}</Tag>
-          {maxes > 0 && <Tag color="gold"  style={{ margin: 0, fontSize: 11 }}>{maxes}× max</Tag>}
-          {mins  > 0 && <Tag color="red"   style={{ margin: 0, fontSize: 11 }}>{mins}× min</Tag>}
+          {maxes > 0 && (
+            <Tag color="gold" style={{ margin: 0, fontSize: 11 }}>
+              {maxes}× max
+            </Tag>
+          )}
+          {mins > 0 && (
+            <Tag color="red" style={{ margin: 0, fontSize: 11 }}>
+              {mins}× min
+            </Tag>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: totalColor, whiteSpace: 'nowrap' }}>
-            {entry.total}
-          </span>
+          <span style={{ fontSize: 20, fontWeight: 800, color: totalColor, whiteSpace: 'nowrap' }}>{entry.total}</span>
           <button
             onClick={() => onReplay(entry)}
             title="Roll again with the same dice"
             style={{
-              width: 24, height: 24, borderRadius: 4, border: 'none',
-              background: replayBg, color: replayIconColor,
-              cursor: 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', padding: 0,
+              width: 24,
+              height: 24,
+              borderRadius: 4,
+              border: 'none',
+              background: replayBg,
+              color: replayIconColor,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
             }}
           >
             <RollbackOutlined style={{ fontSize: 12 }} />
@@ -332,9 +365,9 @@ export const DiceRollerPage: React.FC = () => {
     () => Object.fromEntries(ALL_DICE.map((d) => [d, 0])) as Record<DiceType, number>,
   );
 
-  const [history,   setHistory]   = React.useState<HistoryEntry[]>([]);
+  const [history, setHistory] = React.useState<HistoryEntry[]>([]);
   const [lastEntry, setLastEntry] = React.useState<HistoryEntry | null>(null);
-  const [rolling,   setRolling]   = React.useState(false);
+  const [rolling, setRolling] = React.useState(false);
 
   const totalDice = Object.values(selection).reduce((a, b) => a + b, 0);
 
@@ -351,8 +384,7 @@ export const DiceRollerPage: React.FC = () => {
 
   function doRoll(overrideGroups?: DiceGroup[]) {
     const groups: DiceGroup[] =
-      overrideGroups ??
-      ALL_DICE.filter((d) => selection[d] > 0).map((d) => ({ type: d, count: selection[d] }));
+      overrideGroups ?? ALL_DICE.filter((d) => selection[d] > 0).map((d) => ({ type: d, count: selection[d] }));
 
     if (!groups.length) {
       message.warning('Select at least one die to roll.');
@@ -370,7 +402,9 @@ export const DiceRollerPage: React.FC = () => {
       const entry: HistoryEntry = {
         id: `${Date.now()}-${Math.random()}`,
         timestamp: new Date(),
-        rolls, total, label,
+        rolls,
+        total,
+        label,
       };
       setLastEntry(entry);
       setHistory((prev) => [entry, ...prev].slice(0, 50));
@@ -393,7 +427,6 @@ export const DiceRollerPage: React.FC = () => {
       <PageTitle>Dice Roller</PageTitle>
 
       <div style={{ display: 'grid', gap: 16, maxWidth: 860, margin: '0 auto' }}>
-
         {/* ── Selector ── */}
         <Card density="comfy">
           <Typography.Title level={4} style={{ margin: '0 0 16px' }}>
@@ -465,7 +498,9 @@ export const DiceRollerPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span style={{ fontSize: 13, color: totalLabelColor }}>Total</span>
 
-                <span style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: totalValueColor, letterSpacing: -1 }}>
+                <span
+                  style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: totalValueColor, letterSpacing: -1 }}
+                >
                   {lastEntry.total}
                 </span>
               </div>
@@ -485,14 +520,34 @@ export const DiceRollerPage: React.FC = () => {
               const allMin = allValues.length > 0 && lastEntry.rolls.every((r) => r.values.every((v) => v === 1));
               if (allMax)
                 return (
-                  <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,197,61,0.12)', border: '1px solid rgba(255,197,61,0.3)' }}>
-                    <Typography.Text style={{ color: '#ffc53d', fontWeight: 700 }}>✨ All dice at maximum!</Typography.Text>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(255,197,61,0.12)',
+                      border: '1px solid rgba(255,197,61,0.3)',
+                    }}
+                  >
+                    <Typography.Text style={{ color: '#ffc53d', fontWeight: 700 }}>
+                      ✨ All dice at maximum!
+                    </Typography.Text>
                   </div>
                 );
               if (allMin)
                 return (
-                  <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,77,79,0.12)', border: '1px solid rgba(255,77,79,0.3)' }}>
-                    <Typography.Text style={{ color: '#ff4d4f', fontWeight: 700 }}>💀 Total fumble — all dice at minimum!</Typography.Text>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(255,77,79,0.12)',
+                      border: '1px solid rgba(255,77,79,0.3)',
+                    }}
+                  >
+                    <Typography.Text style={{ color: '#ff4d4f', fontWeight: 700 }}>
+                      💀 Total fumble — all dice at minimum!
+                    </Typography.Text>
                   </div>
                 );
               return null;
@@ -507,7 +562,10 @@ export const DiceRollerPage: React.FC = () => {
             title={
               <Space size={10}>
                 <span>History</span>
-                <Badge count={history.length} style={{ backgroundColor: 'rgba(128,128,128,0.3)', color: isDark ? '#fff' : '#000' }} />
+                <Badge
+                  count={history.length}
+                  style={{ backgroundColor: 'rgba(128,128,128,0.3)', color: isDark ? '#fff' : '#000' }}
+                />
                 <Tag style={{ margin: 0 }}>
                   Total sum: <span style={{ fontWeight: 700, marginLeft: 4 }}>{historySum}</span>
                 </Tag>

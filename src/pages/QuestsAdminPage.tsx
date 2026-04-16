@@ -63,7 +63,7 @@ export const QuestsAdminPage: React.FC = () => {
       setItems(data);
     } catch (e) {
       console.error(e);
-  message.error('Failed to load quests');
+      message.error('Failed to load quests');
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export const QuestsAdminPage: React.FC = () => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
-  if (!title) return message.warning('Please provide a title');
+    if (!title) return message.warning('Please provide a title');
 
     try {
       const created = await createQuest({
@@ -125,10 +125,10 @@ export const QuestsAdminPage: React.FC = () => {
       setNewReward('');
 
       setItems((prev) => [...prev, created].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)));
-  message.success('Quest created');
+      message.success('Quest created');
     } catch (e) {
       console.error(e);
-  message.error('Failed to create quest (GM key?)');
+      message.error('Failed to create quest (GM key?)');
     }
   }
 
@@ -140,10 +140,10 @@ export const QuestsAdminPage: React.FC = () => {
 
     try {
       await setQuestVisibility(qt.id, next);
-  message.success(next ? 'Quest visible to players' : 'Quest hidden from players');
+      message.success(next ? 'Quest visible to players' : 'Quest hidden from players');
     } catch (e) {
       console.error(e);
-  message.error('Failed to change visibility (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
@@ -152,7 +152,7 @@ export const QuestsAdminPage: React.FC = () => {
     if (!openQuest) return;
 
     const title = editTitle.trim();
-  if (!title) return message.warning('Title cannot be empty');
+    if (!title) return message.warning('Title cannot be empty');
 
     try {
       await updateQuest(openQuest.id, {
@@ -176,10 +176,10 @@ export const QuestsAdminPage: React.FC = () => {
         ),
       );
 
-  message.success('Quest updated');
+      message.success('Quest updated');
     } catch (e) {
       console.error(e);
-  message.error('Failed to update quest (GM key?)');
+      message.error('Failed to update quest (GM key?)');
     }
   }
 
@@ -188,10 +188,10 @@ export const QuestsAdminPage: React.FC = () => {
       await deleteQuest(id);
       setItems((prev) => prev.filter((x) => x.id !== id));
       if (openId === id) setOpenId(null);
-  message.success('Quest removed');
+      message.success('Quest removed');
     } catch (e) {
       console.error(e);
-  message.error('Failed to remove quest (GM key?)');
+      message.error('Failed to remove quest (GM key?)');
     }
   }
 
@@ -244,13 +244,13 @@ export const QuestsAdminPage: React.FC = () => {
 
           <Space wrap>
             <Input
-                  allowClear
-                  placeholder="Search (title/description/reward)..."
+              allowClear
+              placeholder="Search (title/description/reward)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ maxWidth: 380 }}
             />
-                <Button onClick={() => setCreating((v) => !v)}>{creating ? 'Close' : 'Create quest'}</Button>
+            <Button onClick={() => setCreating((v) => !v)}>{creating ? 'Close' : 'Create quest'}</Button>
           </Space>
         </Space>
 
@@ -259,7 +259,7 @@ export const QuestsAdminPage: React.FC = () => {
             <Divider style={{ margin: '8px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 920 }}>
               <Input placeholder="Título" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
-                <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
+              <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
 
               <Space wrap>
                 <span>Status:</span>
@@ -272,20 +272,20 @@ export const QuestsAdminPage: React.FC = () => {
               </Space>
 
               <TextArea
-                  placeholder="Description"
+                placeholder="Description"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 rows={mobileOnly ? 6 : 5}
               />
 
               <Input placeholder="Reward (opcional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
-                <Input placeholder="Reward (optional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
+              <Input placeholder="Reward (optional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
 
               <Space>
-                  <Button type="primary" htmlType="submit">
-                    Create
+                <Button type="primary" htmlType="submit">
+                  Create
                 </Button>
-                  <Button onClick={() => setCreating(false)}>Cancel</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>

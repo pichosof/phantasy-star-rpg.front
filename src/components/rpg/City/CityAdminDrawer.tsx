@@ -157,10 +157,10 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         description: editDesc.trim() || null,
         region: editRegion.trim() || null,
       });
-  message.success('City updated.');
+      message.success('City updated.');
       await onChanged();
     } catch {
-  message.error('Failed to save (GM key?)');
+      message.error('Failed to save (GM key?)');
     } finally {
       setSaving(false);
     }
@@ -171,18 +171,18 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
     try {
       await CitiesApi.setWorld(city.id, worldId);
-  message.success('World link updated.');
+      message.success('World link updated.');
       await onChanged();
     } catch (e) {
-  console.error(e);
-  message.error('Failed to link city to world.');
+      console.error(e);
+      message.error('Failed to link city to world.');
     }
   }
 
   const DrawerTitle = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-  <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'City'}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'City'}</span>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -214,7 +214,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         isMobile ? (
           DrawerTitle
         ) : (
-            <Space>
+          <Space>
             <span>Admin · {city?.name ?? 'City'}</span>
             {city?.visible === false && <Tag color="red">Hidden</Tag>}
             {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
@@ -230,11 +230,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                   Name *
                 </Typography.Text>
-                <Input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder="City name"
-                />
+                <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="City name" />
               </div>
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
@@ -441,18 +437,18 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   const alt = imgAlt || city.imageAlt || undefined;
                   CitiesApi.uploadImage(city.id, file, alt)
                     .then(async () => {
-            onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-            message.success('Image updated');
+                      onSuccess?.({}, undefined as unknown as XMLHttpRequest);
+                      message.success('Image updated');
                       await onChanged();
                     })
                     .catch((err: Error) => {
                       onError?.(err);
-            message.error('Failed to upload image (GM key?)');
+                      message.error('Failed to upload image (GM key?)');
                     });
                 }}
               >
                 <Button icon={<PictureOutlined />} type="primary">
-          {city.imageUrl ? 'Change image' : 'Upload image'}
+                  {city.imageUrl ? 'Change image' : 'Upload image'}
                 </Button>
               </Upload>
 

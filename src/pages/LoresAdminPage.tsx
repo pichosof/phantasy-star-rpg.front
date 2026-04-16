@@ -687,11 +687,7 @@ export const LoresAdminPage: React.FC = () => {
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       Title
                     </Typography.Text>
-                    <Input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="Lore title"
-                    />
+                    <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Lore title" />
                   </div>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>

@@ -23,12 +23,18 @@ export const GmImagesPage: React.FC = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const load = React.useCallback(async () => {
-    try { setImages(await listGmImages()); }
-    catch { message.error('Failed to load images'); }
-    finally { setLoading(false); }
+    try {
+      setImages(await listGmImages());
+    } catch {
+      message.error('Failed to load images');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -39,20 +45,27 @@ export const GmImagesPage: React.FC = () => {
       await uploadGmImage(file);
       await load();
       message.success('Image uploaded');
-    } catch { message.error('Failed to upload (GM key?)'); }
-    finally { setUploading(false); }
+    } catch {
+      message.error('Failed to upload (GM key?)');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function confirmDelete(img: GmImage) {
     Modal.confirm({
       title: `Delete "${img.filename}"?`,
-      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
       onOk: async () => {
         try {
           await deleteGmImage(img.id);
           await load();
           message.success('Image removed');
-        } catch { message.error('Failed to remove'); }
+        } catch {
+          message.error('Failed to remove');
+        }
       },
     });
   }
@@ -63,7 +76,16 @@ export const GmImagesPage: React.FC = () => {
     <>
       <PageTitle>GM — Images</PageTitle>
       <Card density="comfy">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+            flexWrap: 'wrap',
+            gap: 8,
+          }}
+        >
           <Typography.Title level={4} style={{ margin: 0 }}>
             GM Gallery · {images.length} images
           </Typography.Title>
@@ -75,7 +97,13 @@ export const GmImagesPage: React.FC = () => {
           >
             Upload image
           </Button>
-          <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" style={{ display: 'none' }} onChange={onFileChange} />
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            style={{ display: 'none' }}
+            onChange={onFileChange}
+          />
         </div>
 
         {images.length === 0 ? (
@@ -83,13 +111,23 @@ export const GmImagesPage: React.FC = () => {
             <Typography.Text type="secondary">No images yet. Upload the first one!</Typography.Text>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gap: 12,
-            gridTemplateColumns: mobileOnly ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))',
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: 12,
+              gridTemplateColumns: mobileOnly ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))',
+            }}
+          >
             {images.map((img) => (
-              <div key={img.id} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(128,128,128,0.15)', background: 'rgba(128,128,128,0.05)' }}>
+              <div
+                key={img.id}
+                style={{
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(128,128,128,0.15)',
+                  background: 'rgba(128,128,128,0.05)',
+                }}
+              >
                 <div style={{ height: 140, background: '#111', position: 'relative', overflow: 'hidden' }}>
                   <img
                     src={resolveGmImageUrl(img.url)}
@@ -98,7 +136,9 @@ export const GmImagesPage: React.FC = () => {
                   />
                 </div>
                 <div style={{ padding: '8px 10px' }}>
-                  <Typography.Text style={{ fontSize: 12, display: 'block' }} ellipsis>{img.filename}</Typography.Text>
+                  <Typography.Text style={{ fontSize: 12, display: 'block' }} ellipsis>
+                    {img.filename}
+                  </Typography.Text>
                   <Space size={4} wrap style={{ marginTop: 4 }}>
                     <Tag style={{ margin: 0, fontSize: 10 }}>{img.mime.split('/')[1]?.toUpperCase()}</Tag>
                     <Tag style={{ margin: 0, fontSize: 10 }}>{fmtSize(img.size)}</Tag>
@@ -107,7 +147,10 @@ export const GmImagesPage: React.FC = () => {
                     <Button
                       size="small"
                       style={{ flex: 1, fontSize: 11 }}
-                      onClick={() => { navigator.clipboard.writeText(resolveGmImageUrl(img.url) ?? ''); message.success('URL copied'); }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(resolveGmImageUrl(img.url) ?? '');
+                        message.success('URL copied');
+                      }}
                     >
                       Copy URL
                     </Button>

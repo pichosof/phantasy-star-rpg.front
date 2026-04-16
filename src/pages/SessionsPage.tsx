@@ -42,13 +42,13 @@ function formatDate(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-    return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 function formatDateTime(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-    return d.toLocaleString();
+  return d.toLocaleString();
 }
 
 // ── Cover ─────────────────────────────────────────────────────────────────────
@@ -204,11 +204,11 @@ export const SessionsPage: React.FC = () => {
   }
 
   async function onCreate(e: React.FormEvent) {
-  e.preventDefault();
-  const title = newTitle.trim();
-  const date = newDate.trim();
-  if (!title) return message.warning('Please provide a title');
-  if (!date) return message.warning('Please provide a date');
+    e.preventDefault();
+    const title = newTitle.trim();
+    const date = newDate.trim();
+    if (!title) return message.warning('Please provide a title');
+    if (!date) return message.warning('Please provide a date');
     try {
       const created = await createSession({
         title,
@@ -222,9 +222,9 @@ export const SessionsPage: React.FC = () => {
       setNewSummary('');
       setNewImageUrl('');
       setItems((prev) => [created, ...prev]);
-  message.success('Session created');
+      message.success('Session created');
     } catch {
-  message.error('Failed to create session — check the GM key.');
+      message.error('Failed to create session — check the GM key.');
     }
   }
 
@@ -233,19 +233,19 @@ export const SessionsPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === s.id ? { ...x, visible: next } : x)));
     try {
       await setSessionVisibility(s.id, next);
-  message.success(next ? 'Session visible to players' : 'Session hidden');
+      message.success(next ? 'Session visible to players' : 'Session hidden');
     } catch {
-  message.error('Failed to change visibility (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
 
   async function saveEdit() {
-  if (!openSession) return;
-  const title = editTitle.trim();
-  if (!title) return message.warning('Title cannot be empty');
-  const date = editDate.trim();
-  if (!date) return message.warning('Date cannot be empty');
+    if (!openSession) return;
+    const title = editTitle.trim();
+    if (!title) return message.warning('Title cannot be empty');
+    const date = editDate.trim();
+    if (!date) return message.warning('Date cannot be empty');
     try {
       await updateSession(openSession.id, {
         title,
@@ -268,9 +268,9 @@ export const SessionsPage: React.FC = () => {
             : x,
         ),
       );
-  message.success('Session updated');
+      message.success('Session updated');
     } catch {
-  message.error('Failed to update session (GM key?)');
+      message.error('Failed to update session (GM key?)');
     }
   }
 
@@ -394,7 +394,7 @@ export const SessionsPage: React.FC = () => {
                   required
                 />
               </Space>
-                <TextArea
+              <TextArea
                 placeholder={
                   'Summary — use sections:\n## Milestones\n- ...\n## Key Points\n- ...\n## Links\n- Quest: ...'
                 }
@@ -426,9 +426,9 @@ export const SessionsPage: React.FC = () => {
       {loading ? (
         <Spinner />
       ) : filtered.length === 0 ? (
-          <Card density="comfy">
-            <Empty description="No sessions found." />
-          </Card>
+        <Card density="comfy">
+          <Empty description="No sessions found." />
+        </Card>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 16, alignItems: 'start' }}>
           {filtered.map((session) => {
@@ -477,7 +477,7 @@ export const SessionsPage: React.FC = () => {
                         color: '#8c8c8c',
                       }}
                     >
-                        Session #{num}
+                      Session #{num}
                     </span>
                     {isGM && (
                       <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
@@ -593,7 +593,7 @@ export const SessionsPage: React.FC = () => {
               render: (_: any, s: Session) => <Tag style={{ margin: 0 }}>#{sessionNumber(s.id)}</Tag>,
             },
             {
-            title: 'Visible',
+              title: 'Visible',
               key: 'visible',
               width: 90,
               render: (_: any, s: Session) => (
@@ -607,7 +607,7 @@ export const SessionsPage: React.FC = () => {
               ),
             },
             {
-            title: 'Title',
+              title: 'Title',
               key: 'title',
               render: (_: any, s: Session) => (
                 <Space direction="vertical" size={2}>
@@ -628,14 +628,14 @@ export const SessionsPage: React.FC = () => {
               ),
             },
             {
-            title: 'Date',
+              title: 'Date',
               dataIndex: 'date',
               key: 'date',
               width: 200,
               render: (v: string) => <Typography.Text style={{ fontSize: 13 }}>{v}</Typography.Text>,
             },
             {
-            title: 'Created at',
+              title: 'Created at',
               dataIndex: 'createdAt',
               key: 'createdAt',
               width: 160,
@@ -646,16 +646,16 @@ export const SessionsPage: React.FC = () => {
               ),
             },
             {
-            title: 'Actions',
+              title: 'Actions',
               key: 'actions',
               width: 100,
               render: (_: any, s: Session) => (
                 <Space size={4}>
                   <Button size="small" icon={<EditOutlined />} onClick={() => openForEdit(s.id)} />
                   <Popconfirm
-                title="Remove this session permanently?"
-                okText="Remove"
-                cancelText="Cancel"
+                    title="Remove this session permanently?"
+                    okText="Remove"
+                    cancelText="Cancel"
                     onConfirm={() => void removeSession(s.id)}
                   >
                     <Button size="small" danger icon={<DeleteOutlined />} />
@@ -666,7 +666,7 @@ export const SessionsPage: React.FC = () => {
           ]}
         />
       </div>
-  {!filtered.length && !loading && <Empty description="No sessions found." style={{ marginTop: 16 }} />}
+      {!filtered.length && !loading && <Empty description="No sessions found." style={{ marginTop: 16 }} />}
     </Card>
   );
 
@@ -694,12 +694,12 @@ export const SessionsPage: React.FC = () => {
       visible
       onClose={() => setOpenId(null)}
       width={mobileOnly ? '100%' : 700}
-  title={
+      title={
         <Space wrap size={8}>
           <span style={{ fontWeight: 800 }}>
-    Session #{sessionNumber(openSession.id)} · {openSession.title}
+            Session #{sessionNumber(openSession.id)} · {openSession.title}
           </span>
-      <Tag color={isVisible(openSession) ? 'green' : 'red'}>{isVisible(openSession) ? 'Visible' : 'Hidden'}</Tag>
+          <Tag color={isVisible(openSession) ? 'green' : 'red'}>{isVisible(openSession) ? 'Visible' : 'Hidden'}</Tag>
           <Badge count={`#${openSession.id}`} style={{ backgroundColor: '#595959' }} />
         </Space>
       }
@@ -727,7 +727,7 @@ export const SessionsPage: React.FC = () => {
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         {/* ── Ver ── */}
-  <Tabs.TabPane tab="📖 Session" key="view">
+        <Tabs.TabPane tab="📖 Session" key="view">
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <div style={{ borderRadius: 8, overflow: 'hidden' }}>
               <SessionCover session={openSession} height={240} />
@@ -736,10 +736,10 @@ export const SessionsPage: React.FC = () => {
               <Tag icon={<span>📅</span>} color="blue">
                 {formatDate(openSession.date)}
               </Tag>
-        <Tag color="default">Session #{sessionNumber(openSession.id)}</Tag>
+              <Tag color="default">Session #{sessionNumber(openSession.id)}</Tag>
               {isGM && (
                 <Space size={6}>
-          <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publish:</span>
+                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publish:</span>
                   <Switch
                     size="small"
                     checked={isVisible(openSession)}
@@ -768,7 +768,7 @@ export const SessionsPage: React.FC = () => {
 
         {/* ── Editar (GM) ── */}
         {isGM && (
-    <Tabs.TabPane tab="✏️ Edit" key="edit">
+          <Tabs.TabPane tab="✏️ Edit" key="edit">
             <Space direction="vertical" size={12} style={{ width: '100%' }}>
               <Card density="dense" title="Session Data">
                 <Space direction="vertical" size={10} style={{ width: '100%' }}>
@@ -808,26 +808,26 @@ export const SessionsPage: React.FC = () => {
                 </Space>
               </Card>
 
-        <Card density="dense" title="Cover Image">
+              <Card density="dense" title="Cover Image">
                 <Space direction="vertical" size={8} style={{ width: '100%' }}>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          Image URL
+                      Image URL
                     </Typography.Text>
                     <Input
                       value={editImageUrl}
                       onChange={(e) => setEditImageUrl(e.target.value)}
-          placeholder="https://example.com/image.jpg"
+                      placeholder="https://example.com/image.jpg"
                     />
                   </div>
                   <div>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          Alt text (accessibility)
+                      Alt text (accessibility)
                     </Typography.Text>
                     <Input
                       value={editImageAlt}
                       onChange={(e) => setEditImageAlt(e.target.value)}
-          placeholder="Image description"
+                      placeholder="Image description"
                     />
                   </div>
                   {(editImageUrl || openSession.imageUrl) && (

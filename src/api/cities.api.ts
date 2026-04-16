@@ -44,8 +44,7 @@ export async function updateCity(
 }
 
 export async function updateCityCoords(cityId: number, u: number | null, v: number | null) {
-  const coordinates =
-    u !== null && v !== null ? `${u.toFixed(6)},${v.toFixed(6)}` : null;
+  const coordinates = u !== null && v !== null ? `${u.toFixed(6)},${v.toFixed(6)}` : null;
   await http.patch(`/api/cities/${cityId}`, { coordinates });
 }
 

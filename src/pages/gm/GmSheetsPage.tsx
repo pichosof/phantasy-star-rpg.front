@@ -7,8 +7,15 @@ import { Card } from '@app/components/common/Card/Card';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 import {
-  type CharacterSheet, type SheetType, type GurpsSheetData, type StarfinderSheetData,
-  listCharacterSheets, getCharacterSheet, createCharacterSheet, updateCharacterSheet, deleteCharacterSheet,
+  type CharacterSheet,
+  type SheetType,
+  type GurpsSheetData,
+  type StarfinderSheetData,
+  listCharacterSheets,
+  getCharacterSheet,
+  createCharacterSheet,
+  updateCharacterSheet,
+  deleteCharacterSheet,
 } from '@app/api/character-sheets.api';
 import { GurpsSheetForm } from './GurpsSheetForm';
 import { StarfinderSheetForm } from './StarfinderSheetForm';
@@ -17,9 +24,22 @@ import { StarfinderSheetForm } from './StarfinderSheetForm';
 
 function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen: () => void; onDelete: () => void }) {
   return (
-    <Card density="dense"
-      title={<Space size={8}><span style={{ fontWeight: 700 }}>{sheet.name}</span><Tag color={sheet.type === 'gurps' ? 'gold' : 'blue'}>{sheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag></Space>}
-      extra={<Space size={4}><Button size="small" onClick={onOpen}>Open</Button><Button size="small" danger icon={<DeleteOutlined />} onClick={onDelete} /></Space>}
+    <Card
+      density="dense"
+      title={
+        <Space size={8}>
+          <span style={{ fontWeight: 700 }}>{sheet.name}</span>
+          <Tag color={sheet.type === 'gurps' ? 'gold' : 'blue'}>{sheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag>
+        </Space>
+      }
+      extra={
+        <Space size={4}>
+          <Button size="small" onClick={onOpen}>
+            Open
+          </Button>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={onDelete} />
+        </Space>
+      }
     >
       <Typography.Text type="secondary" style={{ fontSize: 12 }}>
         Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '—'}
@@ -51,16 +71,23 @@ export const GmSheetsPage: React.FC = () => {
   const [creating, setCreating] = React.useState(false);
 
   const load = React.useCallback(async () => {
-    try { setSheets(await listCharacterSheets()); }
-    catch { message.error('Failed to load sheets'); }
-    finally { setLoading(false); }
+    try {
+      setSheets(await listCharacterSheets());
+    } catch {
+      message.error('Failed to load sheets');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
 
-  const filtered = React.useMemo(() =>
-    typeFilter === 'all' ? sheets : sheets.filter((s) => s.type === typeFilter),
-  [sheets, typeFilter]);
+  const filtered = React.useMemo(
+    () => (typeFilter === 'all' ? sheets : sheets.filter((s) => s.type === typeFilter)),
+    [sheets, typeFilter],
+  );
 
   async function openSheet(sheet: CharacterSheet) {
     try {
@@ -69,7 +96,9 @@ export const GmSheetsPage: React.FC = () => {
       setSheetData(full.data ?? {});
       setSheetName(full.name);
       setDrawerOpen(true);
-    } catch { message.error('Failed to load sheet'); }
+    } catch {
+      message.error('Failed to load sheet');
+    }
   }
 
   async function saveSheet() {
@@ -79,8 +108,11 @@ export const GmSheetsPage: React.FC = () => {
       await updateCharacterSheet(activeSheet.id, { name: sheetName, data: sheetData });
       await load();
       message.success('Sheet saved');
-    } catch { message.error('Failed to save (GM key?)'); }
-    finally { setSavingSheet(false); }
+    } catch {
+      message.error('Failed to save (GM key?)');
+    } finally {
+      setSavingSheet(false);
+    }
   }
 
   async function doCreate() {
@@ -97,21 +129,31 @@ export const GmSheetsPage: React.FC = () => {
       setSheetName(full.name);
       setDrawerOpen(true);
       message.success('Sheet created');
-    } catch { message.error('Failed to create (GM key?)'); }
-    finally { setCreating(false); }
+    } catch {
+      message.error('Failed to create (GM key?)');
+    } finally {
+      setCreating(false);
+    }
   }
 
   function confirmDelete(sheet: CharacterSheet) {
     Modal.confirm({
       title: `Delete sheet "${sheet.name}"?`,
-      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
       onOk: async () => {
         try {
           await deleteCharacterSheet(sheet.id);
-          if (activeSheet?.id === sheet.id) { setDrawerOpen(false); setActiveSheet(null); }
+          if (activeSheet?.id === sheet.id) {
+            setDrawerOpen(false);
+            setActiveSheet(null);
+          }
           await load();
           message.success('Sheet removed');
-        } catch { message.error('Failed to remove'); }
+        } catch {
+          message.error('Failed to remove');
+        }
       },
     });
   }
@@ -123,25 +165,49 @@ export const GmSheetsPage: React.FC = () => {
       <PageTitle>GM — Sheets</PageTitle>
 
       <Card density="comfy">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-          <Typography.Title level={4} style={{ margin: 0 }}>Character Sheets · {sheets.length}</Typography.Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>New sheet</Button>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+            flexWrap: 'wrap',
+            gap: 8,
+          }}
+        >
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            Character Sheets · {sheets.length}
+          </Typography.Title>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+            New sheet
+          </Button>
         </div>
 
-        <Tabs activeKey={typeFilter} onChange={(k) => setTypeFilter(k as SheetType | 'all')} style={{ marginBottom: 16 }}>
+        <Tabs
+          activeKey={typeFilter}
+          onChange={(k) => setTypeFilter(k as SheetType | 'all')}
+          style={{ marginBottom: 16 }}
+        >
           <Tabs.TabPane key="all" tab="All" />
           <Tabs.TabPane key="gurps" tab="⚙️ GURPS" />
           <Tabs.TabPane key="starfinder" tab="🚀 Starfinder" />
         </Tabs>
 
-        {filtered.length === 0
-          ? <Typography.Text type="secondary">No sheets. Create one!</Typography.Text>
-          : <div style={{ display: 'grid', gap: 10, gridTemplateColumns: mobileOnly ? '1fr' : 'repeat(auto-fill,minmax(280px,1fr))' }}>
-              {filtered.map((s) => (
-                <SheetCard key={s.id} sheet={s} onOpen={() => void openSheet(s)} onDelete={() => confirmDelete(s)} />
-              ))}
-            </div>
-        }
+        {filtered.length === 0 ? (
+          <Typography.Text type="secondary">No sheets. Create one!</Typography.Text>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gap: 10,
+              gridTemplateColumns: mobileOnly ? '1fr' : 'repeat(auto-fill,minmax(280px,1fr))',
+            }}
+          >
+            {filtered.map((s) => (
+              <SheetCard key={s.id} sheet={s} onOpen={() => void openSheet(s)} onDelete={() => confirmDelete(s)} />
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* ── Sheet editor drawer ── */}
@@ -154,13 +220,23 @@ export const GmSheetsPage: React.FC = () => {
         title={
           activeSheet ? (
             <Space size={12}>
-              <Input value={sheetName} onChange={(e) => setSheetName(e.target.value)} style={{ width: 220, fontWeight: 700 }} />
-              <Tag color={activeSheet.type === 'gurps' ? 'gold' : 'blue'}>{activeSheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag>
+              <Input
+                value={sheetName}
+                onChange={(e) => setSheetName(e.target.value)}
+                style={{ width: 220, fontWeight: 700 }}
+              />
+              <Tag color={activeSheet.type === 'gurps' ? 'gold' : 'blue'}>
+                {activeSheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}
+              </Tag>
             </Space>
-          ) : 'Sheet'
+          ) : (
+            'Sheet'
+          )
         }
         extra={
-          <Button type="primary" loading={savingSheet} onClick={() => void saveSheet()}>Save</Button>
+          <Button type="primary" loading={savingSheet} onClick={() => void saveSheet()}>
+            Save
+          </Button>
         }
         destroyOnClose
       >
@@ -184,13 +260,19 @@ export const GmSheetsPage: React.FC = () => {
         title="New Character Sheet"
         onCancel={() => setCreateOpen(false)}
         footer={[
-          <Button key="cancel" onClick={() => setCreateOpen(false)}>Cancel</Button>,
-          <Button key="ok" type="primary" loading={creating} onClick={() => void doCreate()}>Create</Button>,
+          <Button key="cancel" onClick={() => setCreateOpen(false)}>
+            Cancel
+          </Button>,
+          <Button key="ok" type="primary" loading={creating} onClick={() => void doCreate()}>
+            Create
+          </Button>,
         ]}
       >
         <Space direction="vertical" style={{ width: '100%' }} size={12}>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Character name</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Character name
+            </Typography.Text>
             <Input
               placeholder="Ex: Alis Landale"
               value={newName}
@@ -199,10 +281,16 @@ export const GmSheetsPage: React.FC = () => {
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>System</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+              System
+            </Typography.Text>
             <Space size={12}>
-              <Button type={newType === 'starfinder' ? 'primary' : 'default'} onClick={() => setNewType('starfinder')}>🚀 Starfinder</Button>
-              <Button type={newType === 'gurps' ? 'primary' : 'default'} onClick={() => setNewType('gurps')}>⚙️ GURPS</Button>
+              <Button type={newType === 'starfinder' ? 'primary' : 'default'} onClick={() => setNewType('starfinder')}>
+                🚀 Starfinder
+              </Button>
+              <Button type={newType === 'gurps' ? 'primary' : 'default'} onClick={() => setNewType('gurps')}>
+                ⚙️ GURPS
+              </Button>
             </Space>
           </div>
         </Space>

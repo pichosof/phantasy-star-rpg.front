@@ -78,9 +78,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       title: 'Tools',
       key: 'tools',
       icon: <ExperimentOutlined />,
-      children: [
-        { title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
-      ],
+      children: [{ title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> }],
     },
   ];
 

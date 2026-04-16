@@ -171,7 +171,7 @@ export const TimelinePage: React.FC = () => {
       // ordena por ID (ordem de criação = ordem cronológica)
       setItems([...data].sort((a, b) => a.id - b.id));
     } catch {
-  message.error('Failed to load timeline');
+      message.error('Failed to load timeline');
     } finally {
       setLoading(false);
     }
@@ -319,13 +319,13 @@ export const TimelinePage: React.FC = () => {
 
         {(isGM || search) && (
           <Space wrap size={8} style={{ width: '100%' }}>
-              <Input
-                allowClear
-                placeholder="Search by title, date or description…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ maxWidth: 360 }}
-              />
+            <Input
+              allowClear
+              placeholder="Search by title, date or description…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ maxWidth: 360 }}
+            />
             {isGM && (
               <Space size={4}>
                 {(['all', 'visible', 'hidden'] as const).map((v) => (
@@ -582,12 +582,12 @@ export const TimelinePage: React.FC = () => {
         visible={openId !== null}
         onClose={() => setOpenId(null)}
         width={mobileOnly ? '100%' : 480}
-  title={openEvent?.title ?? 'Event'}
+        title={openEvent?.title ?? 'Event'}
         destroyOnClose
       >
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-      <Tabs.TabPane tab="📅 View" key="view">
+            <Tabs.TabPane tab="📅 View" key="view">
               <Space direction="vertical" size={14} style={{ width: '100%' }}>
                 <div>
                   <Typography.Text
@@ -640,17 +640,17 @@ export const TimelinePage: React.FC = () => {
                     <Divider style={{ margin: '4px 0' }} />
                     <Space>
                       <Button size="small" icon={<EditOutlined />} onClick={() => setDrawerTab('edit')}>
-                          Edit
-                        </Button>
+                        Edit
+                      </Button>
                       <Popconfirm
-                          title="Remove this event?"
-                          okText="Yes"
-                          cancelText="No"
-                          onConfirm={() => void onDelete(openEvent.id)}
+                        title="Remove this event?"
+                        okText="Yes"
+                        cancelText="No"
+                        onConfirm={() => void onDelete(openEvent.id)}
                       >
-                          <Button size="small" danger icon={<DeleteOutlined />}>
-                            Remove
-                          </Button>
+                        <Button size="small" danger icon={<DeleteOutlined />}>
+                          Remove
+                        </Button>
                       </Popconfirm>
                     </Space>
                   </>

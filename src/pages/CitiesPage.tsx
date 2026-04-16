@@ -327,11 +327,7 @@ export const CitiesPage: React.FC = () => {
     if (!data.length) {
       return (
         <Card density="comfy">
-          <Empty
-            description={
-              mode === 'players' ? 'No cities visible to players yet.' : 'No cities found.'
-            }
-          />
+          <Empty description={mode === 'players' ? 'No cities visible to players yet.' : 'No cities found.'} />
         </Card>
       );
     }

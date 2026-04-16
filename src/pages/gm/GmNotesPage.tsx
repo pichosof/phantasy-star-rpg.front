@@ -15,7 +15,10 @@ const { TextArea } = Input;
 
 function parseTags(tags?: string | null): string[] {
   if (!tags) return [];
-  return tags.split(',').map((t) => t.trim()).filter(Boolean);
+  return tags
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
 }
 
 function buildTags(arr: string[]): string {
@@ -41,11 +44,17 @@ function NoteCard({ note, active, onClick }: { note: GmNote; active: boolean; on
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         {note.pinned && <PushpinFilled style={{ fontSize: 11, color: 'var(--primary-color)' }} />}
-        <Typography.Text strong style={{ fontSize: 13 }} ellipsis>{note.title}</Typography.Text>
+        <Typography.Text strong style={{ fontSize: 13 }} ellipsis>
+          {note.title}
+        </Typography.Text>
       </div>
       {tags.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {tags.map((t) => <Tag key={t} style={{ margin: 0, fontSize: 10 }}>{t}</Tag>)}
+          {tags.map((t) => (
+            <Tag key={t} style={{ margin: 0, fontSize: 10 }}>
+              {t}
+            </Tag>
+          ))}
         </div>
       )}
       {note.content && (
@@ -95,12 +104,18 @@ export const GmNotesPage: React.FC = () => {
   }, [notes, tagFilter, searchQ]);
 
   const load = React.useCallback(async () => {
-    try { setNotes(await listGmNotes()); }
-    catch { message.error('Failed to load notes'); }
-    finally { setLoading(false); }
+    try {
+      setNotes(await listGmNotes());
+    } catch {
+      message.error('Failed to load notes');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
 
   function startNew() {
     setActiveId(null);
@@ -131,30 +146,42 @@ export const GmNotesPage: React.FC = () => {
       }
       await load();
       setEditing(false);
-    } catch { message.error('Failed to save (GM key?)'); }
-    finally { setSaving(false); }
+    } catch {
+      message.error('Failed to save (GM key?)');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function togglePin(note: GmNote) {
     try {
       await updateGmNote(note.id, { pinned: !note.pinned });
       await load();
-    } catch { message.error('Failed'); }
+    } catch {
+      message.error('Failed');
+    }
   }
 
   async function doDelete(id: number) {
     try {
       await deleteGmNote(id);
-      if (activeId === id) { setActiveId(null); setEditing(false); }
+      if (activeId === id) {
+        setActiveId(null);
+        setEditing(false);
+      }
       await load();
       message.success('Note removed');
-    } catch { message.error('Failed to delete'); }
+    } catch {
+      message.error('Failed to delete');
+    }
   }
 
   function confirmDelete(note: GmNote) {
     Modal.confirm({
       title: `Delete "${note.title}"?`,
-      okText: 'Delete', okType: 'danger', cancelText: 'Cancel',
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
       onOk: () => doDelete(note.id),
     });
   }
@@ -165,9 +192,17 @@ export const GmNotesPage: React.FC = () => {
 
   const sidebar = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <Button type="primary" size="small" block onClick={startNew}>+ New note</Button>
+      <Button type="primary" size="small" block onClick={startNew}>
+        + New note
+      </Button>
 
-      <Input allowClear placeholder="Search…" value={searchQ} onChange={(e) => setSearchQ(e.target.value)} size="small" />
+      <Input
+        allowClear
+        placeholder="Search…"
+        value={searchQ}
+        onChange={(e) => setSearchQ(e.target.value)}
+        size="small"
+      />
 
       {allTags.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -186,23 +221,29 @@ export const GmNotesPage: React.FC = () => {
 
       <Divider style={{ margin: '4px 0', borderColor: dividerColor }} />
 
-      {filteredNotes.length === 0
-        ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>No notes.</Typography.Text>
-        : filteredNotes.map((n) => (
-            <NoteCard key={n.id} note={n} active={n.id === activeId}
-              onClick={() => { setActiveId(n.id); setEditing(false); }} />
-          ))}
+      {filteredNotes.length === 0 ? (
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          No notes.
+        </Typography.Text>
+      ) : (
+        filteredNotes.map((n) => (
+          <NoteCard
+            key={n.id}
+            note={n}
+            active={n.id === activeId}
+            onClick={() => {
+              setActiveId(n.id);
+              setEditing(false);
+            }}
+          />
+        ))
+      )}
     </div>
   );
 
   const mainArea = editing ? (
     <div style={{ display: 'grid', gap: 12 }}>
-      <Input
-        placeholder="Title *"
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        size="large"
-      />
+      <Input placeholder="Title *" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} size="large" />
       <Input
         placeholder="Tags (comma separated)"
         value={editTags}
@@ -217,25 +258,44 @@ export const GmNotesPage: React.FC = () => {
         style={{ resize: 'vertical', fontFamily: 'monospace' }}
       />
       <Space>
-        <Button type="primary" loading={saving} onClick={() => void save()}>Save</Button>
+        <Button type="primary" loading={saving} onClick={() => void save()}>
+          Save
+        </Button>
         <Button onClick={() => setEditing(false)}>Cancel</Button>
       </Space>
     </div>
   ) : activeNote ? (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
         <div>
-          <Typography.Title level={3} style={{ margin: 0 }}>{activeNote.title}</Typography.Title>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            {activeNote.title}
+          </Typography.Title>
           <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-            {parseTags(activeNote.tags).map((t) => <Tag key={t}>{t}</Tag>)}
+            {parseTags(activeNote.tags).map((t) => (
+              <Tag key={t}>{t}</Tag>
+            ))}
           </div>
         </div>
         <Space size={8}>
-          <Button size="small" icon={activeNote.pinned ? <PushpinFilled /> : <PushpinOutlined />}
-            onClick={() => void togglePin(activeNote)}>
+          <Button
+            size="small"
+            icon={activeNote.pinned ? <PushpinFilled /> : <PushpinOutlined />}
+            onClick={() => void togglePin(activeNote)}
+          >
             {activeNote.pinned ? 'Unpin' : 'Pin'}
           </Button>
-          <Button size="small" onClick={() => startEdit(activeNote)}>Edit</Button>
+          <Button size="small" onClick={() => startEdit(activeNote)}>
+            Edit
+          </Button>
           <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(activeNote)} />
         </Space>
       </div>

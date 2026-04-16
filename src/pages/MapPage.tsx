@@ -21,13 +21,7 @@ import {
 } from 'antd';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
-import {
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  PictureOutlined,
-  PlusOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
 
 import {
   listWorlds,
@@ -115,10 +109,10 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
   onActivate,
 }) => {
   const { mobileOnly } = useResponsive();
-  const [editId, setEditId]     = React.useState<number | null>(null);
+  const [editId, setEditId] = React.useState<number | null>(null);
   const [editName, setEditName] = React.useState('');
   const [editDesc, setEditDesc] = React.useState('');
-  const [saving, setSaving]     = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
 
   // Create form
   const [newName, setNewName] = React.useState('');
@@ -130,18 +124,27 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
     setEditName(w.name);
     setEditDesc(w.description ?? '');
   }
-  function cancelEdit() { setEditId(null); }
+  function cancelEdit() {
+    setEditId(null);
+  }
 
   async function saveEdit() {
     if (!editId || !editName.trim()) return;
     setSaving(true);
     try {
       await updateWorld(editId, { name: editName.trim(), description: editDesc.trim() || null });
-      onWorldsChanged(worlds.map((w) => w.id === editId ? { ...w, name: editName.trim(), description: editDesc.trim() || null } : w));
+      onWorldsChanged(
+        worlds.map((w) =>
+          w.id === editId ? { ...w, name: editName.trim(), description: editDesc.trim() || null } : w,
+        ),
+      );
       setEditId(null);
       message.success('World updated');
-    } catch { message.error('Failed to save'); }
-    finally { setSaving(false); }
+    } catch {
+      message.error('Failed to save');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleCreate() {
@@ -150,10 +153,14 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
     try {
       const w = await createWorld({ name: newName.trim(), description: newDesc.trim() || null });
       onWorldsChanged([...worlds, w]);
-      setNewName(''); setNewDesc('');
+      setNewName('');
+      setNewDesc('');
       message.success('World created');
-    } catch { message.error('Failed to create'); }
-    finally { setCreating(false); }
+    } catch {
+      message.error('Failed to create');
+    } finally {
+      setCreating(false);
+    }
   }
 
   function imageUploadProps(worldId: number): UploadProps {
@@ -182,7 +189,11 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
       visible={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 480}
-      title={<Space><SettingOutlined /> Manage Worlds</Space>}
+      title={
+        <Space>
+          <SettingOutlined /> Manage Worlds
+        </Space>
+      }
     >
       <Tabs defaultActiveKey="worlds">
         {/* ── World list ── */}
@@ -220,7 +231,9 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                         <Button size="small" type="primary" loading={saving} onClick={() => void saveEdit()}>
                           Save
                         </Button>
-                        <Button size="small" onClick={cancelEdit}>Cancel</Button>
+                        <Button size="small" onClick={cancelEdit}>
+                          Cancel
+                        </Button>
                       </Space>
                     </Space>
                   ) : (
@@ -236,9 +249,13 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                               Use
                             </Button>
                           )}
-                          <Button size="small" onClick={() => startEdit(w)}>Edit</Button>
+                          <Button size="small" onClick={() => startEdit(w)}>
+                            Edit
+                          </Button>
                           <Upload {...imageUploadProps(w.id)}>
-                            <Button size="small" icon={<PictureOutlined />}>Map</Button>
+                            <Button size="small" icon={<PictureOutlined />}>
+                              Map
+                            </Button>
                           </Upload>
                         </Space>
                       </Space>
@@ -265,7 +282,14 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
         </Tabs.TabPane>
 
         {/* ── Create world ── */}
-        <Tabs.TabPane tab={<><PlusOutlined /> New World</>} key="create">
+        <Tabs.TabPane
+          tab={
+            <>
+              <PlusOutlined /> New World
+            </>
+          }
+          key="create"
+        >
           <Space direction="vertical" size={10} style={{ width: '100%' }}>
             <Form layout="vertical">
               <Form.Item label="Name" required>
@@ -304,10 +328,10 @@ export default function MapPage() {
 
   // -------- base data --------
   const [loading, setLoading] = React.useState(true);
-  const [worlds, setWorlds]   = React.useState<World[]>([]);
-  const [world, setWorld]     = React.useState<World | null>(null);
+  const [worlds, setWorlds] = React.useState<World[]>([]);
+  const [world, setWorld] = React.useState<World | null>(null);
   const [worldImg, setWorldImg] = React.useState<string | undefined>();
-  const [cities, setCities]   = React.useState<City[]>([]);
+  const [cities, setCities] = React.useState<City[]>([]);
 
   // GM mode
   const [isGM, setIsGM] = React.useState<boolean>(() => Boolean(localStorage.getItem(GM_KEY_STORAGE)));
@@ -316,10 +340,10 @@ export default function MapPage() {
   const [hoverMarkerId, setHoverMarkerId] = React.useState<number | null>(null);
 
   // -------- filters --------
-  const [filterVisible, setFilterVisible]   = React.useState<'all' | 'visible' | 'hidden'>('all');
+  const [filterVisible, setFilterVisible] = React.useState<'all' | 'visible' | 'hidden'>('all');
   const [filterDiscover, setFilterDiscover] = React.useState<'all' | 'discovered' | 'undiscovered'>('all');
-  const [filterRegion, setFilterRegion]     = React.useState<string>('all');
-  const [search, setSearch]                 = React.useState('');
+  const [filterRegion, setFilterRegion] = React.useState<string>('all');
+  const [search, setSearch] = React.useState('');
 
   // -------- ruler --------
   const [measureMode, setMeasureMode] = React.useState(false);
@@ -336,10 +360,7 @@ export default function MapPage() {
 
   // -------- GM positioning --------
   const [pickingCityId, setPickingCityId] = React.useState<number | null>(null);
-  const pickingCity = React.useMemo(
-    () => cities.find((c) => c.id === pickingCityId) ?? null,
-    [cities, pickingCityId],
-  );
+  const pickingCity = React.useMemo(() => cities.find((c) => c.id === pickingCityId) ?? null, [cities, pickingCityId]);
 
   // -------- open city drawer --------
   const [openCityId, setOpenCityId] = React.useState<number | null>(null);
@@ -365,7 +386,7 @@ export default function MapPage() {
 
   // -------- city links (read-only here) --------
   const [linksLoading, setLinksLoading] = React.useState(false);
-  const [cityLores, setCityLores]   = React.useState<Lore[]>([]);
+  const [cityLores, setCityLores] = React.useState<Lore[]>([]);
   const [cityQuests, setCityQuests] = React.useState<Quest[]>([]);
 
   // GM key changes in runtime
@@ -429,13 +450,22 @@ export default function MapPage() {
       }
     })();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Fullscreen events
   React.useEffect(() => {
-    const onFsChange = () => { setIsFullscreen(Boolean(document.fullscreenElement)); recalcStage(); };
-    const onFsError = () => { setIsFullscreen(false); setPresentMode(true); recalcStage(); };
+    const onFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+      recalcStage();
+    };
+    const onFsError = () => {
+      setIsFullscreen(false);
+      setPresentMode(true);
+      recalcStage();
+    };
 
     document.addEventListener('fullscreenchange', onFsChange);
     document.addEventListener('fullscreenerror', onFsError);
@@ -449,13 +479,17 @@ export default function MapPage() {
     if (presentMode && !isFullscreen) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = prev; };
+      return () => {
+        document.body.style.overflow = prev;
+      };
     }
   }, [presentMode, isFullscreen]);
 
   React.useEffect(() => {
     if (!presentMode) return;
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') void exitPresentMode(); };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') void exitPresentMode();
+    };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -470,17 +504,30 @@ export default function MapPage() {
     ro.observe(wrap);
     if (img) ro.observe(img);
     window.addEventListener('resize', recalcStage);
-    return () => { ro.disconnect(); window.removeEventListener('resize', recalcStage); };
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', recalcStage);
+    };
   }, [recalcStage]);
 
-  React.useEffect(() => { recalcStage(); }, [presentMode, isFullscreen, worldImg, recalcStage]);
+  React.useEffect(() => {
+    recalcStage();
+  }, [presentMode, isFullscreen, worldImg, recalcStage]);
 
   // Load city links when drawer opens
   React.useEffect(() => {
-    if (!openCity) { setCityLores([]); setCityQuests([]); return; }
+    if (!openCity) {
+      setCityLores([]);
+      setCityQuests([]);
+      return;
+    }
 
     const playerCanRead = isGM || (openCity as any).discovered === true;
-    if (!playerCanRead) { setCityLores([]); setCityQuests([]); return; }
+    if (!playerCanRead) {
+      setCityLores([]);
+      setCityQuests([]);
+      return;
+    }
 
     let alive = true;
     setLinksLoading(true);
@@ -495,18 +542,22 @@ export default function MapPage() {
         console.error(e);
         if (!alive) return;
         message.error('Failed to load lores/quests for this city.');
-        setCityLores([]); setCityQuests([]);
+        setCityLores([]);
+        setCityQuests([]);
       })
-      .finally(() => { if (!alive) return; setLinksLoading(false); });
+      .finally(() => {
+        if (!alive) return;
+        setLinksLoading(false);
+      });
 
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [openCity?.id, (openCity as any)?.discovered, isGM]);
 
   // -------- region options --------
   const regionOptions = React.useMemo(() => {
-    const regions = Array.from(
-      new Set(cities.map((c) => (c.region ?? null)).filter(Boolean)),
-    ) as string[];
+    const regions = Array.from(new Set(cities.map((c) => c.region ?? null).filter(Boolean))) as string[];
     regions.sort((a, b) => a.localeCompare(b));
     return [{ value: 'all', label: 'All' }, ...regions.map((r) => ({ value: r, label: r }))];
   }, [cities]);
@@ -534,9 +585,10 @@ export default function MapPage() {
     if (filterVisible !== 'all')
       filtered = filtered.filter((m) => (filterVisible === 'visible' ? m.visible !== false : m.visible === false));
     if (filterDiscover !== 'all')
-      filtered = filtered.filter((m) => filterDiscover === 'discovered' ? m.discovered === true : m.discovered !== true);
-    if (filterRegion !== 'all')
-      filtered = filtered.filter((m) => (m.region ?? '') === filterRegion);
+      filtered = filtered.filter((m) =>
+        filterDiscover === 'discovered' ? m.discovered === true : m.discovered !== true,
+      );
+    if (filterRegion !== 'all') filtered = filtered.filter((m) => (m.region ?? '') === filterRegion);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       filtered = filtered.filter((m) => m.label.toLowerCase().includes(q));
@@ -572,18 +624,25 @@ export default function MapPage() {
     }
 
     if (measureMode) {
-      if (!measureA) { setMeasureA({ u, v }); setMeasureB(null); return; }
-      if (!measureB) { setMeasureB({ u, v }); return; }
-      setMeasureA({ u, v }); setMeasureB(null); return;
+      if (!measureA) {
+        setMeasureA({ u, v });
+        setMeasureB(null);
+        return;
+      }
+      if (!measureB) {
+        setMeasureB({ u, v });
+        return;
+      }
+      setMeasureA({ u, v });
+      setMeasureB(null);
+      return;
     }
 
     if (!isGM || !pickingCity) return;
 
     try {
       await updateCityCoords(pickingCity.id, u, v);
-      setCities((prev) =>
-        prev.map((c) => c.id === pickingCity.id ? { ...c, coordinates: `${u},${v}` } : c),
-      );
+      setCities((prev) => prev.map((c) => (c.id === pickingCity.id ? { ...c, coordinates: `${u},${v}` } : c)));
       message.success(`Coordinates saved for "${pickingCity.name}".`);
     } catch (e) {
       console.error(e);
@@ -611,7 +670,7 @@ export default function MapPage() {
       onOk: async () => {
         try {
           await updateCityCoords(city.id, null, null);
-          setCities((prev) => prev.map((c) => c.id === city.id ? { ...c, coordinates: null } : c));
+          setCities((prev) => prev.map((c) => (c.id === city.id ? { ...c, coordinates: null } : c)));
           setPickingCityId((prev) => (prev === city.id ? null : prev));
           message.success(`Coordinates removed from "${city.name}".`);
         } catch (e) {
@@ -635,7 +694,9 @@ export default function MapPage() {
           setCities((prev) => prev.filter((c) => c.id !== city.id));
           setOpenCityId(null);
           message.success(`"${city.name}" deleted.`);
-        } catch { message.error('Failed to delete city.'); }
+        } catch {
+          message.error('Failed to delete city.');
+        }
       },
     });
   }
@@ -652,13 +713,21 @@ export default function MapPage() {
       setCities((prev) =>
         prev.map((c) =>
           c.id === openCity.id
-            ? { ...c, name: editCityName.trim(), description: editCityDesc.trim() || null, region: editCityRegion.trim() || null }
+            ? {
+                ...c,
+                name: editCityName.trim(),
+                description: editCityDesc.trim() || null,
+                region: editCityRegion.trim() || null,
+              }
             : c,
         ),
       );
       message.success('City updated');
-    } catch { message.error('Failed to save'); }
-    finally { setSavingCity(false); }
+    } catch {
+      message.error('Failed to save');
+    } finally {
+      setSavingCity(false);
+    }
   }
 
   const cityImageUploadProps: UploadProps = {
@@ -687,9 +756,7 @@ export default function MapPage() {
       <div style={{ padding: 24 }}>
         <Space direction="vertical" size={12}>
           <Typography.Title level={4}>Map</Typography.Title>
-          <Typography.Text type="secondary">
-            No world with image defined.
-          </Typography.Text>
+          <Typography.Text type="secondary">No world with image defined.</Typography.Text>
           {isGM && (
             <Button icon={<SettingOutlined />} onClick={() => setWorldAdminOpen(true)}>
               Manage Worlds
@@ -809,15 +876,17 @@ export default function MapPage() {
                       value={pickingCityId ?? undefined}
                       onChange={(v) => setPickingCityId(v ?? null)}
                       options={gmCityOptions}
-                      filterOption={(input, opt) =>
-                        (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                      }
+                      filterOption={(input, opt) => (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                     />
 
                     <Button
                       size="small"
                       type={measureMode ? 'primary' : 'default'}
-                      onClick={() => { setMeasureMode((v) => !v); setMeasureA(null); setMeasureB(null); }}
+                      onClick={() => {
+                        setMeasureMode((v) => !v);
+                        setMeasureA(null);
+                        setMeasureB(null);
+                      }}
                     >
                       Ruler {measureMode ? 'ON' : 'OFF'}
                     </Button>
@@ -859,24 +928,42 @@ export default function MapPage() {
           {presentMode && (
             <div
               style={{
-                position: 'absolute', left: 12, top: 12, zIndex: 10000,
-                display: 'flex', gap: 8, alignItems: 'center',
-                background: 'rgba(0,0,0,0.55)', padding: '8px 10px',
-                borderRadius: 10, color: '#fff', backdropFilter: 'blur(2px)',
+                position: 'absolute',
+                left: 12,
+                top: 12,
+                zIndex: 10000,
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+                background: 'rgba(0,0,0,0.55)',
+                padding: '8px 10px',
+                borderRadius: 10,
+                color: '#fff',
+                backdropFilter: 'blur(2px)',
               }}
             >
-              <Button size="small" onClick={exitPresentMode}>Exit</Button>
+              <Button size="small" onClick={exitPresentMode}>
+                Exit
+              </Button>
               <Button
                 size="small"
                 type={measureMode ? 'primary' : 'default'}
-                onClick={() => { setMeasureMode((v) => !v); setMeasureA(null); setMeasureB(null); }}
+                onClick={() => {
+                  setMeasureMode((v) => !v);
+                  setMeasureA(null);
+                  setMeasureB(null);
+                }}
               >
                 Ruler {measureMode ? 'ON' : 'OFF'}
               </Button>
               {isFullscreen ? (
-                <Tag color="green" style={{ margin: 0 }}>Fullscreen</Tag>
+                <Tag color="green" style={{ margin: 0 }}>
+                  Fullscreen
+                </Tag>
               ) : (
-                <Tag color="gold" style={{ margin: 0 }}>Overlay</Tag>
+                <Tag color="gold" style={{ margin: 0 }}>
+                  Overlay
+                </Tag>
               )}
             </div>
           )}
@@ -887,10 +974,12 @@ export default function MapPage() {
             src={resolveApiUrl(worldImg)}
             alt={world.name}
             style={{
-              display: 'block', width: '100%',
+              display: 'block',
+              width: '100%',
               height: presentMode ? '100%' : 'auto',
               objectFit: presentMode ? 'contain' : undefined,
-              userSelect: 'none', background: 'black',
+              userSelect: 'none',
+              background: 'black',
             }}
             draggable={false}
           />
@@ -898,7 +987,7 @@ export default function MapPage() {
           {/* Markers */}
           {markers.map((m) => {
             const leftCss = stage ? `${stage.offsetX + m.u * stage.width}px` : `${m.u * 100}%`;
-            const topCss  = stage ? `${stage.offsetY + m.v * stage.height}px` : `${m.v * 100}%`;
+            const topCss = stage ? `${stage.offsetY + m.v * stage.height}px` : `${m.v * 100}%`;
 
             const bg =
               isGM && m.visible === false
@@ -912,28 +1001,45 @@ export default function MapPage() {
                 {hoverMarkerId === m.id && (
                   <div
                     style={{
-                      position: 'absolute', left: leftCss, top: topCss,
+                      position: 'absolute',
+                      left: leftCss,
+                      top: topCss,
                       transform: 'translate(-50%, calc(-100% - 10px))',
-                      background: 'rgba(0,0,0,0.75)', color: '#fff',
-                      padding: '4px 8px', borderRadius: 6, fontSize: 12,
-                      whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 20,
+                      background: 'rgba(0,0,0,0.75)',
+                      color: '#fff',
+                      padding: '4px 8px',
+                      borderRadius: 6,
+                      fontSize: 12,
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                      zIndex: 20,
                     }}
                   >
-                    {m.label}{m.region ? ` · ${m.region}` : ''}
+                    {m.label}
+                    {m.region ? ` · ${m.region}` : ''}
                   </div>
                 )}
                 <div
                   onMouseEnter={() => setHoverMarkerId(m.id)}
                   onMouseLeave={() => setHoverMarkerId((prev) => (prev === m.id ? null : prev))}
-                  onClick={(e) => { e.stopPropagation(); setOpenCityId(m.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenCityId(m.id);
+                  }}
                   title={m.label}
                   style={{
-                    position: 'absolute', left: leftCss, top: topCss,
+                    position: 'absolute',
+                    left: leftCss,
+                    top: topCss,
                     transform: 'translate(-50%, -50%)',
-                    width: 18, height: 18, borderRadius: '50%',
-                    background: bg, border: '2px solid rgba(0,0,0,0.85)',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: bg,
+                    border: '2px solid rgba(0,0,0,0.85)',
                     boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
-                    cursor: 'pointer', zIndex: 10,
+                    cursor: 'pointer',
+                    zIndex: 10,
                     outline: openCityId === m.id ? '3px solid rgba(255,255,0,0.8)' : 'none',
                     outlineOffset: 2,
                   }}
@@ -986,7 +1092,9 @@ export default function MapPage() {
                 {openCity.visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
                 {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
               </Space>
-            ) : 'City'
+            ) : (
+              'City'
+            )
           }
         >
           {openCity && (
@@ -994,9 +1102,7 @@ export default function MapPage() {
               {/* ── Details ── */}
               <Tabs.TabPane tab="Details" key="details">
                 <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                  <Typography.Text type="secondary">
-                    {openCity.region || 'Region not specified'}
-                  </Typography.Text>
+                  <Typography.Text type="secondary">{openCity.region || 'Region not specified'}</Typography.Text>
                   {openCity.imageUrl && (isGM || openCity.discovered) && (
                     <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 180, marginBottom: 8 }}>
                       <img
@@ -1023,10 +1129,7 @@ export default function MapPage() {
                 <Tabs.TabPane tab="✏️ Admin" key="admin">
                   <Form layout="vertical">
                     <Form.Item label="Name" required>
-                      <Input
-                        value={editCityName}
-                        onChange={(e) => setEditCityName(e.target.value)}
-                      />
+                      <Input value={editCityName} onChange={(e) => setEditCityName(e.target.value)} />
                     </Form.Item>
                     <Form.Item label="Region">
                       <Input
@@ -1047,10 +1150,7 @@ export default function MapPage() {
                       <Button type="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
                         Save
                       </Button>
-                      <Button
-                        danger
-                        onClick={() => confirmDeleteCity(openCity)}
-                      >
+                      <Button danger onClick={() => confirmDeleteCity(openCity)}>
                         Delete city
                       </Button>
                     </Space>
@@ -1081,9 +1181,7 @@ export default function MapPage() {
                       />
                     </Form.Item>
                     <Upload {...cityImageUploadProps}>
-                      <Button icon={<PictureOutlined />}>
-                        {openCity.imageUrl ? 'Change image' : 'Upload image'}
-                      </Button>
+                      <Button icon={<PictureOutlined />}>{openCity.imageUrl ? 'Change image' : 'Upload image'}</Button>
                     </Upload>
                   </Space>
                 </Tabs.TabPane>
@@ -1108,7 +1206,7 @@ export default function MapPage() {
                         unCheckedChildren={<EyeInvisibleOutlined />}
                         onChange={async (v) => {
                           await setCityVisible(openCity.id, v);
-                          setCities((prev) => prev.map((c) => c.id === openCity.id ? { ...c, visible: v } : c));
+                          setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, visible: v } : c)));
                         }}
                       />
                     </Space>
@@ -1125,7 +1223,7 @@ export default function MapPage() {
                         checked={openCity.discovered === true}
                         onChange={async (v) => {
                           await setCityDiscovered(openCity.id, v);
-                          setCities((prev) => prev.map((c) => c.id === openCity.id ? { ...c, discovered: v } : c));
+                          setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, discovered: v } : c)));
                         }}
                       />
                     </Space>
@@ -1207,9 +1305,7 @@ export default function MapPage() {
                         <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
                           {q.description?.trim() || '—'}
                         </Typography.Paragraph>
-                        {q.reward && (
-                          <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>
-                        )}
+                        {q.reward && <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>}
                       </div>
                     ))}
                   </div>

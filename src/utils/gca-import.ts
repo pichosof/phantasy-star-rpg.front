@@ -3,8 +3,13 @@
  * Supports: GCA5 native XML (.gca5) and GCA text export (.txt)
  */
 import type {
-  GurpsSheetData, GurpsListItem, GurpsSkill, GurpsLanguage,
-  GurpsWeapon, GurpsRangedWeapon, GurpsPossession,
+  GurpsSheetData,
+  GurpsListItem,
+  GurpsSkill,
+  GurpsLanguage,
+  GurpsWeapon,
+  GurpsRangedWeapon,
+  GurpsPossession,
 } from '@app/api/character-sheets.api';
 
 // ─── Common result type ───────────────────────────────────────────────────────
@@ -111,8 +116,14 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
 
   // ── Attributes ────────────────────────────────────────────────────────────
   const ATTR_BY_NAME: Record<string, keyof GurpsSheetData> = {
-    'ST': 'st', 'DX': 'dx', 'IQ': 'iq', 'HT': 'ht',
-    'Hit Points': 'hp', 'Will': 'will', 'Perception': 'per', 'Fatigue Points': 'fp',
+    ST: 'st',
+    DX: 'dx',
+    IQ: 'iq',
+    HT: 'ht',
+    'Hit Points': 'hp',
+    Will: 'will',
+    Perception: 'per',
+    'Fatigue Points': 'fp',
   };
   let rawBasicSpeed: number | undefined;
   let rawBasicMove: number | undefined;
@@ -146,22 +157,34 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
   }
 
   // ── Languages ─────────────────────────────────────────────────────────────
-  result.languages = traitChildren(directChild(traitsEl, 'languages')).map((t) => {
-    const name = directText(t, 'name');
-    return { name } as GurpsLanguage;
-  }).filter((l) => l.name);
+  result.languages = traitChildren(directChild(traitsEl, 'languages'))
+    .map((t) => {
+      const name = directText(t, 'name');
+      return { name } as GurpsLanguage;
+    })
+    .filter((l) => l.name);
 
   // ── Cultural Familiarities ─────────────────────────────────────────────────
-  result.culturalFamiliarities = traitChildren(directChild(traitsEl, 'cultures')).map((t) => ({
-    name: directText(t, 'name'),
-    points: directNum(t, 'points'),
-  } as GurpsListItem)).filter((c) => c.name);
+  result.culturalFamiliarities = traitChildren(directChild(traitsEl, 'cultures'))
+    .map(
+      (t) =>
+        ({
+          name: directText(t, 'name'),
+          points: directNum(t, 'points'),
+        } as GurpsListItem),
+    )
+    .filter((c) => c.name);
 
   // ── Advantages ────────────────────────────────────────────────────────────
-  result.advantages = traitChildren(directChild(traitsEl, 'advantages')).map((t) => ({
-    name: buildTraitDisplayName(t),
-    points: directNum(t, 'points'),
-  } as GurpsListItem)).filter((a) => a.name);
+  result.advantages = traitChildren(directChild(traitsEl, 'advantages'))
+    .map(
+      (t) =>
+        ({
+          name: buildTraitDisplayName(t),
+          points: directNum(t, 'points'),
+        } as GurpsListItem),
+    )
+    .filter((a) => a.name);
 
   // ── Disadvantages + Quirks ────────────────────────────────────────────────
   const disadvantages: GurpsListItem[] = [];
@@ -174,15 +197,17 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
   result.disadvantages = disadvantages;
 
   // ── Skills ────────────────────────────────────────────────────────────────
-  result.skills = traitChildren(directChild(traitsEl, 'skills')).map((t) => {
-    const name = directText(t, 'name');
-    const level = directNum(t, 'level');
-    const step = directText(t, 'step');   // e.g. "+0", "-2", "+1"
-    const stepoff = directText(t, 'stepoff'); // e.g. "IQ", "DX", "Per"
-    const points = directNum(t, 'points');
-    const relativeLevel = stepoff ? `${stepoff}${step === '+0' ? '' : step}` : undefined;
-    return { name, level, relativeLevel, points } as GurpsSkill;
-  }).filter((s) => s.name);
+  result.skills = traitChildren(directChild(traitsEl, 'skills'))
+    .map((t) => {
+      const name = directText(t, 'name');
+      const level = directNum(t, 'level');
+      const step = directText(t, 'step'); // e.g. "+0", "-2", "+1"
+      const stepoff = directText(t, 'stepoff'); // e.g. "IQ", "DX", "Per"
+      const points = directNum(t, 'points');
+      const relativeLevel = stepoff ? `${stepoff}${step === '+0' ? '' : step}` : undefined;
+      return { name, level, relativeLevel, points } as GurpsSkill;
+    })
+    .filter((s) => s.name);
 
   // ── Equipment → weapons + possessions ────────────────────────────────────
   const handWeapons: GurpsWeapon[] = [];
@@ -221,13 +246,17 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
 
         if (isRanged) {
           rangedWeapons.push({
-            weapon: weaponLabel, damage, acc: acc || undefined,
+            weapon: weaponLabel,
+            damage,
+            acc: acc || undefined,
             range: range || undefined,
             rof: directText(am, 'rof') || undefined,
             shots: directText(am, 'shots') || undefined,
-            st: stReq, bulk: directText(am, 'bulk') || undefined,
+            st: stReq,
+            bulk: directText(am, 'bulk') || undefined,
             rcl: directText(am, 'rcl') || undefined,
-            lc, notes,
+            lc,
+            notes,
           });
         } else {
           handWeapons.push({ weapon: weaponLabel, damage, reach, parry, notes, cost, weight });
@@ -261,7 +290,9 @@ function parseGcaTxt(text: string): GcaImportResult {
 
   for (const line of lines) {
     if (/^-{20,}$/.test(line.trim())) continue; // skip separator lines
-    const secMatch = line.match(/^(Attributes|Advantages|Disadvantages|Quirks|Skills|Melee Attacks|Ranged Attacks|Equipment|Points Summary|Social Background)\s*(\[.*\])?$/);
+    const secMatch = line.match(
+      /^(Attributes|Advantages|Disadvantages|Quirks|Skills|Melee Attacks|Ranged Attacks|Equipment|Points Summary|Social Background)\s*(\[.*\])?$/,
+    );
     if (secMatch) {
       currentSection = secMatch[1].toLowerCase().replace(' ', '_');
       sections[currentSection] = [];
@@ -282,8 +313,14 @@ function parseGcaTxt(text: string): GcaImportResult {
   // ── Attributes ────────────────────────────────────────────────────────────
   const attrLines = sections['attributes'] ?? [];
   const ATTR_KEYS: Record<string, keyof GurpsSheetData> = {
-    'ST': 'st', 'DX': 'dx', 'IQ': 'iq', 'HT': 'ht',
-    'Hit Points': 'hp', 'Will': 'will', 'Perception': 'per', 'Fatigue Points': 'fp',
+    ST: 'st',
+    DX: 'dx',
+    IQ: 'iq',
+    HT: 'ht',
+    'Hit Points': 'hp',
+    Will: 'will',
+    Perception: 'per',
+    'Fatigue Points': 'fp',
   };
   for (const line of attrLines) {
     const m = line.match(/^(ST|DX|IQ|HT|Hit Points|Will|Perception|Fatigue Points)\s+(-?\d+(?:\.\d+)?)/);
@@ -303,9 +340,7 @@ function parseGcaTxt(text: string): GcaImportResult {
     if (bmMatch) {
       const rawMove = parseFloat(bmMatch[1]);
       // Will be compared after speed is known
-      const calcMove = Math.floor(
-        ((result.dx ?? 10) + (result.ht ?? 10)) / 4 + (result.basicSpeedMod ?? 0)
-      );
+      const calcMove = Math.floor(((result.dx ?? 10) + (result.ht ?? 10)) / 4 + (result.basicSpeedMod ?? 0));
       const mod = rawMove - calcMove;
       if (mod !== 0) result.basicMoveMod = mod;
     }
@@ -328,10 +363,7 @@ function parseGcaTxt(text: string): GcaImportResult {
     .filter(Boolean) as GurpsListItem[];
 
   // ── Disadvantages ─────────────────────────────────────────────────────────
-  result.disadvantages = [
-    ...(sections['disadvantages'] ?? []),
-    ...(sections['quirks'] ?? []),
-  ]
+  result.disadvantages = [...(sections['disadvantages'] ?? []), ...(sections['quirks'] ?? [])]
     .filter((l) => l.trim() && !l.startsWith('\t'))
     .map(parseTraitLine)
     .filter(Boolean) as GurpsListItem[];
@@ -339,7 +371,7 @@ function parseGcaTxt(text: string): GcaImportResult {
   // ── Skills ────────────────────────────────────────────────────────────────
   // Format: "Acting (A) IQ [2]-14"  or "Detect Lies (H) Per+1 [1]-13"
   const skills: GurpsSkill[] = [];
-  for (const line of (sections['skills'] ?? [])) {
+  for (const line of sections['skills'] ?? []) {
     if (!line.trim() || line.startsWith('\t')) continue;
     // Match: Name (optional-spec) (difficulty?) relLevel [pts]-level
     const m = line.match(/^(.+?)\s+\[(-?\d+)\]-(\d+)\s*$/);
@@ -369,7 +401,7 @@ function parseGcaTxt(text: string): GcaImportResult {
   //   "   Staff Swing; Dam:X; ..."                             — sub-attack (indented)
   const handWeapons: GurpsWeapon[] = [];
   let currentWeaponName = '';
-  for (const line of (sections['melee_attacks'] ?? [])) {
+  for (const line of sections['melee_attacks'] ?? []) {
     if (!line.trim()) continue;
     const isIndented = line.startsWith('   ');
     const content = line.trim();
@@ -388,14 +420,10 @@ function parseGcaTxt(text: string): GcaImportResult {
 
     // First segment before first `;` is the weapon/attack name
     const attackName = content.split(';')[0].trim();
-    const weaponLabel = isIndented && currentWeaponName
-      ? `${currentWeaponName} — ${attackName}`
-      : attackName;
+    const weaponLabel = isIndented && currentWeaponName ? `${currentWeaponName} — ${attackName}` : attackName;
 
     const damageParts = parts['dam']?.split(' ') ?? [];
-    const damage = damageParts.length >= 2
-      ? `${damageParts[0]} ${damageParts[1]}`
-      : parts['dam'] || undefined;
+    const damage = damageParts.length >= 2 ? `${damageParts[0]} ${damageParts[1]}` : parts['dam'] || undefined;
 
     handWeapons.push({
       weapon: weaponLabel,
@@ -410,7 +438,7 @@ function parseGcaTxt(text: string): GcaImportResult {
   // ── Ranged weapons ────────────────────────────────────────────────────────
   // "Small Knife; Dam:1d-1 imp; Acc:0; Range:5 / 10; RoF:1; Shots:T(1); Level:7; ST:5; Bulk:-1; Rcl:-; LC:4"
   const rangedWeapons: GurpsRangedWeapon[] = [];
-  for (const line of (sections['ranged_attacks'] ?? [])) {
+  for (const line of sections['ranged_attacks'] ?? []) {
     if (!line.trim() || !line.includes(';')) continue;
     const parts: Record<string, string> = {};
     line.split(';').forEach((seg) => {
@@ -420,9 +448,7 @@ function parseGcaTxt(text: string): GcaImportResult {
 
     const weaponName = line.split(';')[0].trim();
     const damageParts = parts['dam']?.split(' ') ?? [];
-    const damage = damageParts.length >= 2
-      ? `${damageParts[0]} ${damageParts[1]}`
-      : parts['dam'] || undefined;
+    const damage = damageParts.length >= 2 ? `${damageParts[0]} ${damageParts[1]}` : parts['dam'] || undefined;
 
     rangedWeapons.push({
       weapon: weaponName,
@@ -442,7 +468,7 @@ function parseGcaTxt(text: string): GcaImportResult {
   // ── Equipment/Possessions ─────────────────────────────────────────────────
   // "Backpack, Frame; Qty:1; Wgt:5; ¤100.00"
   const possessions: GurpsPossession[] = [];
-  for (const line of (sections['equipment'] ?? [])) {
+  for (const line of sections['equipment'] ?? []) {
     if (!line.trim() || !line.includes(';')) continue;
     const segs = line.split(';').map((s) => s.trim());
     const name = segs[0];

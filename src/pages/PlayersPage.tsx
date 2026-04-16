@@ -69,8 +69,8 @@ export const PlayersPage: React.FC = () => {
 
   async function saveEdit(id: number) {
     const e = editById[id];
-  if (!e) return;
-  if (!e.name.trim()) return message.warning('Name required');
+    if (!e) return;
+    if (!e.name.trim()) return message.warning('Name required');
     try {
       await PlayersApi.update(id, {
         name: e.name.trim(),
@@ -79,9 +79,9 @@ export const PlayersPage: React.FC = () => {
       });
       setEditingSet((prev) => ({ ...prev, [id]: false }));
       await load();
-  message.success('Player updated');
+      message.success('Player updated');
     } catch {
-  message.error('Failed to update (GM key?)');
+      message.error('Failed to update (GM key?)');
     }
   }
 
@@ -91,9 +91,9 @@ export const PlayersPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await PlayersApi.list();
-          setItems(data);
+      setItems(data);
     } catch {
-          message.error('Failed to load players');
+      message.error('Failed to load players');
     } finally {
       setLoading(false);
     }
@@ -116,9 +116,9 @@ export const PlayersPage: React.FC = () => {
       setLevel(1);
       setBackground('');
       await load();
-          message.success('Player created');
+      message.success('Player created');
     } catch {
-          message.error('Failed to create player (GM key required)');
+      message.error('Failed to create player (GM key required)');
     }
   }
 
@@ -127,7 +127,7 @@ export const PlayersPage: React.FC = () => {
       await PlayersApi.setVisible(p.id, !isPlayerVisible(p));
       await load();
     } catch {
-          message.error('Failed to change visibility (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
     }
   }
 
@@ -141,12 +141,12 @@ export const PlayersPage: React.FC = () => {
       PlayersApi.uploadImage(player.id, file, altById[player.id])
         .then(async () => {
           onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-              message.success('Image updated');
+          message.success('Image updated');
           await load();
         })
         .catch((err) => {
           onError?.(err as Error);
-              message.error('Failed to upload image (GM key?)');
+          message.error('Failed to upload image (GM key?)');
         });
     },
   });
@@ -161,12 +161,12 @@ export const PlayersPage: React.FC = () => {
       PlayersApi.uploadSheet(player.id, file)
         .then(async () => {
           onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-              message.success('Sheet uploaded');
+          message.success('Sheet uploaded');
           await load();
         })
         .catch((err) => {
           onError?.(err as Error);
-              message.error('Failed to upload sheet (PDF) — (GM key?)');
+          message.error('Failed to upload sheet (PDF) — (GM key?)');
         });
     },
   });
@@ -229,7 +229,7 @@ export const PlayersPage: React.FC = () => {
         </Space>
 
         <Space wrap size={8} style={{ width: '100%' }}>
-            <Input
+          <Input
             allowClear
             placeholder="Search by name or background…"
             value={search}
@@ -302,7 +302,7 @@ export const PlayersPage: React.FC = () => {
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
           <Space direction="vertical" size={8} style={{ width: '100%', alignItems: 'center' }}>
-                <Typography.Text type="secondary">No characters found.</Typography.Text>
+            <Typography.Text type="secondary">No characters found.</Typography.Text>
           </Space>
         </Card>
       ) : (
@@ -344,7 +344,7 @@ export const PlayersPage: React.FC = () => {
                       <Divider style={{ margin: '4px 0' }} />
 
                       {/* ── Edição de dados ── */}
-                          {editingSet[p.id] ? (
+                      {editingSet[p.id] ? (
                         <Space direction="vertical" size={8} style={{ width: '100%' }}>
                           <Space wrap size={8}>
                             <Input
@@ -386,7 +386,7 @@ export const PlayersPage: React.FC = () => {
                               }))
                             }
                           />
-                            <Space size={6}>
+                          <Space size={6}>
                             <Button size="small" type="primary" onClick={() => void saveEdit(p.id)}>
                               Save
                             </Button>
@@ -414,7 +414,7 @@ export const PlayersPage: React.FC = () => {
                         </Upload>
                       </div>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <Upload {...sheetProps(p)}>
+                        <Upload {...sheetProps(p)}>
                           <Button size="small">Upload PDF</Button>
                         </Upload>
                         {p.sheetUrl && (
