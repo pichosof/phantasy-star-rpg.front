@@ -65,7 +65,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       setLinkedQuests(questsLinked);
     } catch (e) {
       console.error(e);
-      message.error('Falha ao carregar vínculos da cidade.');
+      message.error('Failed to load city links.');
     } finally {
       setLoading(false);
     }
@@ -106,9 +106,9 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       await linkLoreToCity(loreId, city.id);
       const lore = allLores.find((x) => x.id === loreId);
       if (lore) setLinkedLores((prev) => [...prev, lore]);
-      message.success('Lore vinculada.');
+      message.success('Lore linked.');
     } catch {
-      message.error('Falha ao vincular lore.');
+      message.error('Failed to link lore.');
     }
   }
 
@@ -117,9 +117,9 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     try {
       await unlinkLoreFromCity(loreId, city.id);
       setLinkedLores((prev) => prev.filter((x) => x.id !== loreId));
-      message.success('Lore desvinculada.');
+      message.success('Lore unlinked.');
     } catch {
-      message.error('Falha ao desvincular lore.');
+      message.error('Failed to unlink lore.');
     }
   }
 
@@ -129,9 +129,9 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       await linkQuestToCity(questId, city.id);
       const quest = allQuests.find((x) => x.id === questId);
       if (quest) setLinkedQuests((prev) => [...prev, quest]);
-      message.success('Quest vinculada.');
+      message.success('Quest linked.');
     } catch {
-      message.error('Falha ao vincular quest.');
+      message.error('Failed to link quest.');
     }
   }
 
@@ -140,16 +140,16 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     try {
       await unlinkQuestFromCity(questId, city.id);
       setLinkedQuests((prev) => prev.filter((x) => x.id !== questId));
-      message.success('Quest desvinculada.');
+      message.success('Quest unlinked.');
     } catch {
-      message.error('Falha ao desvincular quest.');
+      message.error('Failed to unlink quest.');
     }
   }
 
   async function saveEdit() {
     if (!city) return;
     const n = editName.trim();
-    if (!n) return message.warning('Nome não pode ser vazio.');
+    if (!n) return message.warning('Name cannot be empty.');
     setSaving(true);
     try {
       await CitiesApi.update(city.id, {
@@ -157,10 +157,10 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         description: editDesc.trim() || null,
         region: editRegion.trim() || null,
       });
-      message.success('Cidade atualizada.');
+  message.success('City updated.');
       await onChanged();
     } catch {
-      message.error('Falha ao salvar (GM key?)');
+  message.error('Failed to save (GM key?)');
     } finally {
       setSaving(false);
     }
@@ -171,23 +171,23 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
     try {
       await CitiesApi.setWorld(city.id, worldId);
-      message.success('Vínculo com mundo atualizado.');
+  message.success('World link updated.');
       await onChanged();
     } catch (e) {
-      console.error(e);
-      message.error('Falha ao vincular cidade ao mundo.');
+  console.error(e);
+  message.error('Failed to link city to world.');
     }
   }
 
   const DrawerTitle = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'Cidade'}</span>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+  <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'City'}</span>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {city?.visible === false && <Tag color="red">Invisível</Tag>}
-        {city?.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+        {city?.visible === false && <Tag color="red">Hidden</Tag>}
+        {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
         {/* se quiser tags extras aqui (mapped/hidden etc), é aqui */}
       </div>
     </div>
@@ -214,46 +214,46 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         isMobile ? (
           DrawerTitle
         ) : (
-          <Space>
-            <span>Admin · {city?.name ?? 'Cidade'}</span>
-            {city?.visible === false && <Tag color="red">Invisível</Tag>}
-            {city?.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+            <Space>
+            <span>Admin · {city?.name ?? 'City'}</span>
+            {city?.visible === false && <Tag color="red">Hidden</Tag>}
+            {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
           </Space>
         )
       }
     >
       {!city ? null : (
         <Tabs defaultActiveKey="edit">
-          <Tabs.TabPane tab="✏️ Editar" key="edit">
+          <Tabs.TabPane tab="✏️ Edit" key="edit">
             <Space direction="vertical" size={14} style={{ width: '100%' }}>
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Nome *
+                  Name *
                 </Typography.Text>
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  placeholder="Nome da cidade"
+                  placeholder="City name"
                 />
               </div>
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Região
+                  Region
                 </Typography.Text>
                 <Input
                   value={editRegion}
                   onChange={(e) => setEditRegion(e.target.value)}
-                  placeholder="Ex: Motávia, Palma..."
+                  placeholder="E.g.: Motavia, Palma..."
                 />
               </div>
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Descrição
+                  Description
                 </Typography.Text>
                 <Input.TextArea
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  placeholder="Descrição da cidade..."
+                  placeholder="City description..."
                   rows={6}
                   style={{ resize: 'vertical' }}
                 />
@@ -265,7 +265,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 onClick={() => void saveEdit()}
                 block={mobileOnly}
               >
-                Salvar alterações
+                Save changes
               </Button>
             </Space>
           </Tabs.TabPane>
@@ -273,12 +273,12 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
           <Tabs.TabPane tab="Lores" key="lores">
             <Space direction="vertical" style={{ width: '100%' }} size={12}>
               <Typography.Text type="secondary">
-                Vinculadas: {linkedLores.length} · Disponíveis: {availableLores.length}
+                Linked: {linkedLores.length} · Available: {availableLores.length}
               </Typography.Text>
 
               <Divider style={{ margin: '8px 0' }} />
 
-              <Typography.Text strong>Vinculadas</Typography.Text>
+              <Typography.Text strong>Linked</Typography.Text>
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedLores.map((l) => (
                   <div key={l.id} style={{ display: 'grid', gap: 6 }}>
@@ -289,17 +289,17 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                     </Space>
 
                     <Button danger size="small" block={mobileOnly} onClick={() => void doUnlinkLore(l.id)}>
-                      Desvincular
+                      Unlink
                     </Button>
                   </div>
                 ))}
-                {!linkedLores.length && <Typography.Text type="secondary">Nenhuma lore vinculada.</Typography.Text>}
+                {!linkedLores.length && <Typography.Text type="secondary">No lores linked.</Typography.Text>}
               </div>
 
               <Divider />
 
-              <Typography.Text strong>Vincular nova</Typography.Text>
-              <Input allowClear placeholder="Buscar lore..." value={qLore} onChange={(e) => setQLore(e.target.value)} />
+              <Typography.Text strong>Link new</Typography.Text>
+              <Input allowClear placeholder="Search lore..." value={qLore} onChange={(e) => setQLore(e.target.value)} />
 
               <div
                 style={{
@@ -319,11 +319,11 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                     </Space>
 
                     <Button type="primary" size="small" block={mobileOnly} onClick={() => void doLinkLore(l.id)}>
-                      Vincular
+                      Link
                     </Button>
                   </div>
                 ))}
-                {!availableLores.length && <Typography.Text type="secondary">Nada pra vincular.</Typography.Text>}
+                {!availableLores.length && <Typography.Text type="secondary">Nothing to link.</Typography.Text>}
               </div>
             </Space>
           </Tabs.TabPane>
@@ -331,12 +331,12 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
           <Tabs.TabPane tab="Quests" key="quests">
             <Space direction="vertical" style={{ width: '100%' }} size={12}>
               <Typography.Text type="secondary">
-                Vinculadas: {linkedQuests.length} · Disponíveis: {availableQuests.length}
+                Linked: {linkedQuests.length} · Available: {availableQuests.length}
               </Typography.Text>
 
               <Divider style={{ margin: '8px 0' }} />
 
-              <Typography.Text strong>Vinculadas</Typography.Text>
+              <Typography.Text strong>Linked</Typography.Text>
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedQuests.map((q) => (
                   <div key={q.id} style={{ display: 'grid', gap: 6 }}>
@@ -346,19 +346,19 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
                     <Button danger size="small" block={mobileOnly} onClick={() => void doUnlinkQuest(q.id)}>
-                      Desvincular
+                      Unlink
                     </Button>
                   </div>
                 ))}
-                {!linkedQuests.length && <Typography.Text type="secondary">Nenhuma quest vinculada.</Typography.Text>}
+                {!linkedQuests.length && <Typography.Text type="secondary">No quests linked.</Typography.Text>}
               </div>
 
               <Divider />
 
-              <Typography.Text strong>Vincular nova</Typography.Text>
+              <Typography.Text strong>Link new</Typography.Text>
               <Input
                 allowClear
-                placeholder="Buscar quest..."
+                placeholder="Search quest..."
                 value={qQuest}
                 onChange={(e) => setQQuest(e.target.value)}
               />
@@ -380,11 +380,11 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
                     <Button type="primary" size="small" block={mobileOnly} onClick={() => void doLinkQuest(q.id)}>
-                      Vincular
+                      Link
                     </Button>
                   </div>
                 ))}
-                {!availableQuests.length && <Typography.Text type="secondary">Nada pra vincular.</Typography.Text>}
+                {!availableQuests.length && <Typography.Text type="secondary">Nothing to link.</Typography.Text>}
               </div>
             </Space>
           </Tabs.TabPane>
@@ -415,16 +415,16 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   }}
                 >
                   <PictureOutlined />
-                  Nenhuma imagem ainda
+                  No image yet
                 </div>
               )}
 
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                  Alt text (acessibilidade / tooltip)
+                  Alt text (accessibility / tooltip)
                 </Typography.Text>
                 <Input
-                  placeholder="Descrição da imagem..."
+                  placeholder="Image description..."
                   value={imgAlt || city.imageAlt || ''}
                   onChange={(e) => setImgAlt(e.target.value)}
                 />
@@ -441,23 +441,23 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   const alt = imgAlt || city.imageAlt || undefined;
                   CitiesApi.uploadImage(city.id, file, alt)
                     .then(async () => {
-                      onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-                      message.success('Imagem atualizada');
+            onSuccess?.({}, undefined as unknown as XMLHttpRequest);
+            message.success('Image updated');
                       await onChanged();
                     })
                     .catch((err: Error) => {
                       onError?.(err);
-                      message.error('Falha ao enviar imagem (GM key?)');
+            message.error('Failed to upload image (GM key?)');
                     });
                 }}
               >
                 <Button icon={<PictureOutlined />} type="primary">
-                  {city.imageUrl ? 'Trocar imagem' : 'Enviar imagem'}
+          {city.imageUrl ? 'Change image' : 'Upload image'}
                 </Button>
               </Upload>
 
               <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                PNG, JPG, WebP ou GIF · máx {process.env.MAX_UPLOAD_MB || 30} MB
+                PNG, JPG, WebP or GIF · max {process.env.MAX_UPLOAD_MB || 30} MB
               </Typography.Text>
             </Space>
           </Tabs.TabPane>

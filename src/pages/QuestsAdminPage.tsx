@@ -63,7 +63,7 @@ export const QuestsAdminPage: React.FC = () => {
       setItems(data);
     } catch (e) {
       console.error(e);
-      message.error('Falha ao carregar quests');
+  message.error('Failed to load quests');
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export const QuestsAdminPage: React.FC = () => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
-    if (!title) return message.warning('Informe um título');
+  if (!title) return message.warning('Please provide a title');
 
     try {
       const created = await createQuest({
@@ -125,10 +125,10 @@ export const QuestsAdminPage: React.FC = () => {
       setNewReward('');
 
       setItems((prev) => [...prev, created].sort((a, b) => (a.id ?? 0) - (b.id ?? 0)));
-      message.success('Quest criada');
+  message.success('Quest created');
     } catch (e) {
       console.error(e);
-      message.error('Falha ao criar quest (GM key?)');
+  message.error('Failed to create quest (GM key?)');
     }
   }
 
@@ -140,10 +140,10 @@ export const QuestsAdminPage: React.FC = () => {
 
     try {
       await setQuestVisibility(qt.id, next);
-      message.success(next ? 'Quest visível para jogadores' : 'Quest ocultada dos jogadores');
+  message.success(next ? 'Quest visible to players' : 'Quest hidden from players');
     } catch (e) {
       console.error(e);
-      message.error('Falha ao mudar visibilidade (GM key?)');
+  message.error('Failed to change visibility (GM key?)');
       await load();
     }
   }
@@ -152,7 +152,7 @@ export const QuestsAdminPage: React.FC = () => {
     if (!openQuest) return;
 
     const title = editTitle.trim();
-    if (!title) return message.warning('Título não pode ser vazio');
+  if (!title) return message.warning('Title cannot be empty');
 
     try {
       await updateQuest(openQuest.id, {
@@ -176,10 +176,10 @@ export const QuestsAdminPage: React.FC = () => {
         ),
       );
 
-      message.success('Quest atualizada');
+  message.success('Quest updated');
     } catch (e) {
       console.error(e);
-      message.error('Falha ao atualizar quest (GM key?)');
+  message.error('Failed to update quest (GM key?)');
     }
   }
 
@@ -188,10 +188,10 @@ export const QuestsAdminPage: React.FC = () => {
       await deleteQuest(id);
       setItems((prev) => prev.filter((x) => x.id !== id));
       if (openId === id) setOpenId(null);
-      message.success('Quest removida');
+  message.success('Quest removed');
     } catch (e) {
       console.error(e);
-      message.error('Falha ao remover quest (GM key?)');
+  message.error('Failed to remove quest (GM key?)');
     }
   }
 
@@ -205,10 +205,10 @@ export const QuestsAdminPage: React.FC = () => {
         <PageTitle>Quests (GM)</PageTitle>
         <Card density="comfy">
           <Typography.Title level={5} style={{ marginTop: 0 }}>
-            Acesso restrito
+            Restricted access
           </Typography.Title>
           <Typography.Text type="secondary">
-            Esta página só aparece e só funciona com GM mode ligado (GM API key no browser).
+            This page is only visible and functional when GM mode is enabled (GM API key in the browser).
           </Typography.Text>
         </Card>
       </>
@@ -244,13 +244,13 @@ export const QuestsAdminPage: React.FC = () => {
 
           <Space wrap>
             <Input
-              allowClear
-              placeholder="Buscar (título/descrição/reward)..."
+                  allowClear
+                  placeholder="Search (title/description/reward)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ maxWidth: 380 }}
             />
-            <Button onClick={() => setCreating((v) => !v)}>{creating ? 'Fechar' : 'Criar quest'}</Button>
+                <Button onClick={() => setCreating((v) => !v)}>{creating ? 'Close' : 'Create quest'}</Button>
           </Space>
         </Space>
 
@@ -259,6 +259,7 @@ export const QuestsAdminPage: React.FC = () => {
             <Divider style={{ margin: '8px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 920 }}>
               <Input placeholder="Título" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
+                <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
 
               <Space wrap>
                 <span>Status:</span>
@@ -271,19 +272,20 @@ export const QuestsAdminPage: React.FC = () => {
               </Space>
 
               <TextArea
-                placeholder="Descrição"
+                  placeholder="Description"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 rows={mobileOnly ? 6 : 5}
               />
 
               <Input placeholder="Reward (opcional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
+                <Input placeholder="Reward (optional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
 
               <Space>
-                <Button type="primary" htmlType="submit">
-                  Criar
+                  <Button type="primary" htmlType="submit">
+                    Create
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                  <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -298,7 +300,7 @@ export const QuestsAdminPage: React.FC = () => {
     if (!filtered.length) {
       return (
         <Card density="comfy">
-          <Empty description="Nenhuma quest encontrada." />
+          <Empty description="No quests found." />
         </Card>
       );
     }
@@ -377,7 +379,7 @@ export const QuestsAdminPage: React.FC = () => {
               ),
             },
             {
-              title: 'Visível',
+              title: 'Visible',
               key: 'visible',
               width: 110,
               render: (_: any, qt: Quest) => (
@@ -391,14 +393,14 @@ export const QuestsAdminPage: React.FC = () => {
               ),
             },
             {
-              title: 'Criado',
+              title: 'Created',
               dataIndex: 'createdAt',
               key: 'createdAt',
               width: 180,
               render: (v: string) => formatDate(v),
             },
             {
-              title: 'Atualizado',
+              title: 'Updated',
               dataIndex: 'updatedAt',
               key: 'updatedAt',
               width: 180,
@@ -414,7 +416,7 @@ export const QuestsAdminPage: React.FC = () => {
 
       {!filtered.length && !loading && (
         <Card density="comfy" style={{ marginTop: 12 }}>
-          <Empty description="Nenhuma quest encontrada." />
+          <Empty description="No quests found." />
         </Card>
       )}
     </Card>
@@ -436,7 +438,7 @@ export const QuestsAdminPage: React.FC = () => {
           width={mobileOnly ? '100%' : 720}
           title={
             <Space wrap size={8}>
-              <span style={{ fontWeight: 800 }}>Editar · {openQuest.title}</span>
+              <span style={{ fontWeight: 800 }}>Edit · {openQuest.title}</span>
               <Tag>{openQuest.status ?? 'active'}</Tag>
               {isQuestVisible(openQuest) ? <Tag color="green">Visible</Tag> : <Tag color="red">Hidden</Tag>}
               {openQuest.reward?.trim() ? <Tag color="gold">Reward</Tag> : null}
@@ -446,24 +448,24 @@ export const QuestsAdminPage: React.FC = () => {
           extra={
             <Space>
               <Popconfirm
-                title="Remover quest? Isso remove permanentemente."
-                okText="Remover"
-                cancelText="Cancelar"
+                title="Remove this quest? This will delete it permanently."
+                okText="Remove"
+                cancelText="Cancel"
                 onConfirm={() => void removeQuest(openQuest.id)}
               >
-                <Button danger>Remover</Button>
+                <Button danger>Remove</Button>
               </Popconfirm>
               <Button type="primary" onClick={() => void saveEdit()}>
-                Salvar
+                Save
               </Button>
             </Space>
           }
         >
           <Tabs defaultActiveKey="edit">
-            <Tabs.TabPane tab="Editar" key="edit">
-              <Card density="dense" title="Dados">
+            <Tabs.TabPane tab="Edit" key="edit">
+              <Card density="dense" title="Data">
                 <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                  <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Título" />
+                  <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" />
 
                   <Space wrap>
                     <span>Status:</span>
@@ -478,27 +480,27 @@ export const QuestsAdminPage: React.FC = () => {
                   <TextArea
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="Descrição"
+                    placeholder="Description"
                     rows={mobileOnly ? 12 : 10}
                   />
 
                   <Input
                     value={editReward}
                     onChange={(e) => setEditReward(e.target.value)}
-                    placeholder="Reward (opcional)"
+                    placeholder="Reward (optional)"
                   />
 
                   <Divider style={{ margin: '6px 0' }} />
 
                   <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <Typography.Text>Visível para jogadores</Typography.Text>
+                    <Typography.Text>Visible to players</Typography.Text>
                     <Switch checked={isQuestVisible(openQuest)} onChange={() => void toggleVisible(openQuest)} />
                   </Space>
 
                   <Typography.Text type="secondary">
-                    Criado: {formatDate((openQuest as any).createdAt)}
+                    Created: {formatDate((openQuest as any).createdAt)}
                     <br />
-                    Atualizado: {formatDate((openQuest as any).updatedAt)}
+                    Updated: {formatDate((openQuest as any).updatedAt)}
                   </Typography.Text>
                 </Space>
               </Card>

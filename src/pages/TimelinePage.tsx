@@ -33,7 +33,7 @@ function formatDate(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 // ── Dot do timeline ────────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ const EventCard: React.FC<{
     {isGM && (
       <div style={{ marginBottom: 6 }}>
         <Tag color={isVisible(event) ? 'green' : 'red'} style={{ margin: 0, fontSize: 11 }}>
-          {isVisible(event) ? <EyeOutlined /> : <EyeInvisibleOutlined />} {isVisible(event) ? 'Visível' : 'Oculto'}
+          {isVisible(event) ? <EyeOutlined /> : <EyeInvisibleOutlined />} {isVisible(event) ? 'Visible' : 'Hidden'}
         </Tag>
       </div>
     )}
@@ -171,7 +171,7 @@ export const TimelinePage: React.FC = () => {
       // ordena por ID (ordem de criação = ordem cronológica)
       setItems([...data].sort((a, b) => a.id - b.id));
     } catch {
-      message.error('Falha ao carregar timeline');
+  message.error('Failed to load timeline');
     } finally {
       setLoading(false);
     }
@@ -228,9 +228,9 @@ export const TimelinePage: React.FC = () => {
       setNewDate('');
       setNewDesc('');
       await load();
-      message.success('Evento criado');
+      message.success('Event created');
     } catch {
-      message.error('Falha ao criar evento (GM key?)');
+      message.error('Failed to create event (GM key?)');
     }
   }
 
@@ -244,9 +244,9 @@ export const TimelinePage: React.FC = () => {
         description: editDesc.trim() || null,
       });
       await load();
-      message.success('Evento atualizado');
+      message.success('Event updated');
     } catch {
-      message.error('Falha ao salvar (GM key?)');
+      message.error('Failed to save (GM key?)');
     }
   }
 
@@ -255,9 +255,9 @@ export const TimelinePage: React.FC = () => {
       await deleteTimelineEvent(id);
       if (openId === id) setOpenId(null);
       await load();
-      message.success('Evento removido');
+      message.success('Event removed');
     } catch {
-      message.error('Falha ao remover (GM key?)');
+      message.error('Failed to remove (GM key?)');
     }
   }
 
@@ -266,7 +266,7 @@ export const TimelinePage: React.FC = () => {
       await setTimelineEventVisibility(evt.id, !isVisible(evt));
       await load();
     } catch {
-      message.error('Falha ao alterar visibilidade (GM key?)');
+      message.error('Failed to change visibility (GM key?)');
     }
   }
 
@@ -281,8 +281,8 @@ export const TimelinePage: React.FC = () => {
             </Typography.Title>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
               {isGM
-                ? 'Gerencie os eventos da campanha e sua visibilidade.'
-                : 'Os grandes acontecimentos que moldaram o destino do sistema Algol.'}
+                ? 'Manage campaign events and their visibility.'
+                : 'The major happenings that shaped the fate of the Algol system.'}
             </Typography.Text>
           </div>
 
@@ -301,10 +301,10 @@ export const TimelinePage: React.FC = () => {
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ Painel GM
+                  ⚙️ GM Panel
                 </Button>
                 <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-                  {creating ? 'Fechar' : '+ Novo Evento'}
+                  {creating ? 'Close' : '+ New Event'}
                 </Button>
               </>
             )}
@@ -312,20 +312,20 @@ export const TimelinePage: React.FC = () => {
         </Space>
 
         <Space wrap size={8}>
-          <Tag>{stats.total} eventos</Tag>
-          {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-          {isGM && <Tag color="red">{stats.hidden} ocultos</Tag>}
+          <Tag>{stats.total} events</Tag>
+          {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+          {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
         </Space>
 
         {(isGM || search) && (
           <Space wrap size={8} style={{ width: '100%' }}>
-            <Input
-              allowClear
-              placeholder="Buscar por título, data ou descrição…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ maxWidth: 360 }}
-            />
+              <Input
+                allowClear
+                placeholder="Search by title, date or description…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ maxWidth: 360 }}
+              />
             {isGM && (
               <Space size={4}>
                 {(['all', 'visible', 'hidden'] as const).map((v) => (
@@ -335,7 +335,7 @@ export const TimelinePage: React.FC = () => {
                     type={filterVis === v ? 'primary' : 'default'}
                     onClick={() => setFilterVis(v)}
                   >
-                    {v === 'all' ? 'Todos' : v === 'visible' ? 'Visíveis' : 'Ocultos'}
+                    {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                   </Button>
                 ))}
               </Space>
@@ -347,17 +347,17 @@ export const TimelinePage: React.FC = () => {
           <>
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
-              <Typography.Text strong>Novo Evento</Typography.Text>
+              <Typography.Text strong>New Event</Typography.Text>
               <Space wrap size={8}>
                 <Input
-                  placeholder="Título *"
+                  placeholder="Title *"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   style={{ minWidth: 240 }}
                   required
                 />
                 <Input
-                  placeholder="Data (ex: Messiah 2284 / 2024-03-15) *"
+                  placeholder="Date (e.g. Messiah 2284 / 2024-03-15) *"
                   value={newDate}
                   onChange={(e) => setNewDate(e.target.value)}
                   style={{ minWidth: 200 }}
@@ -365,16 +365,16 @@ export const TimelinePage: React.FC = () => {
                 />
               </Space>
               <TextArea
-                placeholder="Descrição (opcional)"
+                placeholder="Description (optional)"
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
                 rows={3}
               />
               <Space>
                 <Button htmlType="submit" type="primary">
-                  Criar
+                  Create
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -398,13 +398,13 @@ export const TimelinePage: React.FC = () => {
           render: (id: number) => <Tag style={{ margin: 0 }}>{id}</Tag>,
         },
         {
-          title: 'Data',
+          title: 'Date',
           dataIndex: 'date',
           width: 180,
           render: (v: string) => <span style={{ fontSize: 13 }}>{formatDate(v)}</span>,
         },
         {
-          title: 'Título',
+          title: 'Title',
           dataIndex: 'title',
           render: (v: string, rec: TimelineEvent) => (
             <Typography.Text
@@ -419,7 +419,7 @@ export const TimelinePage: React.FC = () => {
           ),
         },
         {
-          title: 'Visível',
+          title: 'Visible',
           dataIndex: 'visible',
           width: 80,
           render: (_: any, rec: TimelineEvent) => (
@@ -448,9 +448,9 @@ export const TimelinePage: React.FC = () => {
                 }}
               />
               <Popconfirm
-                title="Remover este evento?"
-                okText="Sim"
-                cancelText="Não"
+                title="Remove this event?"
+                okText="Yes"
+                cancelText="No"
                 onConfirm={() => void onDelete(rec.id)}
               >
                 <Button size="small" type="text" danger icon={<DeleteOutlined />} />
@@ -466,7 +466,7 @@ export const TimelinePage: React.FC = () => {
   const TimelineView =
     displayItems.length === 0 ? (
       <Card density="comfy">
-        <Empty description="Nenhum evento na timeline." />
+        <Empty description="No events on the timeline." />
       </Card>
     ) : (
       <div style={{ position: 'relative', padding: mobileOnly ? '8px 0 8px 32px' : '8px 0' }}>
@@ -582,12 +582,12 @@ export const TimelinePage: React.FC = () => {
         visible={openId !== null}
         onClose={() => setOpenId(null)}
         width={mobileOnly ? '100%' : 480}
-        title={openEvent?.title ?? 'Evento'}
+  title={openEvent?.title ?? 'Event'}
         destroyOnClose
       >
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-            <Tabs.TabPane tab="📅 Ver" key="view">
+      <Tabs.TabPane tab="📅 View" key="view">
               <Space direction="vertical" size={14} style={{ width: '100%' }}>
                 <div>
                   <Typography.Text
@@ -614,7 +614,7 @@ export const TimelinePage: React.FC = () => {
                 {isGM && (
                   <div>
                     <Tag color={isVisible(openEvent) ? 'green' : 'red'}>
-                      {isVisible(openEvent) ? 'Visível para jogadores' : 'Oculto dos jogadores'}
+                      {isVisible(openEvent) ? 'Visible to players' : 'Hidden from players'}
                     </Tag>
                   </div>
                 )}
@@ -628,7 +628,7 @@ export const TimelinePage: React.FC = () => {
                         color: 'var(--text-light-color)',
                       }}
                     >
-                      Descrição
+                      Description
                     </Typography.Text>
                     <Typography.Paragraph style={{ marginTop: 4, marginBottom: 0, fontSize: 14, lineHeight: 1.7 }}>
                       {openEvent.description}
@@ -640,17 +640,17 @@ export const TimelinePage: React.FC = () => {
                     <Divider style={{ margin: '4px 0' }} />
                     <Space>
                       <Button size="small" icon={<EditOutlined />} onClick={() => setDrawerTab('edit')}>
-                        Editar
-                      </Button>
-                      <Popconfirm
-                        title="Remover este evento?"
-                        okText="Sim"
-                        cancelText="Não"
-                        onConfirm={() => void onDelete(openEvent.id)}
-                      >
-                        <Button size="small" danger icon={<DeleteOutlined />}>
-                          Remover
+                          Edit
                         </Button>
+                      <Popconfirm
+                          title="Remove this event?"
+                          okText="Yes"
+                          cancelText="No"
+                          onConfirm={() => void onDelete(openEvent.id)}
+                      >
+                          <Button size="small" danger icon={<DeleteOutlined />}>
+                            Remove
+                          </Button>
                       </Popconfirm>
                     </Space>
                   </>
@@ -659,10 +659,10 @@ export const TimelinePage: React.FC = () => {
             </Tabs.TabPane>
 
             {isGM && (
-              <Tabs.TabPane tab="✏️ Editar" key="edit">
+              <Tabs.TabPane tab="✏️ Edit" key="edit">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                   <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <Typography.Text style={{ fontSize: 13 }}>Visível para jogadores</Typography.Text>
+                    <Typography.Text style={{ fontSize: 13 }}>Visible to players</Typography.Text>
                     <Switch
                       size="small"
                       checked={isVisible(openEvent)}
@@ -673,24 +673,24 @@ export const TimelinePage: React.FC = () => {
                   </Space>
                   <Divider style={{ margin: '4px 0' }} />
                   <form onSubmit={(e) => void onSaveEdit(e)} style={{ display: 'grid', gap: 10 }}>
-                    <Input placeholder="Título" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                    <Input placeholder="Title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                     <Input
-                      placeholder="Data (ex: Messiah 2284 / 2024-03-15)"
+                      placeholder="Date (e.g. Messiah 2284 / 2024-03-15)"
                       value={editDate}
                       onChange={(e) => setEditDate(e.target.value)}
                     />
                     <TextArea
-                      placeholder="Descrição"
+                      placeholder="Description"
                       value={editDesc}
                       onChange={(e) => setEditDesc(e.target.value)}
                       rows={5}
                     />
                     <Space>
                       <Button htmlType="submit" type="primary" size="small">
-                        Salvar
+                        Save
                       </Button>
                       <Button size="small" onClick={() => setDrawerTab('view')}>
-                        Cancelar
+                        Cancel
                       </Button>
                     </Space>
                   </form>

@@ -274,7 +274,7 @@ function groupByCategory(pages: WikiPageType[]) {
 
   const map = new Map<string, WikiPageType[]>();
   for (const p of unpinned) {
-    const key = p.category?.trim() || 'Geral';
+  const key = p.category?.trim() || 'General';
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(p);
   }
@@ -324,7 +324,7 @@ export const WikiPage: React.FC = () => {
       const data = await listWikiPages();
       setPages(data);
     } catch {
-      message.error('Falha ao carregar a wiki');
+      message.error('Failed to load wiki');
     } finally {
       setLoading(false);
     }
@@ -350,7 +350,7 @@ export const WikiPage: React.FC = () => {
       pages.filter((p) => {
         if (!isGM && !p.visible) return false;
         if (activeCat && activeCat !== '__pinned') {
-          const cat = p.category?.trim() || 'Geral';
+          const cat = p.category?.trim() || 'General';
           if (cat !== activeCat) return false;
         }
         if (activeCat === '__pinned' && !p.pinned) return false;
@@ -387,7 +387,7 @@ export const WikiPage: React.FC = () => {
   }
 
   async function handleSave() {
-    if (!fTitle.trim()) { message.warning('Título obrigatório'); return; }
+    if (!fTitle.trim()) { message.warning('Title required'); return; }
     try {
       if (isNew) {
         const created = await createWikiPage({
@@ -399,7 +399,7 @@ export const WikiPage: React.FC = () => {
         });
         await load();
         setOpenId(created.id);
-        message.success('Artigo criado');
+  message.success('Article created');
       } else if (openId) {
         await updateWikiPage(openId, {
           title: fTitle.trim(),
@@ -409,12 +409,12 @@ export const WikiPage: React.FC = () => {
           visible: fVisible,
         });
         await load();
-        message.success('Artigo atualizado');
+        message.success('Article updated');
       }
       setEditing(false);
       setIsNew(false);
     } catch {
-      message.error('Falha ao salvar (GM key?)');
+      message.error('Failed to save (GM key?)');
     }
   }
 
@@ -423,9 +423,9 @@ export const WikiPage: React.FC = () => {
       await deleteWikiPage(id);
       if (openId === id) setOpenId(null);
       await load();
-      message.success('Artigo removido');
+  message.success('Article removed');
     } catch {
-      message.error('Falha ao remover');
+      message.error('Failed to remove');
     }
   }
 
@@ -434,7 +434,7 @@ export const WikiPage: React.FC = () => {
       await setWikiPageVisibility(page.id, !page.visible);
       await load();
     } catch {
-      message.error('Falha ao alterar visibilidade');
+      message.error('Failed to change visibility');
     }
   }
 
@@ -443,7 +443,7 @@ export const WikiPage: React.FC = () => {
       await updateWikiPage(page.id, { pinned: !page.pinned });
       await load();
     } catch {
-      message.error('Falha ao alterar fixação');
+      message.error('Failed to change pinning');
     }
   }
 
@@ -468,12 +468,12 @@ export const WikiPage: React.FC = () => {
     const start = ta.selectionStart ?? 0;
     const end = ta.selectionEnd ?? 0;
     const selected = fContent.slice(start, end);
-    const snippet = before + (selected || 'texto') + after;
+    const snippet = before + (selected || 'text') + after;
     const next = fContent.slice(0, start) + snippet + fContent.slice(end);
     setFContent(next);
     requestAnimationFrame(() => {
       ta.focus();
-      ta.setSelectionRange(start + before.length, start + before.length + (selected || 'texto').length);
+      ta.setSelectionRange(start + before.length, start + before.length + (selected || 'text').length);
     });
   }
 
@@ -486,9 +486,9 @@ export const WikiPage: React.FC = () => {
       const url = await uploadWikiImage(file);
       const alt = file.name.replace(/\.[^.]+$/, '');
       insertAtCursor(`\n![${alt}](${url})\n`);
-      message.success('Imagem inserida');
+  message.success('Image inserted');
     } catch {
-      message.error('Falha ao enviar imagem (GM key?)');
+      message.error('Failed to upload image (GM key?)');
     } finally {
       setUploading(false);
     }
@@ -500,7 +500,7 @@ export const WikiPage: React.FC = () => {
       <div style={{ padding: '0 12px 10px' }}>
         <Input
           prefix={<SearchOutlined style={{ color: 'var(--text-superLight-color)' }} />}
-          placeholder="Buscar artigos…"
+          placeholder="Search articles…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setOpenId(null); }}
           allowClear
@@ -510,8 +510,8 @@ export const WikiPage: React.FC = () => {
       </div>
 
       <SidebarItem $active={activeCat === null} onClick={() => { setActiveCat(null); setOpenId(null); setEditing(false); }}>
-        <SidebarItemTitle $active={activeCat === null}>
-          <BookOutlined style={{ marginRight: 6 }} />Todos os artigos
+          <SidebarItemTitle $active={activeCat === null}>
+          <BookOutlined style={{ marginRight: 6 }} />All articles
         </SidebarItemTitle>
         <Badge count={pages.filter((p) => isGM || p.visible).length} showZero
           style={{ backgroundColor: 'var(--border-color)', color: 'var(--text-light-color)', boxShadow: 'none', fontSize: 10 }} />
@@ -519,10 +519,10 @@ export const WikiPage: React.FC = () => {
 
       {pinned.length > 0 && (
         <>
-          <SidebarLabel>Fixados</SidebarLabel>
+      <SidebarLabel>Pinned</SidebarLabel>
           <SidebarItem $active={activeCat === '__pinned'} onClick={() => { setActiveCat('__pinned'); setOpenId(null); setEditing(false); }}>
-            <SidebarItemTitle $active={activeCat === '__pinned'}>
-              <PushpinFilled style={{ marginRight: 6, color: 'var(--warning-color)' }} />Artigos fixados
+              <SidebarItemTitle $active={activeCat === '__pinned'}>
+              <PushpinFilled style={{ marginRight: 6, color: 'var(--warning-color)' }} />Pinned articles
             </SidebarItemTitle>
             <Badge count={pinned.length} showZero
               style={{ backgroundColor: 'var(--border-color)', color: 'var(--text-light-color)', boxShadow: 'none', fontSize: 10 }} />
@@ -530,7 +530,7 @@ export const WikiPage: React.FC = () => {
         </>
       )}
 
-      {categories.length > 0 && <SidebarLabel>Categorias</SidebarLabel>}
+  {categories.length > 0 && <SidebarLabel>Categories</SidebarLabel>}
       {categories.map((cat) => {
         const count = (byCategory.get(cat) ?? []).length;
         const isActive = activeCat === cat;
@@ -546,7 +546,7 @@ export const WikiPage: React.FC = () => {
       {isGM && (
         <div style={{ marginTop: 'auto', padding: '12px 12px 4px' }}>
           <Button type="primary" size="small" block icon={<PlusOutlined />} onClick={startNew}>
-            Novo Artigo
+            New Article
           </Button>
         </div>
       )}
@@ -557,7 +557,7 @@ export const WikiPage: React.FC = () => {
   const ArticleList = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {visible.length === 0 && (
-        <Empty description={q ? 'Nenhum artigo encontrado.' : 'Nenhum artigo nesta categoria.'} style={{ marginTop: 48 }} />
+        <Empty description={q ? 'No articles found.' : 'No articles in this category.'} style={{ marginTop: 48 }} />
       )}
       {visible.map((page) => (
         <div
@@ -581,10 +581,10 @@ export const WikiPage: React.FC = () => {
                 {page.title}
               </Typography.Text>
               {page.category && <Tag style={{ margin: 0, fontSize: 11 }}>{page.category}</Tag>}
-              {isGM && !page.visible && <Tag color="red" style={{ margin: 0, fontSize: 11 }}>Oculto</Tag>}
+              {isGM && !page.visible && <Tag color="red" style={{ margin: 0, fontSize: 11 }}>Hidden</Tag>}
             </Space>
             <Typography.Text style={{ fontSize: 12, color: 'var(--text-superLight-color)' }}>
-              {page.content ? `${page.content.slice(0, 80).replace(/[#*`>\n]/g, ' ').trim()}…` : 'Sem conteúdo'}
+              {page.content ? `${page.content.slice(0, 80).replace(/[#*`>\n]/g, ' ').trim()}…` : 'No content'}
             </Typography.Text>
           </Space>
         </div>
@@ -602,26 +602,26 @@ export const WikiPage: React.FC = () => {
             {openPage.title}
           </Typography.Title>
           {openPage.category && <Tag>{openPage.category}</Tag>}
-          {isGM && !openPage.visible && <Tag color="red">Oculto</Tag>}
+          {isGM && !openPage.visible && <Tag color="red">Hidden</Tag>}
         </Space>
 
         {isGM && (
           <Space size={6}>
-            <Tooltip title={openPage.pinned ? 'Desafixar' : 'Fixar'}>
+            <Tooltip title={openPage.pinned ? 'Unpin' : 'Pin'}>
               <Button size="small" type="text"
                 icon={openPage.pinned ? <PushpinFilled style={{ color: 'var(--warning-color)' }} /> : <PushpinOutlined />}
                 onClick={() => void handleTogglePin(openPage)} />
             </Tooltip>
-            <Tooltip title={openPage.visible ? 'Ocultar' : 'Publicar'}>
+            <Tooltip title={openPage.visible ? 'Hide' : 'Publish'}>
               <Button size="small" type="text"
                 icon={openPage.visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
                 onClick={() => void handleToggleVisible(openPage)} />
             </Tooltip>
             <Button size="small" icon={<EditOutlined />}
               onClick={() => { setIsNew(false); setEditing(true); setPreview(false); }}>
-              Editar
+              Edit
             </Button>
-            <Popconfirm title="Remover este artigo?" okText="Sim" cancelText="Não"
+            <Popconfirm title="Remove this article?" okText="Yes" cancelText="No"
               onConfirm={() => void handleDelete(openPage.id)}>
               <Button size="small" danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -636,7 +636,7 @@ export const WikiPage: React.FC = () => {
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{openPage.content}</ReactMarkdown>
         </ArticleBody>
       ) : (
-        <Empty description="Artigo sem conteúdo." style={{ marginTop: 40 }} />
+  <Empty description="Article has no content." style={{ marginTop: 40 }} />
       )}
     </div>
   ) : null;
@@ -646,38 +646,38 @@ export const WikiPage: React.FC = () => {
     <div>
       <Space style={{ justifyContent: 'space-between', width: '100%', marginBottom: 16 }} wrap>
         <Typography.Title level={4} style={{ margin: 0, color: 'var(--heading-color)' }}>
-          {isNew ? 'Novo Artigo' : `Editando: ${openPage?.title ?? ''}`}
+          {isNew ? 'New Article' : `Editing: ${openPage?.title ?? ''}`}
         </Typography.Title>
         <Space size={6}>
           <Button size="small" onClick={() => setPreview((v) => !v)}>
-            {preview ? 'Ocultar preview' : 'Ver preview'}
+            {preview ? 'Hide preview' : 'Show preview'}
           </Button>
-          <Button size="small" onClick={cancelEdit}>Cancelar</Button>
-          <Button type="primary" size="small" onClick={() => void handleSave()}>Salvar</Button>
+          <Button size="small" onClick={cancelEdit}>Cancel</Button>
+          <Button type="primary" size="small" onClick={() => void handleSave()}>Save</Button>
         </Space>
       </Space>
 
       <Space direction="vertical" size={10} style={{ width: '100%', marginBottom: 16 }}>
         <Space wrap size={10} style={{ width: '100%' }}>
           <div style={{ flex: 2, minWidth: 200 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Título *</div>
-            <Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="Título do artigo" />
+            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Title *</div>
+            <Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="Article title" />
           </div>
           <div style={{ flex: 1, minWidth: 140 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Categoria</div>
-            <Input value={fCategory} onChange={(e) => setFCategory(e.target.value)} placeholder="Ex: Técnicas, Mundos…" />
+            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Category</div>
+            <Input value={fCategory} onChange={(e) => setFCategory(e.target.value)} placeholder="E.g.: Techniques, Worlds…" />
           </div>
         </Space>
 
         <Space size={24}>
           <Space size={8}>
             <PushpinOutlined style={{ color: 'var(--warning-color)' }} />
-            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Fixado</span>
+            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Pinned</span>
             <Switch size="small" checked={fPinned} onChange={setFPinned} />
           </Space>
           <Space size={8}>
             <EyeOutlined />
-            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Visível</span>
+            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Visible</span>
             <Switch size="small" checked={fVisible} onChange={setFVisible} />
           </Space>
         </Space>
@@ -685,30 +685,30 @@ export const WikiPage: React.FC = () => {
 
       <EditorGrid $split={preview}>
         <EditorPane>
-          <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>
-            Conteúdo — suporta <strong style={{ color: 'var(--primary-color)' }}>Markdown</strong>
+            <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>
+            Content — supports <strong style={{ color: 'var(--primary-color)' }}>Markdown</strong>
           </div>
 
           <div>
             <EditorToolbar>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('**', '**')} title="Negrito"><b>B</b></ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('*', '*')} title="Itálico"><i>I</i></ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('`', '`')} title="Código"><code style={{ fontSize: 11 }}>{'<>'}</code></ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n## ')} title="Subtítulo">H2</ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n### ')} title="Título menor">H3</ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n- ')} title="Lista">— lista</ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n> ')} title="Citação">" cit.</ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n```\n\n```\n')} title="Bloco código">{'```'}</ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n---\n')} title="Divisor">—</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertMarkdown('**', '**')} title="Bold"><b>B</b></ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertMarkdown('*', '*')} title="Italic"><i>I</i></ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertMarkdown('`', '`')} title="Code"><code style={{ fontSize: 11 }}>{'<>'}</code></ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n## ')} title="Subtitle">H2</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n### ')} title="Smaller heading">H3</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n- ')} title="List">— list</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n> ')} title="Blockquote">" bq.</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n```\n\n```\n')} title="Code block">{'```'}</ToolbarBtn>
+              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n---\n')} title="Divider">—</ToolbarBtn>
               <ToolbarBtn
                 type="button"
                 onClick={() => imgInputRef.current?.click()}
-                title="Inserir imagem"
+                title="Insert image"
                 disabled={uploading}
                 style={{ color: 'var(--primary-color)', fontWeight: 600 }}
               >
                 {uploading ? <LoadingOutlined /> : <FileImageOutlined />}
-                {' '}{uploading ? 'Enviando…' : 'Imagem'}
+                {' '}{uploading ? 'Uploading…' : 'Image'}
               </ToolbarBtn>
             </EditorToolbar>
 
@@ -725,7 +725,7 @@ export const WikiPage: React.FC = () => {
               value={fContent}
               onChange={(e) => setFContent(e.target.value)}
               rows={preview ? 24 : 20}
-              placeholder={'# Título\n\nEscreva o conteúdo em Markdown...\n\n## Seção\n\n- Item 1\n- Item 2\n\n> Citação importante'}
+                placeholder={'# Title\n\nWrite the content in Markdown...\n\n## Section\n\n- Item 1\n- Item 2\n\n> Important quote'}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -746,15 +746,15 @@ export const WikiPage: React.FC = () => {
 
         {preview && (
           <EditorPane>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>Preview</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>Preview</div>
             <PreviewPane>
-              {fContent.trim() ? (
+                  {fContent.trim() ? (
                 <ArticleBody>
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{fContent}</ReactMarkdown>
                 </ArticleBody>
-              ) : (
+                ) : (
                 <span style={{ color: 'var(--text-superLight-color)', fontSize: 13 }}>
-                  Comece a digitar para ver o preview…
+                  Start typing to see the preview…
                 </span>
               )}
             </PreviewPane>

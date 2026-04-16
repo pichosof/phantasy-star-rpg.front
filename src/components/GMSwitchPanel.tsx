@@ -33,11 +33,11 @@ const GMSwitchPanel: React.FC = () => {
   return (
     <Card style={PANEL_STYLE} title="GM Mode">
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <Input placeholder="Cole a GM_API_KEY" value={key} onChange={(e: any) => setKeyState(e.target.value)} />
-        <Button onClick={apply}>{active ? 'Atualizar' : 'Ativar'}</Button>
+        <Input placeholder="Paste GM_API_KEY" value={key} onChange={(e: any) => setKeyState(e.target.value)} />
+        <Button onClick={apply}>{active ? 'Update' : 'Activate'}</Button>
         {active && (
           <Button onClick={clearKey} danger={true}>
-            Sair do modo GM
+            Exit GM mode
           </Button>
         )}
       </div>

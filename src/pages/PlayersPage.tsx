@@ -69,8 +69,8 @@ export const PlayersPage: React.FC = () => {
 
   async function saveEdit(id: number) {
     const e = editById[id];
-    if (!e) return;
-    if (!e.name.trim()) return message.warning('Nome obrigatório');
+  if (!e) return;
+  if (!e.name.trim()) return message.warning('Name required');
     try {
       await PlayersApi.update(id, {
         name: e.name.trim(),
@@ -79,9 +79,9 @@ export const PlayersPage: React.FC = () => {
       });
       setEditingSet((prev) => ({ ...prev, [id]: false }));
       await load();
-      message.success('Player atualizado');
+  message.success('Player updated');
     } catch {
-      message.error('Falha ao atualizar (GM key?)');
+  message.error('Failed to update (GM key?)');
     }
   }
 
@@ -91,9 +91,9 @@ export const PlayersPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await PlayersApi.list();
-      setItems(data);
+          setItems(data);
     } catch {
-      message.error('Falha ao carregar players');
+          message.error('Failed to load players');
     } finally {
       setLoading(false);
     }
@@ -116,9 +116,9 @@ export const PlayersPage: React.FC = () => {
       setLevel(1);
       setBackground('');
       await load();
-      message.success('Player criado');
+          message.success('Player created');
     } catch {
-      message.error('Falha ao criar player (é preciso GM key)');
+          message.error('Failed to create player (GM key required)');
     }
   }
 
@@ -127,7 +127,7 @@ export const PlayersPage: React.FC = () => {
       await PlayersApi.setVisible(p.id, !isPlayerVisible(p));
       await load();
     } catch {
-      message.error('Não foi possível alterar visibilidade (GM key?)');
+          message.error('Failed to change visibility (GM key?)');
     }
   }
 
@@ -141,12 +141,12 @@ export const PlayersPage: React.FC = () => {
       PlayersApi.uploadImage(player.id, file, altById[player.id])
         .then(async () => {
           onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-          message.success('Imagem atualizada');
+              message.success('Image updated');
           await load();
         })
         .catch((err) => {
           onError?.(err as Error);
-          message.error('Falha ao enviar imagem (GM key?)');
+              message.error('Failed to upload image (GM key?)');
         });
     },
   });
@@ -161,12 +161,12 @@ export const PlayersPage: React.FC = () => {
       PlayersApi.uploadSheet(player.id, file)
         .then(async () => {
           onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-          message.success('Ficha enviada');
+              message.success('Sheet uploaded');
           await load();
         })
         .catch((err) => {
           onError?.(err as Error);
-          message.error('Falha ao enviar ficha (PDF) — (GM key?)');
+              message.error('Failed to upload sheet (PDF) — (GM key?)');
         });
     },
   });
@@ -207,31 +207,31 @@ export const PlayersPage: React.FC = () => {
         <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
           <div>
             <Typography.Title level={4} style={{ margin: 0 }}>
-              Personagens
+              Characters
             </Typography.Title>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
               {isGM
-                ? 'Gerencie os personagens — imagem, ficha e visibilidade.'
-                : 'Os aventureiros que enfrentam o destino do sistema Algol.'}
+                ? 'Manage characters — image, sheet and visibility.'
+                : 'The adventurers facing the fate of the Algol system.'}
             </Typography.Text>
           </div>
           {isGM && (
             <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-              {creating ? 'Fechar' : '+ Novo Player'}
+              {creating ? 'Close' : '+ New Player'}
             </Button>
           )}
         </Space>
 
         <Space wrap size={8}>
-          <Tag>{stats.total} personagens</Tag>
-          {isGM && <Tag color="green">{stats.visible} visíveis</Tag>}
-          {isGM && <Tag color="red">{stats.hidden} ocultos</Tag>}
+          <Tag>{stats.total} characters</Tag>
+          {isGM && <Tag color="green">{stats.visible} visible</Tag>}
+          {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
         </Space>
 
         <Space wrap size={8} style={{ width: '100%' }}>
-          <Input
+            <Input
             allowClear
-            placeholder="Buscar por nome ou background…"
+            placeholder="Search by name or background…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360 }}
@@ -245,7 +245,7 @@ export const PlayersPage: React.FC = () => {
                   type={filterVis === v ? 'primary' : 'default'}
                   onClick={() => setFilterVis(v)}
                 >
-                  {v === 'all' ? 'Todos' : v === 'visible' ? 'Visíveis' : 'Ocultos'}
+                  {v === 'all' ? 'All' : v === 'visible' ? 'Visible' : 'Hidden'}
                 </Button>
               ))}
             </Space>
@@ -256,10 +256,10 @@ export const PlayersPage: React.FC = () => {
           <>
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
-              <Typography.Text strong>Novo Personagem</Typography.Text>
+              <Typography.Text strong>New Character</Typography.Text>
               <Space wrap size={8}>
                 <Input
-                  placeholder="Nome *"
+                  placeholder="Name *"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={{ minWidth: 240 }}
@@ -267,22 +267,22 @@ export const PlayersPage: React.FC = () => {
                 />
                 <Space size={6}>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    Nível:
+                    Level:
                   </Typography.Text>
                   <InputNumber min={1} value={level} onChange={(n) => setLevel(Number(n) || 1)} />
                 </Space>
               </Space>
               <TextArea
-                placeholder="Background (opcional)"
+                placeholder="Background (optional)"
                 value={background}
                 onChange={(e) => setBackground(e.target.value)}
                 rows={mobileOnly ? 4 : 3}
               />
               <Space>
                 <Button htmlType="submit" type="primary">
-                  Criar
+                  Create
                 </Button>
-                <Button onClick={() => setCreating(false)}>Cancelar</Button>
+                <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
             </form>
           </>
@@ -302,7 +302,7 @@ export const PlayersPage: React.FC = () => {
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
           <Space direction="vertical" size={8} style={{ width: '100%', alignItems: 'center' }}>
-            <Typography.Text type="secondary">Nenhum personagem encontrado.</Typography.Text>
+                <Typography.Text type="secondary">No characters found.</Typography.Text>
           </Space>
         </Card>
       ) : (
@@ -322,9 +322,9 @@ export const PlayersPage: React.FC = () => {
                   <AntdCollapse.Panel
                     header={
                       <Space size={8}>
-                        <span>Gerenciar</span>
+                        <span>Manage</span>
                         <Tag color={isPlayerVisible(p) ? 'green' : 'red'} style={{ margin: 0 }}>
-                          {isPlayerVisible(p) ? 'Visível' : 'Oculto'}
+                          {isPlayerVisible(p) ? 'Visible' : 'Hidden'}
                         </Tag>
                       </Space>
                     }
@@ -332,7 +332,7 @@ export const PlayersPage: React.FC = () => {
                   >
                     <Space direction="vertical" size={10} style={{ width: '100%' }}>
                       <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                        <Typography.Text style={{ fontSize: 13 }}>Visível para jogadores</Typography.Text>
+                        <Typography.Text style={{ fontSize: 13 }}>Visible to players</Typography.Text>
                         <Switch
                           size="small"
                           checked={isPlayerVisible(p)}
@@ -344,7 +344,7 @@ export const PlayersPage: React.FC = () => {
                       <Divider style={{ margin: '4px 0' }} />
 
                       {/* ── Edição de dados ── */}
-                      {editingSet[p.id] ? (
+                          {editingSet[p.id] ? (
                         <Space direction="vertical" size={8} style={{ width: '100%' }}>
                           <Space wrap size={8}>
                             <Input
@@ -386,40 +386,40 @@ export const PlayersPage: React.FC = () => {
                               }))
                             }
                           />
-                          <Space size={6}>
+                            <Space size={6}>
                             <Button size="small" type="primary" onClick={() => void saveEdit(p.id)}>
-                              Salvar
+                              Save
                             </Button>
                             <Button size="small" onClick={() => cancelEdit(p.id)}>
-                              Cancelar
+                              Cancel
                             </Button>
                           </Space>
                         </Space>
                       ) : (
                         <Button size="small" onClick={() => startEdit(p)}>
-                          Editar nome / nível / background
+                          Edit name / level / background
                         </Button>
                       )}
 
                       <Divider style={{ margin: '4px 0' }} />
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <Input
-                          placeholder="Alt text da imagem"
+                          placeholder="Image alt text"
                           value={altById[p.id] ?? ''}
                           onChange={(e) => setAlt(p.id, e.target.value)}
                           style={{ maxWidth: 200 }}
                         />
                         <Upload {...imageProps(p)}>
-                          <Button size="small">Upload imagem</Button>
+                          <Button size="small">Upload image</Button>
                         </Upload>
                       </div>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <Upload {...sheetProps(p)}>
+                          <Upload {...sheetProps(p)}>
                           <Button size="small">Upload PDF</Button>
                         </Upload>
                         {p.sheetUrl && (
                           <a href={p.sheetUrl} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
-                            abrir ficha
+                            open sheet
                           </a>
                         )}
                       </div>

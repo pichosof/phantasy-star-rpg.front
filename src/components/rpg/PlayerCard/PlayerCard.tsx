@@ -64,23 +64,23 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
           <S.ActionsRow>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Button icon={<IdcardOutlined />} onClick={() => setOpenProfile(true)}>
-                Perfil
+                Profile
               </Button>
 
               <Button disabled={!hasSheet} type="primary" icon={<EyeOutlined />} onClick={() => setOpenPdf(true)}>
-                {hasSheet ? 'Ficha' : 'Sem ficha'}
+                {hasSheet ? 'Sheet' : 'No sheet'}
               </Button>
 
               {hasSheet && (
                 <a href={sheetUrl!} target="_blank" rel="noreferrer">
-                  <S.LinkLike icon={<FilePdfOutlined />}>Abrir em nova aba</S.LinkLike>
+                  <S.LinkLike icon={<FilePdfOutlined />}>Open in new tab</S.LinkLike>
                 </a>
               )}
             </div>
 
             {gm && (
               <S.GMRow>
-                <span style={{ opacity: 0.75 }}>Visível</span>
+                <span style={{ opacity: 0.75 }}>Visible</span>
                 <Switch checked={player.visible ?? true} onChange={() => onToggleVisible?.(player)} />
               </S.GMRow>
             )}
@@ -96,7 +96,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         width={mobileOnly ? '96vw' : '760px'}
         bodyStyle={{ padding: 0 }}
         destroyOnClose
-        title={`Perfil — ${player.name}`}
+        title={`Profile — ${player.name}`}
       >
         <div style={{ display: 'grid' }}>
           {/* header com imagem */}
@@ -144,30 +144,30 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
           <div style={{ padding: 16, display: 'grid', gap: 16 }}>
             {player.background && (
               <section>
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>História</div>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Story</div>
                 {renderBackground(player.background)}
               </section>
             )}
 
             <section style={{ display: 'grid', gap: 8 }}>
-              <div style={{ fontWeight: 700 }}>Detalhes</div>
+              <div style={{ fontWeight: 700 }}>Details</div>
               <div style={{ display: 'grid', gap: 6 }}>
                 <div>
-                  <b>Nome:</b> {player.name}
+                  <b>Name:</b> {player.name}
                 </div>
                 <div>
-                  <b>Nível:</b> {player.level}
+                  <b>Level:</b> {player.level}
                 </div>
                 {player.imageAlt && (
                   <div>
-                    <b>Imagem (alt):</b> {player.imageAlt}
+                    <b>Image (alt):</b> {player.imageAlt}
                   </div>
                 )}
                 <div>
-                  <b>Criado em:</b> {new Date(player.createdAt).toLocaleString()}
+                  <b>Created:</b> {new Date(player.createdAt).toLocaleString()}
                 </div>
                 <div>
-                  <b>Atualizado em:</b> {new Date(player.updatedAt).toLocaleString()}
+                  <b>Updated:</b> {new Date(player.updatedAt).toLocaleString()}
                 </div>
               </div>
             </section>
@@ -178,7 +178,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
       {/* Modal: Ficha (PDF) */}
       <Modal
         visible={openPdf}
-        title={`Ficha — ${player.name}`}
+        title={`Sheet — ${player.name}`}
         onCancel={() => setOpenPdf(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '80vw'}
@@ -195,7 +195,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
             />
           </S.PdfFrameWrapper>
         ) : (
-          <div style={{ padding: 16 }}>Sem ficha anexada.</div>
+          <div style={{ padding: 16 }}>No sheet attached.</div>
         )}
       </Modal>
     </>

@@ -139,20 +139,20 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
       await updateWorld(editId, { name: editName.trim(), description: editDesc.trim() || null });
       onWorldsChanged(worlds.map((w) => w.id === editId ? { ...w, name: editName.trim(), description: editDesc.trim() || null } : w));
       setEditId(null);
-      message.success('Mundo atualizado');
-    } catch { message.error('Falha ao salvar'); }
+      message.success('World updated');
+    } catch { message.error('Failed to save'); }
     finally { setSaving(false); }
   }
 
   async function handleCreate() {
-    if (!newName.trim()) return message.warning('Nome obrigatório');
+    if (!newName.trim()) return message.warning('Name is required');
     setCreating(true);
     try {
       const w = await createWorld({ name: newName.trim(), description: newDesc.trim() || null });
       onWorldsChanged([...worlds, w]);
       setNewName(''); setNewDesc('');
-      message.success('Mundo criado');
-    } catch { message.error('Falha ao criar'); }
+      message.success('World created');
+    } catch { message.error('Failed to create'); }
     finally { setCreating(false); }
   }
 
@@ -167,10 +167,10 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           const { data } = await import('@app/api/worlds.api').then((m) => ({ data: m.listWorlds() }));
           const fresh = await data;
           onWorldsChanged(fresh);
-          message.success('Imagem do mapa enviada');
+          message.success('Map image uploaded');
           opts.onSuccess?.({});
         } catch {
-          message.error('Falha no upload');
+          message.error('Upload failed');
           opts.onError?.(new Error('Upload failed'));
         }
       },
@@ -182,13 +182,13 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
       visible={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 480}
-      title={<Space><SettingOutlined /> Gerenciar Mundos</Space>}
+      title={<Space><SettingOutlined /> Manage Worlds</Space>}
     >
       <Tabs defaultActiveKey="worlds">
-        {/* ── Lista de mundos ── */}
-        <Tabs.TabPane tab={`Mundos (${worlds.length})`} key="worlds">
+        {/* ── World list ── */}
+        <Tabs.TabPane tab={`Worlds (${worlds.length})`} key="worlds">
           {worlds.length === 0 ? (
-            <Empty description="Nenhum mundo criado ainda." />
+            <Empty description="No worlds created yet." />
           ) : (
             <Space direction="vertical" size={12} style={{ width: '100%' }}>
               {worlds.map((w) => (
@@ -207,20 +207,20 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                         size="small"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        placeholder="Nome do mundo"
+                        placeholder="World name"
                       />
                       <Input.TextArea
                         size="small"
                         rows={2}
                         value={editDesc}
                         onChange={(e) => setEditDesc(e.target.value)}
-                        placeholder="Descrição"
+                        placeholder="Description"
                       />
                       <Space>
                         <Button size="small" type="primary" loading={saving} onClick={() => void saveEdit()}>
-                          Salvar
+                          Save
                         </Button>
-                        <Button size="small" onClick={cancelEdit}>Cancelar</Button>
+                        <Button size="small" onClick={cancelEdit}>Cancel</Button>
                       </Space>
                     </Space>
                   ) : (
@@ -228,17 +228,17 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                       <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                         <Space size={6}>
                           <Typography.Text strong>{w.name}</Typography.Text>
-                          {activeWorldId === w.id && <Tag color="blue">Ativo</Tag>}
+                          {activeWorldId === w.id && <Tag color="blue">Active</Tag>}
                         </Space>
                         <Space size={4}>
                           {activeWorldId !== w.id && (
                             <Button size="small" onClick={() => onActivate(w)}>
-                              Usar
+                              Use
                             </Button>
                           )}
-                          <Button size="small" onClick={() => startEdit(w)}>Editar</Button>
+                          <Button size="small" onClick={() => startEdit(w)}>Edit</Button>
                           <Upload {...imageUploadProps(w.id)}>
-                            <Button size="small" icon={<PictureOutlined />}>Mapa</Button>
+                            <Button size="small" icon={<PictureOutlined />}>Map</Button>
                           </Upload>
                         </Space>
                       </Space>
@@ -264,31 +264,31 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           )}
         </Tabs.TabPane>
 
-        {/* ── Criar mundo ── */}
-        <Tabs.TabPane tab={<><PlusOutlined /> Novo Mundo</>} key="create">
+        {/* ── Create world ── */}
+        <Tabs.TabPane tab={<><PlusOutlined /> New World</>} key="create">
           <Space direction="vertical" size={10} style={{ width: '100%' }}>
             <Form layout="vertical">
-              <Form.Item label="Nome" required>
+              <Form.Item label="Name" required>
                 <Input
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Ex: Motávia, Palma, Dezo…"
+                  placeholder="Ex: Motavia, Palma, Dezo…"
                 />
               </Form.Item>
-              <Form.Item label="Descrição">
+              <Form.Item label="Description">
                 <Input.TextArea
                   rows={3}
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  placeholder="Descrição do mundo (opcional)"
+                  placeholder="World description (optional)"
                 />
               </Form.Item>
             </Form>
             <Button type="primary" loading={creating} onClick={() => void handleCreate()}>
-              Criar Mundo
+              Create World
             </Button>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Após criar, vá em "Mundos", clique em "Mapa" para enviar a imagem do mapa.
+              After creating, go to &quot;Worlds&quot;, click &quot;Map&quot; to upload the map image.
             </Typography.Text>
           </Space>
         </Tabs.TabPane>
@@ -377,7 +377,7 @@ export default function MapPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // Stage robusto (DOM real)
+  // Recalculate stage from real DOM
   const recalcStage = React.useCallback(() => {
     const wrap = mapRef.current;
     const img = imgRef.current;
@@ -423,7 +423,7 @@ export default function MapPage() {
         setCities(cs2);
       } catch (e) {
         console.error(e);
-        message.error('Falha ao carregar mundo/cidades.');
+        message.error('Failed to load world/cities.');
       } finally {
         setLoading(false);
       }
@@ -494,7 +494,7 @@ export default function MapPage() {
       .catch((e) => {
         console.error(e);
         if (!alive) return;
-        message.error('Falha ao carregar lores/quests da cidade.');
+        message.error('Failed to load lores/quests for this city.');
         setCityLores([]); setCityQuests([]);
       })
       .finally(() => { if (!alive) return; setLinksLoading(false); });
@@ -502,13 +502,13 @@ export default function MapPage() {
     return () => { alive = false; };
   }, [openCity?.id, (openCity as any)?.discovered, isGM]);
 
-  // -------- regions options --------
+  // -------- region options --------
   const regionOptions = React.useMemo(() => {
     const regions = Array.from(
       new Set(cities.map((c) => (c.region ?? null)).filter(Boolean)),
     ) as string[];
     regions.sort((a, b) => a.localeCompare(b));
-    return [{ value: 'all', label: 'Todas' }, ...regions.map((r) => ({ value: r, label: r }))];
+    return [{ value: 'all', label: 'All' }, ...regions.map((r) => ({ value: r, label: r }))];
   }, [cities]);
 
   // -------- derived markers --------
@@ -584,10 +584,10 @@ export default function MapPage() {
       setCities((prev) =>
         prev.map((c) => c.id === pickingCity.id ? { ...c, coordinates: `${u},${v}` } : c),
       );
-      message.success(`Coords gravadas para "${pickingCity.name}".`);
+      message.success(`Coordinates saved for "${pickingCity.name}".`);
     } catch (e) {
       console.error(e);
-      message.error('Erro ao salvar coordenadas.');
+      message.error('Failed to save coordinates.');
     } finally {
       setPickingCityId(null);
     }
@@ -597,26 +597,26 @@ export default function MapPage() {
     const du = Math.abs(a.u - b.u);
     const dv = Math.abs(a.v - b.v);
     const pct = Math.sqrt(du * du + dv * dv) * 100;
-    return `${pct.toFixed(2)}% do mapa`;
+    return `${pct.toFixed(2)}% of map`;
   }
 
   function confirmClearCoords(city: City) {
     if (!city) return;
     Modal.confirm({
-      title: 'Remover coordenadas?',
-      content: `"${city.name}" vai sair do mapa. Pode reposicionar depois.`,
-      okText: 'Remover',
-      cancelText: 'Cancelar',
+      title: 'Remove coordinates?',
+      content: `"${city.name}" will be removed from the map. You can reposition it later.`,
+      okText: 'Remove',
+      cancelText: 'Cancel',
       okButtonProps: { danger: true },
       onOk: async () => {
         try {
           await updateCityCoords(city.id, null, null);
           setCities((prev) => prev.map((c) => c.id === city.id ? { ...c, coordinates: null } : c));
           setPickingCityId((prev) => (prev === city.id ? null : prev));
-          message.success(`Coordenadas removidas de "${city.name}".`);
+          message.success(`Coordinates removed from "${city.name}".`);
         } catch (e) {
           console.error(e);
-          message.error('Falha ao remover coordenadas.');
+          message.error('Failed to remove coordinates.');
         }
       },
     });
@@ -624,24 +624,24 @@ export default function MapPage() {
 
   function confirmDeleteCity(city: City) {
     Modal.confirm({
-      title: `Excluir cidade "${city.name}"?`,
-      content: 'Esta ação é irreversível.',
-      okText: 'Excluir',
-      cancelText: 'Cancelar',
+      title: `Delete city "${city.name}"?`,
+      content: 'This action is irreversible.',
+      okText: 'Delete',
+      cancelText: 'Cancel',
       okButtonProps: { danger: true },
       onOk: async () => {
         try {
           await deleteCity(city.id);
           setCities((prev) => prev.filter((c) => c.id !== city.id));
           setOpenCityId(null);
-          message.success(`"${city.name}" excluída.`);
-        } catch { message.error('Falha ao excluir cidade.'); }
+          message.success(`"${city.name}" deleted.`);
+        } catch { message.error('Failed to delete city.'); }
       },
     });
   }
 
   async function saveCityEdit() {
-    if (!openCity || !editCityName.trim()) return message.warning('Nome obrigatório');
+    if (!openCity || !editCityName.trim()) return message.warning('Name is required');
     setSavingCity(true);
     try {
       await updateCity(openCity.id, {
@@ -656,8 +656,8 @@ export default function MapPage() {
             : c,
         ),
       );
-      message.success('Cidade atualizada');
-    } catch { message.error('Falha ao salvar'); }
+      message.success('City updated');
+    } catch { message.error('Failed to save'); }
     finally { setSavingCity(false); }
   }
 
@@ -670,10 +670,10 @@ export default function MapPage() {
         await uploadCityImage(openCity.id, opts.file as File, editCityImgAlt || undefined);
         const fresh = await listCities();
         setCities((fresh as any[]).map((x) => (x && typeof x === 'object' && 'props' in x ? x.props : x)));
-        message.success('Imagem enviada');
+        message.success('Image uploaded');
         opts.onSuccess?.({});
       } catch {
-        message.error('Falha no upload');
+        message.error('Upload failed');
         opts.onError?.(new Error('Upload failed'));
       }
     },
@@ -686,13 +686,13 @@ export default function MapPage() {
     return (
       <div style={{ padding: 24 }}>
         <Space direction="vertical" size={12}>
-          <Typography.Title level={4}>Mapa</Typography.Title>
+          <Typography.Title level={4}>Map</Typography.Title>
           <Typography.Text type="secondary">
-            Nenhum mundo com imagem definido.
+            No world with image defined.
           </Typography.Text>
           {isGM && (
             <Button icon={<SettingOutlined />} onClick={() => setWorldAdminOpen(true)}>
-              Gerenciar Mundos
+              Manage Worlds
             </Button>
           )}
         </Space>
@@ -721,19 +721,19 @@ export default function MapPage() {
       <Space direction="vertical" style={{ width: '100%' }} size={12}>
         {!presentMode && (
           <Typography.Title level={3} style={{ margin: 0 }}>
-            Mapa — {world.name}
+            Map — {world.name}
           </Typography.Title>
         )}
 
         {!presentMode && (
           <Space wrap>
-            <Button onClick={enterPresentMode}>Apresentação (Tela cheia)</Button>
+            <Button onClick={enterPresentMode}>Presentation (Fullscreen)</Button>
             {isGM && (
               <Button icon={<SettingOutlined />} onClick={() => setWorldAdminOpen(true)}>
-                Mundos GM
+                GM Worlds
               </Button>
             )}
-            <Tag color="blue">Dica: F11 é fullscreen do navegador</Tag>
+            <Tag color="blue">Tip: F11 is the browser fullscreen</Tag>
           </Space>
         )}
 
@@ -742,14 +742,14 @@ export default function MapPage() {
             <Space wrap align="center">
               <Input
                 allowClear
-                placeholder="Buscar cidade..."
+                placeholder="Search city..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ width: 220 }}
               />
 
               <Space size={8}>
-                <span>Região:</span>
+                <span>Region:</span>
                 <Select
                   size="small"
                   style={{ width: 180 }}
@@ -760,32 +760,32 @@ export default function MapPage() {
               </Space>
 
               <Space size={8}>
-                <span>Descoberta:</span>
+                <span>Discovery:</span>
                 <Select
                   size="small"
                   style={{ width: 160 }}
                   value={filterDiscover}
                   onChange={(v) => setFilterDiscover(v)}
                   options={[
-                    { value: 'all', label: 'Todas' },
-                    { value: 'discovered', label: 'Descobertas' },
-                    { value: 'undiscovered', label: 'Não descobertas' },
+                    { value: 'all', label: 'All' },
+                    { value: 'discovered', label: 'Discovered' },
+                    { value: 'undiscovered', label: 'Undiscovered' },
                   ]}
                 />
               </Space>
 
               {isGM && (
                 <Space size={8}>
-                  <span>Visibilidade:</span>
+                  <span>Visibility:</span>
                   <Select
                     size="small"
                     style={{ width: 160 }}
                     value={filterVisible}
                     onChange={(v) => setFilterVisible(v)}
                     options={[
-                      { value: 'all', label: 'Todas' },
-                      { value: 'visible', label: 'Visíveis' },
-                      { value: 'hidden', label: 'Invisíveis' },
+                      { value: 'all', label: 'All' },
+                      { value: 'visible', label: 'Visible' },
+                      { value: 'hidden', label: 'Hidden' },
                     ]}
                   />
                 </Space>
@@ -793,7 +793,7 @@ export default function MapPage() {
 
               <Space size={8}>
                 <Badge count={markers.length} showZero />
-                <Typography.Text type="secondary">marcadores</Typography.Text>
+                <Typography.Text type="secondary">markers</Typography.Text>
               </Space>
 
               {isGM && (
@@ -805,7 +805,7 @@ export default function MapPage() {
                       allowClear
                       size="small"
                       style={{ width: 260 }}
-                      placeholder="Selecionar cidade para posicionar..."
+                      placeholder="Select city to position..."
                       value={pickingCityId ?? undefined}
                       onChange={(v) => setPickingCityId(v ?? null)}
                       options={gmCityOptions}
@@ -819,15 +819,15 @@ export default function MapPage() {
                       type={measureMode ? 'primary' : 'default'}
                       onClick={() => { setMeasureMode((v) => !v); setMeasureA(null); setMeasureB(null); }}
                     >
-                      Régua {measureMode ? 'ON' : 'OFF'}
+                      Ruler {measureMode ? 'ON' : 'OFF'}
                     </Button>
 
                     {pickingCity ? (
                       <Tag color="gold" style={{ margin: 0 }}>
-                        Clique no mapa para posicionar: <b>{pickingCity.name}</b>
+                        Click on the map to position: <b>{pickingCity.name}</b>
                       </Tag>
                     ) : (
-                      <Tag style={{ margin: 0 }}>Selecione uma cidade para marcar no mapa</Tag>
+                      <Tag style={{ margin: 0 }}>Select a city to mark on the map</Tag>
                     )}
                   </Space>
                 </>
@@ -838,7 +838,7 @@ export default function MapPage() {
           </>
         )}
 
-        {/* MAPA */}
+        {/* MAP */}
         <div
           ref={mapRef}
           onClick={onMapClick}
@@ -865,13 +865,13 @@ export default function MapPage() {
                 borderRadius: 10, color: '#fff', backdropFilter: 'blur(2px)',
               }}
             >
-              <Button size="small" onClick={exitPresentMode}>Sair</Button>
+              <Button size="small" onClick={exitPresentMode}>Exit</Button>
               <Button
                 size="small"
                 type={measureMode ? 'primary' : 'default'}
                 onClick={() => { setMeasureMode((v) => !v); setMeasureA(null); setMeasureB(null); }}
               >
-                Régua {measureMode ? 'ON' : 'OFF'}
+                Ruler {measureMode ? 'ON' : 'OFF'}
               </Button>
               {isFullscreen ? (
                 <Tag color="green" style={{ margin: 0 }}>Fullscreen</Tag>
@@ -942,7 +942,7 @@ export default function MapPage() {
             );
           })}
 
-          {/* Régua */}
+          {/* Ruler */}
           {measureA && measureB && stage && (
             <svg
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
@@ -983,19 +983,19 @@ export default function MapPage() {
               <Space wrap size={8}>
                 <span style={{ fontWeight: 800 }}>{openCity.name}</span>
                 {openCity.region ? <Tag>{openCity.region}</Tag> : null}
-                {openCity.visible === false && isGM ? <Tag color="red">Oculto</Tag> : null}
-                {openCity.discovered ? <Tag color="gold">Descoberta</Tag> : <Tag>Não descoberta</Tag>}
+                {openCity.visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
+                {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
               </Space>
-            ) : 'Cidade'
+            ) : 'City'
           }
         >
           {openCity && (
             <Tabs defaultActiveKey="details">
-              {/* ── Detalhes ── */}
-              <Tabs.TabPane tab="Detalhes" key="details">
+              {/* ── Details ── */}
+              <Tabs.TabPane tab="Details" key="details">
                 <Space direction="vertical" size="small" style={{ width: '100%' }}>
                   <Typography.Text type="secondary">
-                    {openCity.region || 'Região não informada'}
+                    {openCity.region || 'Region not specified'}
                   </Typography.Text>
                   {openCity.imageUrl && (isGM || openCity.discovered) && (
                     <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 180, marginBottom: 8 }}>
@@ -1008,12 +1008,12 @@ export default function MapPage() {
                   )}
                   <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>
                     {isGM || openCity.discovered
-                      ? openCity.description || 'Sem descrição.'
-                      : 'Informações indisponíveis.'}
+                      ? openCity.description || 'No description.'
+                      : 'Information unavailable.'}
                   </Typography.Paragraph>
                   <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                    Criada: {formatDate(openCity.createdAt)}
-                    {openCity.updatedAt ? ` · Atualizada: ${formatDate(openCity.updatedAt)}` : ''}
+                    Created: {formatDate(openCity.createdAt)}
+                    {openCity.updatedAt ? ` · Updated: ${formatDate(openCity.updatedAt)}` : ''}
                   </Typography.Text>
                 </Space>
               </Tabs.TabPane>
@@ -1022,45 +1022,45 @@ export default function MapPage() {
               {isGM && (
                 <Tabs.TabPane tab="✏️ Admin" key="admin">
                   <Form layout="vertical">
-                    <Form.Item label="Nome" required>
+                    <Form.Item label="Name" required>
                       <Input
                         value={editCityName}
                         onChange={(e) => setEditCityName(e.target.value)}
                       />
                     </Form.Item>
-                    <Form.Item label="Região">
+                    <Form.Item label="Region">
                       <Input
                         value={editCityRegion}
                         onChange={(e) => setEditCityRegion(e.target.value)}
-                        placeholder="Ex: Dunas do Norte, Costa Leste…"
+                        placeholder="Ex: Northern Dunes, East Coast…"
                       />
                     </Form.Item>
-                    <Form.Item label="Descrição">
+                    <Form.Item label="Description">
                       <Input.TextArea
                         rows={5}
                         value={editCityDesc}
                         onChange={(e) => setEditCityDesc(e.target.value)}
-                        placeholder="Texto descritivo da cidade…"
+                        placeholder="Descriptive text for the city…"
                       />
                     </Form.Item>
                     <Space>
                       <Button type="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
-                        Salvar
+                        Save
                       </Button>
                       <Button
                         danger
                         onClick={() => confirmDeleteCity(openCity)}
                       >
-                        Excluir cidade
+                        Delete city
                       </Button>
                     </Space>
                   </Form>
                 </Tabs.TabPane>
               )}
 
-              {/* ── Imagem (GM only) ── */}
+              {/* ── Image (GM only) ── */}
               {isGM && (
-                <Tabs.TabPane tab="🖼️ Imagem" key="image">
+                <Tabs.TabPane tab="🖼️ Image" key="image">
                   <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     {openCity.imageUrl ? (
                       <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
@@ -1071,7 +1071,7 @@ export default function MapPage() {
                         />
                       </div>
                     ) : (
-                      <Typography.Text type="secondary">Nenhuma imagem.</Typography.Text>
+                      <Typography.Text type="secondary">No image.</Typography.Text>
                     )}
                     <Form.Item label="Alt text" style={{ marginBottom: 8 }}>
                       <Input
@@ -1082,24 +1082,24 @@ export default function MapPage() {
                     </Form.Item>
                     <Upload {...cityImageUploadProps}>
                       <Button icon={<PictureOutlined />}>
-                        {openCity.imageUrl ? 'Trocar imagem' : 'Enviar imagem'}
+                        {openCity.imageUrl ? 'Change image' : 'Upload image'}
                       </Button>
                     </Upload>
                   </Space>
                 </Tabs.TabPane>
               )}
 
-              {/* ── Controles (GM only) ── */}
+              {/* ── Controls (GM only) ── */}
               {isGM && (
-                <Tabs.TabPane tab="⚙️ Controles" key="controls">
+                <Tabs.TabPane tab="⚙️ Controls" key="controls">
                   <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    {/* Visível */}
+                    {/* Visible */}
                     <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                       <div>
-                        <Typography.Text>Visível para jogadores</Typography.Text>
+                        <Typography.Text>Visible to players</Typography.Text>
                         <br />
                         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                          Cidades ocultas não aparecem no mapa dos jogadores.
+                          Hidden cities do not appear on the players&apos; map.
                         </Typography.Text>
                       </div>
                       <Switch
@@ -1112,13 +1112,13 @@ export default function MapPage() {
                         }}
                       />
                     </Space>
-                    {/* Descoberta */}
+                    {/* Discovered */}
                     <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                       <div>
-                        <Typography.Text>Descoberta</Typography.Text>
+                        <Typography.Text>Discovered</Typography.Text>
                         <br />
                         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                          Libera descrição, imagem e lores para os jogadores.
+                          Unlocks description, image and lores for the players.
                         </Typography.Text>
                       </div>
                       <Switch
@@ -1130,22 +1130,22 @@ export default function MapPage() {
                       />
                     </Space>
                     <Divider style={{ margin: '4px 0' }} />
-                    {/* Posição no mapa */}
-                    <Typography.Text strong>Posição no mapa</Typography.Text>
+                    {/* Map position */}
+                    <Typography.Text strong>Map position</Typography.Text>
                     <Space wrap>
                       <Button
                         type="primary"
                         size="small"
                         onClick={() => {
                           setPickingCityId(openCity.id);
-                          message.info('Clique no mapa para posicionar.');
+                          message.info('Click on the map to position.');
                         }}
                       >
-                        Reposicionar
+                        Reposition
                       </Button>
                       {openCity.coordinates && (
                         <Button size="small" danger onClick={() => confirmClearCoords(openCity)}>
-                          Remover do mapa
+                          Remove from map
                         </Button>
                       )}
                     </Space>
@@ -1161,18 +1161,18 @@ export default function MapPage() {
               {/* ── Lores ── */}
               <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
                 {!isGM && !openCity.discovered ? (
-                  <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+                  <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
                 ) : linksLoading ? (
                   <Spin />
                 ) : !cityLores.length ? (
-                  <Empty description="Nenhuma lore vinculada." />
+                  <Empty description="No lores linked." />
                 ) : (
                   <div style={{ display: 'grid', gap: 10 }}>
                     {cityLores.map((l) => (
                       <div key={l.id} style={{ border: '1px solid #f0f0f0', borderRadius: 10, padding: 12 }}>
                         <Space wrap size={8}>
                           <Typography.Text strong>{l.title}</Typography.Text>
-                          {l.category ? <Tag>{l.category}</Tag> : <Tag>(sem categoria)</Tag>}
+                          {l.category ? <Tag>{l.category}</Tag> : <Tag>(no category)</Tag>}
                         </Space>
                         <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
                           {l.content?.trim() || '—'}
@@ -1186,11 +1186,11 @@ export default function MapPage() {
               {/* ── Quests ── */}
               <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
                 {!isGM && !openCity.discovered ? (
-                  <Typography.Text type="secondary">Conteúdo indisponível até a cidade ser descoberta.</Typography.Text>
+                  <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
                 ) : linksLoading ? (
                   <Spin />
                 ) : !cityQuests.length ? (
-                  <Empty description="Nenhuma quest vinculada." />
+                  <Empty description="No quests linked." />
                 ) : (
                   <div style={{ display: 'grid', gap: 10 }}>
                     {cityQuests.map((q) => (
@@ -1208,7 +1208,7 @@ export default function MapPage() {
                           {q.description?.trim() || '—'}
                         </Typography.Paragraph>
                         {q.reward && (
-                          <Typography.Text type="secondary">Recompensa: {q.reward}</Typography.Text>
+                          <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>
                         )}
                       </div>
                     ))}

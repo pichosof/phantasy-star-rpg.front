@@ -169,15 +169,15 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
       return;
     }
     Modal.confirm({
-      title: 'Importar dados do GCA',
-      content: 'Isso irá substituir todos os dados atuais da ficha. Continuar?',
-      okText: 'Importar', cancelText: 'Cancelar',
+      title: 'Import GCA data',
+      content: 'This will replace all current sheet data. Continue?',
+      okText: 'Import', cancelText: 'Cancel',
       onOk: () => {
         onChange(imported.data as GurpsSheetData);
         if (imported.warnings.length > 0) {
           imported.warnings.forEach((w) => message.warning(w));
         } else {
-          message.success('Ficha importada com sucesso!');
+          message.success('Sheet imported successfully!');
         }
       },
     });
@@ -197,7 +197,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
         <input ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" style={{ display: 'none' }} onChange={handleImport} />
         <Button size="small" icon={<UploadOutlined />} onClick={() => importRef.current?.click()}>
-          Importar GCA (.gca5 / .txt)
+          Import GCA (.gca5 / .txt)
         </Button>
       </div>
     <Collapse defaultActiveKey={['identity','attrs']} style={{ width: '100%' }}>

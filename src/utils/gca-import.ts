@@ -26,7 +26,7 @@ export async function importGcaFile(file: File): Promise<GcaImportResult> {
   if (ext === 'txt') {
     return parseGcaTxt(text);
   }
-  throw new Error(`Formato não reconhecido (.${ext}). Use .gca5 ou .txt`);
+  throw new Error(`Unrecognized format (.${ext}). Use .gca5 or .txt`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -80,11 +80,11 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
   const doc = new DOMParser().parseFromString(cleaned, 'application/xml');
 
   if (doc.querySelector('parsererror')) {
-    throw new Error('Arquivo XML inválido. Tente exportar novamente do GCA.');
+    throw new Error('Invalid XML file. Try exporting again from GCA.');
   }
 
   const char = doc.querySelector('character');
-  if (!char) throw new Error('Elemento <character> não encontrado no arquivo.');
+  if (!char) throw new Error('<character> element not found in the file.');
 
   const result: Partial<GurpsSheetData> = {};
 
@@ -105,7 +105,7 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
   // ── Traits container ──────────────────────────────────────────────────────
   const traitsEl = directChild(char, 'traits');
   if (!traitsEl) {
-    warnings.push('Seção <traits> não encontrada.');
+    warnings.push('<traits> section not found.');
     return { data: result, warnings };
   }
 
