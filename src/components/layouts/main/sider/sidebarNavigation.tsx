@@ -15,6 +15,7 @@ import {
   ExperimentOutlined,
   LockOutlined,
   FileTextOutlined,
+  FolderOpenOutlined,
   PictureOutlined,
   IdcardOutlined,
 } from '@ant-design/icons';
@@ -78,7 +79,10 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       title: 'Tools',
       key: 'tools',
       icon: <ExperimentOutlined />,
-      children: [{ title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> }],
+      children: [
+        { title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
+        { title: 'Library', key: 'library', url: ROUTES.LIBRARY, icon: <FolderOpenOutlined /> },
+      ],
     },
   ];
 
