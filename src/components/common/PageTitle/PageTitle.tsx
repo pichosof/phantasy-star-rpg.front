@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet';
 export const PageTitle: React.FC<WithChildrenProps> = ({ children }) => {
   return (
     <Helmet>
-      <title>{children} | Picho.RPG</title>
+      <title>{children} | RPG Companion</title>
     </Helmet>
   );
 };

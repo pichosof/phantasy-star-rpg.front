@@ -2,27 +2,37 @@ import React from 'react';
 import * as S from './MainSider/MainSider.styles';
 import { RightOutlined } from '@ant-design/icons';
 import { useResponsive } from 'hooks/useResponsive';
-import logo from 'assets/logo.png';
-import logoDark from 'assets/logo-dark.png';
+import logoMarkDark from 'assets/logo-mark-dark.png';
+import logoMarkLight from 'assets/logo-mark-light.png';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 
 interface SiderLogoProps {
   isSiderCollapsed: boolean;
   toggleSider: () => void;
 }
+
 export const SiderLogo: React.FC<SiderLogoProps> = ({ isSiderCollapsed, toggleSider }) => {
   const { tabletOnly } = useResponsive();
-
   const theme = useAppSelector((state) => state.theme.theme);
 
-  const img = theme === 'dark' ? logoDark : logo;
+  const markSrc = theme === 'dark' ? logoMarkDark : logoMarkLight;
+  const themeName = theme === 'dark' ? 'DEZOLIS' : 'MOTAVIA';
+  const isCollapsed = tabletOnly && isSiderCollapsed;
 
   return (
-    <S.SiderLogoDiv>
+    <S.SiderLogoDiv $isCollapsed={isCollapsed}>
       <S.SiderLogoLink to="/">
-        <img src={img} alt="Picho.RPG" width={48} height={48} />
-        <S.BrandSpan>Picho.RPG</S.BrandSpan>
+        <S.LogoMark src={markSrc} alt="RPG Companion" />
+        {!isCollapsed && (
+          <S.BrandBlock>
+            <S.BrandName>
+              RPG <S.BrandAccent>Companion</S.BrandAccent>
+            </S.BrandName>
+            <S.BrandSub>· {themeName} ·</S.BrandSub>
+          </S.BrandBlock>
+        )}
       </S.SiderLogoLink>
+
       {tabletOnly && (
         <S.CollapseButton
           shape="circle"

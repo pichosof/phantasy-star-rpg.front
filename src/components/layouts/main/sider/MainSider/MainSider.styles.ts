@@ -66,27 +66,58 @@ export const SiderContent = styled.div`
 export const SiderLogoLink = styled(Link)`
   display: flex;
   align-items: center;
-  overflow: hidden;
-  position: relative;
+  gap: 10px;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
 `;
 
-export const SiderLogoDiv = styled.div`
+export const SiderLogoDiv = styled.div<{ $isCollapsed?: boolean }>`
   height: ${LAYOUT.mobile.headerHeight};
-  padding: ${LAYOUT.mobile.headerPadding};
+  padding: ${(p) => (p.$isCollapsed ? '18px 0' : '16px 18px')};
   display: flex;
-  justify-content: space-between;
+  justify-content: ${(p) => (p.$isCollapsed ? 'center' : 'space-between')};
   align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
   @media only screen and ${media.md} {
     height: ${LAYOUT.desktop.headerHeight};
-    padding-top: ${LAYOUT.desktop.paddingVertical};
-    padding-bottom: ${LAYOUT.desktop.paddingVertical};
+    padding: ${(p) => (p.$isCollapsed ? '18px 0' : '16px 18px')};
   }
 `;
 
-export const BrandSpan = styled.span`
-  margin: 0 1rem;
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--white);
+export const LogoMark = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: contain;
 `;
+
+export const BrandBlock = styled.div`
+  line-height: 1.25;
+  min-width: 0;
+`;
+
+export const BrandName = styled.div`
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+`;
+
+export const BrandAccent = styled.span`
+  color: var(--primary-color);
+`;
+
+export const BrandSub = styled.div`
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--primary-color);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+`;
+
+/** @deprecated — kept only so old imports don't break during migration */
+export const BrandSpan = BrandName;
