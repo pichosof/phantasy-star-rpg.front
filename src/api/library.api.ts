@@ -63,9 +63,9 @@ export async function deleteLibraryDocument(id: number): Promise<void> {
   await http.delete(`/api/library/documents/${id}`);
 }
 
-export async function getLibrarySettings(): Promise<{ playerKey: string | null }> {
+export async function getLibrarySettings(): Promise<{ hasPlayerKey: boolean }> {
   const { data } = await http.get('/api/library/settings');
-  return data as { playerKey: string | null };
+  return data as { hasPlayerKey: boolean };
 }
 
 export async function setLibrarySettings(playerKey: string | null): Promise<void> {

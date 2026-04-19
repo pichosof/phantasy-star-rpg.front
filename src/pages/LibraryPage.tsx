@@ -85,11 +85,18 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
     setLoading(true);
     try {
       setLibraryKey(k);
-      await listLibraryDocuments(); // will throw 401 if wrong
+      await listLibraryDocuments();
       onAccess();
-    } catch {
+    } catch (e: any) {
       setLibraryKey(null);
-      message.error('Invalid library key.');
+      if (e?.response?.status === 429) {
+        const retry = e?.response?.data?.retryAfterSeconds;
+        message.error(retry
+          ? `Too many attempts. Try again in ${retry}s.`
+          : 'Too many attempts. Please wait before trying again.');
+      } else {
+        message.error('Invalid library key.');
+      }
     } finally {
       setLoading(false);
     }
@@ -241,7 +248,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
 
   return (
     <Modal
-      open={!!doc}
+      visible={!!doc}
       onCancel={onClose}
       title="Edit Document"
       footer={null}
@@ -294,54 +301,79 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
-  const [currentKey, setCurrentKey] = React.useState<string | null>(null);
+  const [hasKey, setHasKey] = React.useState<boolean | null>(null);
   const [newKey, setNewKey] = React.useState('');
   const [saving, setSaving] = React.useState(false);
+  const [clearing, setClearing] = React.useState(false);
 
   React.useEffect(() => {
     getLibrarySettings()
-      .then((s) => {
-        setCurrentKey(s.playerKey);
-        setNewKey(s.playerKey ?? '');
-      })
+      .then((s) => setHasKey(s.hasPlayerKey))
       .catch(() => message.error('Failed to load settings.'));
   }, []);
 
   async function save() {
+    const k = newKey.trim();
+    if (!k) return message.warning('Enter a key to save, or use "Remove key" to lock the library.');
     setSaving(true);
     try {
-      await setLibrarySettings(newKey.trim() || null);
-      message.success('Library key updated.');
+      await setLibrarySettings(k);
+      message.success('Library key updated. The key is now stored as a secure hash.');
+      setNewKey('');
+      onClose();
+      onReload();
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || 'Failed to update key.';
+      message.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function clearKey() {
+    setClearing(true);
+    try {
+      await setLibrarySettings(null);
+      message.success('Library key removed. Library is now locked for all players.');
       onClose();
       onReload();
     } catch {
-      message.error('Failed to update key.');
+      message.error('Failed to remove key.');
     } finally {
-      setSaving(false);
+      setClearing(false);
     }
   }
 
   return (
     <Space direction="vertical" size={14} style={{ width: '100%' }}>
       <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-        Set the access key that players must enter to access the library. Leave blank to lock the library for all
-        players.
+        Set the access key players must enter to unlock the library. The key is stored as a{' '}
+        <strong>scrypt hash</strong> — it cannot be read back. Min 12 chars, 2+ character classes.
       </Typography.Text>
-      {currentKey && (
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          Current key: <code style={{ color: 'var(--primary-color)' }}>{currentKey}</code>
-        </Typography.Text>
+
+      {hasKey !== null && (
+        <Tag color={hasKey ? 'green' : 'red'} icon={hasKey ? <UnlockOutlined /> : <LockOutlined />}>
+          {hasKey ? 'A player key is currently set' : 'No player key set — library locked for players'}
+        </Tag>
       )}
+
       <Input.Password
-        placeholder="New player access key..."
+        placeholder="New player access key (min 12 chars)..."
         value={newKey}
         onChange={(e) => setNewKey(e.target.value)}
+        onPressEnter={() => void save()}
         prefix={<KeyOutlined />}
       />
-      <Space>
+
+      <Space wrap>
         <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void save()}>
-          Save key
+          {hasKey ? 'Change key' : 'Set key'}
         </Button>
+        {hasKey && (
+          <Button danger loading={clearing} onClick={() => void clearKey()}>
+            Remove key (lock library)
+          </Button>
+        )}
         <Button onClick={onClose}>Cancel</Button>
       </Space>
     </Space>
@@ -485,7 +517,7 @@ const LibraryPage: React.FC = () => {
 
   const categories = React.useMemo(() => {
     const set = new Set(docs.map((d) => d.category).filter(Boolean) as string[]);
-    return [...set].sort();
+    return Array.from(set).sort();
   }, [docs]);
 
   async function handleDelete(doc: LibraryDocument) {
