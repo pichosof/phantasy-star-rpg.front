@@ -7,9 +7,28 @@ import { Card } from '@app/components/common/Card/Card';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 
+// ── Edge config ───────────────────────────────────────────────────────────────
+// Probability (%) that any single die roll edges instead of landing on a face.
+// Change this to test — e.g. set to 50 to see it constantly in dev.
+const EDGE_CHANCE_PERCENT = 10;
+
+const EDGE_MESSAGES = [
+  '🪙 The die edged! It flat-out refused to pick a side.',
+  '🎰 EDGED! The die went on strike. No result recorded. Classic.',
+  '🪄 The die defied physics and balanced on its edge. Not even the GM saw that coming.',
+  '😱 EDGE DETECTED! The die is fine. The result... is not.',
+  '🎲 It edged like it was a 0.0001% chance. Because it was.',
+  '💀 The die balanced on its edge. The party laughs nervously.',
+  '🌀 Edge! The die entered philosophical mode and refused to commit to a face.',
+  '🤯 EDGED! This die was clearly crafted by a chaotic deity.',
+  "🫠 The die edged. It says it's not its fault.",
+  '⚡ EPIC EDGE! The die tested the limits of reality — and won.',
+];
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type DiceType = 2 | 4 | 6 | 8 | 10 | 12 | 16 | 20 | 24 | 30 | 60 | 100;
+type DieValue = number | 'edge';
 
 const ALL_DICE: DiceType[] = [2, 4, 6, 8, 10, 12, 16, 20, 24, 30, 60, 100];
 
@@ -20,7 +39,7 @@ interface DiceGroup {
 
 interface SingleRoll {
   type: DiceType;
-  values: number[];
+  values: DieValue[];
 }
 
 interface HistoryEntry {
@@ -33,7 +52,8 @@ interface HistoryEntry {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function rollDie(sides: DiceType): number {
+function rollDie(sides: DiceType): DieValue {
+  if (Math.random() * 100 < EDGE_CHANCE_PERCENT) return 'edge';
   return Math.floor(Math.random() * sides) + 1;
 }
 
@@ -46,6 +66,14 @@ function buildLabel(groups: DiceGroup[]): string {
 
 function formatTime(d: Date): string {
   return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function countEdges(rolls: SingleRoll[]): number {
+  return rolls.flatMap((r) => r.values).filter((v) => v === 'edge').length;
+}
+
+function randomEdgeMessage(): string {
+  return EDGE_MESSAGES[Math.floor(Math.random() * EDGE_MESSAGES.length)];
 }
 
 // ── Die shapes & colors ───────────────────────────────────────────────────────
@@ -89,10 +117,48 @@ function DiceFaceDisplay({
   isDark,
 }: {
   type: DiceType;
-  value: number;
+  value: DieValue;
   size?: number;
   isDark: boolean;
 }) {
+  if (value === 'edge') {
+    return (
+      <div
+        title="EDGED! This die doesn't count."
+        style={{
+          width: size,
+          height: size,
+          clipPath: DIE_SHAPES[type],
+          background: 'linear-gradient(135deg, #faad14, #d4380d, #faad14)',
+          backgroundSize: '200% 200%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: 'rotate(45deg)',
+          flexShrink: 0,
+          boxShadow: `0 0 ${size / 3}px rgba(250,173,20,0.6)`,
+          cursor: 'default',
+          animation: 'edge-glow 1.4s ease-in-out infinite alternate',
+        }}
+      >
+        <span
+          style={{
+            fontSize: size < 44 ? 13 : 16,
+            fontWeight: 900,
+            color: '#fff',
+            lineHeight: 1,
+            userSelect: 'none',
+            transform: 'rotate(-45deg)',
+            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+            letterSpacing: 0,
+          }}
+        >
+          E!
+        </span>
+      </div>
+    );
+  }
+
   const isMax = value === type;
   const isMin = value === 1;
 
@@ -106,7 +172,6 @@ function DiceFaceDisplay({
     bgColor = '#ff4d4f';
     textColor = '#fff';
   } else {
-    // Subtle tint from the die's own color — visible on both light and dark
     bgColor = isDark ? `${DIE_COLORS[type]}28` : `${DIE_COLORS[type]}22`;
     textColor = isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
   }
@@ -159,12 +224,8 @@ function DieSelectorCard({
   const active = count > 0;
 
   const cardBg = active ? `${color}18` : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
-
   const cardBorder = active ? `${color}66` : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)';
-
-  // Inactive die shape: use the die's color at low opacity so it's visible on any bg
   const dieBg = active ? color : isDark ? `${color}45` : `${color}35`;
-
   const btnBg = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)';
   const btnColor = isDark ? '#fff' : '#000';
   const btnDisabledBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
@@ -284,8 +345,9 @@ function HistoryRow({
   onReplay: (entry: HistoryEntry) => void;
   isDark: boolean;
 }) {
-  const maxes = entry.rolls.flatMap((r) => r.values.filter((v) => v === r.type)).length;
-  const mins = entry.rolls.flatMap((r) => r.values.filter((v) => v === 1)).length;
+  const maxes = entry.rolls.reduce((acc, r) => acc + r.values.filter((v) => v === r.type).length, 0);
+  const mins = entry.rolls.flatMap((r) => r.values).filter((v) => v === 1).length;
+  const edges = countEdges(entry.rolls);
 
   const rowBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
   const rowBorder = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)';
@@ -316,6 +378,11 @@ function HistoryRow({
           {mins > 0 && (
             <Tag color="red" style={{ margin: 0, fontSize: 11 }}>
               {mins}× min
+            </Tag>
+          )}
+          {edges > 0 && (
+            <Tag color="orange" style={{ margin: 0, fontSize: 11, fontWeight: 700 }}>
+              🪙 {edges}× EDGED
             </Tag>
           )}
         </div>
@@ -397,7 +464,9 @@ export const DiceRollerPage: React.FC = () => {
         type: g.type,
         values: Array.from({ length: g.count }, () => rollDie(g.type)),
       }));
-      const total = rolls.flatMap((r) => r.values).reduce((a, b) => a + b, 0);
+
+      const numericValues = rolls.flatMap((r) => r.values).filter((v): v is number => v !== 'edge');
+      const total = numericValues.reduce((a, b) => a + b, 0);
       const label = buildLabel(groups);
       const entry: HistoryEntry = {
         id: `${Date.now()}-${Math.random()}`,
@@ -406,9 +475,29 @@ export const DiceRollerPage: React.FC = () => {
         total,
         label,
       };
+
       setLastEntry(entry);
       setHistory((prev) => [entry, ...prev].slice(0, 50));
       setRolling(false);
+
+      // Quina notification
+      const edgeCount = countEdges(rolls);
+      if (edgeCount > 0) {
+        const allEdged = numericValues.length === 0;
+        const baseMsg = randomEdgeMessage();
+        const suffix = allEdged
+          ? ' ALL dice edged. That is legendary (and completely useless).'
+          : edgeCount > 1
+          ? ` ${edgeCount} dice edged at once. Remarkable.`
+          : '';
+
+        message.open({
+          type: 'warning',
+          content: baseMsg + suffix,
+          duration: 7,
+          style: { fontWeight: 600, fontSize: 14 },
+        });
+      }
     }, 120);
   }
 
@@ -425,6 +514,14 @@ export const DiceRollerPage: React.FC = () => {
   return (
     <>
       <PageTitle>Dice Roller</PageTitle>
+
+      {/* Quina glow animation */}
+      <style>{`
+        @keyframes edge-glow {
+          from { box-shadow: 0 0 8px rgba(250,173,20,0.5), 0 0 16px rgba(212,56,13,0.3); }
+          to   { box-shadow: 0 0 16px rgba(250,173,20,0.9), 0 0 32px rgba(212,56,13,0.6); }
+        }
+      `}</style>
 
       <div style={{ display: 'grid', gap: 16, maxWidth: 860, margin: '0 auto' }}>
         {/* ── Selector ── */}
@@ -495,9 +592,8 @@ export const DiceRollerPage: React.FC = () => {
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                 Last result · {lastEntry.label}
               </Typography.Text>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 13, color: totalLabelColor }}>Total</span>
-
                 <span
                   style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: totalValueColor, letterSpacing: -1 }}
                 >
@@ -516,8 +612,34 @@ export const DiceRollerPage: React.FC = () => {
 
             {(() => {
               const allValues = lastEntry.rolls.flatMap((r) => r.values);
-              const allMax = allValues.length > 0 && lastEntry.rolls.every((r) => r.values.every((v) => v === r.type));
-              const allMin = allValues.length > 0 && lastEntry.rolls.every((r) => r.values.every((v) => v === 1));
+              const numericOnly = allValues.filter((v): v is number => v !== 'edge');
+              const edgeCount = allValues.length - numericOnly.length;
+              const allEdged = allValues.length > 0 && edgeCount === allValues.length;
+              const allMax =
+                numericOnly.length > 0 &&
+                edgeCount === 0 &&
+                lastEntry.rolls.every((r) => r.values.every((v) => v === r.type));
+              const allMin =
+                numericOnly.length > 0 &&
+                edgeCount === 0 &&
+                lastEntry.rolls.every((r) => r.values.every((v) => v === 1));
+
+              if (allEdged)
+                return (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(250,173,20,0.15)',
+                      border: '1px solid rgba(250,173,20,0.5)',
+                    }}
+                  >
+                    <Typography.Text style={{ color: '#faad14', fontWeight: 700 }}>
+                      🪙 TOTAL EDGE — every single die balanced on its edge. Historically useless. Absolutely legendary.
+                    </Typography.Text>
+                  </div>
+                );
               if (allMax)
                 return (
                   <div
@@ -550,6 +672,22 @@ export const DiceRollerPage: React.FC = () => {
                     </Typography.Text>
                   </div>
                 );
+              if (edgeCount > 0)
+                return (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(250,173,20,0.08)',
+                      border: '1px solid rgba(250,173,20,0.25)',
+                    }}
+                  >
+                    <Typography.Text style={{ color: '#faad14', fontWeight: 600 }}>
+                      🪙 {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count toward the total.
+                    </Typography.Text>
+                  </div>
+                );
               return null;
             })()}
           </Card>
@@ -573,7 +711,7 @@ export const DiceRollerPage: React.FC = () => {
             }
             extra={
               <Button size="small" danger icon={<DeleteOutlined />} onClick={clearHistory}>
-                Limpar
+                Clear history
               </Button>
             }
           >
