@@ -35,6 +35,7 @@ import { resolveApiUrl } from '@app/api/http.api';
 
 import type { Npc, CreateNpcDTO } from '@app/types/rpg';
 import { NpcApi } from '@app/api/npc.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY = 'gm_api_key';
 
@@ -146,8 +147,8 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       });
       await onChanged();
       message.success('NPC updated');
-    } catch {
-      message.error('Failed to save');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save'));
     } finally {
       setSaving(false);
     }
@@ -161,8 +162,8 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       await onChanged();
       onClose();
       message.success('NPC deleted');
-    } catch {
-      message.error('Failed to delete');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete'));
     }
   }
 
@@ -176,8 +177,8 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
         await onChanged();
         message.success('Portrait uploaded');
         opts.onSuccess?.({});
-      } catch {
-        message.error('Upload failed');
+      } catch (e) {
+        message.error(apiErrorMessage(e, 'Upload failed'));
         opts.onError?.(new Error('Upload failed'));
       }
     },
@@ -661,8 +662,8 @@ export const NPCsPage: React.FC = () => {
     setLoading(true);
     try {
       setNpcs(await NpcApi.list());
-    } catch {
-      message.error('Failed to load NPCs');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load NPCs'));
     } finally {
       setLoading(false);
     }
@@ -725,8 +726,8 @@ export const NPCsPage: React.FC = () => {
     setNpcs((prev) => prev.map((x) => (x.id === n.id ? { ...x, visible: next } : x)));
     try {
       await NpcApi.setVisible(n.id, next);
-    } catch {
-      message.error('Failed to change visibility');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility'));
       await load();
     }
   }
@@ -749,8 +750,8 @@ export const NPCsPage: React.FC = () => {
       setNewDesc('');
       await load();
       message.success('NPC created');
-    } catch {
-      message.error('Failed to create NPC');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create NPC'));
     }
   }
 

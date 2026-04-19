@@ -47,6 +47,7 @@ import type { Lore } from '@app/api/lore.api';
 import type { Quest } from '@app/api/quests.api';
 import { resolveApiUrl } from '@app/api/http.api';
 import { useResponsive } from '@app/hooks/useResponsive';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -140,8 +141,8 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
       );
       setEditId(null);
       message.success('World updated');
-    } catch {
-      message.error('Failed to save');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save'));
     } finally {
       setSaving(false);
     }
@@ -156,8 +157,8 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
       setNewName('');
       setNewDesc('');
       message.success('World created');
-    } catch {
-      message.error('Failed to create');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create'));
     } finally {
       setCreating(false);
     }
@@ -176,8 +177,8 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           onWorldsChanged(fresh);
           message.success('Map image uploaded');
           opts.onSuccess?.({});
-        } catch {
-          message.error('Upload failed');
+        } catch (e) {
+          message.error(apiErrorMessage(e, 'Upload failed'));
           opts.onError?.(new Error('Upload failed'));
         }
       },
@@ -444,7 +445,7 @@ export default function MapPage() {
         setCities(cs2);
       } catch (e) {
         console.error(e);
-        message.error('Failed to load world/cities.');
+        message.error(apiErrorMessage(e, 'Failed to load world/cities.'));
       } finally {
         setLoading(false);
       }
@@ -646,7 +647,7 @@ export default function MapPage() {
       message.success(`Coordinates saved for "${pickingCity.name}".`);
     } catch (e) {
       console.error(e);
-      message.error('Failed to save coordinates.');
+      message.error(apiErrorMessage(e, 'Failed to save coordinates.'));
     } finally {
       setPickingCityId(null);
     }
@@ -675,7 +676,7 @@ export default function MapPage() {
           message.success(`Coordinates removed from "${city.name}".`);
         } catch (e) {
           console.error(e);
-          message.error('Failed to remove coordinates.');
+          message.error(apiErrorMessage(e, 'Failed to remove coordinates.'));
         }
       },
     });
@@ -694,8 +695,8 @@ export default function MapPage() {
           setCities((prev) => prev.filter((c) => c.id !== city.id));
           setOpenCityId(null);
           message.success(`"${city.name}" deleted.`);
-        } catch {
-          message.error('Failed to delete city.');
+        } catch (e) {
+          message.error(apiErrorMessage(e, 'Failed to delete city.'));
         }
       },
     });
@@ -723,8 +724,8 @@ export default function MapPage() {
         ),
       );
       message.success('City updated');
-    } catch {
-      message.error('Failed to save');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save'));
     } finally {
       setSavingCity(false);
     }
@@ -741,8 +742,8 @@ export default function MapPage() {
         setCities((fresh as any[]).map((x) => (x && typeof x === 'object' && 'props' in x ? x.props : x)));
         message.success('Image uploaded');
         opts.onSuccess?.({});
-      } catch {
-        message.error('Upload failed');
+      } catch (e) {
+        message.error(apiErrorMessage(e, 'Upload failed'));
         opts.onError?.(new Error('Upload failed'));
       }
     },

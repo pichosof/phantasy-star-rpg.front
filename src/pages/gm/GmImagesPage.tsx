@@ -7,6 +7,7 @@ import { Card } from '@app/components/common/Card/Card';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { type GmImage, deleteGmImage, listGmImages, resolveGmImageUrl, uploadGmImage } from '@app/api/gm-images.api';
+import { apiErrorMessage } from '../../utils/api-error';
 
 function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -25,8 +26,8 @@ export const GmImagesPage: React.FC = () => {
   const load = React.useCallback(async () => {
     try {
       setImages(await listGmImages());
-    } catch {
-      message.error('Failed to load images');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load images'));
     } finally {
       setLoading(false);
     }
@@ -45,8 +46,8 @@ export const GmImagesPage: React.FC = () => {
       await uploadGmImage(file);
       await load();
       message.success('Image uploaded');
-    } catch {
-      message.error('Failed to upload (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to upload (GM key?)'));
     } finally {
       setUploading(false);
     }
@@ -63,8 +64,8 @@ export const GmImagesPage: React.FC = () => {
           await deleteGmImage(img.id);
           await load();
           message.success('Image removed');
-        } catch {
-          message.error('Failed to remove');
+        } catch (e) {
+          message.error(apiErrorMessage(e, 'Failed to remove'));
         }
       },
     });

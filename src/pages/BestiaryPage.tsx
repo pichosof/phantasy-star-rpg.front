@@ -14,6 +14,7 @@ import { resolveApiUrl } from '@app/api/http.api';
 
 import type { Monster, MonsterForAdmin } from '@app/types/rpg';
 import { BestiaryApi } from '@app/api/bestiary.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -94,8 +95,8 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       });
       await onChanged();
       message.success('Monster updated');
-    } catch {
-      message.error('Failed to save');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save'));
     } finally {
       setSaving(false);
     }
@@ -109,8 +110,8 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       await onChanged();
       onClose();
       message.success('Monster deleted');
-    } catch {
-      message.error('Failed to delete');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete'));
     }
   }
 
@@ -125,8 +126,8 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
         await onChanged();
         message.success('Image uploaded');
         options.onSuccess?.({});
-      } catch {
-        message.error('Upload failed');
+      } catch (e) {
+        message.error(apiErrorMessage(e, 'Upload failed'));
         options.onError?.(new Error('Upload failed'));
       }
     },
@@ -314,8 +315,8 @@ export const BestiaryPage: React.FC = () => {
     try {
       const data = await BestiaryApi.list();
       setItems(data);
-    } catch {
-      message.error('Failed to load bestiary');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load bestiary'));
     } finally {
       setLoading(false);
     }
@@ -370,8 +371,8 @@ export const BestiaryPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === m.id ? { ...x, visible: next } : x)));
     try {
       await BestiaryApi.setVisible(m.id, next);
-    } catch {
-      message.error('Failed to change visibility');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility'));
       await load();
     }
   }
@@ -381,8 +382,8 @@ export const BestiaryPage: React.FC = () => {
     setItems((prev) => prev.map((x) => (x.id === m.id ? { ...x, discovered: next } : x)));
     try {
       await BestiaryApi.setDiscovered(m.id, next);
-    } catch {
-      message.error('Failed to change discovered status');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change discovered status'));
       await load();
     }
   }
@@ -405,8 +406,8 @@ export const BestiaryPage: React.FC = () => {
       setNewDesc('');
       await load();
       message.success('Monster created');
-    } catch {
-      message.error('Failed to create monster');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create monster'));
     }
   }
 

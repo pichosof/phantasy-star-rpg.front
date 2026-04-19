@@ -18,6 +18,7 @@ import {
   updateTimelineEvent,
 } from '@app/api/timeline.api';
 import type { TimelineEvent } from '@app/api/timeline.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -170,8 +171,8 @@ export const TimelinePage: React.FC = () => {
       const data = await listTimelineEvents();
       // ordena por ID (ordem de criação = ordem cronológica)
       setItems([...data].sort((a, b) => a.id - b.id));
-    } catch {
-      message.error('Failed to load timeline');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load timeline'));
     } finally {
       setLoading(false);
     }
@@ -229,8 +230,8 @@ export const TimelinePage: React.FC = () => {
       setNewDesc('');
       await load();
       message.success('Event created');
-    } catch {
-      message.error('Failed to create event (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create event (GM key?)'));
     }
   }
 
@@ -245,8 +246,8 @@ export const TimelinePage: React.FC = () => {
       });
       await load();
       message.success('Event updated');
-    } catch {
-      message.error('Failed to save (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save (GM key?)'));
     }
   }
 
@@ -256,8 +257,8 @@ export const TimelinePage: React.FC = () => {
       if (openId === id) setOpenId(null);
       await load();
       message.success('Event removed');
-    } catch {
-      message.error('Failed to remove (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to remove (GM key?)'));
     }
   }
 
@@ -265,8 +266,8 @@ export const TimelinePage: React.FC = () => {
     try {
       await setTimelineEventVisibility(evt.id, !isVisible(evt));
       await load();
-    } catch {
-      message.error('Failed to change visibility (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
     }
   }
 

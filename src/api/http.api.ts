@@ -11,9 +11,7 @@ export const http = axios.create({
 /** Decodes JWT payload (no signature check — just to read claims client-side). */
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
-    // atob is the correct browser API; the TS hint targets Node.js only
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return JSON.parse(atob(token.split('.')[1]));
+    return JSON.parse(window.atob(token.split('.')[1]));
   } catch {
     return null;
   }
@@ -94,14 +92,33 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+const SIMULATE_PROD_KEY = 'dev_simulate_prod';
+
+/**
+ * Dev-only: toggle production-like behaviour (e.g. auto-logout on 401).
+ * Usage in DevTools console:
+ *   simulateProd(true)   // enable
+ *   simulateProd(false)  // disable
+ */
+(window as any).simulateProd = (enabled: boolean) => {
+  if (enabled) localStorage.setItem(SIMULATE_PROD_KEY, '1');
+  else localStorage.removeItem(SIMULATE_PROD_KEY);
+  console.info(`[dev] simulate_prod = ${enabled}`);
+};
+
+function isProdBehaviour(): boolean {
+  if (process.env.NODE_ENV !== 'development') return true;
+  if (process.env.REACT_APP_SIMULATE_PROD === 'true') return true;
+  return localStorage.getItem(SIMULATE_PROD_KEY) === '1';
+}
+
 // ── Response interceptor ─────────────────────────────────────────────────────
-// In production: clear the stored JWT automatically on 401 (expired mid-session).
-// In development: keep the token so it can be inspected in DevTools/Network tab.
+// Production: clears JWT automatically on 401 (expired mid-session).
+// Development: keeps token for inspection unless simulateProd(true) is active.
 http.interceptors.response.use(
   (res) => res,
   (err) => {
-    const isDev = process.env.NODE_ENV === 'development';
-    if (!isDev && err?.response?.status === 401) {
+    if (isProdBehaviour() && err?.response?.status === 401) {
       const token = localStorage.getItem(KEY_STORAGE);
       if (token?.startsWith('eyJ')) {
         logoutGM();

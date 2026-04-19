@@ -12,6 +12,7 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createSession, deleteSession, listSessions, setSessionVisibility, updateSession } from '@app/api/sessions.api';
+import { apiErrorMessage } from '../utils/api-error';
 import type { Session } from '@app/api/sessions.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
@@ -149,8 +150,8 @@ export const SessionsPage: React.FC = () => {
     try {
       const data = await listSessions();
       setItems([...data].sort((a, b) => b.id - a.id));
-    } catch {
-      message.error('Failed to load sessions');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load sessions'));
     } finally {
       setLoading(false);
     }
@@ -223,8 +224,8 @@ export const SessionsPage: React.FC = () => {
       setNewImageUrl('');
       setItems((prev) => [created, ...prev]);
       message.success('Session created');
-    } catch {
-      message.error('Failed to create session — check the GM key.');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create session — check the GM key.'));
     }
   }
 
@@ -234,8 +235,8 @@ export const SessionsPage: React.FC = () => {
     try {
       await setSessionVisibility(s.id, next);
       message.success(next ? 'Session visible to players' : 'Session hidden');
-    } catch {
-      message.error('Failed to change visibility (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
       await load();
     }
   }
@@ -269,8 +270,8 @@ export const SessionsPage: React.FC = () => {
         ),
       );
       message.success('Session updated');
-    } catch {
-      message.error('Failed to update session (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to update session (GM key?)'));
     }
   }
 
@@ -280,8 +281,8 @@ export const SessionsPage: React.FC = () => {
       setItems((prev) => prev.filter((x) => x.id !== id));
       if (openId === id) setOpenId(null);
       message.success('Session removed');
-    } catch {
-      message.error('Failed to remove session (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to remove session (GM key?)'));
     }
   }
 

@@ -8,6 +8,7 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import { type GmNote, createGmNote, deleteGmNote, listGmNotes, updateGmNote } from '@app/api/gm-notes.api';
+import { apiErrorMessage } from '../../utils/api-error';
 
 const { TextArea } = Input;
 
@@ -106,8 +107,8 @@ export const GmNotesPage: React.FC = () => {
   const load = React.useCallback(async () => {
     try {
       setNotes(await listGmNotes());
-    } catch {
-      message.error('Failed to load notes');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load notes'));
     } finally {
       setLoading(false);
     }
@@ -146,8 +147,8 @@ export const GmNotesPage: React.FC = () => {
       }
       await load();
       setEditing(false);
-    } catch {
-      message.error('Failed to save (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save (GM key?)'));
     } finally {
       setSaving(false);
     }
@@ -157,8 +158,8 @@ export const GmNotesPage: React.FC = () => {
     try {
       await updateGmNote(note.id, { pinned: !note.pinned });
       await load();
-    } catch {
-      message.error('Failed');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed'));
     }
   }
 
@@ -171,8 +172,8 @@ export const GmNotesPage: React.FC = () => {
       }
       await load();
       message.success('Note removed');
-    } catch {
-      message.error('Failed to delete');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete'));
     }
   }
 

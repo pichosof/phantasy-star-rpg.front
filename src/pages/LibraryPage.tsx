@@ -15,6 +15,7 @@ import {
   Upload,
 } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import { apiErrorMessage } from '../utils/api-error';
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -239,8 +240,8 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
       });
       message.success('Document updated.');
       onSaved();
-    } catch {
-      message.error('Failed to save.');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save.'));
     } finally {
       setSaving(false);
     }
@@ -309,7 +310,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
   React.useEffect(() => {
     getLibrarySettings()
       .then((s) => setHasKey(s.hasPlayerKey))
-      .catch(() => message.error('Failed to load settings.'));
+      .catch((e) => message.error(apiErrorMessage(e, 'Failed to load settings.')));
   }, []);
 
   async function save() {
@@ -322,9 +323,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
       setNewKey('');
       onClose();
       onReload();
-    } catch (e: any) {
-      const msg = e?.response?.data?.error || 'Failed to update key.';
-      message.error(msg);
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to update key.'));
     } finally {
       setSaving(false);
     }
@@ -337,8 +337,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
       message.success('Library key removed. Library is now locked for all players.');
       onClose();
       onReload();
-    } catch {
-      message.error('Failed to remove key.');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to remove key.'));
     } finally {
       setClearing(false);
     }
@@ -411,9 +411,9 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
         setCategory('');
         onUploaded();
       })
-      .catch((err: Error) => {
-        onError?.(err);
-        message.error('Upload failed (GM key?)');
+      .catch((err: unknown) => {
+        onError?.(err as Error);
+        message.error(apiErrorMessage(err, 'Upload failed.'));
       })
       .finally(() => setUploading(false));
   }
@@ -494,7 +494,7 @@ const LibraryPage: React.FC = () => {
         setLibraryKey(null);
         setHasAccess(false);
       } else {
-        message.error('Failed to load documents.');
+        message.error(apiErrorMessage(e, 'Failed to load documents.'));
       }
     } finally {
       setLoading(false);
@@ -532,8 +532,8 @@ const LibraryPage: React.FC = () => {
           await deleteLibraryDocument(doc.id);
           message.success('Document deleted.');
           await load();
-        } catch {
-          message.error('Failed to delete.');
+        } catch (e) {
+          message.error(apiErrorMessage(e, 'Failed to delete.'));
         }
       },
     });
@@ -543,8 +543,8 @@ const LibraryPage: React.FC = () => {
     try {
       await updateLibraryDocument(doc.id, { visible: !doc.visible });
       setDocs((prev) => prev.map((d) => (d.id === doc.id ? { ...d, visible: !d.visible } : d)));
-    } catch {
-      message.error('Failed to update visibility.');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to update visibility.'));
     }
   }
 

@@ -17,6 +17,7 @@ import {
   updateCharacterSheet,
   deleteCharacterSheet,
 } from '@app/api/character-sheets.api';
+import { apiErrorMessage } from '../../utils/api-error';
 import { GurpsSheetForm } from './GurpsSheetForm';
 import { StarfinderSheetForm } from './StarfinderSheetForm';
 
@@ -73,8 +74,8 @@ export const GmSheetsPage: React.FC = () => {
   const load = React.useCallback(async () => {
     try {
       setSheets(await listCharacterSheets());
-    } catch {
-      message.error('Failed to load sheets');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load sheets'));
     } finally {
       setLoading(false);
     }
@@ -96,8 +97,8 @@ export const GmSheetsPage: React.FC = () => {
       setSheetData(full.data ?? {});
       setSheetName(full.name);
       setDrawerOpen(true);
-    } catch {
-      message.error('Failed to load sheet');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load sheet'));
     }
   }
 
@@ -108,8 +109,8 @@ export const GmSheetsPage: React.FC = () => {
       await updateCharacterSheet(activeSheet.id, { name: sheetName, data: sheetData });
       await load();
       message.success('Sheet saved');
-    } catch {
-      message.error('Failed to save (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save (GM key?)'));
     } finally {
       setSavingSheet(false);
     }
@@ -129,8 +130,8 @@ export const GmSheetsPage: React.FC = () => {
       setSheetName(full.name);
       setDrawerOpen(true);
       message.success('Sheet created');
-    } catch {
-      message.error('Failed to create (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create (GM key?)'));
     } finally {
       setCreating(false);
     }
@@ -151,8 +152,8 @@ export const GmSheetsPage: React.FC = () => {
           }
           await load();
           message.success('Sheet removed');
-        } catch {
-          message.error('Failed to remove');
+        } catch (e) {
+          message.error(apiErrorMessage(e, 'Failed to remove'));
         }
       },
     });

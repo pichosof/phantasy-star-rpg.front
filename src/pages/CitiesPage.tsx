@@ -18,6 +18,7 @@ import type { Quest } from '@app/api/quests.api';
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
 import { CityAdminDrawer } from '@app/components/rpg/City/CityAdminDrawer';
 import { resolveApiUrl } from '@app/api/http.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -103,8 +104,8 @@ export const CitiesPage: React.FC = () => {
     try {
       const data = await CitiesApi.list();
       setItems(data);
-    } catch {
-      message.error('Failed to load cities');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load cities'));
     } finally {
       setLoading(false);
     }
@@ -191,8 +192,8 @@ export const CitiesPage: React.FC = () => {
       setDesc('');
       await load();
       message.success('City created');
-    } catch {
-      message.error('Failed to create city (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create city (GM key?)'));
     }
   }
 
@@ -202,8 +203,8 @@ export const CitiesPage: React.FC = () => {
     try {
       await CitiesApi.setVisible(c.id, next);
       message.success(next ? 'City visible to players' : 'City hidden');
-    } catch {
-      message.error('Failed to change visibility (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
       await load();
     }
   }
@@ -214,8 +215,8 @@ export const CitiesPage: React.FC = () => {
     try {
       await CitiesApi.setDiscovered(c.id, next);
       message.success(next ? 'City marked as discovered' : 'City marked as undiscovered');
-    } catch {
-      message.error('Failed to change discovered status (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change discovered status (GM key?)'));
       await load();
     }
   }

@@ -12,6 +12,7 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createQuest, deleteQuest, listQuestsPublic, setQuestVisibility, updateQuest } from '@app/api/quests.api';
+import { apiErrorMessage } from '../utils/api-error';
 import type { Quest, QuestStatus } from '@app/api/quests.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
@@ -63,7 +64,7 @@ export const QuestsAdminPage: React.FC = () => {
       setItems(data);
     } catch (e) {
       console.error(e);
-      message.error('Failed to load quests');
+      message.error(apiErrorMessage(e, 'Failed to load quests'));
     } finally {
       setLoading(false);
     }
@@ -128,7 +129,7 @@ export const QuestsAdminPage: React.FC = () => {
       message.success('Quest created');
     } catch (e) {
       console.error(e);
-      message.error('Failed to create quest (GM key?)');
+      message.error(apiErrorMessage(e, 'Failed to create quest (GM key?)'));
     }
   }
 
@@ -143,7 +144,7 @@ export const QuestsAdminPage: React.FC = () => {
       message.success(next ? 'Quest visible to players' : 'Quest hidden from players');
     } catch (e) {
       console.error(e);
-      message.error('Failed to change visibility (GM key?)');
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
       await load();
     }
   }
@@ -179,7 +180,7 @@ export const QuestsAdminPage: React.FC = () => {
       message.success('Quest updated');
     } catch (e) {
       console.error(e);
-      message.error('Failed to update quest (GM key?)');
+      message.error(apiErrorMessage(e, 'Failed to update quest (GM key?)'));
     }
   }
 
@@ -191,7 +192,7 @@ export const QuestsAdminPage: React.FC = () => {
       message.success('Quest removed');
     } catch (e) {
       console.error(e);
-      message.error('Failed to remove quest (GM key?)');
+      message.error(apiErrorMessage(e, 'Failed to remove quest (GM key?)'));
     }
   }
 

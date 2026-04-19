@@ -31,6 +31,7 @@ import {
   uploadWikiImage,
 } from '@app/api/wiki.api';
 import type { WikiPage as WikiPageType } from '@app/api/wiki.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY = 'gm_api_key';
 
@@ -345,8 +346,8 @@ export const WikiPage: React.FC = () => {
     try {
       const data = await listWikiPages();
       setPages(data);
-    } catch {
-      message.error('Failed to load wiki');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load wiki'));
     } finally {
       setLoading(false);
     }
@@ -443,8 +444,8 @@ export const WikiPage: React.FC = () => {
       }
       setEditing(false);
       setIsNew(false);
-    } catch {
-      message.error('Failed to save (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save (GM key?)'));
     }
   }
 
@@ -454,8 +455,8 @@ export const WikiPage: React.FC = () => {
       if (openId === id) setOpenId(null);
       await load();
       message.success('Article removed');
-    } catch {
-      message.error('Failed to remove');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to remove'));
     }
   }
 
@@ -463,8 +464,8 @@ export const WikiPage: React.FC = () => {
     try {
       await setWikiPageVisibility(page.id, !page.visible);
       await load();
-    } catch {
-      message.error('Failed to change visibility');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility'));
     }
   }
 
@@ -472,8 +473,8 @@ export const WikiPage: React.FC = () => {
     try {
       await updateWikiPage(page.id, { pinned: !page.pinned });
       await load();
-    } catch {
-      message.error('Failed to change pinning');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change pinning'));
     }
   }
 
@@ -523,8 +524,8 @@ export const WikiPage: React.FC = () => {
       const alt = file.name.replace(/\.[^.]+$/, '');
       insertAtCursor(`\n![${alt}](${url})\n`);
       message.success('Image inserted');
-    } catch {
-      message.error('Failed to upload image (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to upload image (GM key?)'));
     } finally {
       setUploading(false);
     }

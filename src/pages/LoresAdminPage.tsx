@@ -12,6 +12,7 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createLore, deleteLore, listLores, setLoreVisibility, updateLore } from '@app/api/lore.api';
+import { apiErrorMessage } from '../utils/api-error';
 import type { Lore, LoreCategory } from '@app/api/lore.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
@@ -101,8 +102,8 @@ export const LoresAdminPage: React.FC = () => {
     try {
       const data = await listLores();
       setItems(data);
-    } catch {
-      message.error('Failed to load lores');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load lores'));
     } finally {
       setLoading(false);
     }
@@ -176,8 +177,8 @@ export const LoresAdminPage: React.FC = () => {
       setNewContent('');
       setItems((prev) => [...prev, created].sort((a, b) => a.id - b.id));
       message.success('Lore created');
-    } catch {
-      message.error('Failed to create lore (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create lore (GM key?)'));
     }
   }
 
@@ -187,8 +188,8 @@ export const LoresAdminPage: React.FC = () => {
     try {
       await setLoreVisibility(l.id, next);
       message.success(next ? 'Lore visible to players' : 'Lore hidden');
-    } catch {
-      message.error('Failed to change visibility (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
       await load();
     }
   }
@@ -209,8 +210,8 @@ export const LoresAdminPage: React.FC = () => {
         ),
       );
       message.success('Lore updated');
-    } catch {
-      message.error('Failed to update lore (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to update lore (GM key?)'));
     }
   }
 
@@ -220,8 +221,8 @@ export const LoresAdminPage: React.FC = () => {
       setItems((prev) => prev.filter((x) => x.id !== id));
       if (openId === id) setOpenId(null);
       message.success('Lore removed');
-    } catch {
-      message.error('Failed to remove lore (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to remove lore (GM key?)'));
     }
   }
 

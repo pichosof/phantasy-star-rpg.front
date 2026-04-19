@@ -19,6 +19,7 @@ import type { Player } from '@app/types/rpg';
 import { PlayersApi } from '@app/api/rpg.api';
 import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
 import { resolveApiUrl } from '@app/api/http.api';
+import { apiErrorMessage } from '../utils/api-error';
 
 type AltMap = Record<number, string>;
 type EditMap = Record<number, { name: string; level: number; background: string }>;
@@ -80,8 +81,8 @@ export const PlayersPage: React.FC = () => {
       setEditingSet((prev) => ({ ...prev, [id]: false }));
       await load();
       message.success('Player updated');
-    } catch {
-      message.error('Failed to update (GM key?)');
+    } catch (err) {
+      message.error(apiErrorMessage(err, 'Failed to update (GM key?)'));
     }
   }
 
@@ -92,8 +93,8 @@ export const PlayersPage: React.FC = () => {
     try {
       const data = await PlayersApi.list();
       setItems(data);
-    } catch {
-      message.error('Failed to load players');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to load players'));
     } finally {
       setLoading(false);
     }
@@ -117,8 +118,8 @@ export const PlayersPage: React.FC = () => {
       setBackground('');
       await load();
       message.success('Player created');
-    } catch {
-      message.error('Failed to create player (GM key required)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to create player (GM key required)'));
     }
   }
 
@@ -126,8 +127,8 @@ export const PlayersPage: React.FC = () => {
     try {
       await PlayersApi.setVisible(p.id, !isPlayerVisible(p));
       await load();
-    } catch {
-      message.error('Failed to change visibility (GM key?)');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
     }
   }
 
