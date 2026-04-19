@@ -30,12 +30,7 @@ export function apiErrorMessage(err: unknown, fallback = 'An error occurred.'): 
     .replace(/(?:body|params|query|headers)\/([^\s,]+)/g, '$1')
     // Split anyOf fragments and drop the ones that describe the schema, not the mistake
     .split(', ')
-    .filter(
-      (s) =>
-        !s.includes('must be null') &&
-        !s.includes('must match a schema in anyOf') &&
-        s.trim().length > 0,
-    )
+    .filter((s) => !s.includes('must be null') && !s.includes('must match a schema in anyOf') && s.trim().length > 0)
     .join('; ')
     .trim();
 

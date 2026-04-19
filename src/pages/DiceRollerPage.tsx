@@ -10,7 +10,7 @@ import { useAppSelector } from '@app/hooks/reduxHooks';
 // ── Edge config ───────────────────────────────────────────────────────────────
 // Probability (%) that any single die roll edges instead of landing on a face.
 // Change this to test — e.g. set to 50 to see it constantly in dev.
-const EDGE_CHANCE_PERCENT = 10;
+const EDGE_CHANCE_PERCENT = 2;
 
 const EDGE_MESSAGES = [
   '🪙 The die edged! It flat-out refused to pick a side.',

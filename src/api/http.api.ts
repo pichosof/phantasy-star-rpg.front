@@ -35,7 +35,9 @@ export function isGMAuthenticated(): boolean {
  * Calls POST /api/auth/login with the raw GM key.
  * On success, stores the returned JWT and injects it into Axios defaults.
  */
-export async function loginGM(apiKey: string): Promise<{ success: boolean; error?: string; retryAfterSeconds?: number }> {
+export async function loginGM(
+  apiKey: string,
+): Promise<{ success: boolean; error?: string; retryAfterSeconds?: number }> {
   try {
     const res = await http.post<{ token: string; expiresAt: string }>('/api/auth/login', { apiKey });
     const { token } = res.data;

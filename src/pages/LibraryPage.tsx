@@ -92,9 +92,9 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
       setLibraryKey(null);
       if (e?.response?.status === 429) {
         const retry = e?.response?.data?.retryAfterSeconds;
-        message.error(retry
-          ? `Too many attempts. Try again in ${retry}s.`
-          : 'Too many attempts. Please wait before trying again.');
+        message.error(
+          retry ? `Too many attempts. Try again in ${retry}s.` : 'Too many attempts. Please wait before trying again.',
+        );
       } else {
         message.error('Invalid library key.');
       }
@@ -120,9 +120,7 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
             <Typography.Title level={4} style={{ margin: 0 }}>
               Library Access
             </Typography.Title>
-            <Typography.Text type="secondary">
-              Enter the access key provided by your Game Master.
-            </Typography.Text>
+            <Typography.Text type="secondary">Enter the access key provided by your Game Master.</Typography.Text>
           </div>
           <Input.Password
             size="large"
@@ -248,13 +246,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
   }
 
   return (
-    <Modal
-      visible={!!doc}
-      onCancel={onClose}
-      title="Edit Document"
-      footer={null}
-      destroyOnClose
-    >
+    <Modal visible={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
       <Space direction="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
         <div>
           <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
@@ -347,8 +339,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
   return (
     <Space direction="vertical" size={14} style={{ width: '100%' }}>
       <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-        Set the access key players must enter to unlock the library. The key is stored as a{' '}
-        <strong>scrypt hash</strong> — it cannot be read back. Min 12 chars, 2+ character classes.
+        Set the access key players must enter to unlock the library. The key is stored as a <strong>scrypt hash</strong>{' '}
+        — it cannot be read back. Min 12 chars, 2+ character classes.
       </Typography.Text>
 
       {hasKey !== null && (
@@ -419,7 +411,14 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
   }
 
   return (
-    <Card size="small" title={<Space><PlusOutlined /> Upload document</Space>}>
+    <Card
+      size="small"
+      title={
+        <Space>
+          <PlusOutlined /> Upload document
+        </Space>
+      }
+    >
       <Space direction="vertical" size={10} style={{ width: '100%' }}>
         <Space wrap style={{ width: '100%' }}>
           <Input
@@ -448,12 +447,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
           showUploadList={false}
           customRequest={(opts: RcCustomRequestOptions) => handleUpload(opts)}
         >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            loading={uploading}
-            block={isMobile}
-          >
+          <Button type="primary" icon={<PlusOutlined />} loading={uploading} block={isMobile}>
             Choose & upload file
           </Button>
         </Upload>
@@ -577,10 +571,7 @@ const LibraryPage: React.FC = () => {
               </Typography.Title>
               <Space wrap>
                 {isGM && (
-                  <Button
-                    icon={<SettingOutlined />}
-                    onClick={() => setShowSettings((v) => !v)}
-                  >
+                  <Button icon={<SettingOutlined />} onClick={() => setShowSettings((v) => !v)}>
                     {showSettings ? 'Close settings' : 'Library settings'}
                   </Button>
                 )}
@@ -619,7 +610,9 @@ const LibraryPage: React.FC = () => {
                   options={categories.map((c) => ({ label: c, value: c }))}
                 />
               )}
-              <Tag>{filtered.length} document{filtered.length !== 1 ? 's' : ''}</Tag>
+              <Tag>
+                {filtered.length} document{filtered.length !== 1 ? 's' : ''}
+              </Tag>
             </Space>
           </Space>
         </Card>
@@ -634,7 +627,9 @@ const LibraryPage: React.FC = () => {
           </Card>
         ) : filtered.length === 0 ? (
           <Card size="small">
-            <Empty description={docs.length === 0 ? 'No documents in the library yet.' : 'No documents match your search.'} />
+            <Empty
+              description={docs.length === 0 ? 'No documents in the library yet.' : 'No documents match your search.'}
+            />
           </Card>
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
@@ -664,6 +659,5 @@ const LibraryPage: React.FC = () => {
     </>
   );
 };
-
 
 export default LibraryPage;

@@ -24,11 +24,6 @@ const GM_KEY_STORAGE = 'gm_api_key';
 
 type ViewMode = 'players' | 'gm';
 
-function cityKind(name: string) {
-  if (name?.startsWith('Kol-')) return 'Kol';
-  if (name?.startsWith('Kor-')) return 'Kor';
-  return 'Other';
-}
 
 function isCityVisible(c: City) {
   return (c.visible ?? true) === true;
@@ -298,7 +293,7 @@ export const CitiesPage: React.FC = () => {
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
               <Typography.Text strong>New City</Typography.Text>
               <Input
-                placeholder="Name (e.g.: Kol-Aiedo) *"
+                placeholder="City name *"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -341,7 +336,6 @@ export const CitiesPage: React.FC = () => {
         }}
       >
         {data.map((c) => {
-          const kind = cityKind(c.name);
           const region = ((c as any).region as string | null | undefined) ?? null;
           const vis = isCityVisible(c);
           const playerCanRead = c.discovered === true;
@@ -353,7 +347,6 @@ export const CitiesPage: React.FC = () => {
               title={
                 <Space size={8} wrap>
                   <span style={{ fontWeight: 700 }}>{c.name}</span>
-                  <Tag color={kind === 'Kol' ? 'blue' : kind === 'Kor' ? 'green' : 'default'}>{kind}</Tag>
                   {region ? <Tag>{region}</Tag> : null}
                   {mode === 'gm' && (
                     <>
@@ -469,12 +462,10 @@ export const CitiesPage: React.FC = () => {
               title: 'City',
               key: 'name',
               render: (_: any, c: City) => {
-                const kind = cityKind(c.name);
                 return (
                   <Space direction="vertical" size={2} style={{ width: '100%' }}>
                     <Space size={8} wrap>
                       <Typography.Text strong>{c.name}</Typography.Text>
-                      <Tag color={kind === 'Kol' ? 'blue' : kind === 'Kor' ? 'green' : 'default'}>{kind}</Tag>
                       {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
                       {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
                       {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
@@ -523,10 +514,6 @@ export const CitiesPage: React.FC = () => {
       title={
         <Space wrap size={8}>
           <span style={{ fontWeight: 800 }}>{openCity.name}</span>
-          {(() => {
-            const kind = cityKind(openCity.name);
-            return <Tag color={kind === 'Kol' ? 'blue' : kind === 'Kor' ? 'green' : 'default'}>{kind}</Tag>;
-          })()}
           {isGM && viewMode === 'gm' && (
             <>
               <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>

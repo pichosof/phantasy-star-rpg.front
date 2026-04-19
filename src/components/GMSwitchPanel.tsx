@@ -23,7 +23,10 @@ const GMSwitchPanel: React.FC = () => {
     if (!retryAfter) return;
     const id = setInterval(() => {
       setRetryAfter((s) => {
-        if (s === null || s <= 1) { clearInterval(id); return null; }
+        if (s === null || s <= 1) {
+          clearInterval(id);
+          return null;
+        }
         return s - 1;
       });
     }, 1000);
@@ -32,7 +35,10 @@ const GMSwitchPanel: React.FC = () => {
 
   async function apply() {
     const cleaned = key.trim();
-    if (!cleaned) { clearKey(); return; }
+    if (!cleaned) {
+      clearKey();
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -66,7 +72,9 @@ const GMSwitchPanel: React.FC = () => {
       {active ? (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ color: '#52c41a' }}>GM mode active</span>
-          <Button onClick={clearKey} danger={true}>Exit GM mode</Button>
+          <Button onClick={clearKey} danger={true}>
+            Exit GM mode
+          </Button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -79,11 +87,7 @@ const GMSwitchPanel: React.FC = () => {
               type="password"
               disabled={loading || !!retryAfter}
             />
-            <Button
-              onClick={apply}
-              loading={loading}
-              disabled={!!retryAfter}
-            >
+            <Button onClick={apply} loading={loading} disabled={!!retryAfter}>
               Activate
             </Button>
           </div>
