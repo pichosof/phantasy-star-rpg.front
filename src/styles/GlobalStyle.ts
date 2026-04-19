@@ -52,6 +52,12 @@ export default createGlobalStyle`
     }
   }
 
+  h1, h2, h3, h4, h5, h6,
+  .ant-typography h1, .ant-typography h2, .ant-typography h3,
+  .ant-typography h4, .ant-typography h5 {
+    font-family: 'Montserrat', sans-serif;
+  }
+
   a {
     color: var(--primary-color);
     &:hover,:active {

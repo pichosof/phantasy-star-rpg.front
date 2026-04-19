@@ -13,14 +13,17 @@ export const Card = styled(BaseCard)<CardInternalProps>`
   overflow: hidden;
   padding: 0;
   box-shadow: var(--box-shadow-nft-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   .ant-card-body {
     padding: 0;
   }
 
-  /* Efeito de “zoom NFT” só em dispositivos com hover + mouse (desktop) */
   @media (hover: hover) and (pointer: fine) {
     &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 0 1px rgba(0, 200, 232, 0.2), 0 8px 32px rgba(0, 200, 232, 0.08);
+
       ${(p) =>
         p.$img &&
         `
@@ -35,42 +38,21 @@ export const Card = styled(BaseCard)<CardInternalProps>`
 
 export const PlayerImage = styled.img`
   width: 100%;
-  height: 200px; /* desktop */
-  object-fit: cover; /* desktop: pode cortar pra preencher */
-  animation: imgOut 0.5s;
+  height: 200px;
+  object-fit: cover;
+  transition: opacity 0.35s ease;
 
-  /* MOBILE: mostrar a imagem inteira (sem corte) com limite de altura */
   @media only screen and (max-width: ${BREAKPOINTS.md - 0.02}px) {
-    height: auto; /* respeita proporção natural */
-    max-height: 320px; /* ajustável: 280–360px funciona bem */
-    object-fit: contain; /* mostra a imagem inteira */
-    background: var(--secondary-background-color); /* fundo atrás de PNG/WebP transpar. */
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    background: var(--secondary-background-color);
     display: block;
   }
 
-  @keyframes imgIn {
-    99% {
-      transform: scale(2);
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  @keyframes imgOut {
-    0% {
-      transform: scale(2);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  /* Zoom/fade só no desktop */
   @media (hover: hover) and (pointer: fine) {
     ${Card}:hover & {
-      animation: imgIn 0.5s;
-      animation-fill-mode: forwards;
+      opacity: 0;
     }
   }
 `;
@@ -78,8 +60,9 @@ export const PlayerImage = styled.img`
 export const TopOverlay = styled.div`
   position: absolute;
   inset: 0 0 auto 0;
-  height: 200px; /* casa com a altura desktop da imagem */
+  height: 200px;
   pointer-events: none;
+  transition: background 0.35s ease;
 
   background: linear-gradient(
     to top,
@@ -89,9 +72,14 @@ export const TopOverlay = styled.div`
     rgba(0, 0, 0, 0.55) 100%
   );
 
-  /* MOBILE: sem overlay (altura da imagem é variável) */
   @media only screen and (max-width: ${BREAKPOINTS.md - 0.02}px) {
     display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    ${Card}:hover & {
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.3) 100%);
+    }
   }
 `;
 
@@ -101,7 +89,6 @@ export const Info = styled.div`
   display: grid;
   gap: 10px;
 
-  /* Só troca cores no hover em desktop */
   @media (hover: hover) and (pointer: fine) {
     ${Card}:hover & {
       color: var(--text-secondary-color);
@@ -121,11 +108,12 @@ export const Title = styled.div`
   font-size: 18px;
   line-height: 1.2;
   color: var(--text-main-color);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 
   @media (hover: hover) and (pointer: fine) {
     ${Card}:hover & {
-      color: var(--text-secondary-color);
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
     }
   }
 `;

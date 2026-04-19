@@ -348,7 +348,7 @@ export const PlayersPage: React.FC = () => {
                         <Space direction="vertical" size={8} style={{ width: '100%' }}>
                           <Space wrap size={8}>
                             <Input
-                              placeholder="Nome *"
+                              placeholder="Name *"
                               value={editById[p.id]?.name ?? ''}
                               onChange={(e) =>
                                 setEditById((prev) => ({
@@ -360,7 +360,7 @@ export const PlayersPage: React.FC = () => {
                             />
                             <Space size={4}>
                               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                                Nível:
+                                Level:
                               </Typography.Text>
                               <InputNumber
                                 min={1}

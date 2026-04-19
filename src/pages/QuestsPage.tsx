@@ -51,7 +51,7 @@ function formatDateTime(v?: string | null) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString('pt-BR');
+  return d.toLocaleString('en-US');
 }
 
 export const QuestsPage: React.FC = () => {

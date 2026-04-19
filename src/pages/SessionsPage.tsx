@@ -841,7 +841,7 @@ export const SessionsPage: React.FC = () => {
                 </Space>
               </Card>
 
-              <Card density="dense" title="Visibilidade">
+              <Card density="dense" title="Visibility">
                 <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                   <div>
                     <Typography.Text>Visible to players</Typography.Text>

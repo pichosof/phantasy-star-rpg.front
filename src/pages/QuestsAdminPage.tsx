@@ -225,8 +225,7 @@ export const QuestsAdminPage: React.FC = () => {
         </Typography.Title>
 
         <Typography.Text type="secondary">
-          Controle de quests (status, visibilidade e conteúdo). Quests completed/failed continuam disponíveis para
-          vínculos.
+          Manage quests (status, visibility and content). Completed/failed quests remain available for city links.
         </Typography.Text>
 
         <Divider style={{ margin: '8px 0' }} />
@@ -258,7 +257,6 @@ export const QuestsAdminPage: React.FC = () => {
           <>
             <Divider style={{ margin: '8px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 920 }}>
-              <Input placeholder="Título" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
               <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
 
               <Space wrap>
@@ -278,7 +276,6 @@ export const QuestsAdminPage: React.FC = () => {
                 rows={mobileOnly ? 6 : 5}
               />
 
-              <Input placeholder="Reward (opcional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
               <Input placeholder="Reward (optional)" value={newReward} onChange={(e) => setNewReward(e.target.value)} />
 
               <Space>
@@ -333,7 +330,7 @@ export const QuestsAdminPage: React.FC = () => {
 
             <Space wrap size={14}>
               <Space size={8}>
-                <span style={{ color: '#666' }}>Visível:</span>
+                <span style={{ color: '#666' }}>Visible:</span>
                 <Switch checked={isQuestVisible(qt)} onChange={() => void toggleVisible(qt)} />
               </Space>
               <Space size={8}>
@@ -411,7 +408,7 @@ export const QuestsAdminPage: React.FC = () => {
       </div>
 
       <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-        Clique numa linha para abrir a ficha.
+        Click a row to open the admin panel.
       </Typography.Text>
 
       {!filtered.length && !loading && (
@@ -508,7 +505,7 @@ export const QuestsAdminPage: React.FC = () => {
 
             <Tabs.TabPane tab="Preview" key="preview">
               <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                <Card density="comfy" title="Descrição">
+                <Card density="comfy" title="Description">
                   <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
                     {(editDescription ?? '').trim() ? (editDescription ?? '').trim() : '—'}
                   </Typography.Paragraph>

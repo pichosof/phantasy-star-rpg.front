@@ -125,6 +125,18 @@ export const commonThemeVariables = css`
   --blue: ${BASE_COLORS.blue};
   --skyblue: ${BASE_COLORS.skyblue};
   --red: ${BASE_COLORS.red};
+
+  /* Algol Worlds brand palette — theme-agnostic */
+  --color-dez-ice: ${BASE_COLORS.dezoIce};
+  --color-crystal-void: ${BASE_COLORS.crystalVoid};
+  --color-motavia-ember: ${BASE_COLORS.motaviaEmber};
+  --color-palma-ash: ${BASE_COLORS.palmaAsh};
+  --color-frost-mint: ${BASE_COLORS.frostMint};
+  --color-algol-gold: ${BASE_COLORS.algolGold};
+
+  /* Typography */
+  --font-main: 'Montserrat', sans-serif;
+  --font-secondary: 'Lato', sans-serif;
 `;
 
 export const antOverrideCssVariables = css`

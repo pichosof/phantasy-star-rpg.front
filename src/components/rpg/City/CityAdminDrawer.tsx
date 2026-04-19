@@ -385,7 +385,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
             </Space>
           </Tabs.TabPane>
 
-          <Tabs.TabPane tab="Imagem" key="image">
+          <Tabs.TabPane tab="Image" key="image">
             <Space direction="vertical" size={14} style={{ width: '100%' }}>
               {city.imageUrl && (
                 <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 260 }}>
@@ -458,15 +458,15 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
             </Space>
           </Tabs.TabPane>
 
-          <Tabs.TabPane tab="Mundo" key="world">
+          <Tabs.TabPane tab="World" key="world">
             <Space direction={mobileOnly ? 'vertical' : 'horizontal'} wrap style={{ width: '100%' }}>
-              <span>Mundo:</span>
+              <span>World:</span>
               <Select
                 style={{ width: mobileOnly ? '100%' : 260 }}
                 value={city.worldId ?? null}
                 onChange={(v) => void setCityWorld(v)}
                 options={[
-                  { label: '(Sem mundo)', value: null },
+                  { label: '(No world)', value: null },
                   ...worlds.map((w) => ({ label: `#${w.id} — ${w.name}`, value: w.id })),
                 ]}
               />

@@ -21,7 +21,15 @@ export const resetCss = css`
   }
 
   body {
+    font-family: 'Montserrat', sans-serif;
     font-weight: 500;
+  }
+
+  p,
+  .body-text,
+  .ant-typography p,
+  .ant-typography-secondary {
+    font-family: 'Lato', sans-serif;
   }
 
   img {
