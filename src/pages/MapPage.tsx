@@ -38,7 +38,7 @@ import {
   updateCityCoords,
   setCityVisible,
   setCityDiscovered,
-  uploadCityImage,
+  addCityImage,
   deleteCity,
   type City,
 } from '@app/api/cities.api';
@@ -737,7 +737,7 @@ export default function MapPage() {
     customRequest: async (opts: RcCustomRequestOptions) => {
       if (!openCity) return;
       try {
-        await uploadCityImage(openCity.id, opts.file as File, editCityImgAlt || undefined);
+        await addCityImage(openCity.id, opts.file as File, editCityImgAlt || undefined);
         const fresh = await listCities();
         setCities((fresh as any[]).map((x) => (x && typeof x === 'object' && 'props' in x ? x.props : x)));
         message.success('Image uploaded');

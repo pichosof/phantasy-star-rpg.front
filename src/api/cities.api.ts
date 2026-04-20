@@ -1,4 +1,15 @@
-import { http } from './http.api';
+import { http, resolveApiUrl } from './http.api';
+
+export interface CityImage {
+  id: number;
+  cityId: number;
+  url: string;
+  alt: string | null;
+  mime: string;
+  size: number;
+  position: number;
+  createdAt: string;
+}
 
 export interface City {
   id: number;
@@ -11,8 +22,18 @@ export interface City {
   worldId?: number | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  images?: CityImage[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export function resolvedImages(city: City): { id: number; src: string; alt: string }[] {
+  const imgs = city.images ?? [];
+  return imgs.map((img) => ({
+    id: img.id,
+    src: resolveApiUrl(img.url) ?? img.url,
+    alt: img.alt ?? city.name,
+  }));
 }
 
 export async function listCities(): Promise<City[]> {
@@ -56,12 +77,17 @@ export async function setCityDiscovered(id: number, discovered: boolean): Promis
   await http.patch(`/api/cities/${id}/discovered`, { discovered });
 }
 
-export async function uploadCityImage(id: number, file: File, alt?: string): Promise<void> {
+export async function addCityImage(id: number, file: File, alt?: string): Promise<CityImage> {
   const form = new FormData();
   form.append('image', file);
-  await http.patch(`/api/cities/${id}/image`, form, {
+  const { data } = await http.post(`/api/cities/${id}/images`, form, {
     headers: alt ? { 'x-image-alt': alt } : undefined,
   });
+  return data as CityImage;
+}
+
+export async function deleteCityImage(cityId: number, imageId: number): Promise<void> {
+  await http.delete(`/api/cities/${cityId}/images/${imageId}`);
 }
 
 export async function deleteCity(id: number): Promise<void> {

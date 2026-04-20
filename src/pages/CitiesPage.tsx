@@ -1,5 +1,5 @@
 import React from 'react';
-import { Divider, Drawer, Empty, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { Divider, Drawer, Empty, Image, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
@@ -18,12 +18,12 @@ import type { Quest } from '@app/api/quests.api';
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
 import { CityAdminDrawer } from '@app/components/rpg/City/CityAdminDrawer';
 import { resolveApiUrl } from '@app/api/http.api';
+import { resolvedImages } from '@app/api/cities.api';
 import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
 type ViewMode = 'players' | 'gm';
-
 
 function isCityVisible(c: City) {
   return (c.visible ?? true) === true;
@@ -292,12 +292,7 @@ export const CitiesPage: React.FC = () => {
             <Divider style={{ margin: '4px 0' }} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
               <Typography.Text strong>New City</Typography.Text>
-              <Input
-                placeholder="City name *"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+              <Input placeholder="City name *" value={name} onChange={(e) => setName(e.target.value)} required />
               <TextArea
                 placeholder="Description (optional)"
                 value={desc}
@@ -371,17 +366,15 @@ export const CitiesPage: React.FC = () => {
                 )
               }
             >
-              {mode === 'players' && playerCanRead && (c as any).imageUrl && (
-                <div
-                  style={{ margin: '-12px -12px 12px', borderRadius: '8px 8px 0 0', overflow: 'hidden', height: 140 }}
-                >
-                  <img
-                    src={resolveApiUrl((c as any).imageUrl)}
-                    alt={(c as any).imageAlt ?? c.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
-              )}
+              {mode === 'players' && playerCanRead && (() => {
+                const imgs = resolvedImages(c as any);
+                const cover = imgs[0] ?? ((c as any).imageUrl ? { id: -1, src: resolveApiUrl((c as any).imageUrl), alt: (c as any).imageAlt ?? c.name } : null);
+                return cover ? (
+                  <div style={{ margin: '-12px -12px 12px', borderRadius: '8px 8px 0 0', overflow: 'hidden', height: 140 }}>
+                    <img src={cover.src} alt={cover.alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                ) : null;
+              })()}
               <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
@@ -527,15 +520,51 @@ export const CitiesPage: React.FC = () => {
     >
       <Tabs defaultActiveKey="desc">
         <Tabs.TabPane tab="Description" key="desc">
-          {openCity.discovered && (openCity as any).imageUrl && (
-            <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
-              <img
-                src={resolveApiUrl((openCity as any).imageUrl)}
-                alt={(openCity as any).imageAlt ?? openCity.name}
-                style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
-              />
-            </div>
-          )}
+          {openCity.discovered && (() => {
+            const imgs = resolvedImages(openCity as any);
+            if (imgs.length > 0) {
+              return (
+                <div style={{ marginBottom: 12 }}>
+                  <Image.PreviewGroup>
+                    {imgs.length === 1 ? (
+                      <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
+                        <Image
+                          src={imgs[0].src}
+                          alt={imgs[0].alt}
+                          style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                          preview={{ mask: 'Preview' }}
+                        />
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 6 }}>
+                        {imgs.map((img) => (
+                          <Image
+                            key={img.id}
+                            src={img.src}
+                            alt={img.alt}
+                            style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 6, display: 'block' }}
+                            preview={{ mask: null }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </Image.PreviewGroup>
+                </div>
+              );
+            }
+            if ((openCity as any).imageUrl) {
+              return (
+                <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
+                  <img
+                    src={resolveApiUrl((openCity as any).imageUrl)}
+                    alt={(openCity as any).imageAlt ?? openCity.name}
+                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
           <Card density="comfy" title="Description">
             <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
               {viewMode === 'players'

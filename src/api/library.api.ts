@@ -68,6 +68,15 @@ export async function fetchDocumentBlobUrl(doc: LibraryDocument): Promise<string
   return URL.createObjectURL(data as Blob);
 }
 
+/** Fetches the file as an ArrayBuffer — preferred for epub.js which handles buffers more reliably than blob URLs. */
+export async function fetchDocumentArrayBuffer(doc: LibraryDocument): Promise<ArrayBuffer> {
+  const { data } = await http.get(`/api/library/documents/${doc.id}/download`, {
+    responseType: 'arraybuffer',
+    headers: libraryHeaders(),
+  });
+  return data as ArrayBuffer;
+}
+
 /** Triggers a browser download via axios so auth headers are sent correctly. */
 export async function downloadDocument(doc: LibraryDocument): Promise<void> {
   const { data, headers } = await http.get(`/api/library/documents/${doc.id}/download`, {

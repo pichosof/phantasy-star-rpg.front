@@ -20,6 +20,17 @@ export type CreatePlayerDTO = {
   background?: string | null;
 };
 
+export type CityImage = {
+  id: number;
+  cityId: number;
+  url: string;
+  alt: string | null;
+  mime: string;
+  size: number;
+  position: number;
+  createdAt: string;
+};
+
 export type City = WithVisibility & {
   id: ID;
   name: string;
@@ -28,6 +39,7 @@ export type City = WithVisibility & {
   worldId?: number | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  images?: CityImage[];
   createdAt: string;
   updatedAt: string;
 };

@@ -41,6 +41,7 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import {
   deleteLibraryDocument,
   downloadDocument,
+  fetchDocumentArrayBuffer,
   fetchDocumentBlobUrl,
   formatBytes,
   getLibraryKey,
@@ -73,6 +74,7 @@ const ACCEPTED = [
   'application/x-mobipocket-ebook',
   'application/mobi',
   'text/markdown',
+  '.mobi',
 ].join(',');
 
 const VIEWABLE_MIME = new Set([
@@ -192,7 +194,7 @@ const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile
 // offer a download fallback instead of a blank or broken viewer.
 
 interface MobiViewerProps {
-  url: string;
+  url: string | ArrayBuffer;
   title: string;
   isMobile: boolean;
   onDownload: () => void;
@@ -252,7 +254,7 @@ const MobiViewer: React.FC<MobiViewerProps> = ({ url, title, isMobile, onDownloa
 type EpubTheme = 'light' | 'sepia' | 'dark';
 
 interface EpubViewerProps {
-  url: string;
+  url: string | ArrayBuffer;
   title: string;
   isMobile: boolean;
 }
@@ -435,26 +437,29 @@ interface DocumentViewerModalProps {
 
 const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose }) => {
   const { mobileOnly, isTablet } = useResponsive();
-  const [blobUrl, setBlobUrl] = React.useState<string | null>(null);
+  // EPUB/MOBI use ArrayBuffer (epub.js is more reliable with buffers than blob URLs).
+  // PDF/DOCX/TXT use a blob URL so the viewer can stream or fetch by URL.
+  const [content, setContent] = React.useState<string | ArrayBuffer | null>(null);
   const [loading, setLoading] = React.useState(false);
 
+  const needsBuffer = (mime: string) =>
+    mime === 'application/epub+zip' || MOBI_MIMES.has(mime);
+
   React.useEffect(() => {
-    if (!doc) {
-      setBlobUrl(null);
-      return;
-    }
-    let revoked = false;
+    if (!doc) { setContent(null); return; }
+    let cancelled = false;
     setLoading(true);
-    fetchDocumentBlobUrl(doc)
-      .then((url) => {
-        if (!revoked) setBlobUrl(url);
-      })
+    const fetch$ = needsBuffer(doc.mime)
+      ? fetchDocumentArrayBuffer(doc)
+      : fetchDocumentBlobUrl(doc);
+    fetch$
+      .then((result) => { if (!cancelled) setContent(result); })
       .catch((e) => message.error(apiErrorMessage(e, 'Failed to load document.')))
       .finally(() => setLoading(false));
     return () => {
-      revoked = true;
-      setBlobUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
+      cancelled = true;
+      setContent((prev) => {
+        if (typeof prev === 'string') URL.revokeObjectURL(prev);
         return null;
       });
     };
@@ -482,16 +487,16 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
         </div>
       )}
       {!loading &&
-        blobUrl &&
+        content &&
         doc &&
         (() => {
           const mime = doc.mime;
           if (mime === 'application/epub+zip')
-            return <EpubViewer url={blobUrl} title={doc.title} isMobile={mobileOnly} />;
+            return <EpubViewer url={content as ArrayBuffer} title={doc.title} isMobile={mobileOnly} />;
           if (MOBI_MIMES.has(mime))
             return (
               <MobiViewer
-                url={blobUrl}
+                url={content as ArrayBuffer}
                 title={doc.title}
                 isMobile={mobileOnly}
                 onDownload={() => {
@@ -500,13 +505,13 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
                 }}
               />
             );
-          if (mime === 'application/pdf') return <PdfViewer url={blobUrl} />;
+          if (mime === 'application/pdf') return <PdfViewer url={content as string} />;
           if (
             mime === 'application/msword' ||
             mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
           )
-            return <DocxViewer url={blobUrl} isMobile={mobileOnly} />;
-          return <TxtViewer url={blobUrl} isMobile={mobileOnly} />;
+            return <DocxViewer url={content as string} isMobile={mobileOnly} />;
+          return <TxtViewer url={content as string} isMobile={mobileOnly} />;
         })()}
     </Modal>
   );

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Drawer, Tabs, Space, Input, Button, Tag, Divider, Select, message, Typography, Upload } from 'antd';
-import { PictureOutlined, SaveOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
+import { Drawer, Tabs, Space, Input, Button, Tag, Divider, Select, message, Typography, Upload, Image, Popconfirm, Spin } from 'antd';
+import { SaveOutlined, DeleteOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import type { CityForAdmin } from '@app/types/rpg';
 import { listWorlds, World } from '@app/api/worlds.api';
@@ -10,8 +9,132 @@ import { listQuestsPublic, linkQuestToCity, unlinkQuestFromCity, Quest } from '@
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
+import { addCityImage, deleteCityImage, CityImage } from '@app/api/cities.api';
 
 import { CitiesApi } from '@app/api/rpg.api';
+
+// ── Images Tab ────────────────────────────────────────────────────────────────
+
+interface CityImagesTabProps {
+  city: CityForAdmin;
+  onChanged: () => Promise<void>;
+}
+
+const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
+  const [images, setImages] = React.useState<CityImage[]>((city as any).images ?? []);
+  const [uploading, setUploading] = React.useState(false);
+  const [altInput, setAltInput] = React.useState('');
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
+
+  // Keep in sync when parent reloads the city object
+  React.useEffect(() => {
+    setImages((city as any).images ?? []);
+  }, [(city as any).images]);
+
+  function handleUpload(options: RcCustomRequestOptions) {
+    const { onError, onSuccess, file } = options;
+    const f = file as File;
+    setUploading(true);
+    addCityImage(city.id, f, altInput.trim() || undefined)
+      .then((img) => {
+        onSuccess?.({}, undefined as unknown as XMLHttpRequest);
+        setImages((prev) => [...prev, img]);
+        setAltInput('');
+        message.success('Image added.');
+        void onChanged();
+      })
+      .catch((err: unknown) => {
+        onError?.(err as Error);
+        message.error('Failed to upload image.');
+      })
+      .finally(() => setUploading(false));
+  }
+
+  async function handleDelete(imgId: number) {
+    setDeletingId(imgId);
+    try {
+      await deleteCityImage(city.id, imgId);
+      setImages((prev) => prev.filter((i) => i.id !== imgId));
+      message.success('Image removed.');
+      void onChanged();
+    } catch {
+      message.error('Failed to delete image.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  return (
+    <Space direction="vertical" size={14} style={{ width: '100%' }}>
+      {/* Gallery grid */}
+      {images.length > 0 ? (
+        <Image.PreviewGroup>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+            {images.map((img) => (
+              <div key={img.id} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#111' }}>
+                <Image
+                  src={resolveApiUrl(img.url)}
+                  alt={img.alt ?? undefined}
+                  style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }}
+                  preview={{ mask: 'Preview' }}
+                />
+                <Popconfirm
+                  title="Remove this image?"
+                  okText="Remove"
+                  okButtonProps={{ danger: true }}
+                  cancelText="Cancel"
+                  onConfirm={() => void handleDelete(img.id)}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    icon={deletingId === img.id ? <Spin size="small" /> : <DeleteOutlined />}
+                    style={{ position: 'absolute', top: 4, right: 4, opacity: 0.85 }}
+                  />
+                </Popconfirm>
+              </div>
+            ))}
+          </div>
+        </Image.PreviewGroup>
+      ) : (
+        <div style={{
+          height: 100, borderRadius: 8, border: '1px dashed rgba(255,255,255,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'rgba(255,255,255,0.25)', fontSize: 13, gap: 8,
+        }}>
+          <PictureOutlined /> No images yet
+        </div>
+      )}
+
+      {/* Alt text for next upload */}
+      <div>
+        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+          Alt text for next image (optional)
+        </Typography.Text>
+        <Input
+          placeholder="e.g. Aerial view of the city"
+          value={altInput}
+          onChange={(e) => setAltInput(e.target.value)}
+        />
+      </div>
+
+      <Upload
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        multiple={false}
+        showUploadList={false}
+        customRequest={(opts: RcCustomRequestOptions) => handleUpload(opts)}
+      >
+        <Button type="primary" icon={<PlusOutlined />} loading={uploading}>
+          Add image
+        </Button>
+      </Upload>
+
+      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+        PNG, JPG, WebP or GIF · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB
+      </Typography.Text>
+    </Space>
+  );
+};
 
 type Props = {
   open: boolean;
@@ -36,7 +159,6 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   const [qLore, setQLore] = React.useState('');
   const [qQuest, setQQuest] = React.useState('');
-  const [imgAlt, setImgAlt] = React.useState('');
 
   const [editName, setEditName] = React.useState('');
   const [editDesc, setEditDesc] = React.useState('');
@@ -385,77 +507,8 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
             </Space>
           </Tabs.TabPane>
 
-          <Tabs.TabPane tab="Image" key="image">
-            <Space direction="vertical" size={14} style={{ width: '100%' }}>
-              {city.imageUrl && (
-                <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 260 }}>
-                  <img
-                    src={resolveApiUrl(city.imageUrl)}
-                    alt={city.imageAlt ?? city.name}
-                    style={{ width: '100%', maxHeight: 260, objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
-              )}
-              {!city.imageUrl && (
-                <div
-                  style={{
-                    height: 120,
-                    borderRadius: 8,
-                    border: '1px dashed rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'rgba(255,255,255,0.25)',
-                    fontSize: 13,
-                    gap: 8,
-                  }}
-                >
-                  <PictureOutlined />
-                  No image yet
-                </div>
-              )}
-
-              <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                  Alt text (accessibility / tooltip)
-                </Typography.Text>
-                <Input
-                  placeholder="Image description..."
-                  value={imgAlt || city.imageAlt || ''}
-                  onChange={(e) => setImgAlt(e.target.value)}
-                />
-              </div>
-
-              <Upload
-                name="image"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                multiple={false}
-                showUploadList={false}
-                customRequest={(options: RcCustomRequestOptions): void => {
-                  const { onError, onSuccess } = options;
-                  const file = options.file as File;
-                  const alt = imgAlt || city.imageAlt || undefined;
-                  CitiesApi.uploadImage(city.id, file, alt)
-                    .then(async () => {
-                      onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-                      message.success('Image updated');
-                      await onChanged();
-                    })
-                    .catch((err: Error) => {
-                      onError?.(err);
-                      message.error('Failed to upload image (GM key?)');
-                    });
-                }}
-              >
-                <Button icon={<PictureOutlined />} type="primary">
-                  {city.imageUrl ? 'Change image' : 'Upload image'}
-                </Button>
-              </Upload>
-
-              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                PNG, JPG, WebP or GIF · max {process.env.MAX_UPLOAD_MB || 30} MB
-              </Typography.Text>
-            </Space>
+          <Tabs.TabPane tab="Images" key="image">
+            <CityImagesTab city={city} onChanged={onChanged} />
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="World" key="world">
