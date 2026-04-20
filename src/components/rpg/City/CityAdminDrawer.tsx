@@ -27,6 +27,7 @@ import { resolveApiUrl } from '@app/api/http.api';
 import { addCityImage, deleteCityImage, CityImage } from '@app/api/cities.api';
 
 import { CitiesApi } from '@app/api/rpg.api';
+import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 
 // ── Images Tab ────────────────────────────────────────────────────────────────
 
@@ -422,6 +423,10 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   rows={6}
                   style={{ resize: 'vertical' }}
                 />
+              </div>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>🏷️ Tags</Typography.Text>
+                <TagSelect entityType="city" entityId={cityId} />
               </div>
               <Button
                 type="primary"

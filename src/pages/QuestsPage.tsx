@@ -10,10 +10,11 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
+import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 
-import { createQuest, deleteQuest, listQuestsPublic, setQuestVisibility, updateQuest } from '@app/api/quests.api';
+import { createQuest, deleteQuest, listQuestsPublic, listQuestCities, setQuestVisibility, updateQuest } from '@app/api/quests.api';
 import { apiErrorMessage } from '../utils/api-error';
-import type { Quest, QuestStatus } from '@app/api/quests.api';
+import type { Quest, QuestCity, QuestStatus } from '@app/api/quests.api';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -77,6 +78,9 @@ export const QuestsPage: React.FC = () => {
   const [drawerTab, setDrawerTab] = React.useState<'view' | 'edit'>('view');
   const openQuest = React.useMemo(() => items.find((x) => x.id === openId) ?? null, [items, openId]);
 
+  const [questCities, setQuestCities] = React.useState<Record<number, QuestCity[]>>({});
+  const [citiesLoading, setCitiesLoading] = React.useState(false);
+
   const [editTitle, setEditTitle] = React.useState('');
   const [editStatus, setEditStatus] = React.useState<QuestStatus>('active');
   const [editDescription, setEditDescription] = React.useState('');
@@ -87,6 +91,10 @@ export const QuestsPage: React.FC = () => {
     try {
       const data = await listQuestsPublic();
       setItems(data);
+      const cityMaps = await Promise.all(
+        data.map(async (q) => ({ id: q.id, cities: await listQuestCities(q.id).catch(() => []) })),
+      );
+      setQuestCities(Object.fromEntries(cityMaps.map((x) => [x.id, x.cities])));
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to load quests'));
     } finally {
@@ -106,6 +114,16 @@ export const QuestsPage: React.FC = () => {
     setEditDescription(openQuest.description ?? '');
     setEditReward(openQuest.reward ?? '');
   }, [openQuest?.id]);
+
+  React.useEffect(() => {
+    if (!openId) return;
+    if (questCities[openId]) return;
+    setCitiesLoading(true);
+    listQuestCities(openId)
+      .then((cs) => setQuestCities((prev) => ({ ...prev, [openId]: cs })))
+      .catch(() => setQuestCities((prev) => ({ ...prev, [openId]: [] })))
+      .finally(() => setCitiesLoading(false));
+  }, [openId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = search.trim().toLowerCase();
 
@@ -439,6 +457,15 @@ export const QuestsPage: React.FC = () => {
                       🏆 {qt.reward}
                     </Tag>
                   )}
+                  {questCities[qt.id] && questCities[qt.id].length > 0 && (
+                    <Space wrap size={4} style={{ marginTop: 2 }}>
+                      {questCities[qt.id].map((c) => (
+                        <Tag key={c.id} color="geekblue" style={{ margin: 0, fontSize: 11 }}>
+                          📍 {c.name}
+                        </Tag>
+                      ))}
+                    </Space>
+                  )}
                   <div style={{ flex: 1 }} />
                   <Divider style={{ margin: '8px 0' }} />
                   <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={6}>
@@ -685,6 +712,23 @@ export const QuestsPage: React.FC = () => {
             ) : (
               <Typography.Text type="secondary">No description.</Typography.Text>
             )}
+            {(() => {
+              const cities = openId ? (questCities[openId] ?? null) : null;
+              if (citiesLoading) return <Spinner />;
+              if (!cities || cities.length === 0) return null;
+              return (
+                <Card density="dense" title="📍 Cities">
+                  <Space wrap size={6}>
+                    {cities.map((c) => (
+                      <Tag key={c.id} color="geekblue">
+                        {c.name}
+                        {c.region ? ` — ${c.region}` : ''}
+                      </Tag>
+                    ))}
+                  </Space>
+                </Card>
+              );
+            })()}
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               Created at: {formatDateTime((openQuest as any).createdAt)}
               {'  ·  '}
@@ -756,6 +800,8 @@ export const QuestsPage: React.FC = () => {
                   />
                 </Space>
               </Card>
+
+              <TagSelect entityType="quest" entityId={openQuest.id} />
 
               <Button type="primary" block onClick={() => void saveEdit()}>
                 Save Changes

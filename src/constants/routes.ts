@@ -13,6 +13,8 @@ export const ROUTES = {
   WIKI: '/wiki',
   DICE: '/dice',
   LIBRARY: '/library',
+  DUNGEONS: '/dungeons',
+  TAGS: '/tags',
   GM_NOTES: '/gm/notes',
   GM_IMAGES: '/gm/images',
   GM_SHEETS: '/gm/sheets',

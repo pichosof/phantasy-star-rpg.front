@@ -70,6 +70,20 @@ export async function listQuests(): Promise<Quest[]> {
   return (data as any[]).map(unwrap);
 }
 
+export interface QuestCity {
+  id: number;
+  name: string;
+  region?: string | null;
+  description?: string | null;
+  discovered?: boolean | null;
+  visible?: boolean | null;
+}
+
+export async function listQuestCities(questId: number): Promise<QuestCity[]> {
+  const { data } = await http.get(`/api/quests/${questId}/cities`);
+  return data as QuestCity[];
+}
+
 export async function linkQuestToCity(questId: number, cityId: number): Promise<void> {
   await http.post(`/api/quests/${questId}/cities/${cityId}`);
 }

@@ -18,6 +18,8 @@ import {
   FolderOpenOutlined,
   PictureOutlined,
   IdcardOutlined,
+  TagOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { ROUTES } from '@app/constants/routes';
 
@@ -62,7 +64,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       icon: <GlobalOutlined />,
       children: [
         { title: 'Worlds', key: 'worlds', url: ROUTES.WORLDS },
-        // PC não precisa ver Lore Admin; verá lore via vínculos (World/Cities/NewsFeed)
+        { title: 'Dungeons', key: 'dungeons', url: ROUTES.DUNGEONS, icon: <ThunderboltOutlined /> },
         { title: 'Map Markers', key: 'map-markers', url: ROUTES.MAP_MARKERS, icon: <AimOutlined /> },
       ],
     },
@@ -82,6 +84,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       children: [
         { title: 'Dice Roller', key: 'dice', url: ROUTES.DICE, icon: <ExperimentOutlined /> },
         { title: 'Library', key: 'library', url: ROUTES.LIBRARY, icon: <FolderOpenOutlined /> },
+        { title: 'Tags', key: 'tags', url: ROUTES.TAGS, icon: <TagOutlined /> },
       ],
     },
   ];

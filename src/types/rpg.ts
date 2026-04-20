@@ -131,3 +131,59 @@ export type CreateMonsterDTO = {
   weaknesses?: string | null;
   description?: string | null;
 };
+
+export type DungeonImage = {
+  id: number;
+  dungeonId: number;
+  url: string;
+  alt: string | null;
+  mime: string;
+  size: number;
+  position: number;
+  createdAt: string;
+};
+
+export type Dungeon = WithVisibility & {
+  id: ID;
+  name: string;
+  type?: string | null;
+  description?: string | null;
+  region?: string | null;
+  coordinates?: string | null;
+  discovered: boolean;
+  cityId?: number | null;
+  worldId?: number | null;
+  images?: DungeonImage[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateDungeonDTO = {
+  name: string;
+  type?: string | null;
+  description?: string | null;
+  region?: string | null;
+  cityId?: number | null;
+  worldId?: number | null;
+};
+
+export type Tag = {
+  id: ID;
+  name: string;
+  color: string;
+  createdAt?: string;
+};
+
+export type EntityTagType = 'beast' | 'npc' | 'city' | 'dungeon' | 'world' | 'player' | 'lore' | 'quest';
+
+export type TagEntities = {
+  tag: Tag;
+  beasts: Monster[];
+  npcs: Npc[];
+  cities: City[];
+  dungeons: Dungeon[];
+  worlds: any[];
+  players: Player[];
+  lores: any[];
+  quests: any[];
+};

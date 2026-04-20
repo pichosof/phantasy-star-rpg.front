@@ -2,6 +2,7 @@ import React from 'react';
 import {
   message,
   Collapse as AntdCollapse,
+  Empty,
   Space,
   Tag,
   Typography,
@@ -22,6 +23,7 @@ import {
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
+import { Table } from '@app/components/common/Table/Table';
 import { Input } from '@app/components/common/inputs/Input/Input';
 import { TextArea } from '@app/components/common/inputs/Input/Input';
 import { InputNumber } from '@app/components/common/inputs/InputNumber/InputNumber';
@@ -29,6 +31,7 @@ import { Button } from '@app/components/common/buttons/Button/Button';
 import { Upload } from '@app/components/common/Upload/Upload';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Collapse } from '@app/components/common/Collapse/Collapse';
+import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { useResponsive } from '@app/hooks/useResponsive';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
@@ -286,6 +289,8 @@ export const PlayersPage: React.FC = () => {
   const [level, setLevel] = React.useState<number>(1);
   const [background, setBackground] = React.useState<string>('');
 
+  const [viewMode, setViewMode] = React.useState<'public' | 'admin'>('public');
+
   const [search, setSearch] = React.useState('');
   const [filterVis, setFilterVis] = React.useState<'all' | 'visible' | 'hidden'>('all');
 
@@ -450,6 +455,49 @@ export const PlayersPage: React.FC = () => {
     return { total, visible, hidden: total - visible };
   }, [items]);
 
+  // ── Admin Table ───────────────────────────────────────────────────────────
+  const AdminTable = (
+    <Card density="dense" title="Manage Players">
+      <div style={{ overflowX: 'auto' }}>
+        <Table rowKey="id" dataSource={displayItems} loading={loading} scroll={{ x: 700 }} style={{ minWidth: 700 }}
+          columns={[
+            { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag> },
+            {
+              title: 'Visible', width: 80,
+              render: (_: any, p: Player) => (
+                <Switch size="small" checked={isPlayerVisible(p)} onChange={() => void toggleVisible(p)}
+                  checkedChildren={<EyeOutlined />} unCheckedChildren={<EyeInvisibleOutlined />} />
+              ),
+            },
+            {
+              title: 'Player',
+              render: (_: any, p: Player) => (
+                <Space size={6} wrap>
+                  {p.imageUrl && <img src={resolveApiUrl(p.imageUrl)} alt={p.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />}
+                  <Typography.Text strong>{p.name}</Typography.Text>
+                  <Tag color="geekblue">Lv {p.level}</Tag>
+                  {p.background && <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>{p.background.slice(0, 60)}</Typography.Text>}
+                </Space>
+              ),
+            },
+            {
+              title: 'Actions', width: 90,
+              render: (_: any, p: Player) => (
+                <Space size={4}>
+                  <Button size="small" icon={<EditOutlined />} onClick={() => startEdit(p)} />
+                  <Popconfirm title={`Delete "${p.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deletePlayer(p)}>
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </div>
+      {!displayItems.length && !loading && <Empty description="No players found." style={{ marginTop: 16 }} />}
+    </Card>
+  );
+
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" style={{ marginBottom: 16 }}>
@@ -465,11 +513,19 @@ export const PlayersPage: React.FC = () => {
                 : 'The adventurers facing the fate of the Algol system.'}
             </Typography.Text>
           </div>
-          {isGM && (
-            <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
-              {creating ? 'Close' : '+ New Player'}
-            </Button>
-          )}
+          <Space size={8} wrap>
+            {isGM && (
+              <Space size={4}>
+                <Button size="small" type={viewMode === 'public' ? 'primary' : 'default'} onClick={() => setViewMode('public')}>📖 View</Button>
+                <Button size="small" type={viewMode === 'admin' ? 'primary' : 'default'} onClick={() => setViewMode('admin')}>⚙️ GM Panel</Button>
+              </Space>
+            )}
+            {isGM && viewMode === 'admin' && (
+              <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
+                {creating ? 'Close' : '+ New Player'}
+              </Button>
+            )}
+          </Space>
         </Space>
 
         <Space wrap size={8}>
@@ -547,7 +603,9 @@ export const PlayersPage: React.FC = () => {
 
       {Header}
 
-      {loading ? (
+      {viewMode === 'admin' && isGM ? (
+        loading ? <Spinner /> : AdminTable
+      ) : loading ? (
         <Spinner />
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
@@ -641,6 +699,7 @@ export const PlayersPage: React.FC = () => {
                               }))
                             }
                           />
+                          <TagSelect entityType="player" entityId={p.id} />
                           <Space size={6}>
                             <Button size="small" type="primary" onClick={() => void saveEdit(p.id)}>
                               Save

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Divider, Drawer, Empty, Form, Input, Space, Switch, Tabs, Tag, Typography, Upload, message } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
+import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tabs, Tag, Typography, Upload, message } from 'antd';
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 
@@ -14,6 +14,7 @@ import { resolveApiUrl } from '@app/api/http.api';
 
 import type { Monster, MonsterForAdmin } from '@app/types/rpg';
 import { BestiaryApi } from '@app/api/bestiary.api';
+import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
 
 const GM_KEY_STORAGE = 'gm_api_key';
@@ -185,6 +186,9 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   onChange={(e) => setDesc(e.target.value)}
                   placeholder="Full description for players…"
                 />
+              </Form.Item>
+              <Form.Item label="🏷️ Tags">
+                <TagSelect entityType="beast" entityId={monster.id} />
               </Form.Item>
               <Space>
                 <Button type="primary" loading={saving} onClick={() => void handleSave()}>
@@ -385,6 +389,16 @@ export const BestiaryPage: React.FC = () => {
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to change discovered status'));
       await load();
+    }
+  }
+
+  async function deleteMonster(id: number) {
+    try {
+      await BestiaryApi.remove(id);
+      setItems((prev) => prev.filter((x) => x.id !== id));
+      message.success('Monster deleted');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete monster'));
     }
   }
 
@@ -713,17 +727,14 @@ export const BestiaryPage: React.FC = () => {
             {
               title: 'Actions',
               key: 'actions',
-              width: 80,
+              width: 90,
               render: (_: unknown, m: Monster) => (
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setAdminId(m.id);
-                    setAdminOpen(true);
-                  }}
-                >
-                  Admin
-                </Button>
+                <Space size={4}>
+                  <Button size="small" icon={<EditOutlined />} onClick={() => { setAdminId(m.id); setAdminOpen(true); }} />
+                  <Popconfirm title={`Delete "${m.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deleteMonster(m.id)}>
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Space>
               ),
             },
           ]}

@@ -23,7 +23,11 @@ const GmNotesPageComponent = React.lazy(() => import('@app/pages/gm/GmNotesPage'
 const GmImagesPageComponent = React.lazy(() => import('@app/pages/gm/GmImagesPage'));
 const GmSheetsPageComponent = React.lazy(() => import('@app/pages/gm/GmSheetsPage'));
 const LibraryPageComponent = React.lazy(() => import('@app/pages/LibraryPage'));
+const DungeonsPageComponent = React.lazy(() => import('@app/pages/DungeonsPage'));
+const TagsPageComponent = React.lazy(() => import('@app/pages/TagsPage'));
 const Library = withLoading(LibraryPageComponent);
+const Dungeons = withLoading(DungeonsPageComponent);
+const Tags = withLoading(TagsPageComponent);
 
 // Página genérica “em construção” (cria esse arquivo, mostro abaixo)
 const ComingSoonPage = React.lazy(() => import('@app/pages/ComingSoonPage'));
@@ -72,6 +76,8 @@ export const AppRouter: React.FC = () => {
 
           <Route path={ROUTES.LIBRARY} element={<Library />} />
           <Route path={ROUTES.DICE} element={<DiceRoller />} />
+          <Route path={ROUTES.DUNGEONS} element={<Dungeons />} />
+          <Route path={ROUTES.TAGS} element={<Tags />} />
           <Route path={ROUTES.GM_NOTES} element={<GmNotes />} />
           <Route path={ROUTES.GM_IMAGES} element={<GmImages />} />
           <Route path={ROUTES.GM_SHEETS} element={<GmSheets />} />

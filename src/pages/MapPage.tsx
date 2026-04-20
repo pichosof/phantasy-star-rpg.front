@@ -42,6 +42,8 @@ import {
   deleteCity,
   type City,
 } from '@app/api/cities.api';
+import { listDungeons, updateDungeon } from '@app/api/dungeons.api';
+import type { Dungeon } from '@app/types/rpg';
 import { listLoresByCityId, listQuestsByCityId } from '@app/api/cityLinks.api';
 import type { Lore } from '@app/api/lore.api';
 import type { Quest } from '@app/api/quests.api';
@@ -333,6 +335,7 @@ export default function MapPage() {
   const [world, setWorld] = React.useState<World | null>(null);
   const [worldImg, setWorldImg] = React.useState<string | undefined>();
   const [cities, setCities] = React.useState<City[]>([]);
+  const [dungeons, setDungeons] = React.useState<Dungeon[]>([]);
 
   // GM mode
   const [isGM, setIsGM] = React.useState<boolean>(() => Boolean(localStorage.getItem(GM_KEY_STORAGE)));
@@ -362,10 +365,16 @@ export default function MapPage() {
   // -------- GM positioning --------
   const [pickingCityId, setPickingCityId] = React.useState<number | null>(null);
   const pickingCity = React.useMemo(() => cities.find((c) => c.id === pickingCityId) ?? null, [cities, pickingCityId]);
+  const [pickingDungeonId, setPickingDungeonId] = React.useState<number | null>(null);
+  const pickingDungeon = React.useMemo(() => dungeons.find((d) => d.id === pickingDungeonId) ?? null, [dungeons, pickingDungeonId]);
 
   // -------- open city drawer --------
   const [openCityId, setOpenCityId] = React.useState<number | null>(null);
   const openCity = React.useMemo(() => cities.find((c) => c.id === openCityId) ?? null, [cities, openCityId]);
+
+  // -------- open dungeon drawer --------
+  const [openDungeonId, setOpenDungeonId] = React.useState<number | null>(null);
+  const openDungeon = React.useMemo(() => dungeons.find((d) => d.id === openDungeonId) ?? null, [dungeons, openDungeonId]);
 
   // -------- city drawer edit state (GM) --------
   const [editCityName, setEditCityName] = React.useState('');
@@ -432,7 +441,7 @@ export default function MapPage() {
     (async () => {
       try {
         setLoading(true);
-        const [ws, cs] = await Promise.all([listWorlds(), listCities()]);
+        const [ws, cs, ds] = await Promise.all([listWorlds(), listCities(), listDungeons()]);
         if (!mounted) return;
 
         const unwrap = (x: any) => (x && typeof x === 'object' && 'props' in x ? x.props : x);
@@ -443,6 +452,7 @@ export default function MapPage() {
         setWorld(w ?? null);
         setWorldImg(resolveWorldImage(w?.imageUrl ?? undefined));
         setCities(cs2);
+        setDungeons(ds);
       } catch (e) {
         console.error(e);
         message.error(apiErrorMessage(e, 'Failed to load world/cities.'));
@@ -639,7 +649,22 @@ export default function MapPage() {
       return;
     }
 
-    if (!isGM || !pickingCity) return;
+    if (!isGM) return;
+
+    if (pickingDungeon) {
+      try {
+        await updateDungeon(pickingDungeon.id, { coordinates: `${u},${v}` });
+        setDungeons((prev) => prev.map((d) => (d.id === pickingDungeon.id ? { ...d, coordinates: `${u},${v}` } : d)));
+        message.success(`Coordinates saved for "${pickingDungeon.name}".`);
+      } catch (e) {
+        message.error(apiErrorMessage(e, 'Failed to save coordinates.'));
+      } finally {
+        setPickingDungeonId(null);
+      }
+      return;
+    }
+
+    if (!pickingCity) return;
 
     try {
       await updateCityCoords(pickingCity.id, u, v);
@@ -892,12 +917,28 @@ export default function MapPage() {
                       Ruler {measureMode ? 'ON' : 'OFF'}
                     </Button>
 
+                    <Select
+                      showSearch
+                      allowClear
+                      size="small"
+                      style={{ width: 260 }}
+                      placeholder="Select dungeon to position..."
+                      value={pickingDungeonId ?? undefined}
+                      onChange={(v) => { setPickingDungeonId(v ?? null); if (v) setPickingCityId(null); }}
+                      options={dungeons.map((d) => ({ value: d.id, label: `⚔️ ${d.name}` }))}
+                      filterOption={(input, opt) => (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                    />
+
                     {pickingCity ? (
                       <Tag color="gold" style={{ margin: 0 }}>
                         Click on the map to position: <b>{pickingCity.name}</b>
                       </Tag>
+                    ) : pickingDungeon ? (
+                      <Tag color="purple" style={{ margin: 0 }}>
+                        Click on the map to position: <b>{pickingDungeon.name}</b>
+                      </Tag>
                     ) : (
-                      <Tag style={{ margin: 0 }}>Select a city to mark on the map</Tag>
+                      <Tag style={{ margin: 0 }}>Select a city or dungeon to mark on the map</Tag>
                     )}
                   </Space>
                 </>
@@ -1048,6 +1089,46 @@ export default function MapPage() {
               </React.Fragment>
             );
           })}
+
+          {/* Dungeon markers */}
+          {dungeons
+            .filter((d) => isGM || d.visible)
+            .map((d) => {
+              const p = parseCoordinates(d.coordinates);
+              if (!p) return null;
+              const leftCss = stage ? `${stage.offsetX + p.u * stage.width}px` : `${p.u * 100}%`;
+              const topCss = stage ? `${stage.offsetY + p.v * stage.height}px` : `${p.v * 100}%`;
+              return (
+                <React.Fragment key={`dungeon-${d.id}`}>
+                  {hoverMarkerId === -d.id && (
+                    <div style={{ position: 'absolute', left: leftCss, top: topCss, transform: 'translate(-50%, calc(-100% - 10px))', background: 'rgba(0,0,0,0.75)', color: '#fff', padding: '4px 8px', borderRadius: 6, fontSize: 12, whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 20 }}>
+                      ⚔️ {d.name}{d.type ? ` · ${d.type}` : ''}
+                    </div>
+                  )}
+                  <div
+                    onMouseEnter={() => setHoverMarkerId(-d.id)}
+                    onMouseLeave={() => setHoverMarkerId((prev) => (prev === -d.id ? null : prev))}
+                    onClick={(e) => { e.stopPropagation(); setOpenDungeonId(d.id); }}
+                    title={d.name}
+                    style={{
+                      position: 'absolute',
+                      left: leftCss,
+                      top: topCss,
+                      transform: 'translate(-50%, -50%) rotate(45deg)',
+                      width: 14,
+                      height: 14,
+                      background: isGM && !d.visible ? 'rgba(255,70,70,0.95)' : d.discovered ? 'rgba(180,100,255,0.95)' : 'rgba(120,60,180,0.8)',
+                      border: '2px solid rgba(0,0,0,0.85)',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+                      cursor: 'pointer',
+                      zIndex: 10,
+                      outline: openDungeonId === d.id ? '3px solid rgba(255,255,0,0.8)' : 'none',
+                      outlineOffset: 2,
+                    }}
+                  />
+                </React.Fragment>
+              );
+            })}
 
           {/* Ruler */}
           {measureA && measureB && stage && (
@@ -1313,6 +1394,53 @@ export default function MapPage() {
                 )}
               </Tabs.TabPane>
             </Tabs>
+          )}
+        </Drawer>
+
+        {/* ── Dungeon Drawer ── */}
+        <Drawer
+          zIndex={drawerZIndex}
+          visible={!!openDungeon}
+          onClose={() => setOpenDungeonId(null)}
+          width={mobileOnly ? '100%' : 480}
+          title={openDungeon ? (
+            <Space wrap size={8}>
+              <span style={{ fontWeight: 800 }}>⚔️ {openDungeon.name}</span>
+              {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
+              {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
+              {isGM && !openDungeon.visible && <Tag color="red">Hidden</Tag>}
+            </Space>
+          ) : 'Dungeon'}
+        >
+          {openDungeon && (
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
+              {openDungeon.description ? (
+                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>{openDungeon.description}</Typography.Paragraph>
+              ) : (
+                <Typography.Text type="secondary">No description.</Typography.Text>
+              )}
+              {isGM && (
+                <Space wrap size={8}>
+                  <Button size="small" type="primary" onClick={() => { setPickingDungeonId(openDungeon.id); setOpenDungeonId(null); message.info('Click on the map to position.'); }}>
+                    Reposition
+                  </Button>
+                  {openDungeon.coordinates && (
+                    <Button size="small" danger onClick={async () => {
+                      await updateDungeon(openDungeon.id, { coordinates: null });
+                      setDungeons((prev) => prev.map((d) => d.id === openDungeon.id ? { ...d, coordinates: null } : d));
+                      setOpenDungeonId(null);
+                      message.success('Removed from map.');
+                    }}>
+                      Remove from map
+                    </Button>
+                  )}
+                </Space>
+              )}
+              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                {openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}
+              </Typography.Text>
+            </Space>
           )}
         </Drawer>
 

@@ -10,6 +10,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
+import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 
 import { createLore, deleteLore, listLores, setLoreVisibility, updateLore } from '@app/api/lore.api';
 import { apiErrorMessage } from '../utils/api-error';
@@ -732,6 +733,8 @@ export const LoresAdminPage: React.FC = () => {
                   />
                 </Space>
               </Card>
+
+              <TagSelect entityType="lore" entityId={openLore.id} />
 
               <Button type="primary" block onClick={() => void saveEdit()}>
                 Save Changes

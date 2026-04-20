@@ -1,6 +1,6 @@
 import React from 'react';
-import { Divider, Drawer, Empty, Modal, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined, LeftOutlined, RightOutlined, FullscreenOutlined } from '@ant-design/icons';
+import { Divider, Drawer, Empty, Modal, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, LeftOutlined, RightOutlined, FullscreenOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -413,6 +413,16 @@ export const CitiesPage: React.FC = () => {
     }
   }
 
+  async function deleteCity(id: number) {
+    try {
+      await CitiesApi.remove(id);
+      setItems((prev) => prev.filter((x) => x.id !== id));
+      message.success('City deleted');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete city'));
+    }
+  }
+
   async function toggleVisible(c: City) {
     const next = !isCityVisible(c);
     setItems((prev) => prev.map((x) => (x.id === c.id ? { ...x, visible: next } : x)));
@@ -734,9 +744,12 @@ export const CitiesPage: React.FC = () => {
               key: 'actions',
               width: 90,
               render: (_: any, c: City) => (
-                <Button size="small" onClick={() => openAdmin(c)}>
-                  Admin
-                </Button>
+                <Space size={4}>
+                  <Button size="small" icon={<EditOutlined />} onClick={() => openAdmin(c)} />
+                  <Popconfirm title={`Delete "${c.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deleteCity(c.id)}>
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Space>
               ),
             },
           ]}
