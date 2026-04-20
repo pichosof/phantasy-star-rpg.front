@@ -1,5 +1,20 @@
 import React from 'react';
-import { Drawer, Tabs, Space, Input, Button, Tag, Divider, Select, message, Typography, Upload, Image, Popconfirm, Spin } from 'antd';
+import {
+  Drawer,
+  Tabs,
+  Space,
+  Input,
+  Button,
+  Tag,
+  Divider,
+  Select,
+  message,
+  Typography,
+  Upload,
+  Modal,
+  Popconfirm,
+  Spin,
+} from 'antd';
 import { SaveOutlined, DeleteOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import type { CityForAdmin } from '@app/types/rpg';
@@ -64,19 +79,25 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
     }
   }
 
+  const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
+
   return (
     <Space direction="vertical" size={14} style={{ width: '100%' }}>
       {/* Gallery grid */}
       {images.length > 0 ? (
-        <Image.PreviewGroup>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
-            {images.map((img) => (
-              <div key={img.id} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#111' }}>
-                <Image
-                  src={resolveApiUrl(img.url)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+          {images.map((img) => {
+            const src = resolveApiUrl(img.url) ?? img.url;
+            return (
+              <div
+                key={img.id}
+                style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#111' }}
+              >
+                <img
+                  src={src}
                   alt={img.alt ?? undefined}
-                  style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }}
-                  preview={{ mask: 'Preview' }}
+                  onClick={() => setLightbox({ src, alt: img.alt ?? '' })}
+                  style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
                 />
                 <Popconfirm
                   title="Remove this image?"
@@ -93,15 +114,23 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
                   />
                 </Popconfirm>
               </div>
-            ))}
-          </div>
-        </Image.PreviewGroup>
+            );
+          })}
+        </div>
       ) : (
-        <div style={{
-          height: 100, borderRadius: 8, border: '1px dashed rgba(255,255,255,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(255,255,255,0.25)', fontSize: 13, gap: 8,
-        }}>
+        <div
+          style={{
+            height: 100,
+            borderRadius: 8,
+            border: '1px dashed rgba(255,255,255,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255,255,255,0.25)',
+            fontSize: 13,
+            gap: 8,
+          }}
+        >
           <PictureOutlined /> No images yet
         </div>
       )}
@@ -132,6 +161,24 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
       <Typography.Text type="secondary" style={{ fontSize: 11 }}>
         PNG, JPG, WebP or GIF · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB
       </Typography.Text>
+
+      <Modal
+        visible={!!lightbox}
+        onCancel={() => setLightbox(null)}
+        footer={null}
+        centered
+        width="90vw"
+        bodyStyle={{ padding: 0, background: '#000', borderRadius: 8, overflow: 'hidden', textAlign: 'center' }}
+        destroyOnClose
+      >
+        {lightbox && (
+          <img
+            src={lightbox.src}
+            alt={lightbox.alt}
+            style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
+          />
+        )}
+      </Modal>
     </Space>
   );
 };

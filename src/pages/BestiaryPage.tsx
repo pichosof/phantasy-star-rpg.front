@@ -665,20 +665,25 @@ export const BestiaryPage: React.FC = () => {
             {
               title: 'Name',
               key: 'name',
+              width: 220,
               render: (_: unknown, m: Monster) => (
-                <Space direction="vertical" size={2}>
-                  <Space size={8} wrap>
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                  <Space size={6} wrap>
                     <Typography.Text strong>{m.name}</Typography.Text>
                     {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
                   </Space>
                   {m.habitat && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text
+                      type="secondary"
+                      style={{
+                        fontSize: 12,
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       Habitat: {m.habitat}
-                    </Typography.Text>
-                  )}
-                  {m.weaknesses && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Weaknesses: {m.weaknesses}
                     </Typography.Text>
                   )}
                 </Space>
@@ -687,8 +692,9 @@ export const BestiaryPage: React.FC = () => {
             {
               title: 'Description',
               key: 'description',
+              ellipsis: true,
               render: (_: unknown, m: Monster) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                   {m.description?.trim() || '—'}
                 </Typography.Text>
               ),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Divider, Drawer, Empty, Image, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { Carousel, Divider, Drawer, Empty, Modal, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
@@ -48,6 +48,62 @@ function formatDate(v?: string | null) {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
   return d.toLocaleString();
+}
+
+function CityImageCarousel({ city }: { city: any }) {
+  const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
+  const imgs = resolvedImages(city);
+  const fallback = city.imageUrl
+    ? [{ id: -1, src: resolveApiUrl(city.imageUrl), alt: city.imageAlt ?? city.name }]
+    : [];
+  const all = imgs.length > 0 ? imgs : fallback;
+
+  if (!city.discovered || all.length === 0) return null;
+
+  return (
+    <>
+      <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+        {all.length === 1 ? (
+          <img
+            src={all[0].src}
+            alt={all[0].alt}
+            onClick={() => setLightbox({ src: all[0].src ?? '', alt: all[0].alt })}
+            style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+          />
+        ) : (
+          <Carousel dots autoplay={false} style={{ borderRadius: 8 }}>
+            {all.map((img) => (
+              <div key={img.id}>
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  onClick={() => setLightbox({ src: img.src ?? '', alt: img.alt })}
+                  style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+                />
+              </div>
+            ))}
+          </Carousel>
+        )}
+      </div>
+      <Modal
+        visible={!!lightbox}
+        onCancel={() => setLightbox(null)}
+        footer={null}
+        centered
+        width="90vw"
+        bodyStyle={{ padding: 0, background: '#000', borderRadius: 8, overflow: 'hidden', textAlign: 'center' }}
+        destroyOnClose
+      >
+        {lightbox && (
+          <img
+            src={lightbox.src}
+            alt={lightbox.alt}
+            style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
+          />
+        )}
+      </Modal>
+    </>
+  );
 }
 
 export const CitiesPage: React.FC = () => {
@@ -366,15 +422,32 @@ export const CitiesPage: React.FC = () => {
                 )
               }
             >
-              {mode === 'players' && playerCanRead && (() => {
-                const imgs = resolvedImages(c as any);
-                const cover = imgs[0] ?? ((c as any).imageUrl ? { id: -1, src: resolveApiUrl((c as any).imageUrl), alt: (c as any).imageAlt ?? c.name } : null);
-                return cover ? (
-                  <div style={{ margin: '-12px -12px 12px', borderRadius: '8px 8px 0 0', overflow: 'hidden', height: 140 }}>
-                    <img src={cover.src} alt={cover.alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  </div>
-                ) : null;
-              })()}
+              {mode === 'players' &&
+                playerCanRead &&
+                (() => {
+                  const imgs = resolvedImages(c as any);
+                  const cover =
+                    imgs[0] ??
+                    ((c as any).imageUrl
+                      ? { id: -1, src: resolveApiUrl((c as any).imageUrl), alt: (c as any).imageAlt ?? c.name }
+                      : null);
+                  return cover ? (
+                    <div
+                      style={{
+                        margin: '-12px -12px 12px',
+                        borderRadius: '8px 8px 0 0',
+                        overflow: 'hidden',
+                        height: 140,
+                      }}
+                    >
+                      <img
+                        src={cover.src}
+                        alt={cover.alt}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    </div>
+                  ) : null;
+                })()}
               <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
@@ -454,17 +527,27 @@ export const CitiesPage: React.FC = () => {
             {
               title: 'City',
               key: 'name',
+              ellipsis: true,
               render: (_: any, c: City) => {
                 return (
                   <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                    <Space size={8} wrap>
+                    <Space size={6} wrap>
                       <Typography.Text strong>{c.name}</Typography.Text>
                       {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
                       {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
                       {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
                     </Space>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
-                      {c.description?.trim() ? c.description : '—'}
+                    <Typography.Text
+                      type="secondary"
+                      style={{
+                        fontSize: 12,
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {c.description?.trim() || '—'}
                     </Typography.Text>
                   </Space>
                 );
@@ -520,51 +603,7 @@ export const CitiesPage: React.FC = () => {
     >
       <Tabs defaultActiveKey="desc">
         <Tabs.TabPane tab="Description" key="desc">
-          {openCity.discovered && (() => {
-            const imgs = resolvedImages(openCity as any);
-            if (imgs.length > 0) {
-              return (
-                <div style={{ marginBottom: 12 }}>
-                  <Image.PreviewGroup>
-                    {imgs.length === 1 ? (
-                      <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
-                        <Image
-                          src={imgs[0].src}
-                          alt={imgs[0].alt}
-                          style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
-                          preview={{ mask: 'Preview' }}
-                        />
-                      </div>
-                    ) : (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 6 }}>
-                        {imgs.map((img) => (
-                          <Image
-                            key={img.id}
-                            src={img.src}
-                            alt={img.alt}
-                            style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 6, display: 'block' }}
-                            preview={{ mask: null }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </Image.PreviewGroup>
-                </div>
-              );
-            }
-            if ((openCity as any).imageUrl) {
-              return (
-                <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
-                  <img
-                    src={resolveApiUrl((openCity as any).imageUrl)}
-                    alt={(openCity as any).imageAlt ?? openCity.name}
-                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
-              );
-            }
-            return null;
-          })()}
+          <CityImageCarousel city={openCity as any} />
           <Card density="comfy" title="Description">
             <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
               {viewMode === 'players'
