@@ -1,12 +1,30 @@
 import React from 'react';
 import { FilePdfOutlined, EyeOutlined, IdcardOutlined } from '@ant-design/icons';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Switch } from '@app/components/common/Switch/Switch';
 import { Modal } from '@app/components/common/Modal/Modal';
+import { Spin } from 'antd';
 import { useResponsive } from '@app/hooks/useResponsive';
-import { resolveApiUrl } from '@app/api/http.api';
+import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import type { Player } from '@app/types/rpg';
 import * as S from './PlayerCard.styles';
+
+const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+
+const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
+  const layoutPlugin = defaultLayoutPlugin();
+  return (
+    <Worker workerUrl={PDF_WORKER_URL}>
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+      </div>
+    </Worker>
+  );
+};
 
 type PlayerCardProps = {
   player: Player;
@@ -20,10 +38,22 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
 
   const [openProfile, setOpenProfile] = React.useState(false);
   const [openPdf, setOpenPdf] = React.useState(false);
+  const [sheetBlobUrl, setSheetBlobUrl] = React.useState<string | null>(null);
+  const [sheetLoading, setSheetLoading] = React.useState(false);
 
   const img = player.imageUrl ? resolveApiUrl(player.imageUrl) : '/assets/images/stub-avatar.webp';
-  const sheetUrl = player.sheetUrl ? resolveApiUrl(player.sheetUrl) : undefined;
-  const hasSheet = !!sheetUrl;
+  const hasSheet = !!player.sheetUrl;
+
+  function openSheet() {
+    if (!player.sheetUrl) return;
+    setOpenPdf(true);
+    if (sheetBlobUrl) return;
+    setSheetLoading(true);
+    fetchBlobUrl(player.sheetUrl)
+      .then((url) => setSheetBlobUrl(url))
+      .catch(() => setSheetBlobUrl(null))
+      .finally(() => setSheetLoading(false));
+  }
 
   // Renderiza o background com quebras preservadas
   const renderBackground = (text: string) => {
@@ -67,15 +97,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
                 Profile
               </Button>
 
-              <Button disabled={!hasSheet} type="primary" icon={<EyeOutlined />} onClick={() => setOpenPdf(true)}>
+              <Button disabled={!hasSheet} type="primary" icon={<EyeOutlined />} onClick={openSheet}>
                 {hasSheet ? 'Sheet' : 'No sheet'}
               </Button>
-
-              {hasSheet && (
-                <a href={sheetUrl!} target="_blank" rel="noreferrer">
-                  <S.LinkLike icon={<FilePdfOutlined />}>Open in new tab</S.LinkLike>
-                </a>
-              )}
             </div>
 
             {gm && (
@@ -104,7 +128,14 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
             <img
               src={img}
               alt={player.imageAlt || player.name}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+              }}
             />
             <div
               style={{
@@ -181,22 +212,21 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         title={`Sheet — ${player.name}`}
         onCancel={() => setOpenPdf(false)}
         footer={null}
-        width={mobileOnly ? '96vw' : '80vw'}
-        bodyStyle={{ padding: 0 }}
+        width={mobileOnly ? '96vw' : '82vw'}
+        bodyStyle={{ padding: 0, height: '80vh' }}
         destroyOnClose
       >
-        {hasSheet ? (
-          <S.PdfFrameWrapper>
-            <iframe
-              title={`sheet-${player.id}`}
-              src={sheetUrl!}
-              frameBorder={0}
-              style={{ width: '100%', height: '100%' }}
-            />
-          </S.PdfFrameWrapper>
-        ) : (
-          <div style={{ padding: 16 }}>No sheet attached.</div>
-        )}
+        <S.PdfFrameWrapper>
+          {sheetLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+              <Spin size="large" />
+            </div>
+          ) : sheetBlobUrl ? (
+            <PdfViewer url={sheetBlobUrl} />
+          ) : (
+            <div style={{ padding: 16 }}>No sheet attached.</div>
+          )}
+        </S.PdfFrameWrapper>
       </Modal>
     </>
   );

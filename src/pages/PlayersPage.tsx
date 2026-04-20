@@ -1,6 +1,24 @@
 import React from 'react';
-import { message, Collapse as AntdCollapse, Space, Tag, Typography, Switch, Divider } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  message,
+  Collapse as AntdCollapse,
+  Space,
+  Tag,
+  Typography,
+  Switch,
+  Divider,
+  Modal,
+  Popconfirm,
+  Spin,
+} from 'antd';
+import {
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -20,6 +38,227 @@ import { PlayersApi } from '@app/api/rpg.api';
 import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
 import { resolveApiUrl } from '@app/api/http.api';
 import { apiErrorMessage } from '../utils/api-error';
+import {
+  type PlayerNote,
+  listPlayerNotes,
+  createPlayerNote,
+  updatePlayerNote,
+  deletePlayerNote,
+} from '@app/api/playerNotes.api';
+
+// ── Player Notes ─────────────────────────────────────────────────────────────
+
+interface PlayerNotesSectionProps {
+  playerId: number;
+  isGM: boolean;
+}
+
+const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM }) => {
+  const [notes, setNotes] = React.useState<PlayerNote[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<PlayerNote | null>(null);
+  const [form, setForm] = React.useState({ title: '', date: '', content: '' });
+  const [saving, setSaving] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    listPlayerNotes(playerId)
+      .then((data) => {
+        if (alive) setNotes(data);
+      })
+      .catch(() => {
+        if (alive) message.error('Failed to load notes.');
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [playerId]);
+
+  function openCreate() {
+    setEditing(null);
+    setForm({ title: '', date: '', content: '' });
+    setModalOpen(true);
+  }
+
+  function openEdit(note: PlayerNote) {
+    setEditing(note);
+    setForm({ title: note.title, date: note.date, content: note.content ?? '' });
+    setModalOpen(true);
+  }
+
+  async function handleSave() {
+    const title = form.title.trim();
+    const date = form.date.trim();
+    if (!title) return message.warning('Title is required.');
+    if (!date) return message.warning('Date is required.');
+    setSaving(true);
+    try {
+      if (editing) {
+        await updatePlayerNote(playerId, editing.id, { title, date, content: form.content.trim() || null });
+        setNotes((prev) =>
+          prev.map((n) => (n.id === editing.id ? { ...n, title, date, content: form.content.trim() || null } : n)),
+        );
+        message.success('Note updated.');
+      } else {
+        const created = await createPlayerNote(playerId, { title, date, content: form.content.trim() || null });
+        setNotes((prev) => [...prev, created]);
+        message.success('Note added.');
+      }
+      setModalOpen(false);
+    } catch {
+      message.error('Failed to save note.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(noteId: number) {
+    setDeletingId(noteId);
+    try {
+      await deletePlayerNote(playerId, noteId);
+      setNotes((prev) => prev.filter((n) => n.id !== noteId));
+      message.success('Note removed.');
+    } catch {
+      message.error('Failed to delete note.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <Space size={6}>
+          <FileTextOutlined style={{ color: '#8c8c8c' }} />
+          <Typography.Text strong style={{ fontSize: 13 }}>
+            Notes
+          </Typography.Text>
+          {notes.length > 0 && <Tag style={{ margin: 0 }}>{notes.length}</Tag>}
+        </Space>
+        {isGM && (
+          <Tag color="blue" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={openCreate}>
+            <PlusOutlined /> Add note
+          </Tag>
+        )}
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
+          <Spin size="small" />
+        </div>
+      ) : notes.length === 0 ? (
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          No notes yet.
+        </Typography.Text>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {notes.map((note) => (
+            <div
+              key={note.id}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                borderRadius: 6,
+                padding: '8px 10px',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ minWidth: 0 }}>
+                  <Typography.Text strong style={{ fontSize: 13, display: 'block' }}>
+                    {note.title}
+                  </Typography.Text>
+                  <Tag style={{ marginTop: 2, fontSize: 11 }}>{note.date}</Tag>
+                </div>
+                {isGM && (
+                  <Space size={4} style={{ flexShrink: 0 }}>
+                    <EditOutlined
+                      style={{ cursor: 'pointer', color: '#8c8c8c', fontSize: 13 }}
+                      onClick={() => openEdit(note)}
+                    />
+                    <Popconfirm
+                      title="Remove this note?"
+                      okText="Remove"
+                      okButtonProps={{ danger: true }}
+                      cancelText="Cancel"
+                      onConfirm={() => void handleDelete(note.id)}
+                    >
+                      {deletingId === note.id ? (
+                        <Spin size="small" />
+                      ) : (
+                        <DeleteOutlined style={{ cursor: 'pointer', color: '#ff4d4f', fontSize: 13 }} />
+                      )}
+                    </Popconfirm>
+                  </Space>
+                )}
+              </div>
+              {note.content && (
+                <Typography.Text
+                  type="secondary"
+                  style={{ fontSize: 12, display: 'block', marginTop: 6, whiteSpace: 'pre-wrap' }}
+                >
+                  {note.content}
+                </Typography.Text>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Modal
+        visible={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={() => void handleSave()}
+        okText={editing ? 'Save' : 'Add'}
+        confirmLoading={saving}
+        title={editing ? 'Edit note' : 'New note'}
+        centered
+        destroyOnClose
+      >
+        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Title *
+            </Typography.Text>
+            <Input
+              placeholder="e.g. Found the artifact"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Date *
+            </Typography.Text>
+            <Input
+              placeholder="e.g. Day 12, Year 1285"
+              value={form.date}
+              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Content (optional)
+            </Typography.Text>
+            <TextArea
+              rows={3}
+              placeholder="Additional details…"
+              value={form.content}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            />
+          </div>
+        </Space>
+      </Modal>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 type AltMap = Record<number, string>;
 type EditMap = Record<number, { name: string; level: number; background: string }>;
@@ -129,6 +368,16 @@ export const PlayersPage: React.FC = () => {
       await load();
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to change visibility (GM key?)'));
+    }
+  }
+
+  async function deletePlayer(p: Player) {
+    try {
+      await PlayersApi.delete(p.id);
+      setItems((prev) => prev.filter((x) => x.id !== p.id));
+      message.success(`${p.name} deleted.`);
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete player (GM key?)'));
     }
   }
 
@@ -318,6 +567,11 @@ export const PlayersPage: React.FC = () => {
             <div key={p.id} style={{ display: 'grid', gap: 8 }}>
               <PlayerCard player={p} gm={isGM} onToggleVisible={toggleVisible} />
 
+              {/* Notes — visible to everyone */}
+              <Card density="dense">
+                <PlayerNotesSection playerId={p.id} isGM={isGM} />
+              </Card>
+
               {isGM && (
                 <Collapse>
                   <AntdCollapse.Panel
@@ -418,12 +672,19 @@ export const PlayersPage: React.FC = () => {
                         <Upload {...sheetProps(p)}>
                           <Button size="small">Upload PDF</Button>
                         </Upload>
-                        {p.sheetUrl && (
-                          <a href={p.sheetUrl} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
-                            open sheet
-                          </a>
-                        )}
                       </div>
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Popconfirm
+                        title={`Delete "${p.name}"? This will permanently remove their image, sheet, notes and quest links.`}
+                        okText="Delete"
+                        okButtonProps={{ danger: true }}
+                        cancelText="Cancel"
+                        onConfirm={() => void deletePlayer(p)}
+                      >
+                        <Button size="small" danger block icon={<DeleteOutlined />}>
+                          Delete player
+                        </Button>
+                      </Popconfirm>
                     </Space>
                   </AntdCollapse.Panel>
                 </Collapse>

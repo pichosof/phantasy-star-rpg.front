@@ -79,6 +79,12 @@ export function resolveApiUrl(u?: string | null) {
   return `${API_BASE_URL}${u.startsWith('/') ? '' : '/'}${u}`;
 }
 
+/** Fetches any relative URL through the authenticated axios instance and returns a blob URL. */
+export async function fetchBlobUrl(relativeUrl: string): Promise<string> {
+  const { data } = await http.get(relativeUrl, { responseType: 'blob' });
+  return URL.createObjectURL(data as Blob);
+}
+
 // ── Request interceptor ──────────────────────────────────────────────────────
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem(KEY_STORAGE);

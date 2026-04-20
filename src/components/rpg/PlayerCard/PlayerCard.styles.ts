@@ -23,15 +23,6 @@ export const Card = styled(BaseCard)<CardInternalProps>`
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 0 0 1px rgba(0, 200, 232, 0.2), 0 8px 32px rgba(0, 200, 232, 0.08);
-
-      ${(p) =>
-        p.$img &&
-        `
-        background-image: url(${p.$img});
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-      `}
     }
   }
 `;
@@ -40,47 +31,20 @@ export const PlayerImage = styled.img`
   width: 100%;
   height: 200px;
   object-fit: cover;
-  transition: opacity 0.35s ease;
+  object-position: center top;
 
   @media only screen and (max-width: ${BREAKPOINTS.md - 0.02}px) {
     height: auto;
     max-height: 320px;
     object-fit: contain;
+    object-position: center top;
     background: var(--secondary-background-color);
     display: block;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    ${Card}:hover & {
-      opacity: 0;
-    }
   }
 `;
 
 export const TopOverlay = styled.div`
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 200px;
-  pointer-events: none;
-  transition: background 0.35s ease;
-
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.15) 35%,
-    rgba(0, 0, 0, 0.35) 70%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-
-  @media only screen and (max-width: ${BREAKPOINTS.md - 0.02}px) {
-    display: none;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    ${Card}:hover & {
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.3) 100%);
-    }
-  }
+  display: none;
 `;
 
 export const Info = styled.div`
@@ -88,12 +52,6 @@ export const Info = styled.div`
   padding: 12px;
   display: grid;
   gap: 10px;
-
-  @media (hover: hover) and (pointer: fine) {
-    ${Card}:hover & {
-      color: var(--text-secondary-color);
-    }
-  }
 `;
 
 export const HeaderRow = styled.div`
@@ -108,14 +66,6 @@ export const Title = styled.div`
   font-size: 18px;
   line-height: 1.2;
   color: var(--text-main-color);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
-
-  @media (hover: hover) and (pointer: fine) {
-    ${Card}:hover & {
-      color: #fff;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
-    }
-  }
 `;
 
 export const LevelBadge = styled.span`

@@ -28,6 +28,12 @@ export const NpcApi = {
     });
   },
 
+  async uploadSheet(id: ID, file: File): Promise<void> {
+    const form = new FormData();
+    form.append('sheet', file);
+    await http.patch(`/api/npcs/${id}/sheet`, form);
+  },
+
   async remove(id: ID): Promise<void> {
     await http.delete(`/api/npcs/${id}`);
   },

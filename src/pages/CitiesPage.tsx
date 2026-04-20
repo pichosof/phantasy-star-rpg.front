@@ -1,6 +1,6 @@
 import React from 'react';
-import { Carousel, Divider, Drawer, Empty, Modal, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { Divider, Drawer, Empty, Modal, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { EyeInvisibleOutlined, EyeOutlined, LeftOutlined, RightOutlined, FullscreenOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -51,55 +51,220 @@ function formatDate(v?: string | null) {
 }
 
 function CityImageCarousel({ city }: { city: any }) {
-  const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
   const imgs = resolvedImages(city);
   const fallback = city.imageUrl
-    ? [{ id: -1, src: resolveApiUrl(city.imageUrl), alt: city.imageAlt ?? city.name }]
+    ? [{ id: -1, src: resolveApiUrl(city.imageUrl) ?? city.imageUrl, alt: city.imageAlt ?? city.name }]
     : [];
-  const all = imgs.length > 0 ? imgs : fallback;
+  const all = (imgs.length > 0 ? imgs : fallback).map((img) => ({ ...img, src: img.src ?? '' }));
+
+  const [index, setIndex] = React.useState(0);
+  const [lightbox, setLightbox] = React.useState(false);
 
   if (!city.discovered || all.length === 0) return null;
 
+  const current = all[Math.min(index, all.length - 1)];
+  const prev = () => setIndex((i) => (i - 1 + all.length) % all.length);
+  const next = () => setIndex((i) => (i + 1) % all.length);
+
   return (
     <>
-      <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-        {all.length === 1 ? (
-          <img
-            src={all[0].src}
-            alt={all[0].alt}
-            onClick={() => setLightbox({ src: all[0].src ?? '', alt: all[0].alt })}
-            style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
-          />
-        ) : (
-          <Carousel dots autoplay={false} style={{ borderRadius: 8 }}>
-            {all.map((img) => (
-              <div key={img.id}>
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  onClick={() => setLightbox({ src: img.src ?? '', alt: img.alt })}
-                  style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
-                />
-              </div>
-            ))}
-          </Carousel>
+      <div
+        style={{
+          position: 'relative',
+          marginBottom: 12,
+          borderRadius: 8,
+          overflow: 'hidden',
+          background: '#000',
+          userSelect: 'none',
+        }}
+      >
+        <img
+          src={current.src}
+          alt={current.alt}
+          style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
+        />
+
+        {/* Zoom button */}
+        <button
+          onClick={() => setLightbox(true)}
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            background: 'rgba(0,0,0,0.55)',
+            border: 'none',
+            borderRadius: 6,
+            color: '#fff',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 13,
+          }}
+        >
+          <FullscreenOutlined />
+        </button>
+
+        {/* Prev / Next — só aparece se houver mais de uma imagem */}
+        {all.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: 8,
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.55)',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                fontSize: 16,
+              }}
+            >
+              <LeftOutlined />
+            </button>
+            <button
+              onClick={next}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                right: 8,
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.55)',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                fontSize: 16,
+              }}
+            >
+              <RightOutlined />
+            </button>
+            {/* Contador */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 8,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                borderRadius: 12,
+                padding: '2px 10px',
+                color: '#fff',
+                fontSize: 12,
+                pointerEvents: 'none',
+              }}
+            >
+              {index + 1} / {all.length}
+            </div>
+          </>
         )}
       </div>
+
+      {/* Thumbnails quando há mais de uma imagem */}
+      {all.length > 1 && (
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto' }}>
+          {all.map((img, i) => (
+            <img
+              key={img.id}
+              src={img.src}
+              alt={img.alt}
+              onClick={() => setIndex(i)}
+              style={{
+                width: 56,
+                height: 40,
+                objectFit: 'cover',
+                borderRadius: 4,
+                cursor: 'pointer',
+                flexShrink: 0,
+                border: i === index ? '2px solid #1890ff' : '2px solid transparent',
+                opacity: i === index ? 1 : 0.6,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <Modal
-        visible={!!lightbox}
-        onCancel={() => setLightbox(null)}
+        visible={lightbox}
+        onCancel={() => setLightbox(false)}
         footer={null}
         centered
-        width="90vw"
-        bodyStyle={{ padding: 0, background: '#000', borderRadius: 8, overflow: 'hidden', textAlign: 'center' }}
-        destroyOnClose
+        width="92vw"
+        bodyStyle={{
+          padding: 0,
+          background: '#000',
+          borderRadius: 8,
+          overflow: 'hidden',
+          textAlign: 'center',
+          position: 'relative',
+        }}
+        destroyOnClose={false}
       >
-        {lightbox && (
-          <img
-            src={lightbox.src}
-            alt={lightbox.alt}
-            style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
-          />
+        <img
+          src={current.src}
+          alt={current.alt}
+          style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
+        />
+        {all.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: 12,
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                fontSize: 18,
+              }}
+            >
+              <LeftOutlined />
+            </button>
+            <button
+              onClick={next}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                right: 12,
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                border: 'none',
+                borderRadius: 6,
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                fontSize: 18,
+              }}
+            >
+              <RightOutlined />
+            </button>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 12,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                borderRadius: 12,
+                padding: '2px 12px',
+                color: '#fff',
+                fontSize: 13,
+              }}
+            >
+              {index + 1} / {all.length}
+            </div>
+          </>
         )}
       </Modal>
     </>

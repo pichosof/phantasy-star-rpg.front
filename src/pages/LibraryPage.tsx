@@ -442,18 +442,20 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
   const [content, setContent] = React.useState<string | ArrayBuffer | null>(null);
   const [loading, setLoading] = React.useState(false);
 
-  const needsBuffer = (mime: string) =>
-    mime === 'application/epub+zip' || MOBI_MIMES.has(mime);
+  const needsBuffer = (mime: string) => mime === 'application/epub+zip' || MOBI_MIMES.has(mime);
 
   React.useEffect(() => {
-    if (!doc) { setContent(null); return; }
+    if (!doc) {
+      setContent(null);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
-    const fetch$ = needsBuffer(doc.mime)
-      ? fetchDocumentArrayBuffer(doc)
-      : fetchDocumentBlobUrl(doc);
+    const fetch$ = needsBuffer(doc.mime) ? fetchDocumentArrayBuffer(doc) : fetchDocumentBlobUrl(doc);
     fetch$
-      .then((result) => { if (!cancelled) setContent(result); })
+      .then((result) => {
+        if (!cancelled) setContent(result);
+      })
       .catch((e) => message.error(apiErrorMessage(e, 'Failed to load document.')))
       .finally(() => setLoading(false));
     return () => {

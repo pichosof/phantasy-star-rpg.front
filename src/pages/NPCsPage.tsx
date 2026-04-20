@@ -31,7 +31,12 @@ import { Card } from '@app/components/common/Card/Card';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
-import { resolveApiUrl } from '@app/api/http.api';
+import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { Spin } from 'antd';
 
 import type { Npc, CreateNpcDTO } from '@app/types/rpg';
 import { NpcApi } from '@app/api/npc.api';
@@ -104,6 +109,57 @@ function initials(name: string) {
 function isVisible(n: Npc) {
   return (n.visible ?? true) === true;
 }
+
+// ── PDF Viewer ────────────────────────────────────────────────────────────────
+
+const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+
+const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
+  const layoutPlugin = defaultLayoutPlugin();
+  return (
+    <Worker workerUrl={PDF_WORKER_URL}>
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+      </div>
+    </Worker>
+  );
+};
+
+const NpcSheetViewer: React.FC<{ sheetUrl: string }> = ({ sheetUrl }) => {
+  const [blobUrl, setBlobUrl] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    fetchBlobUrl(sheetUrl)
+      .then((url) => {
+        if (alive) setBlobUrl(url);
+      })
+      .catch(() => {
+        if (alive) setBlobUrl(null);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [sheetUrl]);
+
+  if (loading)
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
+        <Spin size="large" />
+      </div>
+    );
+  if (!blobUrl) return <div style={{ padding: 16, color: '#8c8c8c' }}>Failed to load sheet.</div>;
+  return (
+    <div style={{ height: '70vh' }}>
+      <PdfViewer url={blobUrl} />
+    </div>
+  );
+};
 
 // ── Admin Drawer ──────────────────────────────────────────────────────────────
 
@@ -306,6 +362,36 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               </Form.Item>
               <Upload {...uploadProps}>
                 <Button icon={<PictureOutlined />}>{npc.imageUrl ? 'Change portrait' : 'Upload portrait'}</Button>
+              </Upload>
+            </Space>
+          </Tabs.TabPane>
+
+          {/* ── Sheet ── */}
+          <Tabs.TabPane tab="Sheet" key="sheet">
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              {npc.sheetUrl && <NpcSheetViewer sheetUrl={npc.sheetUrl} />}
+              {!npc.sheetUrl && (
+                <div style={{ padding: '24px 0', textAlign: 'center', color: '#8c8c8c' }}>No sheet attached yet.</div>
+              )}
+              <Upload
+                showUploadList={false}
+                accept="application/pdf"
+                customRequest={async (opts: RcCustomRequestOptions) => {
+                  if (!npc) return;
+                  try {
+                    await NpcApi.uploadSheet(npc.id, opts.file as File);
+                    await onChanged();
+                    message.success('Sheet uploaded');
+                    opts.onSuccess?.({});
+                  } catch (e) {
+                    message.error(apiErrorMessage(e, 'Upload failed'));
+                    opts.onError?.(new Error('Upload failed'));
+                  }
+                }}
+              >
+                <Button icon={<PictureOutlined />}>
+                  {npc.sheetUrl ? 'Replace sheet (PDF)' : 'Upload sheet (PDF)'}
+                </Button>
               </Upload>
             </Space>
           </Tabs.TabPane>
@@ -618,6 +704,16 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose }) => {
               </Typography.Paragraph>
             ) : (
               <Typography.Text type="secondary">No information available.</Typography.Text>
+            )}
+
+            {npc.sheetUrl && (
+              <>
+                <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '16px 0' }} />
+                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
+                  Character Sheet
+                </Typography.Text>
+                <NpcSheetViewer sheetUrl={npc.sheetUrl} />
+              </>
             )}
           </div>
         </>

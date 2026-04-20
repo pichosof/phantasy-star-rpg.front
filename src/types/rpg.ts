@@ -111,6 +111,8 @@ export type Npc = WithVisibility & {
   location?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  sheetUrl?: string | null;
+  sheetMime?: string | null;
   createdAt: string;
   updatedAt?: string;
 };

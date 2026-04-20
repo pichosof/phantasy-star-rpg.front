@@ -29,8 +29,10 @@ export const PlayersApi = {
   async uploadSheet(id: ID, file: File): Promise<void> {
     const form = new FormData();
     form.append('sheet', file);
-
     await http.patch(`/api/players/${id}/sheet`, form);
+  },
+  async delete(id: ID): Promise<void> {
+    await http.delete(`/api/players/${id}`);
   },
 };
 
