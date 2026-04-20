@@ -39,6 +39,7 @@ export async function listLibraryDocuments(): Promise<LibraryDocument[]> {
 export async function uploadLibraryDocument(
   file: File,
   meta: { title: string; description?: string; category?: string },
+  onProgress?: (percent: number) => void,
 ): Promise<LibraryDocument> {
   const form = new FormData();
   form.append('file', file);
@@ -48,8 +49,50 @@ export async function uploadLibraryDocument(
       ...(meta.description ? { 'x-doc-description': meta.description } : {}),
       ...(meta.category ? { 'x-doc-category': meta.category } : {}),
     },
+    onUploadProgress: onProgress
+      ? (e) => {
+          const total = e.total ?? file.size;
+          onProgress(total > 0 ? Math.round((e.loaded / total) * 100) : 0);
+        }
+      : undefined,
   });
   return data as LibraryDocument;
+}
+
+/** Fetches the file as a blob URL (caller must revoke when done). */
+export async function fetchDocumentBlobUrl(doc: LibraryDocument): Promise<string> {
+  const { data } = await http.get(`/api/library/documents/${doc.id}/download`, {
+    responseType: 'blob',
+    headers: libraryHeaders(),
+  });
+  return URL.createObjectURL(data as Blob);
+}
+
+/** Triggers a browser download via axios so auth headers are sent correctly. */
+export async function downloadDocument(doc: LibraryDocument): Promise<void> {
+  const { data, headers } = await http.get(`/api/library/documents/${doc.id}/download`, {
+    responseType: 'blob',
+    headers: libraryHeaders(),
+  });
+
+  // Prefer filename from Content-Disposition (server sends original name)
+  const disposition = headers['content-disposition'] as string | undefined;
+  let filename = doc.originalName;
+  if (disposition) {
+    const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+    const asciiMatch = /filename="([^"]+)"/i.exec(disposition);
+    if (utf8Match?.[1]) filename = decodeURIComponent(utf8Match[1]);
+    else if (asciiMatch?.[1]) filename = asciiMatch[1];
+  }
+
+  const url = URL.createObjectURL(data as Blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export async function updateLibraryDocument(
@@ -88,6 +131,8 @@ export function mimeLabel(mime: string): string {
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PPTX',
     'application/zip': 'ZIP',
     'application/epub+zip': 'EPUB',
+    'application/x-mobipocket-ebook': 'MOBI',
+    'application/mobi': 'MOBI',
     'text/markdown': 'MD',
   };
   return map[mime] ?? mime.split('/')[1]?.toUpperCase() ?? '—';

@@ -1,4 +1,9 @@
 import React from 'react';
+import { ReactReader } from 'react-reader';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import {
   Button,
   Card,
@@ -7,8 +12,10 @@ import {
   Input,
   message,
   Modal,
+  Progress,
   Select,
   Space,
+  Spin,
   Switch,
   Tag,
   Typography,
@@ -33,13 +40,14 @@ import {
 import { useResponsive } from '@app/hooks/useResponsive';
 import {
   deleteLibraryDocument,
+  downloadDocument,
+  fetchDocumentBlobUrl,
   formatBytes,
   getLibraryKey,
   getLibrarySettings,
   LibraryDocument,
   listLibraryDocuments,
   mimeLabel,
-  resolveDocUrl,
   setLibraryKey,
   setLibrarySettings,
   updateLibraryDocument,
@@ -62,8 +70,447 @@ const ACCEPTED = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/zip',
   'application/epub+zip',
+  'application/x-mobipocket-ebook',
+  'application/mobi',
   'text/markdown',
 ].join(',');
+
+const VIEWABLE_MIME = new Set([
+  'application/pdf',
+  'text/plain',
+  'text/markdown',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/epub+zip',
+  'application/x-mobipocket-ebook',
+  'application/mobi',
+]);
+
+const MOBI_MIMES = new Set(['application/x-mobipocket-ebook', 'application/mobi']);
+
+// ── Per-format viewers ─────────────────────────────────────────────────────────
+
+const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+
+const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
+  const layoutPlugin = defaultLayoutPlugin();
+  return (
+    <Worker workerUrl={PDF_WORKER_URL}>
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+      </div>
+    </Worker>
+  );
+};
+
+const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
+  const [html, setHtml] = React.useState<string | null>(null);
+  const [err, setErr] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(url)
+      .then((r) => r.arrayBuffer())
+      .then((buf) => import('mammoth').then((m) => m.convertToHtml({ arrayBuffer: buf })))
+      .then(({ value }) => {
+        if (!cancelled) setHtml(value);
+      })
+      .catch(() => {
+        if (!cancelled) setErr('Failed to render document.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (err) return <div style={{ padding: 24, color: 'red' }}>{err}</div>;
+  if (!html)
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <Spin />
+      </div>
+    );
+  return (
+    <div
+      style={{
+        height: '100%',
+        overflowY: 'auto',
+        background: '#fff',
+        lineHeight: 1.7,
+        padding: isMobile ? '16px' : '24px 40px',
+        fontSize: isMobile ? 15 : 16,
+      }}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+};
+
+const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
+  const [text, setText] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(url)
+      .then((r) => r.text())
+      .then((t) => {
+        if (!cancelled) setText(t);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (!text)
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <Spin />
+      </div>
+    );
+  return (
+    <pre
+      style={{
+        height: '100%',
+        overflowY: 'auto',
+        margin: 0,
+        padding: isMobile ? '12px 14px' : '24px 32px',
+        fontFamily: 'monospace',
+        fontSize: isMobile ? 13 : 14,
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+        background: '#fafafa',
+      }}
+    >
+      {text}
+    </pre>
+  );
+};
+
+// ── MOBI Viewer ────────────────────────────────────────────────────────────────
+// Most modern MOBI files are KF8 (EPUB-based) and are handled by epub.js.
+// Older Palm-MOBI files are not supported by epub.js; we catch the error and
+// offer a download fallback instead of a blank or broken viewer.
+
+interface MobiViewerProps {
+  url: string;
+  title: string;
+  isMobile: boolean;
+  onDownload: () => void;
+}
+
+class MobiErrorBoundary extends React.Component<
+  { children: React.ReactNode; onError: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  componentDidCatch() {
+    this.setState({ failed: true });
+    this.props.onError();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+const MobiViewer: React.FC<MobiViewerProps> = ({ url, title, isMobile, onDownload }) => {
+  const [failed, setFailed] = React.useState(false);
+
+  if (failed) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          padding: 24,
+          textAlign: 'center',
+        }}
+      >
+        <Typography.Text type="secondary" style={{ maxWidth: 360 }}>
+          This MOBI file uses an older format that cannot be displayed in the browser. Download it and open with an
+          e-reader (Calibre, KoReader, etc.).
+        </Typography.Text>
+        <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload}>
+          Download to read
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <MobiErrorBoundary onError={() => setFailed(true)}>
+      <EpubViewer url={url} title={title} isMobile={isMobile} />
+    </MobiErrorBoundary>
+  );
+};
+
+// ── EPUB Viewer ────────────────────────────────────────────────────────────────
+
+type EpubTheme = 'light' | 'sepia' | 'dark';
+
+interface EpubViewerProps {
+  url: string;
+  title: string;
+  isMobile: boolean;
+}
+
+const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
+  const [location, setLocation] = React.useState<string | number>(0);
+  const [toc, setToc] = React.useState<{ label: string; href: string }[]>([]);
+  const [showToc, setShowToc] = React.useState(false);
+  const [fontSize, setFontSize] = React.useState(100);
+  const [theme, setTheme] = React.useState<EpubTheme>('light');
+  const renditionRef = React.useRef<any>(null);
+
+  const THEME_LABELS: Record<EpubTheme, string> = { light: 'Light', sepia: 'Sepia', dark: 'Dark' };
+  const THEME_SHORT: Record<EpubTheme, string> = { light: 'L', sepia: 'S', dark: 'D' };
+
+  const bg = { light: '#ffffff', sepia: '#f4ecd8', dark: '#1a1a1a' }[theme];
+  const bar = { light: '#fafafa', sepia: '#ede3c8', dark: '#111111' }[theme];
+  const border = theme === 'dark' ? '#333' : '#e8e8e8';
+  const fgMuted = theme === 'dark' ? '#aaa' : '#555';
+
+  function changeFontSize(delta: number) {
+    const next = Math.max(70, Math.min(200, fontSize + delta));
+    setFontSize(next);
+    renditionRef.current?.themes.fontSize(`${next}%`);
+  }
+
+  function changeTheme(t: EpubTheme) {
+    setTheme(t);
+    renditionRef.current?.themes.select(t);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: bg }}>
+      {/* ── Toolbar ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: isMobile ? 4 : 8,
+          padding: isMobile ? '5px 8px' : '6px 12px',
+          borderBottom: `1px solid ${border}`,
+          background: bar,
+        }}
+      >
+        <Button
+          size="small"
+          type={showToc ? 'primary' : 'default'}
+          onClick={() => setShowToc((v) => !v)}
+          disabled={toc.length === 0}
+        >
+          {isMobile ? '≡' : 'Contents'}
+        </Button>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Font size */}
+        <Space size={2}>
+          <Button size="small" onClick={() => changeFontSize(-10)}>
+            A−
+          </Button>
+          {!isMobile && (
+            <span style={{ fontSize: 12, minWidth: 34, textAlign: 'center', color: fgMuted }}>{fontSize}%</span>
+          )}
+          <Button size="small" onClick={() => changeFontSize(10)}>
+            A+
+          </Button>
+        </Space>
+
+        {/* Theme */}
+        <Space size={2}>
+          {(['light', 'sepia', 'dark'] as EpubTheme[]).map((t) => (
+            <Button key={t} size="small" type={theme === t ? 'primary' : 'default'} onClick={() => changeTheme(t)}>
+              {isMobile ? THEME_SHORT[t] : THEME_LABELS[t]}
+            </Button>
+          ))}
+        </Space>
+      </div>
+
+      {/* ── Body ── */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {/* TOC — overlay on mobile, sidebar on desktop */}
+        {showToc && (
+          <div
+            style={{
+              ...(isMobile
+                ? {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    zIndex: 10,
+                    boxShadow: '2px 0 12px rgba(0,0,0,0.18)',
+                  }
+                : { position: 'relative', borderRight: `1px solid ${border}` }),
+              width: isMobile ? '80vw' : 220,
+              maxWidth: 320,
+              overflowY: 'auto',
+              padding: '8px 0',
+              background: bar,
+            }}
+          >
+            {isMobile && (
+              <div
+                style={{
+                  padding: '6px 14px 10px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography.Text strong style={{ color: fgMuted, fontSize: 13 }}>
+                  Contents
+                </Typography.Text>
+                <Button size="small" onClick={() => setShowToc(false)}>
+                  ✕
+                </Button>
+              </div>
+            )}
+            {toc.map((item, i) => (
+              <div
+                key={i}
+                onClick={() => {
+                  setLocation(item.href);
+                  setShowToc(false);
+                }}
+                style={{
+                  padding: isMobile ? '10px 16px' : '6px 14px',
+                  cursor: 'pointer',
+                  fontSize: isMobile ? 15 : 13,
+                  color: theme === 'dark' ? '#ccc' : theme === 'sepia' ? '#5b4636' : '#333',
+                  transition: 'background 0.12s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = theme === 'dark' ? '#222' : '#f0f0f0')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                {item.label.trim()}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Dim overlay when TOC open on mobile */}
+        {showToc && isMobile && (
+          <div
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 9 }}
+            onClick={() => setShowToc(false)}
+          />
+        )}
+
+        {/* Reader */}
+        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+          <ReactReader
+            url={url}
+            title={title}
+            location={location}
+            locationChanged={(loc) => setLocation(loc)}
+            tocChanged={(t) => setToc(t as { label: string; href: string }[])}
+            getRendition={(rendition) => {
+              renditionRef.current = rendition;
+              rendition.themes.register('light', { body: { color: '#111', background: '#fff' } });
+              rendition.themes.register('sepia', { body: { color: '#5b4636', background: '#f4ecd8' } });
+              rendition.themes.register('dark', { body: { color: '#ddd', background: '#1a1a1a' } });
+              rendition.themes.select('light');
+              rendition.themes.fontSize(`${fontSize}%`);
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Document Viewer Modal ──────────────────────────────────────────────────────
+
+interface DocumentViewerModalProps {
+  doc: LibraryDocument | null;
+  onClose: () => void;
+}
+
+const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose }) => {
+  const { mobileOnly, isTablet } = useResponsive();
+  const [blobUrl, setBlobUrl] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!doc) {
+      setBlobUrl(null);
+      return;
+    }
+    let revoked = false;
+    setLoading(true);
+    fetchDocumentBlobUrl(doc)
+      .then((url) => {
+        if (!revoked) setBlobUrl(url);
+      })
+      .catch((e) => message.error(apiErrorMessage(e, 'Failed to load document.')))
+      .finally(() => setLoading(false));
+    return () => {
+      revoked = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [doc?.id]);
+
+  const modalWidth = mobileOnly ? '100vw' : isTablet ? '98vw' : '92vw';
+  const modalTop = mobileOnly ? 0 : isTablet ? 8 : 20;
+  // 55 px ≈ Ant Design modal header height
+  const bodyHeight = mobileOnly ? 'calc(100dvh - 55px)' : '85vh';
+
+  return (
+    <Modal
+      visible={!!doc}
+      onCancel={onClose}
+      title={doc?.title ?? 'Document'}
+      footer={null}
+      width={modalWidth}
+      style={{ top: modalTop, padding: 0, margin: mobileOnly ? 0 : undefined, maxWidth: '100vw' }}
+      bodyStyle={{ padding: 0, height: bodyHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      destroyOnClose
+    >
+      {loading && (
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Spin size="large" tip="Loading document…" />
+        </div>
+      )}
+      {!loading &&
+        blobUrl &&
+        doc &&
+        (() => {
+          const mime = doc.mime;
+          if (mime === 'application/epub+zip')
+            return <EpubViewer url={blobUrl} title={doc.title} isMobile={mobileOnly} />;
+          if (MOBI_MIMES.has(mime))
+            return (
+              <MobiViewer
+                url={blobUrl}
+                title={doc.title}
+                isMobile={mobileOnly}
+                onDownload={() => {
+                  void downloadDocument(doc);
+                  onClose();
+                }}
+              />
+            );
+          if (mime === 'application/pdf') return <PdfViewer url={blobUrl} />;
+          if (
+            mime === 'application/msword' ||
+            mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          )
+            return <DocxViewer url={blobUrl} isMobile={mobileOnly} />;
+          return <TxtViewer url={blobUrl} isMobile={mobileOnly} />;
+        })()}
+    </Modal>
+  );
+};
 
 function mimeColor(mime: string) {
   if (mime === 'application/pdf') return 'red';
@@ -148,61 +595,82 @@ interface DocCardProps {
   onEdit: (doc: LibraryDocument) => void;
   onDelete: (doc: LibraryDocument) => void;
   onToggleVisible: (doc: LibraryDocument) => void;
+  onView: (doc: LibraryDocument) => void;
 }
 
-const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete, onToggleVisible }) => (
-  <Card
-    size="small"
-    style={{ opacity: !doc.visible && isGM ? 0.65 : 1 }}
-    title={
-      <Space wrap size={6}>
-        <FileOutlined />
-        <span style={{ fontWeight: 700 }}>{doc.title}</span>
-        <Tag color={mimeColor(doc.mime)}>{mimeLabel(doc.mime)}</Tag>
-        {doc.category && <Tag>{doc.category}</Tag>}
-        {isGM && !doc.visible && <Tag color="red">Hidden</Tag>}
-      </Space>
+const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete, onToggleVisible, onView }) => {
+  const [downloading, setDownloading] = React.useState(false);
+  const canView = VIEWABLE_MIME.has(doc.mime);
+
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      await downloadDocument(doc);
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Download failed.'));
+    } finally {
+      setDownloading(false);
     }
-    extra={
-      <Space size={6} wrap>
-        {isGM && (
-          <>
-            <Switch
-              size="small"
-              checked={doc.visible}
-              onChange={() => onToggleVisible(doc)}
-              checkedChildren={<EyeOutlined />}
-              unCheckedChildren={<EyeInvisibleOutlined />}
-            />
-            <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(doc)} />
-            <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(doc)} />
-          </>
-        )}
-        <Button
-          size="small"
-          type="primary"
-          icon={<DownloadOutlined />}
-          href={resolveDocUrl(doc.url)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {!isMobile && 'Open'}
-        </Button>
-      </Space>
-    }
-  >
-    {doc.description && (
-      <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-        {doc.description}
-      </Typography.Text>
-    )}
-    <div style={{ marginTop: doc.description ? 6 : 0 }}>
-      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-        {formatBytes(doc.size)} · {doc.originalName}
-      </Typography.Text>
-    </div>
-  </Card>
-);
+  }
+
+  return (
+    <Card
+      size="small"
+      style={{ opacity: !doc.visible && isGM ? 0.65 : 1 }}
+      title={
+        <Space wrap size={6}>
+          <FileOutlined />
+          <span style={{ fontWeight: 700 }}>{doc.title}</span>
+          <Tag color={mimeColor(doc.mime)}>{mimeLabel(doc.mime)}</Tag>
+          {doc.category && <Tag>{doc.category}</Tag>}
+          {isGM && !doc.visible && <Tag color="red">Hidden</Tag>}
+        </Space>
+      }
+      extra={
+        <Space size={6} wrap>
+          {isGM && (
+            <>
+              <Switch
+                size="small"
+                checked={doc.visible}
+                onChange={() => onToggleVisible(doc)}
+                checkedChildren={<EyeOutlined />}
+                unCheckedChildren={<EyeInvisibleOutlined />}
+              />
+              <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(doc)} />
+              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(doc)} />
+            </>
+          )}
+          {canView && (
+            <Button size="small" type="primary" icon={<EyeOutlined />} onClick={() => onView(doc)}>
+              {!isMobile && 'Open'}
+            </Button>
+          )}
+          <Button
+            size="small"
+            type={canView ? 'default' : 'primary'}
+            icon={<DownloadOutlined />}
+            loading={downloading}
+            onClick={() => void handleDownload()}
+          >
+            {!isMobile && (canView ? 'Download' : 'Open')}
+          </Button>
+        </Space>
+      }
+    >
+      {doc.description && (
+        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+          {doc.description}
+        </Typography.Text>
+      )}
+      <div style={{ marginTop: doc.description ? 6 : 0 }}>
+        <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+          {formatBytes(doc.size)} · {doc.originalName}
+        </Typography.Text>
+      </div>
+    </Card>
+  );
+};
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
 
@@ -379,35 +847,66 @@ interface UploadFormProps {
   onUploaded: () => void;
 }
 
+interface UploadEntry {
+  name: string;
+  percent: number;
+  status: 'uploading' | 'done' | 'error';
+}
+
 const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [category, setCategory] = React.useState('');
-  const [uploading, setUploading] = React.useState(false);
+  const [uploads, setUploads] = React.useState<Map<string, UploadEntry>>(new Map());
+
+  const activeCount = React.useMemo(
+    () => Array.from(uploads.values()).filter((u) => u.status === 'uploading').length,
+    [uploads],
+  );
+
+  function setEntry(uid: string, patch: Partial<UploadEntry>) {
+    setUploads((prev) => {
+      const next = new Map(prev);
+      const cur = next.get(uid);
+      if (cur) next.set(uid, { ...cur, ...patch });
+      return next;
+    });
+  }
+
+  function removeEntry(uid: string) {
+    setUploads((prev) => {
+      const next = new Map(prev);
+      next.delete(uid);
+      return next;
+    });
+  }
 
   function handleUpload(options: RcCustomRequestOptions) {
     const { onError, onSuccess, file } = options;
-    const f = file as File;
+    const f = file as File & { uid: string };
+    const uid = f.uid;
+
+    setUploads((prev) => new Map(prev).set(uid, { name: f.name, percent: 0, status: 'uploading' }));
+
     const meta = {
       title: title.trim() || f.name.replace(/\.[^.]+$/, ''),
       description: description.trim() || undefined,
       category: category || undefined,
     };
-    setUploading(true);
-    uploadLibraryDocument(f, meta)
+
+    uploadLibraryDocument(f, meta, (pct) => setEntry(uid, { percent: pct }))
       .then(() => {
         onSuccess?.({}, undefined as unknown as XMLHttpRequest);
-        message.success('Document uploaded.');
-        setTitle('');
-        setDescription('');
-        setCategory('');
+        setEntry(uid, { percent: 100, status: 'done' });
         onUploaded();
+        setTimeout(() => removeEntry(uid), 2500);
       })
       .catch((err: unknown) => {
         onError?.(err as Error);
-        message.error(apiErrorMessage(err, 'Upload failed.'));
-      })
-      .finally(() => setUploading(false));
+        message.error(apiErrorMessage(err, `Upload failed: ${f.name}`));
+        setEntry(uid, { status: 'error' });
+        setTimeout(() => removeEntry(uid), 5000);
+      });
   }
 
   return (
@@ -415,14 +914,14 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
       size="small"
       title={
         <Space>
-          <PlusOutlined /> Upload document
+          <PlusOutlined /> Upload documents
         </Space>
       }
     >
       <Space direction="vertical" size={10} style={{ width: '100%' }}>
         <Space wrap style={{ width: '100%' }}>
           <Input
-            placeholder="Title (optional — defaults to filename)"
+            placeholder="Title (optional — each file defaults to its filename)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             style={{ minWidth: 220, flex: 1 }}
@@ -437,22 +936,41 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
           />
         </Space>
         <Input
-          placeholder="Short description (optional)"
+          placeholder="Short description (optional — applied to all files)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
         <Upload
           accept={ACCEPTED}
-          multiple={false}
+          multiple={true}
           showUploadList={false}
           customRequest={(opts: RcCustomRequestOptions) => handleUpload(opts)}
         >
-          <Button type="primary" icon={<PlusOutlined />} loading={uploading} block={isMobile}>
-            Choose & upload file
+          <Button type="primary" icon={<PlusOutlined />} loading={activeCount > 0} block={isMobile}>
+            {activeCount > 0
+              ? `Uploading ${activeCount} file${activeCount !== 1 ? 's' : ''}…`
+              : 'Choose & upload files'}
           </Button>
         </Upload>
+        {uploads.size > 0 && (
+          <Space direction="vertical" size={6} style={{ width: '100%' }}>
+            {Array.from(uploads.entries()).map(([uid, entry]) => (
+              <div key={uid}>
+                <Typography.Text style={{ fontSize: 12 }} ellipsis>
+                  {entry.name}
+                </Typography.Text>
+                <Progress
+                  percent={entry.percent}
+                  size="small"
+                  status={entry.status === 'error' ? 'exception' : entry.status === 'done' ? 'success' : 'active'}
+                />
+              </div>
+            ))}
+          </Space>
+        )}
         <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-          PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB · max {process.env.MAX_UPLOAD_MB || 30} MB
+          PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB per
+          file
         </Typography.Text>
       </Space>
     </Card>
@@ -476,6 +994,7 @@ const LibraryPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
   const [filterCat, setFilterCat] = React.useState('');
   const [editDoc, setEditDoc] = React.useState<LibraryDocument | null>(null);
+  const [viewDoc, setViewDoc] = React.useState<LibraryDocument | null>(null);
   const [showSettings, setShowSettings] = React.useState(false);
 
   const load = React.useCallback(async () => {
@@ -642,6 +1161,7 @@ const LibraryPage: React.FC = () => {
                 onEdit={setEditDoc}
                 onDelete={() => void handleDelete(doc)}
                 onToggleVisible={() => void handleToggleVisible(doc)}
+                onView={setViewDoc}
               />
             ))}
           </div>
@@ -656,6 +1176,8 @@ const LibraryPage: React.FC = () => {
           void load();
         }}
       />
+
+      <DocumentViewerModal doc={viewDoc} onClose={() => setViewDoc(null)} />
     </>
   );
 };
