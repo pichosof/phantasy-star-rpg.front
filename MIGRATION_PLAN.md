@@ -4,7 +4,7 @@ Branch de trabalho: `update-version`
 
 ---
 
-## Estado atual (pós PR3)
+## Estado atual (pós PR6)
 
 | Pacote | Antes | Depois |
 |--------|-------|--------|
@@ -46,6 +46,8 @@ Serão resolvidos no PR4 (upgrade AntD).
 | `b7eabec` | LibraryPage: responsividade mobile + novos exports em styleUtils |
 | `7373bb1` | PR1+PR2: CRA→Vite 5, React 17→19 |
 | `3ac3ddd` | PR3: TypeScript 4→5, ESLint 7→8, Prettier 2→3 |
+| `15654e4` | docs: MIGRATION_PLAN.md |
+| `ef176c4` | PR6: PWA + Workbox 7 via vite-plugin-pwa |
 
 ---
 
@@ -145,11 +147,15 @@ a UX mobile é crítica.
 
 ---
 
-### 🔲 PR6 (último) — Workbox v7 + PWA
+### ✅ PR6 — Workbox v7 + PWA (`ef176c4`)
 
-- Habilitar service worker novamente
-- Usar Workbox 7 integrado ao Vite via `vite-plugin-workbox`
-- Estratégia offline-first para assets estáticos
+- `vite-plugin-pwa@^1.2.0` (Workbox 7 embutido)
+- `registerType: 'autoUpdate'` — SW atualiza silenciosamente
+- Manifest: name/icons/theme #040A16/display standalone
+- Precache: 137 entradas (~6.5 MB)
+- Runtime: Google Fonts CacheFirst, `/api/*` NetworkFirst, S3 StaleWhileRevalidate
+- Removido `public/manifest.json` (plugin gera `manifest.webmanifest`)
+- Removido `<link rel="manifest">` do `index.html` (plugin injeta no build)
 
 ---
 
