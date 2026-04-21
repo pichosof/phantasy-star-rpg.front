@@ -1,5 +1,19 @@
 import React from 'react';
-import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tabs, Tag, Typography, Upload, message } from 'antd';
+import {
+  Divider,
+  Drawer,
+  Empty,
+  Form,
+  Input,
+  Popconfirm,
+  Space,
+  Switch,
+  Tabs,
+  Tag,
+  Typography,
+  Upload,
+  message,
+} from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
@@ -16,6 +30,22 @@ import type { Monster, MonsterForAdmin } from '@app/types/rpg';
 import { BestiaryApi } from '@app/api/bestiary.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
+import {
+  m0,
+  w100,
+  textSm,
+  mutedSm,
+  bold700,
+  bold800,
+  spaceBetween,
+  dividerSm,
+  dividerMd,
+  tableWrap,
+  cardGrid2,
+  imgCoverH,
+  imgThumb,
+  preWrap,
+} from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -142,7 +172,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       title={
         monster ? (
           <Space size={8} wrap>
-            <span style={{ fontWeight: 700 }}>{monster.name}</span>
+            <span style={bold700}>{monster.name}</span>
             {monster.type ? <Tag color={typeColor(monster.type)}>{monster.type}</Tag> : null}
             <Tag color={monster.visible ? 'green' : 'red'}>{monster.visible ? 'Visible' : 'Hidden'}</Tag>
             <Tag color={monster.discovered ? 'gold' : 'default'}>
@@ -156,7 +186,6 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
     >
       {monster ? (
         <Tabs defaultActiveKey="edit">
-          {/* ── Edit ── */}
           <Tabs.TabPane tab="Edit" key="edit">
             <Form layout="vertical" style={{ gap: 0 }}>
               <Form.Item label="Name" required>
@@ -201,15 +230,14 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
             </Form>
           </Tabs.TabPane>
 
-          {/* ── Image ── */}
           <Tabs.TabPane tab="Image" key="image">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               {monster.imageUrl && (
-                <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
+                <div style={{ ...imgThumb, maxHeight: 220 }}>
                   <img
                     src={resolveApiUrl(monster.imageUrl)}
                     alt={monster.imageAlt ?? monster.name}
-                    style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                    style={imgCoverH(220)}
                   />
                 </div>
               )}
@@ -222,14 +250,13 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
             </Space>
           </Tabs.TabPane>
 
-          {/* ── Controls ── */}
           <Tabs.TabPane tab="Controls" key="controls">
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+            <Space direction="vertical" size={16} style={w100}>
+              <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Visible to players</Typography.Text>
                   <br />
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <Typography.Text type="secondary" style={textSm}>
                     Hidden monsters do not appear in the list.
                   </Typography.Text>
                 </div>
@@ -243,11 +270,11 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   unCheckedChildren={<EyeInvisibleOutlined />}
                 />
               </Space>
-              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+              <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Marked as discovered</Typography.Text>
                   <br />
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <Typography.Text type="secondary" style={textSm}>
                     Unlocks full description for players.
                   </Typography.Text>
                 </div>
@@ -283,11 +310,9 @@ export const BestiaryPage: React.FC = () => {
     Boolean(localStorage.getItem(GM_KEY_STORAGE)) ? 'gm' : 'players',
   );
 
-  // player detail drawer
   const [openId, setOpenId] = React.useState<number | null>(null);
   const openMonster = React.useMemo(() => items.find((x) => x.id === openId) ?? null, [items, openId]);
 
-  // GM admin drawer
   const [adminOpen, setAdminOpen] = React.useState(false);
   const [adminId, setAdminId] = React.useState<number | null>(null);
   const adminMonster = React.useMemo(
@@ -295,7 +320,6 @@ export const BestiaryPage: React.FC = () => {
     [items, adminId],
   );
 
-  // create form
   const [creating, setCreating] = React.useState(false);
   const [newName, setNewName] = React.useState('');
   const [newType, setNewType] = React.useState('');
@@ -427,14 +451,14 @@ export const BestiaryPage: React.FC = () => {
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               {viewMode === 'gm' ? '⚙️ GM Panel — Bestiary' : 'Bestiary'}
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" className="rpg-text-md">
               {viewMode === 'gm'
                 ? 'Control visibility, discovery and monster data.'
                 : 'Motavia creatures — details appear when the GM marks as discovered.'}
@@ -471,7 +495,7 @@ export const BestiaryPage: React.FC = () => {
           {isGM && <Tag>{stats.undiscovered} undiscovered</Tag>}
         </Space>
 
-        <Space wrap size={8} style={{ width: '100%' }}>
+        <Space wrap size={8} style={w100}>
           <Input
             allowClear
             placeholder="Search creature…"
@@ -497,7 +521,7 @@ export const BestiaryPage: React.FC = () => {
 
         {isGM && viewMode === 'gm' && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
               <Typography.Text strong>New Creature</Typography.Text>
               <Input placeholder="Name *" value={newName} onChange={(e) => setNewName(e.target.value)} required />
@@ -541,13 +565,7 @@ export const BestiaryPage: React.FC = () => {
       );
     }
     return (
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: mobileOnly ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-        }}
-      >
+      <div style={cardGrid2(mobileOnly)}>
         {data.map((m) => {
           const playerCanRead = m.discovered === true;
           const vis = isVisible(m);
@@ -558,7 +576,7 @@ export const BestiaryPage: React.FC = () => {
               density={mode === 'players' ? 'comfy' : 'dense'}
               title={
                 <Space size={8} wrap>
-                  <span style={{ fontWeight: 700 }}>{m.name}</span>
+                  <span style={bold700}>{m.name}</span>
                   {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
                   {m.habitat ? <Tag>{m.habitat}</Tag> : null}
                   {mode === 'gm' && (
@@ -600,7 +618,7 @@ export const BestiaryPage: React.FC = () => {
                   />
                 </div>
               )}
-              <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
+              <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
                     ? m.description?.trim() || 'No description yet.'
@@ -610,10 +628,10 @@ export const BestiaryPage: React.FC = () => {
 
               {mode === 'gm' && (
                 <>
-                  <Divider style={{ margin: '8px 0' }} />
+                  <Divider style={dividerMd} />
                   <Space wrap size={16}>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visible:</span>
+                      <span style={mutedSm}>Visible:</span>
                       <Switch
                         size="small"
                         checked={vis}
@@ -623,7 +641,7 @@ export const BestiaryPage: React.FC = () => {
                       />
                     </Space>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Discovered:</span>
+                      <span style={mutedSm}>Discovered:</span>
                       <Switch size="small" checked={m.discovered} onChange={() => void toggleDiscovered(m)} />
                     </Space>
                   </Space>
@@ -639,7 +657,7 @@ export const BestiaryPage: React.FC = () => {
   // ── Desktop GM Table ──────────────────────────────────────────────────────
   const DesktopAdminTable = (
     <Card density="dense" title="Manage Bestiary">
-      <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div style={tableWrap}>
         <Table
           rowKey="id"
           dataSource={gmItems}
@@ -652,7 +670,7 @@ export const BestiaryPage: React.FC = () => {
               dataIndex: 'id',
               key: 'id',
               width: 60,
-              render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag>,
+              render: (v: number) => <Tag style={m0}>#{v}</Tag>,
             },
             {
               title: 'Vis.',
@@ -681,7 +699,7 @@ export const BestiaryPage: React.FC = () => {
               key: 'name',
               width: 220,
               render: (_: unknown, m: Monster) => (
-                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Space direction="vertical" size={2} style={w100}>
                   <Space size={6} wrap>
                     <Typography.Text strong>{m.name}</Typography.Text>
                     {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
@@ -689,13 +707,8 @@ export const BestiaryPage: React.FC = () => {
                   {m.habitat && (
                     <Typography.Text
                       type="secondary"
-                      style={{
-                        fontSize: 12,
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
+                      className="rpg-text-sm"
+                      style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                     >
                       Habitat: {m.habitat}
                     </Typography.Text>
@@ -708,7 +721,7 @@ export const BestiaryPage: React.FC = () => {
               key: 'description',
               ellipsis: true,
               render: (_: unknown, m: Monster) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Typography.Text type="secondary" style={textSm}>
                   {m.description?.trim() || '—'}
                 </Typography.Text>
               ),
@@ -719,7 +732,7 @@ export const BestiaryPage: React.FC = () => {
               key: 'createdAt',
               width: 150,
               render: (v: string) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Typography.Text type="secondary" style={textSm}>
                   {formatDate(v)}
                 </Typography.Text>
               ),
@@ -730,8 +743,20 @@ export const BestiaryPage: React.FC = () => {
               width: 90,
               render: (_: unknown, m: Monster) => (
                 <Space size={4}>
-                  <Button size="small" icon={<EditOutlined />} onClick={() => { setAdminId(m.id); setAdminOpen(true); }} />
-                  <Popconfirm title={`Delete "${m.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deleteMonster(m.id)}>
+                  <Button
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      setAdminId(m.id);
+                      setAdminOpen(true);
+                    }}
+                  />
+                  <Popconfirm
+                    title={`Delete "${m.name}" permanently?`}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={() => void deleteMonster(m.id)}
+                  >
                     <Button size="small" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
                 </Space>
@@ -768,7 +793,6 @@ export const BestiaryPage: React.FC = () => {
         <>
           {loading ? <Spinner /> : <MonsterCards data={playerItems} mode="players" />}
 
-          {/* Player Detail Drawer — always mounted, visible prop drives animation */}
           <Drawer
             visible={openId !== null}
             onClose={() => setOpenId(null)}
@@ -776,7 +800,7 @@ export const BestiaryPage: React.FC = () => {
             title={
               openMonster ? (
                 <Space wrap size={8}>
-                  <span style={{ fontWeight: 800 }}>{openMonster.name}</span>
+                  <span style={bold800}>{openMonster.name}</span>
                   {openMonster.type ? <Tag color={typeColor(openMonster.type)}>{openMonster.type}</Tag> : null}
                 </Space>
               ) : null
@@ -785,17 +809,17 @@ export const BestiaryPage: React.FC = () => {
             {openMonster && (
               <>
                 {openMonster.discovered && openMonster.imageUrl && (
-                  <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', maxHeight: 240 }}>
+                  <div style={{ ...imgThumb, maxHeight: 240, marginBottom: 16 }}>
                     <img
                       src={resolveApiUrl(openMonster.imageUrl)}
                       alt={openMonster.imageAlt ?? openMonster.name}
-                      style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
+                      style={imgCoverH(240)}
                     />
                   </div>
                 )}
 
                 {openMonster.discovered ? (
-                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <Space direction="vertical" size={12} style={w100}>
                     {openMonster.habitat && (
                       <Card density="dense" title="Habitat">
                         <Typography.Text>{openMonster.habitat}</Typography.Text>
@@ -807,7 +831,7 @@ export const BestiaryPage: React.FC = () => {
                       </Card>
                     )}
                     <Card density="comfy" title="Description">
-                      <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                      <Typography.Paragraph style={preWrap}>
                         {openMonster.description?.trim() || 'No description yet.'}
                       </Typography.Paragraph>
                     </Card>

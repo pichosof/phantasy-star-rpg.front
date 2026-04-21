@@ -8,6 +8,7 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { type GmImage, deleteGmImage, listGmImages, resolveGmImageUrl, uploadGmImage } from '@app/api/gm-images.api';
 import { apiErrorMessage } from '../../utils/api-error';
+import { m0, textSm, hiddenInput } from '@app/styles/styleUtils';
 
 function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -87,7 +88,7 @@ export const GmImagesPage: React.FC = () => {
             gap: 8,
           }}
         >
-          <Typography.Title level={4} style={{ margin: 0 }}>
+          <Typography.Title level={4} style={m0}>
             GM Gallery · {images.length} images
           </Typography.Title>
           <Button
@@ -102,7 +103,7 @@ export const GmImagesPage: React.FC = () => {
             ref={inputRef}
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
-            style={{ display: 'none' }}
+            style={hiddenInput}
             onChange={onFileChange}
           />
         </div>
@@ -137,7 +138,7 @@ export const GmImagesPage: React.FC = () => {
                   />
                 </div>
                 <div style={{ padding: '8px 10px' }}>
-                  <Typography.Text style={{ fontSize: 12, display: 'block' }} ellipsis>
+                  <Typography.Text style={{ ...textSm, display: 'block' }} ellipsis>
                     {img.filename}
                   </Typography.Text>
                   <Space size={4} wrap style={{ marginTop: 4 }}>

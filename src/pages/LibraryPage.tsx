@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { ReactReader } from 'react-reader';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -55,6 +56,7 @@ import {
   uploadLibraryDocument,
 } from '@app/api/library.api';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
+import { m0, w100, textXs, textSm, textMd, bold700, spaceBetween, dividerMd } from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -465,7 +467,7 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
         return null;
       });
     };
-  }, [doc?.id]);
+  }, [doc?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const modalWidth = mobileOnly ? '100vw' : isTablet ? '98vw' : '92vw';
   const modalTop = mobileOnly ? 0 : isTablet ? 8 : 20;
@@ -568,10 +570,10 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
       }}
     >
       <Card style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
-        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+        <Space direction="vertical" size={20} style={w100}>
           <LockOutlined style={{ fontSize: 48, color: 'var(--primary-color)' }} />
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               Library Access
             </Typography.Title>
             <Typography.Text type="secondary">Enter the access key provided by your Game Master.</Typography.Text>
@@ -627,7 +629,7 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
       title={
         <Space wrap size={6}>
           <FileOutlined />
-          <span style={{ fontWeight: 700 }}>{doc.title}</span>
+          <span style={bold700}>{doc.title}</span>
           <Tag color={mimeColor(doc.mime)}>{mimeLabel(doc.mime)}</Tag>
           {doc.category && <Tag>{doc.category}</Tag>}
           {isGM && !doc.visible && <Tag color="red">Hidden</Tag>}
@@ -666,12 +668,12 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
       }
     >
       {doc.description && (
-        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+        <Typography.Text type="secondary" style={textMd}>
           {doc.description}
         </Typography.Text>
       )}
       <div style={{ marginTop: doc.description ? 6 : 0 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+        <Typography.Text type="secondary" style={textXs}>
           {formatBytes(doc.size)} · {doc.originalName}
         </Typography.Text>
       </div>
@@ -699,7 +701,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
       setDescription(doc.description ?? '');
       setCategory(doc.category ?? '');
     }
-  }, [doc?.id]);
+  }, [doc?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function save() {
     if (!doc) return;
@@ -724,18 +726,18 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
     <Modal visible={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
       <Space direction="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
         <div>
-          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
             Title *
           </Typography.Text>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title" />
         </div>
         <div>
-          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
             Category
           </Typography.Text>
           <Select
             allowClear
-            style={{ width: '100%' }}
+            style={w100}
             value={category || undefined}
             onChange={(v) => setCategory(v ?? '')}
             placeholder="Select category..."
@@ -743,7 +745,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
           />
         </div>
         <div>
-          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
             Description
           </Typography.Text>
           <Input.TextArea
@@ -812,8 +814,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
   }
 
   return (
-    <Space direction="vertical" size={14} style={{ width: '100%' }}>
-      <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+    <Space direction="vertical" size={14} style={w100}>
+      <Typography.Text type="secondary" style={textMd}>
         Set the access key players must enter to unlock the library. The key is stored as a <strong>scrypt hash</strong>{' '}
         — it cannot be read back. Min 12 chars, 2+ character classes.
       </Typography.Text>
@@ -925,8 +927,8 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
         </Space>
       }
     >
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space wrap style={{ width: '100%' }}>
+      <Space direction="vertical" size={10} style={w100}>
+        <Space wrap style={w100}>
           <Input
             placeholder="Title (optional — each file defaults to its filename)"
             value={title}
@@ -960,10 +962,10 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
           </Button>
         </Upload>
         {uploads.size > 0 && (
-          <Space direction="vertical" size={6} style={{ width: '100%' }}>
+          <Space direction="vertical" size={6} style={w100}>
             {Array.from(uploads.entries()).map(([uid, entry]) => (
               <div key={uid}>
-                <Typography.Text style={{ fontSize: 12 }} ellipsis>
+                <Typography.Text style={textSm} ellipsis>
                   {entry.name}
                 </Typography.Text>
                 <Progress
@@ -975,7 +977,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
             ))}
           </Space>
         )}
-        <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+        <Typography.Text type="secondary" style={textXs}>
           PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB per
           file
         </Typography.Text>
@@ -1087,12 +1089,12 @@ const LibraryPage: React.FC = () => {
     <>
       <PageTitle>Library</PageTitle>
 
-      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Space direction="vertical" size={16} style={w100}>
         {/* Header */}
         <Card size="small">
-          <Space direction="vertical" size={10} style={{ width: '100%' }}>
-            <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
-              <Typography.Title level={5} style={{ margin: 0 }}>
+          <Space direction="vertical" size={10} style={w100}>
+            <Space style={spaceBetween}>
+              <Typography.Title level={5} style={m0}>
                 Document Library
               </Typography.Title>
               <Space wrap>
@@ -1111,7 +1113,7 @@ const LibraryPage: React.FC = () => {
 
             {showSettings && isGM && (
               <>
-                <Divider style={{ margin: '8px 0' }} />
+                <Divider style={dividerMd} />
                 <SettingsPanel onClose={() => setShowSettings(false)} onReload={load} />
               </>
             )}

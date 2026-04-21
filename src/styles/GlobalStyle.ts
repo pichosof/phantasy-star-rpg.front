@@ -69,6 +69,32 @@ export default createGlobalStyle`
     display: none;
   }
 
+  /* ── RPG utility classes ──────────────────────────────────────────────────── */
+  .rpg-m0  { margin: 0; }
+  .rpg-w-full { width: 100%; }
+  .rpg-mb-4  { margin-bottom: 4px; }
+  .rpg-mb-8  { margin-bottom: 8px; }
+  .rpg-mb-12 { margin-bottom: 12px; }
+  .rpg-mb-16 { margin-bottom: 16px; }
+  .rpg-text-xs  { font-size: 11px; }
+  .rpg-text-sm  { font-size: 12px; }
+  .rpg-text-md  { font-size: 13px; }
+  .rpg-font-bold      { font-weight: 700; }
+  .rpg-font-extrabold { font-weight: 800; }
+  .rpg-muted    { color: #8c8c8c; }
+  .rpg-pre-wrap { white-space: pre-wrap; margin: 0; }
+  .rpg-overflow-x { overflow-x: auto; }
+  .rpg-table-wrap { overflow-x: auto; width: 100%; }
+  .rpg-img-cover  { width: 100%; object-fit: cover; display: block; }
+  .rpg-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .rpg-page-header-card { margin-bottom: 16px; }
+  .rpg-divider-sm { margin: 4px 0; }
+  .rpg-divider-md { margin: 8px 0; }
+
   .ant-picker-cell {
     color: var(--text-main-color);
   }

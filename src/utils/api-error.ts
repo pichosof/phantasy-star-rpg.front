@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Extracts a human-readable error message from an Axios/API error.
  *

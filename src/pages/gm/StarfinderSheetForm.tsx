@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Collapse, Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import type { StarfinderSheetData, SfWeapon, SfEquipmentItem } from '@app/api/character-sheets.api';
+import { w100, textSm, dividerMd } from '@app/styles/styleUtils';
 
 // ── Calculations ──────────────────────────────────────────────────────────────
 
@@ -135,7 +137,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
   }
 
   return (
-    <Collapse defaultActiveKey={['identity', 'stats']} style={{ width: '100%' }}>
+    <Collapse defaultActiveKey={['identity', 'stats']} style={w100}>
       {/* Identity */}
       <Collapse.Panel header="Identity" key="identity">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 10 }}>
@@ -156,11 +158,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           ).map(([k, lbl]) => (
             <LabelInput key={k} label={lbl}>
               {k === 'speedFt' ? (
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={(data as any)[k]}
-                  onChange={(v) => set({ [k]: v ?? undefined })}
-                />
+                <InputNumber style={w100} value={(data as any)[k]} onChange={(v) => set({ [k]: v ?? undefined })} />
               ) : (
                 <Input value={(data as any)[k] ?? ''} onChange={(e) => set({ [k]: e.target.value })} />
               )}
@@ -180,15 +178,10 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             return (
               <div key={attr} style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.7, marginBottom: 4 }}>{attr.toUpperCase()}</div>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={base}
-                  min={1}
-                  onChange={(v) => set({ [attr]: v ?? 10 })}
-                />
+                <InputNumber style={w100} value={base} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
                 <div style={{ fontSize: 10, opacity: 0.5, margin: '3px 0' }}>Upg:</div>
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   value={upgraded}
                   placeholder="—"
                   onChange={(v) => set({ [`${attr}Upgraded`]: v ?? undefined } as any)}
@@ -210,37 +203,29 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
         </Space>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 8 }}>
           <LabelInput label="Armor Bonus (EAC)">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.armorBonus ?? 0}
-              onChange={(v) => set({ armorBonus: v ?? 0 })}
-            />
+            <InputNumber style={w100} value={data.armorBonus ?? 0} onChange={(v) => set({ armorBonus: v ?? 0 })} />
           </LabelInput>
           <LabelInput label="Armor Bonus (KAC)">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorKacBonus ?? 0}
               onChange={(v) => set({ armorKacBonus: v ?? 0 })}
             />
           </LabelInput>
           <LabelInput label="Max DEX (armor)">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorMaxDex}
               placeholder="∞"
               onChange={(v) => set({ armorMaxDex: v ?? undefined })}
             />
           </LabelInput>
           <LabelInput label="Misc Armor Mod">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.armorMiscMod ?? 0}
-              onChange={(v) => set({ armorMiscMod: v ?? 0 })}
-            />
+            <InputNumber style={w100} value={data.armorMiscMod ?? 0} onChange={(v) => set({ armorMiscMod: v ?? 0 })} />
           </LabelInput>
           <LabelInput label="Misc Initiative">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.initiativeMisc ?? 0}
               onChange={(v) => set({ initiativeMisc: v ?? 0 })}
             />
@@ -253,7 +238,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           </LabelInput>
         </div>
         <Divider style={{ margin: '12px 0 8px' }} />
-        <Typography.Text strong style={{ fontSize: 12 }}>
+        <Typography.Text strong style={textSm}>
           Saving Throws
         </Typography.Text>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 8 }}>
@@ -271,9 +256,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
                 {lbl} = {sign(total)}
               </div>
-              <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              <Space direction="vertical" size={4} style={w100}>
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   size="small"
                   placeholder="Base save"
                   value={(data as any)[`${k}Base`] ?? 0}
@@ -283,7 +268,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   {attr.toUpperCase()} mod: {sign(calc.mods[attr as 'con' | 'dex' | 'wis'])}
                 </div>
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   size="small"
                   placeholder="Misc"
                   value={(data as any)[`${k}Misc`] ?? 0}
@@ -294,38 +279,26 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           ))}
         </div>
         <Divider style={{ margin: '12px 0 8px' }} />
-        <Typography.Text strong style={{ fontSize: 12 }}>
+        <Typography.Text strong style={textSm}>
           Attack Bonus
         </Typography.Text>
         <div
           style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: 8, marginTop: 8 }}
         >
           <LabelInput label={`BAB`}>
-            <InputNumber style={{ width: '100%' }} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
+            <InputNumber style={w100} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
           </LabelInput>
           <CalcBox label={`Melee (${sign(calc.mods.str)} STR)`} value={sign(calc.melee)} color="#ff4d4f" />
           <CalcBox label={`Ranged (${sign(calc.mods.dex)} DEX)`} value={sign(calc.ranged)} color="#40a9ff" />
           <CalcBox label={`Thrown (${sign(calc.mods.str)} STR)`} value={sign(calc.thrown)} color="#ffc53d" />
           <LabelInput label="Misc Melee">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.meleeMisc ?? 0}
-              onChange={(v) => set({ meleeMisc: v ?? 0 })}
-            />
+            <InputNumber style={w100} value={data.meleeMisc ?? 0} onChange={(v) => set({ meleeMisc: v ?? 0 })} />
           </LabelInput>
           <LabelInput label="Misc Ranged">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.rangedMisc ?? 0}
-              onChange={(v) => set({ rangedMisc: v ?? 0 })}
-            />
+            <InputNumber style={w100} value={data.rangedMisc ?? 0} onChange={(v) => set({ rangedMisc: v ?? 0 })} />
           </LabelInput>
           <LabelInput label="Misc Thrown">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.thrownMisc ?? 0}
-              onChange={(v) => set({ thrownMisc: v ?? 0 })}
-            />
+            <InputNumber style={w100} value={data.thrownMisc ?? 0} onChange={(v) => set({ thrownMisc: v ?? 0 })} />
           </LabelInput>
         </div>
       </Collapse.Panel>
@@ -351,15 +324,15 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 8 }}>{lbl}</div>
-              <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              <Space direction="vertical" size={4} style={w100}>
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   placeholder="Total"
                   value={(data as any)[tk]}
                   onChange={(v) => set({ [tk]: v ?? undefined } as any)}
                 />
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   placeholder="Current"
                   value={(data as any)[ck]}
                   onChange={(v) => set({ [ck]: v ?? undefined } as any)}
@@ -432,7 +405,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             </div>
           );
         })}
-        <Divider style={{ margin: '8px 0' }} />
+        <Divider style={dividerMd} />
         <Space size={12}>
           <LabelInput label="Ranks/Level">
             <InputNumber
@@ -512,29 +485,25 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <Input value={data.armorModel ?? ''} onChange={(e) => set({ armorModel: e.target.value })} />
           </LabelInput>
           <LabelInput label="Level">
-            <InputNumber
-              style={{ width: '100%' }}
-              value={data.armorLevel}
-              onChange={(v) => set({ armorLevel: v ?? undefined })}
-            />
+            <InputNumber style={w100} value={data.armorLevel} onChange={(v) => set({ armorLevel: v ?? undefined })} />
           </LabelInput>
           <LabelInput label="EAC Bonus">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorEacBonus ?? 0}
               onChange={(v) => set({ armorEacBonus: v ?? 0 })}
             />
           </LabelInput>
           <LabelInput label="KAC Bonus">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorKacBonusEq ?? 0}
               onChange={(v) => set({ armorKacBonusEq: v ?? 0 })}
             />
           </LabelInput>
           <LabelInput label="Max DEX">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorEquipMaxDex}
               onChange={(v) => set({ armorEquipMaxDex: v ?? undefined })}
             />
@@ -544,7 +513,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           </LabelInput>
           <LabelInput label="Armor Pen.">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorAcPenalty ?? 0}
               onChange={(v) => set({ armorAcPenalty: v ?? 0 })}
             />
@@ -554,7 +523,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           </LabelInput>
           <LabelInput label="Upgrade Slots">
             <InputNumber
-              style={{ width: '100%' }}
+              style={w100}
               value={data.armorUpgradeSlots}
               onChange={(v) => set({ armorUpgradeSlots: v ?? undefined })}
             />
@@ -647,7 +616,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                 <LabelInput label="Known">
                   <InputNumber
                     size="small"
-                    style={{ width: '100%' }}
+                    style={w100}
                     value={s.spellsKnown}
                     onChange={(v) =>
                       set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsKnown: v ?? undefined } } })
@@ -657,7 +626,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                 <LabelInput label="Per day">
                   <InputNumber
                     size="small"
-                    style={{ width: '100%' }}
+                    style={w100}
                     value={s.spellsPerDay}
                     onChange={(v) =>
                       set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsPerDay: v ?? undefined } } })
@@ -667,7 +636,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                 <LabelInput label="Used">
                   <InputNumber
                     size="small"
-                    style={{ width: '100%' }}
+                    style={w100}
                     value={s.spellSlotsUsed}
                     onChange={(v) =>
                       set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellSlotsUsed: v ?? undefined } } })
@@ -679,7 +648,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           })}
         </div>
         <Divider style={{ margin: '10px 0' }} />
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        <Typography.Text type="secondary" style={textSm}>
           Known spells list
         </Typography.Text>
         <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
@@ -775,13 +744,13 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                 checked={!!data.backpacksCommercial}
                 onChange={(v) => set({ backpacksCommercial: v })}
               />{' '}
-              <span style={{ fontSize: 12 }}>Commercial</span>
+              <span style={textSm}>Commercial</span>
               <Switch
                 size="small"
                 checked={!!data.backpacksIndustrial}
                 onChange={(v) => set({ backpacksIndustrial: v })}
               />{' '}
-              <span style={{ fontSize: 12 }}>Industrial</span>
+              <span style={textSm}>Industrial</span>
             </Space>
           </div>
         </Space>

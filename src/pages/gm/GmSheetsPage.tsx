@@ -18,6 +18,7 @@ import {
   deleteCharacterSheet,
 } from '@app/api/character-sheets.api';
 import { apiErrorMessage } from '../../utils/api-error';
+import { m0, w100, textSm, bold700 } from '@app/styles/styleUtils';
 import { GurpsSheetForm } from './GurpsSheetForm';
 import { StarfinderSheetForm } from './StarfinderSheetForm';
 
@@ -29,7 +30,7 @@ function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen:
       density="dense"
       title={
         <Space size={8}>
-          <span style={{ fontWeight: 700 }}>{sheet.name}</span>
+          <span style={bold700}>{sheet.name}</span>
           <Tag color={sheet.type === 'gurps' ? 'gold' : 'blue'}>{sheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag>
         </Space>
       }
@@ -42,7 +43,7 @@ function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen:
         </Space>
       }
     >
-      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+      <Typography.Text type="secondary" style={textSm}>
         Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '—'}
       </Typography.Text>
     </Card>
@@ -176,7 +177,7 @@ export const GmSheetsPage: React.FC = () => {
             gap: 8,
           }}
         >
-          <Typography.Title level={4} style={{ margin: 0 }}>
+          <Typography.Title level={4} style={m0}>
             Character Sheets · {sheets.length}
           </Typography.Title>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
@@ -269,9 +270,9 @@ export const GmSheetsPage: React.FC = () => {
           </Button>,
         ]}
       >
-        <Space direction="vertical" style={{ width: '100%' }} size={12}>
+        <Space direction="vertical" style={w100} size={12}>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Character name
             </Typography.Text>
             <Input
@@ -282,7 +283,7 @@ export const GmSheetsPage: React.FC = () => {
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 8 }}>
               System
             </Typography.Text>
             <Space size={12}>

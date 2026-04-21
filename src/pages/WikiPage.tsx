@@ -32,6 +32,7 @@ import {
 } from '@app/api/wiki.api';
 import type { WikiPage as WikiPageType } from '@app/api/wiki.api';
 import { apiErrorMessage } from '../utils/api-error';
+import { w100, spaceBetween, hiddenInput } from '@app/styles/styleUtils';
 
 const GM_KEY = 'gm_api_key';
 
@@ -52,10 +53,6 @@ const Sidebar = styled.aside<{ $mobile: boolean }>`
   flex-direction: column;
   gap: 0;
   background: var(--additional-background-color);
-`;
-
-const SidebarSection = styled.div`
-  padding: 4px 0;
 `;
 
 const SidebarLabel = styled.div`
@@ -299,6 +296,7 @@ function groupByCategory(pages: WikiPageType[]) {
   for (const p of unpinned) {
     const key = p.category?.trim() || 'General';
     if (!map.has(key)) map.set(key, []);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     map.get(key)!.push(p);
   }
   return { pinned, byCategory: map };
@@ -365,7 +363,7 @@ export const WikiPage: React.FC = () => {
     setFContent(openPage.content ?? '');
     setFPinned(openPage.pinned ?? false);
     setFVisible(openPage.visible ?? true);
-  }, [openPage?.id, editing]);
+  }, [openPage?.id, editing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   const q = search.trim().toLowerCase();
@@ -669,7 +667,7 @@ export const WikiPage: React.FC = () => {
             (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)';
           }}
         >
-          <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+          <Space style={spaceBetween} wrap>
             <Space size={6}>
               {page.pinned && <PushpinFilled style={{ color: 'var(--warning-color)', fontSize: 12 }} />}
               <Typography.Text strong style={{ color: 'var(--text-main-color)', fontSize: 14 }}>
@@ -788,7 +786,7 @@ export const WikiPage: React.FC = () => {
       </Space>
 
       <Space direction="vertical" size={10} style={{ width: '100%', marginBottom: 16 }}>
-        <Space wrap size={10} style={{ width: '100%' }}>
+        <Space wrap size={10} style={w100}>
           <div style={{ flex: 2, minWidth: 200 }}>
             <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Title *</div>
             <Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="Article title" />
@@ -867,7 +865,7 @@ export const WikiPage: React.FC = () => {
               ref={imgInputRef}
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
-              style={{ display: 'none' }}
+              style={hiddenInput}
               onChange={(e) => void handleImageUpload(e)}
             />
 

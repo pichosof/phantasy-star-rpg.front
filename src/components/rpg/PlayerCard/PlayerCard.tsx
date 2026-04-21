@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePdfOutlined, EyeOutlined, IdcardOutlined } from '@ant-design/icons';
+import { EyeOutlined, IdcardOutlined } from '@ant-design/icons';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';

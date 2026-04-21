@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @app/api/cityLinks.api.ts
 import { http } from '@app/api/http.api';
 import type { Lore } from '@app/api/lore.api';

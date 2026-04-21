@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   Avatar,
@@ -46,6 +47,7 @@ import type { Npc, CreateNpcDTO } from '@app/types/rpg';
 import { NpcApi } from '@app/api/npc.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
+import { m0, w100, textSm, textMd, bold700, spaceBetween, dividerSm, tableWrap } from '@app/styles/styleUtils';
 
 const GM_KEY = 'gm_api_key';
 
@@ -257,7 +259,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               {initials(npc.name)}
             </Avatar>
             <div>
-              <div style={{ fontWeight: 700, lineHeight: 1.2 }}>{npc.name}</div>
+              <div style={bold700}>{npc.name}</div>
               {npc.role && (
                 <Tag color={meta.color} style={{ margin: 0, marginTop: 2, fontSize: 11 }}>
                   {npc.role}
@@ -284,7 +286,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   onChange={(v) => setRole(v ?? '')}
                   placeholder="Select a role…"
                   allowClear
-                  style={{ width: '100%' }}
+                  style={w100}
                   options={NPC_ROLES.map((r) => {
                     const m = getRoleMeta(r);
                     return {
@@ -339,7 +341,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Portrait ── */}
           <Tabs.TabPane tab="Portrait" key="image">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               {npc.imageUrl ? (
                 <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 260 }}>
                   <img
@@ -376,7 +378,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Sheet ── */}
           <Tabs.TabPane tab="Sheet" key="sheet">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               {npc.sheetUrl && <NpcSheetViewer sheetUrl={npc.sheetUrl} />}
               {!npc.sheetUrl && (
                 <div style={{ padding: '24px 0', textAlign: 'center', color: '#8c8c8c' }}>No sheet attached yet.</div>
@@ -406,12 +408,12 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Visibility ── */}
           <Tabs.TabPane tab="Visibility" key="ctrl">
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+            <Space direction="vertical" size={16} style={w100}>
+              <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Visible to players</Typography.Text>
                   <br />
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <Typography.Text type="secondary" style={textSm}>
                     Hidden NPCs do not appear in the codex.
                   </Typography.Text>
                 </div>
@@ -668,8 +670,8 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
 
           {/* Content */}
           <div style={{ padding: '0 20px 24px' }}>
-            <Space direction="vertical" size={4} style={{ width: '100%', marginBottom: 12 }}>
-              <Typography.Title level={3} style={{ margin: 0 }}>
+            <Space direction="vertical" size={4} style={{ ...w100, marginBottom: 12 }}>
+              <Typography.Title level={3} style={m0}>
                 {npc.name}
               </Typography.Title>
               <Space size={8} wrap>
@@ -877,15 +879,26 @@ export const NPCsPage: React.FC = () => {
 
   const AdminTable = (
     <Card density="dense" title="Manage NPCs">
-      <div style={{ overflowX: 'auto' }}>
-        <Table rowKey="id" dataSource={filtered} loading={loading} scroll={{ x: 800 }} style={{ minWidth: 800 }}
+      <div style={tableWrap}>
+        <Table
+          rowKey="id"
+          dataSource={filtered}
+          loading={loading}
+          scroll={{ x: 800 }}
+          style={{ minWidth: 800 }}
           columns={[
-            { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag> },
+            { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={m0}>#{v}</Tag> },
             {
-              title: 'Visible', width: 80,
+              title: 'Visible',
+              width: 80,
               render: (_: any, n: Npc) => (
-                <Switch size="small" checked={isVisible(n)} onChange={() => void toggleVisible(n)}
-                  checkedChildren={<EyeOutlined />} unCheckedChildren={<EyeInvisibleOutlined />} />
+                <Switch
+                  size="small"
+                  checked={isVisible(n)}
+                  onChange={() => void toggleVisible(n)}
+                  checkedChildren={<EyeOutlined />}
+                  unCheckedChildren={<EyeInvisibleOutlined />}
+                />
               ),
             },
             {
@@ -893,25 +906,51 @@ export const NPCsPage: React.FC = () => {
               render: (_: any, n: Npc) => (
                 <Space direction="vertical" size={2}>
                   <Space size={6} wrap>
-                    <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => setOpenId(n.id)}>{n.name}</Typography.Text>
-                    {n.role && <Tag color="blue" style={{ margin: 0 }}>{n.role}</Tag>}
+                    <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => setOpenId(n.id)}>
+                      {n.name}
+                    </Typography.Text>
+                    {n.role && (
+                      <Tag color="blue" style={m0}>
+                        {n.role}
+                      </Tag>
+                    )}
                   </Space>
-                  {n.location && <Typography.Text type="secondary" style={{ fontSize: 12 }}><EnvironmentOutlined /> {n.location}</Typography.Text>}
+                  {n.location && (
+                    <Typography.Text type="secondary" style={textSm}>
+                      <EnvironmentOutlined /> {n.location}
+                    </Typography.Text>
+                  )}
                 </Space>
               ),
             },
             {
-              title: 'Description', ellipsis: true,
+              title: 'Description',
+              ellipsis: true,
               render: (_: any, n: Npc) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>{n.description?.slice(0, 80) || '—'}</Typography.Text>
+                <Typography.Text type="secondary" style={textSm}>
+                  {n.description?.slice(0, 80) || '—'}
+                </Typography.Text>
               ),
             },
             {
-              title: 'Actions', width: 90,
+              title: 'Actions',
+              width: 90,
               render: (_: any, n: Npc) => (
                 <Space size={4}>
-                  <Button size="small" icon={<EditOutlined />} onClick={() => { setAdminId(n.id); setAdminOpen(true); }} />
-                  <Popconfirm title={`Delete "${n.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deleteNpc(n.id)}>
+                  <Button
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      setAdminId(n.id);
+                      setAdminOpen(true);
+                    }}
+                  />
+                  <Popconfirm
+                    title={`Delete "${n.name}" permanently?`}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={() => void deleteNpc(n.id)}
+                  >
                     <Button size="small" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
                 </Space>
@@ -929,15 +968,14 @@ export const NPCsPage: React.FC = () => {
       <PageTitle>Codex — NPCs</PageTitle>
 
       {/* ── Header card ── */}
-      <Card density="dense" style={{ marginBottom: 20 }}>
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
-          {/* Title row */}
-          <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+      <Card density="dense" className="rpg-page-header-card">
+        <Space direction="vertical" size={12} style={w100}>
+          <Space style={spaceBetween} size={8}>
             <div>
-              <Typography.Title level={4} style={{ margin: 0 }}>
+              <Typography.Title level={4} style={m0}>
                 {viewMode === 'admin' ? '⚙️ GM Panel — NPCs' : 'Character Codex'}
               </Typography.Title>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              <Typography.Text type="secondary" style={textMd}>
                 {viewMode === 'admin'
                   ? 'Manage NPCs, portraits, roles and visibility.'
                   : 'Characters known to the adventurers in the Algol system.'}
@@ -946,8 +984,20 @@ export const NPCsPage: React.FC = () => {
             <Space size={8} wrap>
               {isGM && (
                 <Space size={4}>
-                  <Button size="small" type={viewMode === 'public' ? 'primary' : 'default'} onClick={() => setViewMode('public')}>📖 View</Button>
-                  <Button size="small" type={viewMode === 'admin' ? 'primary' : 'default'} onClick={() => setViewMode('admin')}>⚙️ GM Panel</Button>
+                  <Button
+                    size="small"
+                    type={viewMode === 'public' ? 'primary' : 'default'}
+                    onClick={() => setViewMode('public')}
+                  >
+                    📖 View
+                  </Button>
+                  <Button
+                    size="small"
+                    type={viewMode === 'admin' ? 'primary' : 'default'}
+                    onClick={() => setViewMode('admin')}
+                  >
+                    ⚙️ GM Panel
+                  </Button>
                 </Space>
               )}
               {isGM && viewMode === 'admin' && (
@@ -967,7 +1017,7 @@ export const NPCsPage: React.FC = () => {
           </Space>
 
           {/* Filter bar */}
-          <Space wrap size={8} style={{ width: '100%' }}>
+          <Space wrap size={8} style={w100}>
             {/* Text search */}
             <Input
               allowClear
@@ -1035,7 +1085,7 @@ export const NPCsPage: React.FC = () => {
           {/* Create form */}
           {isGM && creating && (
             <>
-              <Divider style={{ margin: '4px 0' }} />
+              <Divider style={dividerSm} />
               <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
                 <Typography.Text strong>New NPC</Typography.Text>
                 <Space wrap size={8}>
@@ -1100,7 +1150,11 @@ export const NPCsPage: React.FC = () => {
 
       {/* ── Content ── */}
       {viewMode === 'admin' && isGM ? (
-        loading ? <Spinner /> : AdminTable
+        loading ? (
+          <Spinner />
+        ) : (
+          AdminTable
+        )
       ) : loading ? (
         <Spinner />
       ) : filtered.length === 0 ? (

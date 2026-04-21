@@ -6,6 +6,7 @@ import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
+import { m0, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
 
 // ── Edge config ───────────────────────────────────────────────────────────────
 // Probability (%) that any single die roll edges instead of landing on a face.
@@ -550,7 +551,7 @@ export const DiceRollerPage: React.FC = () => {
 
           <Divider style={{ margin: '16px 0' }} />
 
-          <Space wrap size={10} style={{ justifyContent: 'space-between', width: '100%' }}>
+          <Space wrap size={10} style={spaceBetween}>
             <Space wrap size={8}>
               <Button
                 type="primary"
@@ -569,7 +570,7 @@ export const DiceRollerPage: React.FC = () => {
               )}
             </Space>
             {totalDice > 0 && (
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              <Typography.Text type="secondary" style={textMd}>
                 {buildLabel(ALL_DICE.filter((d) => selection[d] > 0).map((d) => ({ type: d, count: selection[d] })))}
               </Typography.Text>
             )}
@@ -589,7 +590,7 @@ export const DiceRollerPage: React.FC = () => {
                 marginBottom: 14,
               }}
             >
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              <Typography.Text type="secondary" style={textSm}>
                 Last result · {lastEntry.label}
               </Typography.Text>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -704,7 +705,7 @@ export const DiceRollerPage: React.FC = () => {
                   count={history.length}
                   style={{ backgroundColor: 'rgba(128,128,128,0.3)', color: isDark ? '#fff' : '#000' }}
                 />
-                <Tag style={{ margin: 0 }}>
+                <Tag style={m0}>
                   Total sum: <span style={{ fontWeight: 700, marginLeft: 4 }}>{historySum}</span>
                 </Tag>
               </Space>

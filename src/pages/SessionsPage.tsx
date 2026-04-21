@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/SessionsPage.tsx
 import React from 'react';
 import { Badge, Divider, Drawer, Empty, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
@@ -14,6 +15,19 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { createSession, deleteSession, listSessions, setSessionVisibility, updateSession } from '@app/api/sessions.api';
 import { apiErrorMessage } from '../utils/api-error';
 import type { Session } from '@app/api/sessions.api';
+import {
+  m0,
+  w100,
+  textSm,
+  textMd,
+  bold800,
+  mutedSm,
+  spaceBetween,
+  dividerSm,
+  dividerMd,
+  tableWrap,
+  lineHeight175,
+} from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -169,7 +183,7 @@ export const SessionsPage: React.FC = () => {
     setEditSummary(openSession.summary ?? '');
     setEditImageUrl(openSession.imageUrl ?? '');
     setEditImageAlt(openSession.imageAlt ?? '');
-  }, [openSession?.id]);
+  }, [openSession?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   const q = search.trim().toLowerCase();
@@ -299,15 +313,15 @@ export const SessionsPage: React.FC = () => {
 
   // ── Header (compartilhado entre os dois modos) ────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
         {/* Título + toggles de modo */}
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               {viewMode === 'admin' ? '⚙️ GM Panel — Sessions' : 'Campaign Diary'}
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'admin'
                 ? 'Create, edit, enable or remove campaign sessions.'
                 : 'Record of all sessions — dates, events and epic moments.'}
@@ -349,7 +363,7 @@ export const SessionsPage: React.FC = () => {
         </Space>
 
         {/* Busca + filtros */}
-        <Space wrap size={8} style={{ width: '100%' }}>
+        <Space wrap size={8} style={w100}>
           <Input
             allowClear
             placeholder="Search by title, date or content…"
@@ -376,7 +390,7 @@ export const SessionsPage: React.FC = () => {
         {/* Formulário de criação (só no modo admin) */}
         {isGM && viewMode === 'admin' && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 720 }}>
               <Typography.Text strong>New Session</Typography.Text>
               <Space wrap size={8}>
@@ -468,7 +482,7 @@ export const SessionsPage: React.FC = () => {
                     gap: 6,
                   }}
                 >
-                  <Space size={6} style={{ justifyContent: 'space-between', width: '100%' }}>
+                  <Space size={6} style={spaceBetween}>
                     <span
                       style={{
                         fontSize: 11,
@@ -500,8 +514,8 @@ export const SessionsPage: React.FC = () => {
                     </Typography.Paragraph>
                   )}
                   <div style={{ flex: 1 }} />
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={6}>
+                  <Divider style={dividerMd} />
+                  <Space style={spaceBetween} size={6}>
                     <span style={{ fontSize: 11, color: '#bfbfbf' }}>{formatDateTime(session.createdAt)}</span>
                     <Space size={6} onClick={(e) => e.stopPropagation()}>
                       {isGM && (
@@ -534,12 +548,12 @@ export const SessionsPage: React.FC = () => {
         const vis = isVisible(s);
         return (
           <Card key={s.id} density="dense">
-            <Space direction="vertical" size={8} style={{ width: '100%' }}>
+            <Space direction="vertical" size={8} style={w100}>
               {/* linha 1: número + tags */}
-              <Space style={{ justifyContent: 'space-between', width: '100%' }} wrap>
+              <Space style={spaceBetween} wrap>
                 <Space size={6}>
-                  <Tag style={{ margin: 0 }}>#{num}</Tag>
-                  <Tag color={vis ? 'green' : 'red'} style={{ margin: 0 }}>
+                  <Tag style={m0}>#{num}</Tag>
+                  <Tag color={vis ? 'green' : 'red'} style={m0}>
                     {vis ? 'Visible' : 'Hidden'}
                   </Tag>
                 </Space>
@@ -561,7 +575,7 @@ export const SessionsPage: React.FC = () => {
                 {s.title}
               </Typography.Text>
               {/* data */}
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              <Typography.Text type="secondary" style={textSm}>
                 📅 {s.date}
               </Typography.Text>
               {/* preview resumo */}
@@ -579,7 +593,7 @@ export const SessionsPage: React.FC = () => {
 
   const AdminDesktopTable = (
     <Card density="dense" title="Manage Sessions">
-      <div style={{ overflowX: 'auto' }}>
+      <div style={tableWrap}>
         <Table
           rowKey="id"
           dataSource={filtered}
@@ -591,7 +605,7 @@ export const SessionsPage: React.FC = () => {
               title: '#',
               key: 'num',
               width: 60,
-              render: (_: any, s: Session) => <Tag style={{ margin: 0 }}>#{sessionNumber(s.id)}</Tag>,
+              render: (_: any, s: Session) => <Tag style={m0}>#{sessionNumber(s.id)}</Tag>,
             },
             {
               title: 'Visible',
@@ -616,7 +630,7 @@ export const SessionsPage: React.FC = () => {
                     {s.title}
                   </Typography.Text>
                   {s.summary && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                    <Typography.Text type="secondary" style={textSm} ellipsis>
                       {s.summary
                         .replace(/##[^\n]*/g, '')
                         .replace(/\n+/g, ' ')
@@ -633,7 +647,7 @@ export const SessionsPage: React.FC = () => {
               dataIndex: 'date',
               key: 'date',
               width: 200,
-              render: (v: string) => <Typography.Text style={{ fontSize: 13 }}>{v}</Typography.Text>,
+              render: (v: string) => <Typography.Text style={textMd}>{v}</Typography.Text>,
             },
             {
               title: 'Created at',
@@ -641,7 +655,7 @@ export const SessionsPage: React.FC = () => {
               key: 'createdAt',
               width: 160,
               render: (v: string) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Typography.Text type="secondary" style={textSm}>
                   {formatDateTime(v)}
                 </Typography.Text>
               ),
@@ -697,7 +711,7 @@ export const SessionsPage: React.FC = () => {
       width={mobileOnly ? '100%' : 700}
       title={
         <Space wrap size={8}>
-          <span style={{ fontWeight: 800 }}>
+          <span style={bold800}>
             Session #{sessionNumber(openSession.id)} · {openSession.title}
           </span>
           <Tag color={isVisible(openSession) ? 'green' : 'red'}>{isVisible(openSession) ? 'Visible' : 'Hidden'}</Tag>
@@ -729,7 +743,7 @@ export const SessionsPage: React.FC = () => {
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         {/* ── Ver ── */}
         <Tabs.TabPane tab="📖 Session" key="view">
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space direction="vertical" size={16} style={w100}>
             <div style={{ borderRadius: 8, overflow: 'hidden' }}>
               <SessionCover session={openSession} height={240} />
             </div>
@@ -740,7 +754,7 @@ export const SessionsPage: React.FC = () => {
               <Tag color="default">Session #{sessionNumber(openSession.id)}</Tag>
               {isGM && (
                 <Space size={6}>
-                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publish:</span>
+                  <span style={mutedSm}>Publish:</span>
                   <Switch
                     size="small"
                     checked={isVisible(openSession)}
@@ -749,17 +763,17 @@ export const SessionsPage: React.FC = () => {
                 </Space>
               )}
             </Space>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             {openSession.summary ? (
               <Card density="dense" title="Summary">
-                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75, fontSize: 14 }}>
+                <Typography.Paragraph style={{ ...lineHeight175, fontSize: 14 }}>
                   {openSession.summary}
                 </Typography.Paragraph>
               </Card>
             ) : (
               <Typography.Text type="secondary">No summary recorded.</Typography.Text>
             )}
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <Typography.Text type="secondary" style={textSm}>
               Created at: {formatDateTime(openSession.createdAt)}
               {'  ·  '}
               Updated: {formatDateTime(openSession.updatedAt)}
@@ -770,11 +784,11 @@ export const SessionsPage: React.FC = () => {
         {/* ── Editar (GM) ── */}
         {isGM && (
           <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               <Card density="dense" title="Session Data">
-                <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                <Space direction="vertical" size={10} style={w100}>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Title
                     </Typography.Text>
                     <Input
@@ -784,7 +798,7 @@ export const SessionsPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Date
                     </Typography.Text>
                     <Input
@@ -794,7 +808,7 @@ export const SessionsPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Summary — use sections to organize
                     </Typography.Text>
                     <TextArea
@@ -810,9 +824,9 @@ export const SessionsPage: React.FC = () => {
               </Card>
 
               <Card density="dense" title="Cover Image">
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                <Space direction="vertical" size={8} style={w100}>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Image URL
                     </Typography.Text>
                     <Input
@@ -822,7 +836,7 @@ export const SessionsPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Alt text (accessibility)
                     </Typography.Text>
                     <Input
@@ -843,11 +857,11 @@ export const SessionsPage: React.FC = () => {
               </Card>
 
               <Card density="dense" title="Visibility">
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                <Space style={spaceBetween}>
                   <div>
                     <Typography.Text>Visible to players</Typography.Text>
                     <br />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Hidden sessions are only visible to the GM.
                     </Typography.Text>
                   </div>

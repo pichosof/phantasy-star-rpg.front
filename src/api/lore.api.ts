@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @app/api/lore.api.ts
 import { http } from './http.api';
 

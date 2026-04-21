@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/rpg/QuestsAdminPage.tsx
 import React from 'react';
 import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Tag, Tabs, Typography, message } from 'antd';
@@ -14,6 +15,7 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { createQuest, deleteQuest, listQuestsPublic, setQuestVisibility, updateQuest } from '@app/api/quests.api';
 import { apiErrorMessage } from '../utils/api-error';
 import type { Quest, QuestStatus } from '@app/api/quests.api';
+import { m0, w100, bold700, bold800, spaceBetween, dividerMd, tableWrap } from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -80,7 +82,7 @@ export const QuestsAdminPage: React.FC = () => {
     setEditStatus((openQuest.status ?? 'active') as QuestStatus);
     setEditDescription(openQuest.description ?? '');
     setEditReward(openQuest.reward ?? '');
-  }, [openQuest?.id]);
+  }, [openQuest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = search.trim().toLowerCase();
   const filtered = React.useMemo(() => {
@@ -220,8 +222,8 @@ export const QuestsAdminPage: React.FC = () => {
 
   const Header: React.FC = () => (
     <Card density="dense">
-      <Space direction="vertical" size={8} style={{ width: '100%' }}>
-        <Typography.Title level={5} style={{ margin: 0 }}>
+      <Space direction="vertical" size={8} style={w100}>
+        <Typography.Title level={5} style={m0}>
           Admin — Quests
         </Typography.Title>
 
@@ -229,9 +231,9 @@ export const QuestsAdminPage: React.FC = () => {
           Manage quests (status, visibility and content). Completed/failed quests remain available for city links.
         </Typography.Text>
 
-        <Divider style={{ margin: '8px 0' }} />
+        <Divider style={dividerMd} />
 
-        <Space wrap style={{ justifyContent: 'space-between', width: '100%' }}>
+        <Space wrap style={spaceBetween}>
           <Space wrap size={10}>
             <Tag>All: {stats.total}</Tag>
             <Tag color="green">Visible: {stats.visible}</Tag>
@@ -256,7 +258,7 @@ export const QuestsAdminPage: React.FC = () => {
 
         {creating && (
           <>
-            <Divider style={{ margin: '8px 0' }} />
+            <Divider style={dividerMd} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 920 }}>
               <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
 
@@ -311,7 +313,7 @@ export const QuestsAdminPage: React.FC = () => {
             density="dense"
             title={
               <Space wrap size={8}>
-                <span style={{ fontWeight: 700 }}>{qt.title}</span>
+                <span style={bold700}>{qt.title}</span>
                 <Tag>{qt.status ?? 'active'}</Tag>
                 {isQuestVisible(qt) ? <Tag color="green">Visible</Tag> : <Tag color="red">Hidden</Tag>}
                 {qt.reward?.trim() ? <Tag color="gold">Reward</Tag> : null}
@@ -323,11 +325,11 @@ export const QuestsAdminPage: React.FC = () => {
               </Button>
             }
           >
-            <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
+            <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
               {qt.description?.trim() || '—'}
             </Typography.Paragraph>
 
-            <Divider style={{ margin: '8px 0' }} />
+            <Divider style={dividerMd} />
 
             <Space wrap size={14}>
               <Space size={8}>
@@ -347,7 +349,7 @@ export const QuestsAdminPage: React.FC = () => {
 
   const DesktopTable: React.FC = () => (
     <Card density="dense" title="Admin — Quests">
-      <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div style={tableWrap}>
         <Table
           rowKey="id"
           dataSource={filtered}
@@ -363,9 +365,9 @@ export const QuestsAdminPage: React.FC = () => {
               title: 'Quest',
               key: 'title',
               render: (_: any, qt: Quest) => (
-                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Space direction="vertical" size={2} style={w100}>
                   <Space size={8} wrap>
-                    <span style={{ fontWeight: 700 }}>{qt.title}</span>
+                    <span style={bold700}>{qt.title}</span>
                     <Tag>{qt.status ?? 'active'}</Tag>
                     {isQuestVisible(qt) ? <Tag color="green">Visible</Tag> : <Tag color="red">Hidden</Tag>}
                     {qt.reward?.trim() ? <Tag color="gold">Reward</Tag> : null}
@@ -436,7 +438,7 @@ export const QuestsAdminPage: React.FC = () => {
           width={mobileOnly ? '100%' : 720}
           title={
             <Space wrap size={8}>
-              <span style={{ fontWeight: 800 }}>Edit · {openQuest.title}</span>
+              <span style={bold800}>Edit · {openQuest.title}</span>
               <Tag>{openQuest.status ?? 'active'}</Tag>
               {isQuestVisible(openQuest) ? <Tag color="green">Visible</Tag> : <Tag color="red">Hidden</Tag>}
               {openQuest.reward?.trim() ? <Tag color="gold">Reward</Tag> : null}
@@ -462,7 +464,7 @@ export const QuestsAdminPage: React.FC = () => {
           <Tabs defaultActiveKey="edit">
             <Tabs.TabPane tab="Edit" key="edit">
               <Card density="dense" title="Data">
-                <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                <Space direction="vertical" size={10} style={w100}>
                   <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" />
 
                   <Space wrap>
@@ -490,7 +492,7 @@ export const QuestsAdminPage: React.FC = () => {
 
                   <Divider style={{ margin: '6px 0' }} />
 
-                  <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                  <Space style={spaceBetween}>
                     <Typography.Text>Visible to players</Typography.Text>
                     <Switch checked={isQuestVisible(openQuest)} onChange={() => void toggleVisible(openQuest)} />
                   </Space>
@@ -505,7 +507,7 @@ export const QuestsAdminPage: React.FC = () => {
             </Tabs.TabPane>
 
             <Tabs.TabPane tab="Preview" key="preview">
-              <Space direction="vertical" size={10} style={{ width: '100%' }}>
+              <Space direction="vertical" size={10} style={w100}>
                 <Card density="comfy" title="Description">
                   <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
                     {(editDescription ?? '').trim() ? (editDescription ?? '').trim() : '—'}

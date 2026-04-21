@@ -1,6 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Divider, Drawer, Empty, Modal, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, LeftOutlined, RightOutlined, FullscreenOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  LeftOutlined,
+  RightOutlined,
+  FullscreenOutlined,
+} from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -20,6 +29,28 @@ import { CityAdminDrawer } from '@app/components/rpg/City/CityAdminDrawer';
 import { resolveApiUrl } from '@app/api/http.api';
 import { resolvedImages } from '@app/api/cities.api';
 import { apiErrorMessage } from '../utils/api-error';
+import {
+  m0,
+  w100,
+  textSm,
+  textMd,
+  bold700,
+  bold800,
+  spaceBetween,
+  dividerSm,
+  dividerMd,
+  tableWrap,
+  cardGrid2,
+  imgThumbTop,
+  preWrap,
+  carouselNavBtnLeft,
+  carouselNavBtnRight,
+  carouselNavBtnLeftLg,
+  carouselNavBtnRightLg,
+  carouselZoomBtn,
+  carouselCounterCenter,
+  carouselCounterCenterLg,
+} from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -84,89 +115,25 @@ function CityImageCarousel({ city }: { city: any }) {
           style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
         />
 
-        {/* Zoom button */}
-        <button
-          onClick={() => setLightbox(true)}
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            background: 'rgba(0,0,0,0.55)',
-            border: 'none',
-            borderRadius: 6,
-            color: '#fff',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 13,
-          }}
-        >
+        <button onClick={() => setLightbox(true)} style={carouselZoomBtn}>
           <FullscreenOutlined />
         </button>
 
-        {/* Prev / Next — só aparece se houver mais de uma imagem */}
         {all.length > 1 && (
           <>
-            <button
-              onClick={prev}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: 8,
-                transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.55)',
-                border: 'none',
-                borderRadius: 6,
-                color: '#fff',
-                cursor: 'pointer',
-                padding: '6px 10px',
-                fontSize: 16,
-              }}
-            >
+            <button onClick={prev} style={carouselNavBtnLeft}>
               <LeftOutlined />
             </button>
-            <button
-              onClick={next}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                right: 8,
-                transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.55)',
-                border: 'none',
-                borderRadius: 6,
-                color: '#fff',
-                cursor: 'pointer',
-                padding: '6px 10px',
-                fontSize: 16,
-              }}
-            >
+            <button onClick={next} style={carouselNavBtnRight}>
               <RightOutlined />
             </button>
-            {/* Contador */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 8,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.6)',
-                borderRadius: 12,
-                padding: '2px 10px',
-                color: '#fff',
-                fontSize: 12,
-                pointerEvents: 'none',
-              }}
-            >
+            <div style={carouselCounterCenter}>
               {index + 1} / {all.length}
             </div>
           </>
         )}
       </div>
 
-      {/* Thumbnails quando há mais de uma imagem */}
       {all.length > 1 && (
         <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto' }}>
           {all.map((img, i) => (
@@ -213,55 +180,13 @@ function CityImageCarousel({ city }: { city: any }) {
         />
         {all.length > 1 && (
           <>
-            <button
-              onClick={prev}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: 12,
-                transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.6)',
-                border: 'none',
-                borderRadius: 6,
-                color: '#fff',
-                cursor: 'pointer',
-                padding: '8px 12px',
-                fontSize: 18,
-              }}
-            >
+            <button onClick={prev} style={carouselNavBtnLeftLg}>
               <LeftOutlined />
             </button>
-            <button
-              onClick={next}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                right: 12,
-                transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.6)',
-                border: 'none',
-                borderRadius: 6,
-                color: '#fff',
-                cursor: 'pointer',
-                padding: '8px 12px',
-                fontSize: 18,
-              }}
-            >
+            <button onClick={next} style={carouselNavBtnRightLg}>
               <RightOutlined />
             </button>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 12,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.6)',
-                borderRadius: 12,
-                padding: '2px 12px',
-                color: '#fff',
-                fontSize: 13,
-              }}
-            >
+            <div style={carouselCounterCenterLg}>
               {index + 1} / {all.length}
             </div>
           </>
@@ -361,7 +286,7 @@ export const CitiesPage: React.FC = () => {
     return () => {
       alive = false;
     };
-  }, [openCity?.id, openCity?.discovered]);
+  }, [openCity?.id, openCity?.discovered]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = search.trim().toLowerCase();
 
@@ -449,14 +374,14 @@ export const CitiesPage: React.FC = () => {
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               {viewMode === 'gm' ? '⚙️ GM Panel — Cities' : 'Cities'}
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'gm'
                 ? 'Control visibility, discovery and city content.'
                 : 'Visible cities — details appear when the GM marks as discovered.'}
@@ -494,7 +419,7 @@ export const CitiesPage: React.FC = () => {
           {isGM && <Tag color="cyan">{stats.mapped} mapped</Tag>}
         </Space>
 
-        <Space wrap size={8} style={{ width: '100%' }}>
+        <Space wrap size={8} style={w100}>
           <Input
             allowClear
             placeholder="Search city…"
@@ -520,7 +445,7 @@ export const CitiesPage: React.FC = () => {
 
         {isGM && viewMode === 'gm' && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
               <Typography.Text strong>New City</Typography.Text>
               <Input placeholder="City name *" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -554,13 +479,7 @@ export const CitiesPage: React.FC = () => {
       );
     }
     return (
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: mobileOnly ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-        }}
-      >
+      <div style={cardGrid2(mobileOnly)}>
         {data.map((c) => {
           const region = ((c as any).region as string | null | undefined) ?? null;
           const vis = isCityVisible(c);
@@ -572,7 +491,7 @@ export const CitiesPage: React.FC = () => {
               density={mode === 'players' ? 'comfy' : 'dense'}
               title={
                 <Space size={8} wrap>
-                  <span style={{ fontWeight: 700 }}>{c.name}</span>
+                  <span style={bold700}>{c.name}</span>
                   {region ? <Tag>{region}</Tag> : null}
                   {mode === 'gm' && (
                     <>
@@ -607,14 +526,7 @@ export const CitiesPage: React.FC = () => {
                       ? { id: -1, src: resolveApiUrl((c as any).imageUrl), alt: (c as any).imageAlt ?? c.name }
                       : null);
                   return cover ? (
-                    <div
-                      style={{
-                        margin: '-12px -12px 12px',
-                        borderRadius: '8px 8px 0 0',
-                        overflow: 'hidden',
-                        height: 140,
-                      }}
-                    >
+                    <div style={imgThumbTop}>
                       <img
                         src={cover.src}
                         alt={cover.alt}
@@ -623,7 +535,7 @@ export const CitiesPage: React.FC = () => {
                     </div>
                   ) : null;
                 })()}
-              <Typography.Paragraph style={{ margin: 0 }} ellipsis={{ rows: 3 }}>
+              <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
                     ? c.description?.trim() || 'No description yet.'
@@ -633,10 +545,10 @@ export const CitiesPage: React.FC = () => {
 
               {mode === 'gm' && (
                 <>
-                  <Divider style={{ margin: '8px 0' }} />
+                  <Divider style={dividerMd} />
                   <Space wrap size={16}>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Visible:</span>
+                      <span className="rpg-text-sm rpg-muted">Visible:</span>
                       <Switch
                         size="small"
                         checked={vis}
@@ -646,7 +558,7 @@ export const CitiesPage: React.FC = () => {
                       />
                     </Space>
                     <Space size={8}>
-                      <span style={{ fontSize: 12, color: '#8c8c8c' }}>Discovered:</span>
+                      <span className="rpg-text-sm rpg-muted">Discovered:</span>
                       <Switch size="small" checked={c.discovered} onChange={() => void toggleDiscovered(c)} />
                     </Space>
                   </Space>
@@ -662,7 +574,7 @@ export const CitiesPage: React.FC = () => {
   // ── Desktop GM Table ──────────────────────────────────────────────────────
   const DesktopAdminTable = (
     <Card density="dense" title="Manage Cities">
-      <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div style={tableWrap}>
         <Table
           rowKey="id"
           dataSource={gmItems}
@@ -675,7 +587,7 @@ export const CitiesPage: React.FC = () => {
               dataIndex: 'id',
               key: 'id',
               width: 60,
-              render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag>,
+              render: (v: number) => <Tag style={m0}>#{v}</Tag>,
             },
             {
               title: 'Visible',
@@ -703,30 +615,28 @@ export const CitiesPage: React.FC = () => {
               title: 'City',
               key: 'name',
               ellipsis: true,
-              render: (_: any, c: City) => {
-                return (
-                  <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                    <Space size={6} wrap>
-                      <Typography.Text strong>{c.name}</Typography.Text>
-                      {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
-                      {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
-                      {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
-                    </Space>
-                    <Typography.Text
-                      type="secondary"
-                      style={{
-                        fontSize: 12,
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {c.description?.trim() || '—'}
-                    </Typography.Text>
+              render: (_: any, c: City) => (
+                <Space direction="vertical" size={2} style={w100}>
+                  <Space size={6} wrap>
+                    <Typography.Text strong>{c.name}</Typography.Text>
+                    {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
+                    {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
+                    {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
                   </Space>
-                );
-              },
+                  <Typography.Text
+                    type="secondary"
+                    style={{
+                      ...textSm,
+                      display: 'block',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {c.description?.trim() || '—'}
+                  </Typography.Text>
+                </Space>
+              ),
             },
             {
               title: 'Created at',
@@ -734,7 +644,7 @@ export const CitiesPage: React.FC = () => {
               key: 'createdAt',
               width: 160,
               render: (v: string) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Typography.Text type="secondary" style={textSm}>
                   {formatDate(v)}
                 </Typography.Text>
               ),
@@ -746,7 +656,12 @@ export const CitiesPage: React.FC = () => {
               render: (_: any, c: City) => (
                 <Space size={4}>
                   <Button size="small" icon={<EditOutlined />} onClick={() => openAdmin(c)} />
-                  <Popconfirm title={`Delete "${c.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deleteCity(c.id)}>
+                  <Popconfirm
+                    title={`Delete "${c.name}" permanently?`}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={() => void deleteCity(c.id)}
+                  >
                     <Button size="small" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
                 </Space>
@@ -767,7 +682,7 @@ export const CitiesPage: React.FC = () => {
       width={mobileOnly ? '100%' : 560}
       title={
         <Space wrap size={8}>
-          <span style={{ fontWeight: 800 }}>{openCity.name}</span>
+          <span style={bold800}>{openCity.name}</span>
           {isGM && viewMode === 'gm' && (
             <>
               <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>
@@ -783,7 +698,7 @@ export const CitiesPage: React.FC = () => {
         <Tabs.TabPane tab="Description" key="desc">
           <CityImageCarousel city={openCity as any} />
           <Card density="comfy" title="Description">
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+            <Typography.Paragraph style={preWrap}>
               {viewMode === 'players'
                 ? openCity.discovered === true
                   ? openCity.description?.trim() || 'No description yet.'
@@ -852,12 +767,12 @@ export const CitiesPage: React.FC = () => {
         {isGM && viewMode === 'gm' && (
           <Tabs.TabPane tab="GM Actions" key="gm">
             <Card density="dense" title="Controls">
-              <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+              <Space direction="vertical" size={12} style={w100}>
+                <Space style={spaceBetween}>
                   <div>
                     <Typography.Text>Visible to players</Typography.Text>
                     <br />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Hidden cities do not appear in the list.
                     </Typography.Text>
                   </div>
@@ -868,18 +783,18 @@ export const CitiesPage: React.FC = () => {
                     unCheckedChildren={<EyeInvisibleOutlined />}
                   />
                 </Space>
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                <Space style={spaceBetween}>
                   <div>
                     <Typography.Text>Marked as discovered</Typography.Text>
                     <br />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Unlocks description, lores and quests for players.
                     </Typography.Text>
                   </div>
                   <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
                 </Space>
-                <Divider style={{ margin: '4px 0' }} />
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Divider style={dividerSm} />
+                <Typography.Text type="secondary" style={textSm}>
                   Created: {formatDate((openCity as any).createdAt)}
                   {'  ·  '}
                   Updated: {formatDate((openCity as any).updatedAt)}

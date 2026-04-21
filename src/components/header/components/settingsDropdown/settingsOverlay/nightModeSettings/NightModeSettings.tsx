@@ -3,7 +3,7 @@ import { NightTimePicker } from './NightTimePicker/NightTimePicker';
 import { Switch } from '@app/components/common/Switch/Switch';
 import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '@app/hooks/reduxHooks';
-import { setNightMode, setNightTime } from '@app/store/slices/nightModeSlice';
+import { setNightTime } from '@app/store/slices/nightModeSlice';
 
 export const NightModeSettings: React.FC = () => {
   const dispatch = useAppDispatch();

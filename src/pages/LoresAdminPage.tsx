@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/LoresAdminPage.tsx
 import React from 'react';
 import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
@@ -15,6 +16,19 @@ import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { createLore, deleteLore, listLores, setLoreVisibility, updateLore } from '@app/api/lore.api';
 import { apiErrorMessage } from '../utils/api-error';
 import type { Lore, LoreCategory } from '@app/api/lore.api';
+import {
+  m0,
+  w100,
+  textSm,
+  textMd,
+  bold800,
+  mutedSm,
+  spaceBetween,
+  dividerSm,
+  dividerMd,
+  tableWrap,
+  lineHeight175,
+} from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -120,7 +134,7 @@ export const LoresAdminPage: React.FC = () => {
     setEditTitle(openLore.title ?? '');
     setEditCategory((openLore.category ?? null) as LoreCategory | null);
     setEditContent(openLore.content ?? '');
-  }, [openLore?.id]);
+  }, [openLore?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = search.trim().toLowerCase();
 
@@ -231,14 +245,14 @@ export const LoresAdminPage: React.FC = () => {
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               {viewMode === 'admin' ? '⚙️ GM Panel — Lores' : 'Lore Archive'}
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'admin'
                 ? 'Create, edit, activate or remove lore entries.'
                 : 'Historical, cultural and scientific records of the Algol system.'}
@@ -277,7 +291,7 @@ export const LoresAdminPage: React.FC = () => {
           {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
         </Space>
 
-        <Space wrap size={8} style={{ width: '100%' }}>
+        <Space wrap size={8} style={w100}>
           <Input
             allowClear
             placeholder="Search by title or content…"
@@ -322,7 +336,7 @@ export const LoresAdminPage: React.FC = () => {
 
         {isGM && viewMode === 'admin' && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 720 }}>
               <Typography.Text strong>New Lore</Typography.Text>
               <Space wrap size={8}>
@@ -408,8 +422,8 @@ export const LoresAdminPage: React.FC = () => {
                     gap: 6,
                   }}
                 >
-                  <Space size={6} style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
+                  <Space size={6} style={spaceBetween}>
+                    <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
                       {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                     </Tag>
                     {isGM && (
@@ -431,8 +445,8 @@ export const LoresAdminPage: React.FC = () => {
                     </Typography.Paragraph>
                   )}
                   <div style={{ flex: 1 }} />
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={6}>
+                  <Divider style={dividerMd} />
+                  <Space style={spaceBetween} size={6}>
                     <span style={{ fontSize: 11, color: '#bfbfbf' }}>{formatDate((l as any).createdAt)}</span>
                     <Space size={6} onClick={(e) => e.stopPropagation()}>
                       {isGM && <Switch size="small" checked={vis} onChange={() => void toggleVisible(l)} />}
@@ -458,13 +472,13 @@ export const LoresAdminPage: React.FC = () => {
         const cat = l.category ?? null;
         return (
           <Card key={l.id} density="dense">
-            <Space direction="vertical" size={8} style={{ width: '100%' }}>
-              <Space style={{ justifyContent: 'space-between', width: '100%' }} wrap>
+            <Space direction="vertical" size={8} style={w100}>
+              <Space style={spaceBetween} wrap>
                 <Space size={6}>
-                  <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
+                  <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
                     {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                   </Tag>
-                  <Tag color={vis ? 'green' : 'red'} style={{ margin: 0 }}>
+                  <Tag color={vis ? 'green' : 'red'} style={m0}>
                     {vis ? 'Visible' : 'Hidden'}
                   </Tag>
                 </Space>
@@ -499,7 +513,7 @@ export const LoresAdminPage: React.FC = () => {
   // ── Admin Desktop Table ───────────────────────────────────────────────────
   const AdminDesktopTable = (
     <Card density="dense" title="Manage Lores">
-      <div style={{ overflowX: 'auto' }}>
+      <div style={tableWrap}>
         <Table
           rowKey="id"
           dataSource={filtered}
@@ -512,7 +526,7 @@ export const LoresAdminPage: React.FC = () => {
               dataIndex: 'id',
               key: 'id',
               width: 60,
-              render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag>,
+              render: (v: number) => <Tag style={m0}>#{v}</Tag>,
             },
             {
               title: 'Visible',
@@ -539,12 +553,12 @@ export const LoresAdminPage: React.FC = () => {
                       <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => openForView(l.id)}>
                         {l.title}
                       </Typography.Text>
-                      <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={{ margin: 0 }}>
+                      <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
                         {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
                       </Tag>
                     </Space>
                     {l.content && (
-                      <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                      <Typography.Text type="secondary" style={textSm} ellipsis>
                         {l.content.replace(/\n+/g, ' ').trim().slice(0, 80)}…
                       </Typography.Text>
                     )}
@@ -558,7 +572,7 @@ export const LoresAdminPage: React.FC = () => {
               key: 'createdAt',
               width: 160,
               render: (v: string) => (
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                <Typography.Text type="secondary" style={textSm}>
                   {formatDateTime(v)}
                 </Typography.Text>
               ),
@@ -614,7 +628,7 @@ export const LoresAdminPage: React.FC = () => {
       width={mobileOnly ? '100%' : 640}
       title={
         <Space wrap size={8}>
-          <span style={{ fontWeight: 800 }}>{openLore.title}</span>
+          <span style={bold800}>{openLore.title}</span>
           {openLore.category && (
             <Tag color={CATEGORY_COLOR[openLore.category]}>
               {CATEGORY_LABEL[openLore.category] ?? openLore.category}
@@ -648,7 +662,7 @@ export const LoresAdminPage: React.FC = () => {
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         <Tabs.TabPane tab="📖 Lore" key="view">
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space direction="vertical" size={16} style={w100}>
             <Space wrap size={8}>
               {openLore.category && (
                 <Tag color={CATEGORY_COLOR[openLore.category]}>
@@ -657,22 +671,22 @@ export const LoresAdminPage: React.FC = () => {
               )}
               {isGM && (
                 <Space size={6}>
-                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>Publish:</span>
+                  <span style={mutedSm}>Publish:</span>
                   <Switch size="small" checked={isVisible(openLore)} onChange={() => void toggleVisible(openLore)} />
                 </Space>
               )}
             </Space>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             {openLore.content ? (
               <Card density="dense" title="Content">
-                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75, fontSize: 14 }}>
+                <Typography.Paragraph style={{ ...lineHeight175, fontSize: 14 }}>
                   {openLore.content}
                 </Typography.Paragraph>
               </Card>
             ) : (
               <Typography.Text type="secondary">No content recorded.</Typography.Text>
             )}
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <Typography.Text type="secondary" style={textSm}>
               Created: {formatDateTime((openLore as any).createdAt)}
               {'  ·  '}
               Updated: {formatDateTime((openLore as any).updatedAt)}
@@ -682,28 +696,28 @@ export const LoresAdminPage: React.FC = () => {
 
         {isGM && (
           <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               <Card density="dense" title="Lore Data">
-                <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                <Space direction="vertical" size={10} style={w100}>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Title
                     </Typography.Text>
                     <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Lore title" />
                   </div>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Category
                     </Typography.Text>
                     <Select
-                      style={{ width: '100%' }}
+                      style={w100}
                       value={(editCategory ?? 'null') as any}
                       onChange={(v) => setEditCategory(v === 'null' ? null : (v as LoreCategory))}
                       options={categoryOptions}
                     />
                   </div>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Content
                     </Typography.Text>
                     <TextArea
@@ -717,11 +731,11 @@ export const LoresAdminPage: React.FC = () => {
               </Card>
 
               <Card density="dense" title="Visibility">
-                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                <Space style={spaceBetween}>
                   <div>
                     <Typography.Text>Visible to players</Typography.Text>
                     <br />
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text type="secondary" style={textSm}>
                       Hidden lores only appear to the GM.
                     </Typography.Text>
                   </div>

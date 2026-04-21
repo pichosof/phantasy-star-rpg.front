@@ -22,7 +22,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
         setAllTags(all);
         setEntityTagIds(entity.map((t) => t.id));
       })
-      .catch(() => {});
+      .catch(() => undefined);
   }, [entityType, entityId]);
 
   async function handleChange(ids: number[]) {
@@ -88,7 +88,16 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
         {allTags.map((t) => (
           <Select.Option key={t.id} value={t.id}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, display: 'inline-block', flexShrink: 0 }} />
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: t.color,
+                  display: 'inline-block',
+                  flexShrink: 0,
+                }}
+              />
               {t.name}
             </span>
           </Select.Option>
@@ -97,14 +106,34 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
 
       <div style={{ display: 'flex', gap: 4 }}>
         <input
-          style={{ flex: 1, padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4, background: 'transparent', color: 'inherit', fontSize: 13 }}
+          style={{
+            flex: 1,
+            padding: '4px 8px',
+            border: '1px solid #d9d9d9',
+            borderRadius: 4,
+            background: 'transparent',
+            color: 'inherit',
+            fontSize: 13,
+          }}
           placeholder="New tag name…"
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void handleCreateTag(newTagName); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              void handleCreateTag(newTagName);
+            }
+          }}
         />
         <button
-          style={{ padding: '4px 10px', border: '1px solid #d9d9d9', borderRadius: 4, cursor: 'pointer', background: 'transparent', color: 'inherit' }}
+          style={{
+            padding: '4px 10px',
+            border: '1px solid #d9d9d9',
+            borderRadius: 4,
+            cursor: 'pointer',
+            background: 'transparent',
+            color: 'inherit',
+          }}
           onClick={() => void handleCreateTag(newTagName)}
           type="button"
         >

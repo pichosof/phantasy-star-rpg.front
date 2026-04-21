@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/Map/MapPage.tsx
 import React from 'react';
 import {
@@ -22,6 +23,7 @@ import {
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import { m0, w100, textXs, textSm, bold800, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
 
 import {
   listWorlds,
@@ -33,7 +35,6 @@ import {
 } from '@app/api/worlds.api';
 import {
   listCities,
-  createCity,
   updateCity,
   updateCityCoords,
   setCityVisible,
@@ -204,7 +205,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           {worlds.length === 0 ? (
             <Empty description="No worlds created yet." />
           ) : (
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               {worlds.map((w) => (
                 <div
                   key={w.id}
@@ -216,7 +217,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                   }}
                 >
                   {editId === w.id ? (
-                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                    <Space direction="vertical" size={8} style={w100}>
                       <Input
                         size="small"
                         value={editName}
@@ -241,7 +242,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                     </Space>
                   ) : (
                     <>
-                      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                      <Space style={spaceBetween}>
                         <Space size={6}>
                           <Typography.Text strong>{w.name}</Typography.Text>
                           {activeWorldId === w.id && <Tag color="blue">Active</Tag>}
@@ -293,7 +294,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           }
           key="create"
         >
-          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+          <Space direction="vertical" size={10} style={w100}>
             <Form layout="vertical">
               <Form.Item label="Name" required>
                 <Input
@@ -314,7 +315,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
             <Button type="primary" loading={creating} onClick={() => void handleCreate()}>
               Create World
             </Button>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <Typography.Text type="secondary" style={textSm}>
               After creating, go to &quot;Worlds&quot;, click &quot;Map&quot; to upload the map image.
             </Typography.Text>
           </Space>
@@ -366,7 +367,10 @@ export default function MapPage() {
   const [pickingCityId, setPickingCityId] = React.useState<number | null>(null);
   const pickingCity = React.useMemo(() => cities.find((c) => c.id === pickingCityId) ?? null, [cities, pickingCityId]);
   const [pickingDungeonId, setPickingDungeonId] = React.useState<number | null>(null);
-  const pickingDungeon = React.useMemo(() => dungeons.find((d) => d.id === pickingDungeonId) ?? null, [dungeons, pickingDungeonId]);
+  const pickingDungeon = React.useMemo(
+    () => dungeons.find((d) => d.id === pickingDungeonId) ?? null,
+    [dungeons, pickingDungeonId],
+  );
 
   // -------- open city drawer --------
   const [openCityId, setOpenCityId] = React.useState<number | null>(null);
@@ -374,7 +378,10 @@ export default function MapPage() {
 
   // -------- open dungeon drawer --------
   const [openDungeonId, setOpenDungeonId] = React.useState<number | null>(null);
-  const openDungeon = React.useMemo(() => dungeons.find((d) => d.id === openDungeonId) ?? null, [dungeons, openDungeonId]);
+  const openDungeon = React.useMemo(
+    () => dungeons.find((d) => d.id === openDungeonId) ?? null,
+    [dungeons, openDungeonId],
+  );
 
   // -------- city drawer edit state (GM) --------
   const [editCityName, setEditCityName] = React.useState('');
@@ -389,7 +396,7 @@ export default function MapPage() {
     setEditCityDesc(openCity.description ?? '');
     setEditCityRegion((openCity as any).region ?? '');
     setEditCityImgAlt(openCity.imageAlt ?? '');
-  }, [openCity?.id]);
+  }, [openCity?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -------- world admin drawer --------
   const [worldAdminOpen, setWorldAdminOpen] = React.useState(false);
@@ -564,7 +571,7 @@ export default function MapPage() {
     return () => {
       alive = false;
     };
-  }, [openCity?.id, (openCity as any)?.discovered, isGM]);
+  }, [openCity?.id, (openCity as any)?.discovered, isGM]); // eslint-disable-line react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any
 
   // -------- region options --------
   const regionOptions = React.useMemo(() => {
@@ -811,9 +818,9 @@ export default function MapPage() {
 
   return (
     <div style={{ padding: 16 }}>
-      <Space direction="vertical" style={{ width: '100%' }} size={12}>
+      <Space direction="vertical" style={w100} size={12}>
         {!presentMode && (
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title level={3} style={m0}>
             Map — {world.name}
           </Typography.Title>
         )}
@@ -924,28 +931,31 @@ export default function MapPage() {
                       style={{ width: 260 }}
                       placeholder="Select dungeon to position..."
                       value={pickingDungeonId ?? undefined}
-                      onChange={(v) => { setPickingDungeonId(v ?? null); if (v) setPickingCityId(null); }}
+                      onChange={(v) => {
+                        setPickingDungeonId(v ?? null);
+                        if (v) setPickingCityId(null);
+                      }}
                       options={dungeons.map((d) => ({ value: d.id, label: `⚔️ ${d.name}` }))}
                       filterOption={(input, opt) => (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                     />
 
                     {pickingCity ? (
-                      <Tag color="gold" style={{ margin: 0 }}>
+                      <Tag color="gold" style={m0}>
                         Click on the map to position: <b>{pickingCity.name}</b>
                       </Tag>
                     ) : pickingDungeon ? (
-                      <Tag color="purple" style={{ margin: 0 }}>
+                      <Tag color="purple" style={m0}>
                         Click on the map to position: <b>{pickingDungeon.name}</b>
                       </Tag>
                     ) : (
-                      <Tag style={{ margin: 0 }}>Select a city or dungeon to mark on the map</Tag>
+                      <Tag style={m0}>Select a city or dungeon to mark on the map</Tag>
                     )}
                   </Space>
                 </>
               )}
             </Space>
 
-            <Divider style={{ margin: '8px 0' }} />
+            <Divider style={dividerMd} />
           </>
         )}
 
@@ -999,11 +1009,11 @@ export default function MapPage() {
                 Ruler {measureMode ? 'ON' : 'OFF'}
               </Button>
               {isFullscreen ? (
-                <Tag color="green" style={{ margin: 0 }}>
+                <Tag color="green" style={m0}>
                   Fullscreen
                 </Tag>
               ) : (
-                <Tag color="gold" style={{ margin: 0 }}>
+                <Tag color="gold" style={m0}>
                   Overlay
                 </Tag>
               )}
@@ -1101,14 +1111,33 @@ export default function MapPage() {
               return (
                 <React.Fragment key={`dungeon-${d.id}`}>
                   {hoverMarkerId === -d.id && (
-                    <div style={{ position: 'absolute', left: leftCss, top: topCss, transform: 'translate(-50%, calc(-100% - 10px))', background: 'rgba(0,0,0,0.75)', color: '#fff', padding: '4px 8px', borderRadius: 6, fontSize: 12, whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 20 }}>
-                      ⚔️ {d.name}{d.type ? ` · ${d.type}` : ''}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: leftCss,
+                        top: topCss,
+                        transform: 'translate(-50%, calc(-100% - 10px))',
+                        background: 'rgba(0,0,0,0.75)',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        whiteSpace: 'nowrap',
+                        pointerEvents: 'none',
+                        zIndex: 20,
+                      }}
+                    >
+                      ⚔️ {d.name}
+                      {d.type ? ` · ${d.type}` : ''}
                     </div>
                   )}
                   <div
                     onMouseEnter={() => setHoverMarkerId(-d.id)}
                     onMouseLeave={() => setHoverMarkerId((prev) => (prev === -d.id ? null : prev))}
-                    onClick={(e) => { e.stopPropagation(); setOpenDungeonId(d.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDungeonId(d.id);
+                    }}
                     title={d.name}
                     style={{
                       position: 'absolute',
@@ -1117,7 +1146,12 @@ export default function MapPage() {
                       transform: 'translate(-50%, -50%) rotate(45deg)',
                       width: 14,
                       height: 14,
-                      background: isGM && !d.visible ? 'rgba(255,70,70,0.95)' : d.discovered ? 'rgba(180,100,255,0.95)' : 'rgba(120,60,180,0.8)',
+                      background:
+                        isGM && !d.visible
+                          ? 'rgba(255,70,70,0.95)'
+                          : d.discovered
+                          ? 'rgba(180,100,255,0.95)'
+                          : 'rgba(120,60,180,0.8)',
                       border: '2px solid rgba(0,0,0,0.85)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
                       cursor: 'pointer',
@@ -1169,7 +1203,7 @@ export default function MapPage() {
           title={
             openCity ? (
               <Space wrap size={8}>
-                <span style={{ fontWeight: 800 }}>{openCity.name}</span>
+                <span style={bold800}>{openCity.name}</span>
                 {openCity.region ? <Tag>{openCity.region}</Tag> : null}
                 {openCity.visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
                 {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
@@ -1183,7 +1217,7 @@ export default function MapPage() {
             <Tabs defaultActiveKey="details">
               {/* ── Details ── */}
               <Tabs.TabPane tab="Details" key="details">
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space direction="vertical" size="small" style={w100}>
                   <Typography.Text type="secondary">{openCity.region || 'Region not specified'}</Typography.Text>
                   {openCity.imageUrl && (isGM || openCity.discovered) && (
                     <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 180, marginBottom: 8 }}>
@@ -1199,7 +1233,7 @@ export default function MapPage() {
                       ? openCity.description || 'No description.'
                       : 'Information unavailable.'}
                   </Typography.Paragraph>
-                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                  <Typography.Text type="secondary" style={textXs}>
                     Created: {formatDate(openCity.createdAt)}
                     {openCity.updatedAt ? ` · Updated: ${formatDate(openCity.updatedAt)}` : ''}
                   </Typography.Text>
@@ -1243,7 +1277,7 @@ export default function MapPage() {
               {/* ── Image (GM only) ── */}
               {isGM && (
                 <Tabs.TabPane tab="🖼️ Image" key="image">
-                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <Space direction="vertical" size={12} style={w100}>
                     {openCity.imageUrl ? (
                       <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
                         <img
@@ -1272,13 +1306,13 @@ export default function MapPage() {
               {/* ── Controls (GM only) ── */}
               {isGM && (
                 <Tabs.TabPane tab="⚙️ Controls" key="controls">
-                  <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                  <Space direction="vertical" size={16} style={w100}>
                     {/* Visible */}
-                    <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                    <Space style={spaceBetween}>
                       <div>
                         <Typography.Text>Visible to players</Typography.Text>
                         <br />
-                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        <Typography.Text type="secondary" style={textSm}>
                           Hidden cities do not appear on the players&apos; map.
                         </Typography.Text>
                       </div>
@@ -1293,11 +1327,11 @@ export default function MapPage() {
                       />
                     </Space>
                     {/* Discovered */}
-                    <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                    <Space style={spaceBetween}>
                       <div>
                         <Typography.Text>Discovered</Typography.Text>
                         <br />
-                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        <Typography.Text type="secondary" style={textSm}>
                           Unlocks description, image and lores for the players.
                         </Typography.Text>
                       </div>
@@ -1309,7 +1343,7 @@ export default function MapPage() {
                         }}
                       />
                     </Space>
-                    <Divider style={{ margin: '4px 0' }} />
+                    <Divider style={dividerSm} />
                     {/* Map position */}
                     <Typography.Text strong>Map position</Typography.Text>
                     <Space wrap>
@@ -1330,7 +1364,7 @@ export default function MapPage() {
                       )}
                     </Space>
                     {openCity.coordinates && (
-                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      <Typography.Text type="secondary" style={textSm}>
                         Coords: {openCity.coordinates}
                       </Typography.Text>
                     )}
@@ -1403,41 +1437,61 @@ export default function MapPage() {
           visible={!!openDungeon}
           onClose={() => setOpenDungeonId(null)}
           width={mobileOnly ? '100%' : 480}
-          title={openDungeon ? (
-            <Space wrap size={8}>
-              <span style={{ fontWeight: 800 }}>⚔️ {openDungeon.name}</span>
-              {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
-              {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
-              {isGM && !openDungeon.visible && <Tag color="red">Hidden</Tag>}
-            </Space>
-          ) : 'Dungeon'}
+          title={
+            openDungeon ? (
+              <Space wrap size={8}>
+                <span style={bold800}>⚔️ {openDungeon.name}</span>
+                {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
+                {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
+                {isGM && !openDungeon.visible && <Tag color="red">Hidden</Tag>}
+              </Space>
+            ) : (
+              'Dungeon'
+            )
+          }
         >
           {openDungeon && (
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space direction="vertical" size={12} style={w100}>
               {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
               {openDungeon.description ? (
-                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>{openDungeon.description}</Typography.Paragraph>
+                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                  {openDungeon.description}
+                </Typography.Paragraph>
               ) : (
                 <Typography.Text type="secondary">No description.</Typography.Text>
               )}
               {isGM && (
                 <Space wrap size={8}>
-                  <Button size="small" type="primary" onClick={() => { setPickingDungeonId(openDungeon.id); setOpenDungeonId(null); message.info('Click on the map to position.'); }}>
+                  <Button
+                    size="small"
+                    type="primary"
+                    onClick={() => {
+                      setPickingDungeonId(openDungeon.id);
+                      setOpenDungeonId(null);
+                      message.info('Click on the map to position.');
+                    }}
+                  >
                     Reposition
                   </Button>
                   {openDungeon.coordinates && (
-                    <Button size="small" danger onClick={async () => {
-                      await updateDungeon(openDungeon.id, { coordinates: null });
-                      setDungeons((prev) => prev.map((d) => d.id === openDungeon.id ? { ...d, coordinates: null } : d));
-                      setOpenDungeonId(null);
-                      message.success('Removed from map.');
-                    }}>
+                    <Button
+                      size="small"
+                      danger
+                      onClick={async () => {
+                        await updateDungeon(openDungeon.id, { coordinates: null });
+                        setDungeons((prev) =>
+                          prev.map((d) => (d.id === openDungeon.id ? { ...d, coordinates: null } : d)),
+                        );
+                        setOpenDungeonId(null);
+                        message.success('Removed from map.');
+                      }}
+                    >
                       Remove from map
                     </Button>
                   )}
                 </Space>
               )}
-              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+              <Typography.Text type="secondary" style={textXs}>
                 {openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}
               </Typography.Text>
             </Space>

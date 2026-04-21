@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Collapse, Divider, Input, InputNumber, Modal, Space, Switch, Typography, message } from 'antd';
+import { Button, Collapse, Divider, Input, InputNumber, Modal, Space, Typography, message } from 'antd';
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import type {
   GurpsSheetData,
@@ -11,6 +11,7 @@ import type {
   GurpsLanguage,
 } from '@app/api/character-sheets.api';
 import { importGcaFile } from '@app/utils/gca-import';
+import { w100, hiddenInput } from '@app/styles/styleUtils';
 
 // ── GURPS Calculations ────────────────────────────────────────────────────────
 
@@ -155,7 +156,7 @@ function NamePointsRow({
 
 function SkillRow({ item, set, del }: { item: GurpsSkill; set: (v: GurpsSkill) => void; del: () => void }) {
   return (
-    <Space wrap size={4} style={{ width: '100%' }}>
+    <Space wrap size={4} style={w100}>
       <Input
         placeholder="Skill"
         value={item.name ?? ''}
@@ -393,18 +394,12 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
-        <input
-          ref={importRef}
-          type="file"
-          accept=".gca5,.gca4,.txt,.xml"
-          style={{ display: 'none' }}
-          onChange={handleImport}
-        />
+        <input ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" style={hiddenInput} onChange={handleImport} />
         <Button size="small" icon={<UploadOutlined />} onClick={() => importRef.current?.click()}>
           Import GCA (.gca5 / .txt)
         </Button>
       </div>
-      <Collapse defaultActiveKey={['identity', 'attrs']} style={{ width: '100%' }}>
+      <Collapse defaultActiveKey={['identity', 'attrs']} style={w100}>
         {/* Identity */}
         <Collapse.Panel header="Identity" key="identity">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
@@ -412,42 +407,26 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <Input value={data.player ?? ''} onChange={(e) => set({ player: e.target.value })} />
             </LabelInput>
             <LabelInput label="Point Total">
-              <InputNumber
-                style={{ width: '100%' }}
-                value={data.pointTotal}
-                onChange={(v) => set({ pointTotal: v ?? undefined })}
-              />
+              <InputNumber style={w100} value={data.pointTotal} onChange={(v) => set({ pointTotal: v ?? undefined })} />
             </LabelInput>
             <LabelInput label="Unspent Pts">
-              <InputNumber
-                style={{ width: '100%' }}
-                value={data.unspentPts}
-                onChange={(v) => set({ unspentPts: v ?? undefined })}
-              />
+              <InputNumber style={w100} value={data.unspentPts} onChange={(v) => set({ unspentPts: v ?? undefined })} />
             </LabelInput>
             <LabelInput label="Height (cm)">
-              <InputNumber
-                style={{ width: '100%' }}
-                value={data.heightCm}
-                onChange={(v) => set({ heightCm: v ?? undefined })}
-              />
+              <InputNumber style={w100} value={data.heightCm} onChange={(v) => set({ heightCm: v ?? undefined })} />
             </LabelInput>
             <LabelInput label="Weight (kg)">
-              <InputNumber
-                style={{ width: '100%' }}
-                value={data.weightKg}
-                onChange={(v) => set({ weightKg: v ?? undefined })}
-              />
+              <InputNumber style={w100} value={data.weightKg} onChange={(v) => set({ weightKg: v ?? undefined })} />
             </LabelInput>
             <LabelInput label="Size Modifier">
               <InputNumber
-                style={{ width: '100%' }}
+                style={w100}
                 value={data.sizeModifier}
                 onChange={(v) => set({ sizeModifier: v ?? undefined })}
               />
             </LabelInput>
             <LabelInput label="Age">
-              <InputNumber style={{ width: '100%' }} value={data.age} onChange={(v) => set({ age: v ?? undefined })} />
+              <InputNumber style={w100} value={data.age} onChange={(v) => set({ age: v ?? undefined })} />
             </LabelInput>
             <LabelInput label="TL">
               <Input value={data.tl ?? ''} onChange={(e) => set({ tl: e.target.value })} />
@@ -465,12 +444,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
             {(['st', 'dx', 'iq', 'ht'] as const).map((attr) => (
               <LabelInput key={attr} label={attr.toUpperCase()}>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={data[attr] ?? 10}
-                  min={1}
-                  onChange={(v) => set({ [attr]: v ?? 10 })}
-                />
+                <InputNumber style={w100} value={data[attr] ?? 10} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
               </LabelInput>
             ))}
           </div>
@@ -486,7 +460,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
           <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
             <LabelInput label="Basic Speed Mod">
               <InputNumber
-                style={{ width: '100%' }}
+                style={w100}
                 value={data.basicSpeedMod ?? 0}
                 step={0.25}
                 onChange={(v) => set({ basicSpeedMod: v ?? 0 })}
@@ -494,7 +468,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             </LabelInput>
             <LabelInput label="Basic Move Mod">
               <InputNumber
-                style={{ width: '100%' }}
+                style={w100}
                 value={data.basicMoveMod ?? 0}
                 onChange={(v) => set({ basicMoveMod: v ?? 0 })}
               />
@@ -515,7 +489,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             ).map(([k, lbl]) => (
               <LabelInput key={k} label={lbl}>
                 <InputNumber
-                  style={{ width: '100%' }}
+                  style={w100}
                   value={data[k] ?? calc[k as 'hp' | 'will' | 'per' | 'fp']}
                   onChange={(v) => set({ [k]: v ?? undefined })}
                 />
@@ -523,14 +497,14 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             ))}
             <LabelInput label="Current HP">
               <InputNumber
-                style={{ width: '100%' }}
+                style={w100}
                 value={data.currentHp ?? calc.hp}
                 onChange={(v) => set({ currentHp: v ?? undefined })}
               />
             </LabelInput>
             <LabelInput label="Current FP">
               <InputNumber
-                style={{ width: '100%' }}
+                style={w100}
                 value={data.currentFp ?? calc.fp}
                 onChange={(v) => set({ currentFp: v ?? undefined })}
               />

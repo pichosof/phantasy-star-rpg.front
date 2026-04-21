@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   message,
@@ -41,6 +42,7 @@ import { PlayersApi } from '@app/api/rpg.api';
 import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
 import { resolveApiUrl } from '@app/api/http.api';
 import { apiErrorMessage } from '../utils/api-error';
+import { m0, w100, textSm, textMd, spaceBetween, dividerSm, dividerMd, tableWrap } from '@app/styles/styleUtils';
 import {
   type PlayerNote,
   listPlayerNotes,
@@ -139,10 +141,10 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Space size={6}>
           <FileTextOutlined style={{ color: '#8c8c8c' }} />
-          <Typography.Text strong style={{ fontSize: 13 }}>
+          <Typography.Text strong style={textMd}>
             Notes
           </Typography.Text>
-          {notes.length > 0 && <Tag style={{ margin: 0 }}>{notes.length}</Tag>}
+          {notes.length > 0 && <Tag style={m0}>{notes.length}</Tag>}
         </Space>
         {isGM && (
           <Tag color="blue" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={openCreate}>
@@ -156,7 +158,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
           <Spin size="small" />
         </div>
       ) : notes.length === 0 ? (
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        <Typography.Text type="secondary" style={textSm}>
           No notes yet.
         </Typography.Text>
       ) : (
@@ -223,9 +225,9 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
         centered
         destroyOnClose
       >
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <Space direction="vertical" size={12} style={w100}>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Title *
             </Typography.Text>
             <Input
@@ -235,7 +237,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Date *
             </Typography.Text>
             <Input
@@ -245,7 +247,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Content (optional)
             </Typography.Text>
             <TextArea
@@ -458,34 +460,61 @@ export const PlayersPage: React.FC = () => {
   // ── Admin Table ───────────────────────────────────────────────────────────
   const AdminTable = (
     <Card density="dense" title="Manage Players">
-      <div style={{ overflowX: 'auto' }}>
-        <Table rowKey="id" dataSource={displayItems} loading={loading} scroll={{ x: 700 }} style={{ minWidth: 700 }}
+      <div style={tableWrap}>
+        <Table
+          rowKey="id"
+          dataSource={displayItems}
+          loading={loading}
+          scroll={{ x: 700 }}
+          style={{ minWidth: 700 }}
           columns={[
-            { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={{ margin: 0 }}>#{v}</Tag> },
+            { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={m0}>#{v}</Tag> },
             {
-              title: 'Visible', width: 80,
+              title: 'Visible',
+              width: 80,
               render: (_: any, p: Player) => (
-                <Switch size="small" checked={isPlayerVisible(p)} onChange={() => void toggleVisible(p)}
-                  checkedChildren={<EyeOutlined />} unCheckedChildren={<EyeInvisibleOutlined />} />
+                <Switch
+                  size="small"
+                  checked={isPlayerVisible(p)}
+                  onChange={() => void toggleVisible(p)}
+                  checkedChildren={<EyeOutlined />}
+                  unCheckedChildren={<EyeInvisibleOutlined />}
+                />
               ),
             },
             {
               title: 'Player',
               render: (_: any, p: Player) => (
                 <Space size={6} wrap>
-                  {p.imageUrl && <img src={resolveApiUrl(p.imageUrl)} alt={p.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />}
+                  {p.imageUrl && (
+                    <img
+                      src={resolveApiUrl(p.imageUrl)}
+                      alt={p.name}
+                      style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  )}
                   <Typography.Text strong>{p.name}</Typography.Text>
                   <Tag color="geekblue">Lv {p.level}</Tag>
-                  {p.background && <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>{p.background.slice(0, 60)}</Typography.Text>}
+                  {p.background && (
+                    <Typography.Text type="secondary" style={textSm} ellipsis>
+                      {p.background.slice(0, 60)}
+                    </Typography.Text>
+                  )}
                 </Space>
               ),
             },
             {
-              title: 'Actions', width: 90,
+              title: 'Actions',
+              width: 90,
               render: (_: any, p: Player) => (
                 <Space size={4}>
                   <Button size="small" icon={<EditOutlined />} onClick={() => startEdit(p)} />
-                  <Popconfirm title={`Delete "${p.name}" permanently?`} okText="Delete" cancelText="Cancel" onConfirm={() => void deletePlayer(p)}>
+                  <Popconfirm
+                    title={`Delete "${p.name}" permanently?`}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={() => void deletePlayer(p)}
+                  >
                     <Button size="small" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
                 </Space>
@@ -500,14 +529,14 @@ export const PlayersPage: React.FC = () => {
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               Characters
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" style={textMd}>
               {isGM
                 ? 'Manage characters — image, sheet and visibility.'
                 : 'The adventurers facing the fate of the Algol system.'}
@@ -516,8 +545,20 @@ export const PlayersPage: React.FC = () => {
           <Space size={8} wrap>
             {isGM && (
               <Space size={4}>
-                <Button size="small" type={viewMode === 'public' ? 'primary' : 'default'} onClick={() => setViewMode('public')}>📖 View</Button>
-                <Button size="small" type={viewMode === 'admin' ? 'primary' : 'default'} onClick={() => setViewMode('admin')}>⚙️ GM Panel</Button>
+                <Button
+                  size="small"
+                  type={viewMode === 'public' ? 'primary' : 'default'}
+                  onClick={() => setViewMode('public')}
+                >
+                  📖 View
+                </Button>
+                <Button
+                  size="small"
+                  type={viewMode === 'admin' ? 'primary' : 'default'}
+                  onClick={() => setViewMode('admin')}
+                >
+                  ⚙️ GM Panel
+                </Button>
               </Space>
             )}
             {isGM && viewMode === 'admin' && (
@@ -534,7 +575,7 @@ export const PlayersPage: React.FC = () => {
           {isGM && <Tag color="red">{stats.hidden} hidden</Tag>}
         </Space>
 
-        <Space wrap size={8} style={{ width: '100%' }}>
+        <Space wrap size={8} style={w100}>
           <Input
             allowClear
             placeholder="Search by name or background…"
@@ -560,7 +601,7 @@ export const PlayersPage: React.FC = () => {
 
         {isGM && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
               <Typography.Text strong>New Character</Typography.Text>
               <Space wrap size={8}>
@@ -572,7 +613,7 @@ export const PlayersPage: React.FC = () => {
                   required
                 />
                 <Space size={6}>
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <Typography.Text type="secondary" style={textSm}>
                     Level:
                   </Typography.Text>
                   <InputNumber min={1} value={level} onChange={(n) => setLevel(Number(n) || 1)} />
@@ -604,7 +645,11 @@ export const PlayersPage: React.FC = () => {
       {Header}
 
       {viewMode === 'admin' && isGM ? (
-        loading ? <Spinner /> : AdminTable
+        loading ? (
+          <Spinner />
+        ) : (
+          AdminTable
+        )
       ) : loading ? (
         <Spinner />
       ) : displayItems.length === 0 ? (
@@ -636,16 +681,16 @@ export const PlayersPage: React.FC = () => {
                     header={
                       <Space size={8}>
                         <span>Manage</span>
-                        <Tag color={isPlayerVisible(p) ? 'green' : 'red'} style={{ margin: 0 }}>
+                        <Tag color={isPlayerVisible(p) ? 'green' : 'red'} style={m0}>
                           {isPlayerVisible(p) ? 'Visible' : 'Hidden'}
                         </Tag>
                       </Space>
                     }
                     key={`gm-${p.id}`}
                   >
-                    <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                        <Typography.Text style={{ fontSize: 13 }}>Visible to players</Typography.Text>
+                    <Space direction="vertical" size={10} style={w100}>
+                      <Space style={spaceBetween}>
+                        <Typography.Text style={textMd}>Visible to players</Typography.Text>
                         <Switch
                           size="small"
                           checked={isPlayerVisible(p)}
@@ -654,11 +699,11 @@ export const PlayersPage: React.FC = () => {
                           unCheckedChildren={<EyeInvisibleOutlined />}
                         />
                       </Space>
-                      <Divider style={{ margin: '4px 0' }} />
+                      <Divider style={dividerSm} />
 
                       {/* ── Edição de dados ── */}
                       {editingSet[p.id] ? (
-                        <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                        <Space direction="vertical" size={8} style={w100}>
                           <Space wrap size={8}>
                             <Input
                               placeholder="Name *"
@@ -672,7 +717,7 @@ export const PlayersPage: React.FC = () => {
                               style={{ minWidth: 180 }}
                             />
                             <Space size={4}>
-                              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                              <Typography.Text type="secondary" style={textSm}>
                                 Level:
                               </Typography.Text>
                               <InputNumber
@@ -715,7 +760,7 @@ export const PlayersPage: React.FC = () => {
                         </Button>
                       )}
 
-                      <Divider style={{ margin: '4px 0' }} />
+                      <Divider style={dividerSm} />
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <Input
                           placeholder="Image alt text"
@@ -732,7 +777,7 @@ export const PlayersPage: React.FC = () => {
                           <Button size="small">Upload PDF</Button>
                         </Upload>
                       </div>
-                      <Divider style={{ margin: '8px 0' }} />
+                      <Divider style={dividerMd} />
                       <Popconfirm
                         title={`Delete "${p.name}"? This will permanently remove their image, sheet, notes and quest links.`}
                         okText="Delete"

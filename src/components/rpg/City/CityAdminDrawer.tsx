@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   Drawer,
@@ -43,9 +44,10 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   // Keep in sync when parent reloads the city object
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
-    setImages((city as any).images ?? []);
-  }, [(city as any).images]);
+    setImages((city as any).images ?? []); // eslint-disable-line @typescript-eslint/no-explicit-any
+  }, [(city as any).images]); // eslint-disable-line @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps
 
   function handleUpload(options: RcCustomRequestOptions) {
     const { onError, onSuccess, file } = options;
@@ -195,7 +197,7 @@ type Props = {
 export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, onChanged }) => {
   const { mobileOnly } = useResponsive();
   const isMobile = mobileOnly;
-  const [loading, setLoading] = React.useState(false);
+  const [, setLoading] = React.useState(false);
 
   const [worlds, setWorlds] = React.useState<World[]>([]);
 
@@ -251,7 +253,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       setEditDesc(city.description ?? '');
       setEditRegion(city.region ?? '');
     }
-  }, [city?.id]);
+  }, [city?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const linkedLoreIds = React.useMemo(() => new Set(linkedLores.map((x) => x.id)), [linkedLores]);
   const linkedQuestIds = React.useMemo(() => new Set(linkedQuests.map((x) => x.id)), [linkedQuests]);
@@ -425,7 +427,9 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 />
               </div>
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>🏷️ Tags</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  🏷️ Tags
+                </Typography.Text>
                 <TagSelect entityType="city" entityId={cityId} />
               </div>
               <Button

@@ -9,6 +9,7 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import { type GmNote, createGmNote, deleteGmNote, listGmNotes, updateGmNote } from '@app/api/gm-notes.api';
 import { apiErrorMessage } from '../../utils/api-error';
+import { m0, textSm, textMd } from '@app/styles/styleUtils';
 
 const { TextArea } = Input;
 
@@ -20,10 +21,6 @@ function parseTags(tags?: string | null): string[] {
     .split(',')
     .map((t) => t.trim())
     .filter(Boolean);
-}
-
-function buildTags(arr: string[]): string {
-  return arr.join(', ');
 }
 
 // ── NoteCard ──────────────────────────────────────────────────────────────────
@@ -45,7 +42,7 @@ function NoteCard({ note, active, onClick }: { note: GmNote; active: boolean; on
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         {note.pinned && <PushpinFilled style={{ fontSize: 11, color: 'var(--primary-color)' }} />}
-        <Typography.Text strong style={{ fontSize: 13 }} ellipsis>
+        <Typography.Text strong style={textMd} ellipsis>
           {note.title}
         </Typography.Text>
       </div>
@@ -223,7 +220,7 @@ export const GmNotesPage: React.FC = () => {
       <Divider style={{ margin: '4px 0', borderColor: dividerColor }} />
 
       {filteredNotes.length === 0 ? (
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        <Typography.Text type="secondary" style={textSm}>
           No notes.
         </Typography.Text>
       ) : (
@@ -277,7 +274,7 @@ export const GmNotesPage: React.FC = () => {
         }}
       >
         <div>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title level={3} style={m0}>
             {activeNote.title}
           </Typography.Title>
           <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Divider, Drawer, Empty, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
@@ -19,6 +20,7 @@ import {
 } from '@app/api/timeline.api';
 import type { TimelineEvent } from '@app/api/timeline.api';
 import { apiErrorMessage } from '../utils/api-error';
+import { m0, w100, textMd, spaceBetween, dividerSm } from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -188,7 +190,7 @@ export const TimelinePage: React.FC = () => {
     setEditTitle(openEvent.title ?? '');
     setEditDate(openEvent.date ?? '');
     setEditDesc(openEvent.description ?? '');
-  }, [openEvent?.id]);
+  }, [openEvent?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   const q = search.trim().toLowerCase();
@@ -273,14 +275,14 @@ export const TimelinePage: React.FC = () => {
 
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
-    <Card density="dense" style={{ marginBottom: 16 }}>
-      <Space direction="vertical" size={10} style={{ width: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }} size={8}>
+    <Card density="dense" className="rpg-page-header-card">
+      <Space direction="vertical" size={10} style={w100}>
+        <Space style={spaceBetween} size={8}>
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>
+            <Typography.Title level={4} style={m0}>
               Timeline
             </Typography.Title>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            <Typography.Text type="secondary" style={textMd}>
               {isGM
                 ? 'Manage campaign events and their visibility.'
                 : 'The major happenings that shaped the fate of the Algol system.'}
@@ -319,7 +321,7 @@ export const TimelinePage: React.FC = () => {
         </Space>
 
         {(isGM || search) && (
-          <Space wrap size={8} style={{ width: '100%' }}>
+          <Space wrap size={8} style={w100}>
             <Input
               allowClear
               placeholder="Search by title, date or description…"
@@ -346,7 +348,7 @@ export const TimelinePage: React.FC = () => {
 
         {isGM && creating && (
           <>
-            <Divider style={{ margin: '4px 0' }} />
+            <Divider style={dividerSm} />
             <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
               <Typography.Text strong>New Event</Typography.Text>
               <Space wrap size={8}>
@@ -396,13 +398,13 @@ export const TimelinePage: React.FC = () => {
           title: '#',
           dataIndex: 'id',
           width: 52,
-          render: (id: number) => <Tag style={{ margin: 0 }}>{id}</Tag>,
+          render: (id: number) => <Tag style={m0}>{id}</Tag>,
         },
         {
           title: 'Date',
           dataIndex: 'date',
           width: 180,
-          render: (v: string) => <span style={{ fontSize: 13 }}>{formatDate(v)}</span>,
+          render: (v: string) => <span style={textMd}>{formatDate(v)}</span>,
         },
         {
           title: 'Title',
@@ -589,7 +591,7 @@ export const TimelinePage: React.FC = () => {
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
             <Tabs.TabPane tab="📅 View" key="view">
-              <Space direction="vertical" size={14} style={{ width: '100%' }}>
+              <Space direction="vertical" size={14} style={w100}>
                 <div>
                   <Typography.Text
                     style={{
@@ -638,7 +640,7 @@ export const TimelinePage: React.FC = () => {
                 )}
                 {isGM && (
                   <>
-                    <Divider style={{ margin: '4px 0' }} />
+                    <Divider style={dividerSm} />
                     <Space>
                       <Button size="small" icon={<EditOutlined />} onClick={() => setDrawerTab('edit')}>
                         Edit
@@ -661,9 +663,9 @@ export const TimelinePage: React.FC = () => {
 
             {isGM && (
               <Tabs.TabPane tab="✏️ Edit" key="edit">
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <Typography.Text style={{ fontSize: 13 }}>Visible to players</Typography.Text>
+                <Space direction="vertical" size={12} style={w100}>
+                  <Space style={spaceBetween}>
+                    <Typography.Text style={textMd}>Visible to players</Typography.Text>
                     <Switch
                       size="small"
                       checked={isVisible(openEvent)}
@@ -672,7 +674,7 @@ export const TimelinePage: React.FC = () => {
                       unCheckedChildren={<EyeInvisibleOutlined />}
                     />
                   </Space>
-                  <Divider style={{ margin: '4px 0' }} />
+                  <Divider style={dividerSm} />
                   <form onSubmit={(e) => void onSaveEdit(e)} style={{ display: 'grid', gap: 10 }}>
                     <Input placeholder="Title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                     <Input

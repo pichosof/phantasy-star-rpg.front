@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/api/quests.api.ts
 import { http } from './http.api';
 

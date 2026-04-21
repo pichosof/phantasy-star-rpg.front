@@ -82,7 +82,7 @@ const GMSwitchPanel: React.FC = () => {
             <Input
               placeholder="GM key"
               value={key}
-              onChange={(e: any) => setKeyState(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyState(e.target.value)}
               onKeyDown={handleKeyDown}
               type="password"
               disabled={loading || !!retryAfter}
