@@ -25,8 +25,8 @@ export const Card: React.FC<CardProps> = ({
   const responsivePadding: [number, number] = isDesktop
     ? defaultPaddings[density].desktop
     : isTablet
-    ? defaultPaddings[density].tablet
-    : defaultPaddings[density].mobile;
+      ? defaultPaddings[density].tablet
+      : defaultPaddings[density].mobile;
 
   const resolvedPadding = padding || padding === 0 ? padding : responsivePadding;
 

@@ -1045,8 +1045,8 @@ export default function MapPage() {
               isGM && m.visible === false
                 ? 'rgba(255, 70, 70, 0.95)'
                 : m.discovered
-                ? 'rgba(255,255,255,0.95)'
-                : 'rgba(180,180,180,0.95)';
+                  ? 'rgba(255,255,255,0.95)'
+                  : 'rgba(180,180,180,0.95)';
 
             return (
               <React.Fragment key={m.id}>
@@ -1150,8 +1150,8 @@ export default function MapPage() {
                         isGM && !d.visible
                           ? 'rgba(255,70,70,0.95)'
                           : d.discovered
-                          ? 'rgba(180,100,255,0.95)'
-                          : 'rgba(120,60,180,0.8)',
+                            ? 'rgba(180,100,255,0.95)'
+                            : 'rgba(120,60,180,0.8)',
                       border: '2px solid rgba(0,0,0,0.85)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
                       cursor: 'pointer',

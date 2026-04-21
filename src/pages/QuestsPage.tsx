@@ -732,7 +732,7 @@ export const QuestsPage: React.FC = () => {
               <Typography.Text type="secondary">No description.</Typography.Text>
             )}
             {(() => {
-              const cities = openId ? questCities[openId] ?? null : null;
+              const cities = openId ? (questCities[openId] ?? null) : null;
               if (citiesLoading) return <Spinner />;
               if (!cities || cities.length === 0) return null;
               return (

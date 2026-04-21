@@ -334,7 +334,7 @@ export const WikiPage: React.FC = () => {
   const [uploading, setUploading] = React.useState(false);
 
   const openPage = React.useMemo(
-    () => (openId != null ? pages.find((p) => p.id === openId) ?? null : null),
+    () => (openId != null ? (pages.find((p) => p.id === openId) ?? null) : null),
     [pages, openId],
   );
 

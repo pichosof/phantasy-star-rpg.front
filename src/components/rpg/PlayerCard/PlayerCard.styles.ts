@@ -13,7 +13,9 @@ export const Card = styled(BaseCard)<CardInternalProps>`
   overflow: hidden;
   padding: 0;
   box-shadow: var(--box-shadow-nft-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 
   .ant-card-body {
     padding: 0;
@@ -22,7 +24,9 @@ export const Card = styled(BaseCard)<CardInternalProps>`
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 0 0 1px rgba(0, 200, 232, 0.2), 0 8px 32px rgba(0, 200, 232, 0.08);
+      box-shadow:
+        0 0 0 1px rgba(0, 200, 232, 0.2),
+        0 8px 32px rgba(0, 200, 232, 0.08);
     }
   }
 `;

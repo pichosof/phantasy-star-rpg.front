@@ -90,12 +90,12 @@ export async function fetchBlobUrl(relativeUrl: string): Promise<string> {
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem(KEY_STORAGE);
   if (token && isTokenValid(token)) {
-    (config.headers ??= {})['Authorization'] = `Bearer ${token}`;
+    config.headers.set('Authorization', `Bearer ${token}`);
   }
 
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
   if (clientSecret) {
-    (config.headers ??= {})['x-client-id'] = clientSecret;
+    config.headers.set('x-client-id', clientSecret);
   }
 
   return config;

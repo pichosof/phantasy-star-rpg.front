@@ -67,7 +67,7 @@ export const NPC_ROLES = [
   'Neutral',
 ] as const;
 
-export type NpcRole = typeof NPC_ROLES[number];
+export type NpcRole = (typeof NPC_ROLES)[number];
 
 // ── Role colour system ────────────────────────────────────────────────────────
 
@@ -1165,8 +1165,8 @@ export const NPCsPage: React.FC = () => {
               search || filterRole || filterLoc
                 ? 'No characters match the filters.'
                 : isGM
-                ? 'No NPCs registered yet.'
-                : 'No characters revealed yet.'
+                  ? 'No NPCs registered yet.'
+                  : 'No characters revealed yet.'
             }
           />
         </Card>

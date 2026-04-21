@@ -489,8 +489,8 @@ export const DiceRollerPage: React.FC = () => {
         const suffix = allEdged
           ? ' ALL dice edged. That is legendary (and completely useless).'
           : edgeCount > 1
-          ? ` ${edgeCount} dice edged at once. Remarkable.`
-          : '';
+            ? ` ${edgeCount} dice edged at once. Remarkable.`
+            : '';
 
         message.open({
           type: 'warning',

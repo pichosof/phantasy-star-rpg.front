@@ -412,7 +412,7 @@ export const LoresAdminPage: React.FC = () => {
                   (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
                 }}
               >
-                <div style={{ height: 8, background: cat ? CATEGORY_STRIP[cat] ?? '#d9d9d9' : '#d9d9d9' }} />
+                <div style={{ height: 8, background: cat ? (CATEGORY_STRIP[cat] ?? '#d9d9d9') : '#d9d9d9' }} />
                 <div
                   style={{
                     padding: '14px 16px 12px',
@@ -424,7 +424,7 @@ export const LoresAdminPage: React.FC = () => {
                 >
                   <Space size={6} style={spaceBetween}>
                     <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
-                      {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
+                      {cat ? (CATEGORY_LABEL[cat] ?? cat) : 'No category'}
                     </Tag>
                     {isGM && (
                       <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
@@ -476,7 +476,7 @@ export const LoresAdminPage: React.FC = () => {
               <Space style={spaceBetween} wrap>
                 <Space size={6}>
                   <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
-                    {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
+                    {cat ? (CATEGORY_LABEL[cat] ?? cat) : 'No category'}
                   </Tag>
                   <Tag color={vis ? 'green' : 'red'} style={m0}>
                     {vis ? 'Visible' : 'Hidden'}
@@ -554,7 +554,7 @@ export const LoresAdminPage: React.FC = () => {
                         {l.title}
                       </Typography.Text>
                       <Tag color={cat ? CATEGORY_COLOR[cat] : 'default'} style={m0}>
-                        {cat ? CATEGORY_LABEL[cat] ?? cat : 'No category'}
+                        {cat ? (CATEGORY_LABEL[cat] ?? cat) : 'No category'}
                       </Tag>
                     </Space>
                     {l.content && (

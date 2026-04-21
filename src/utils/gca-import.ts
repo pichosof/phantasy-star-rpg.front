@@ -171,7 +171,7 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
         ({
           name: directText(t, 'name'),
           points: directNum(t, 'points'),
-        } as GurpsListItem),
+        }) as GurpsListItem,
     )
     .filter((c) => c.name);
 
@@ -182,7 +182,7 @@ function parseGca5Xml(xmlText: string): GcaImportResult {
         ({
           name: buildTraitDisplayName(t),
           points: directNum(t, 'points'),
-        } as GurpsListItem),
+        }) as GurpsListItem,
     )
     .filter((a) => a.name);
 

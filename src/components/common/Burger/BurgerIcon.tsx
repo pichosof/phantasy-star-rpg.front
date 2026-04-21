@@ -23,7 +23,8 @@ export const BurgerIcon = styled(Burger)<{ isCross: boolean }>`
 
   path {
     fill: none;
-    transition: stroke-dashoffset 0.5s cubic-bezier(0.25, -0.25, 0.75, 1.25),
+    transition:
+      stroke-dashoffset 0.5s cubic-bezier(0.25, -0.25, 0.75, 1.25),
       stroke-dasharray 0.5s cubic-bezier(0.25, -0.25, 0.75, 1.25);
     stroke-width: 30px;
     stroke-linecap: round;
