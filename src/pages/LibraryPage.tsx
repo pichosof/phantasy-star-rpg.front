@@ -56,7 +56,24 @@ import {
   uploadLibraryDocument,
 } from '@app/api/library.api';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
-import { m0, w100, textXs, textSm, textMd, bold700, spaceBetween, dividerMd } from '@app/styles/styleUtils';
+import {
+  dividerMd,
+  flex1Min0,
+  flexCenter,
+  flexCenterFull,
+  flexRowToCol,
+  flexShrink0,
+  gridGap10,
+  m0,
+  mb6,
+  spaceBetween,
+  textMd,
+  textSm,
+  textXs,
+  w100,
+  wordBreakAll,
+  wrapAnywhere,
+} from '@app/styles/styleUtils';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -130,7 +147,7 @@ const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobil
   if (err) return <div style={{ padding: 24, color: 'red' }}>{err}</div>;
   if (!html)
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <div style={flexCenterFull}>
         <Spin />
       </div>
     );
@@ -166,7 +183,7 @@ const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile
 
   if (!text)
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <div style={flexCenterFull}>
         <Spin />
       </div>
     );
@@ -486,7 +503,7 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
       destroyOnClose
     >
       {loading && (
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ ...flexCenter, flex: 1 }}>
           <Spin size="large" tip="Loading document…" />
         </div>
       )}
@@ -623,20 +640,28 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
   }
 
   return (
-    <Card
-      size="small"
-      style={{ opacity: !doc.visible && isGM ? 0.65 : 1 }}
-      title={
-        <Space wrap size={6}>
-          <FileOutlined />
-          <span style={bold700}>{doc.title}</span>
-          <Tag color={mimeColor(doc.mime)}>{mimeLabel(doc.mime)}</Tag>
-          {doc.category && <Tag>{doc.category}</Tag>}
-          {isGM && !doc.visible && <Tag color="red">Hidden</Tag>}
+    <Card size="small" style={{ opacity: !doc.visible && isGM ? 0.65 : 1 }}>
+      {/* Header row — stacks on mobile so long titles don't crush the action buttons */}
+      <div style={{ ...flexRowToCol(isMobile), ...mb6 }}>
+        {/* Title + badges */}
+        <Space size={6} wrap style={flex1Min0}>
+          <FileOutlined style={flexShrink0} />
+          <Typography.Text strong style={wrapAnywhere}>
+            {doc.title}
+          </Typography.Text>
+          <Tag color={mimeColor(doc.mime)} style={m0}>
+            {mimeLabel(doc.mime)}
+          </Tag>
+          {doc.category && <Tag style={m0}>{doc.category}</Tag>}
+          {isGM && !doc.visible && (
+            <Tag color="red" style={m0}>
+              Hidden
+            </Tag>
+          )}
         </Space>
-      }
-      extra={
-        <Space size={6} wrap>
+
+        {/* Action buttons */}
+        <Space size={6} wrap style={{ ...flexShrink0, justifyContent: isMobile ? 'flex-end' : undefined }}>
           {isGM && (
             <>
               <Switch
@@ -665,15 +690,15 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
             {!isMobile && (canView ? 'Download' : 'Open')}
           </Button>
         </Space>
-      }
-    >
+      </div>
+
       {doc.description && (
         <Typography.Text type="secondary" style={textMd}>
           {doc.description}
         </Typography.Text>
       )}
       <div style={{ marginTop: doc.description ? 6 : 0 }}>
-        <Typography.Text type="secondary" style={textXs}>
+        <Typography.Text type="secondary" style={{ ...textXs, ...wordBreakAll }}>
           {formatBytes(doc.size)} · {doc.originalName}
         </Typography.Text>
       </div>
@@ -1160,7 +1185,7 @@ const LibraryPage: React.FC = () => {
             />
           </Card>
         ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
+          <div style={gridGap10}>
             {filtered.map((doc) => (
               <DocCard
                 key={doc.id}

@@ -36,8 +36,36 @@ export const flexCenter: CSSProperties = {
   justifyContent: 'center',
 };
 
+export const flexCenterFull: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+};
+
+export const flex1Min0: CSSProperties = { flex: 1, minWidth: 0 };
+export const flexShrink0: CSSProperties = { flexShrink: 0 };
+
 export const overflowXAuto: CSSProperties = { overflowX: 'auto' };
 export const tableWrap: CSSProperties = { overflowX: 'auto', width: '100%' };
+
+// ── Text overflow ─────────────────────────────────────────────────────────────
+export const wrapAnywhere: CSSProperties = { overflowWrap: 'anywhere' };
+export const wordBreakAll: CSSProperties = { wordBreak: 'break-all' };
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+export const gridGap10: CSSProperties = { display: 'grid', gap: 10 };
+
+// ── Responsive row → column on mobile ────────────────────────────────────────
+export function flexRowToCol(mobile: boolean): CSSProperties {
+  return {
+    display: 'flex',
+    flexDirection: mobile ? 'column' : 'row',
+    gap: mobile ? 8 : 12,
+    alignItems: mobile ? 'stretch' : 'center',
+    justifyContent: 'space-between',
+  };
+}
 
 // ── Images ────────────────────────────────────────────────────────────────────
 export const imgCover: CSSProperties = { width: '100%', objectFit: 'cover', display: 'block' };
