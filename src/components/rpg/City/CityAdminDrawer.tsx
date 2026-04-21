@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import { UPLOAD_MAX_MB } from '@app/config/config';
 import {
   Drawer,
   Tabs,
@@ -162,7 +163,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
       </Upload>
 
       <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-        PNG, JPG, WebP or GIF · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB
+        PNG, JPG, WebP or GIF · max {UPLOAD_MAX_MB} MB
       </Typography.Text>
 
       <Modal

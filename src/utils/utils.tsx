@@ -1,59 +1,11 @@
-import { Col, Row } from 'antd';
 import { NotificationType } from '@app/components/common/Notification/Notification';
-import { CurrencyType } from '@app/interfaces/interfaces';
-import { Priority } from '@app//constants/enums/priorities';
-import { ReactComponent as ETHIcon } from '@app/assets/icons/eth.svg';
-import { ReactComponent as BTCIcon } from '@app/assets/icons/btc.svg';
+import { Priority } from '@app/constants/enums/priorities';
 
 export const camelize = (string: string): string => {
   return string
     .split(' ')
     .map((word, index) => (index === 0 ? word.toLowerCase() : word[0].toUpperCase() + word.slice(1)))
     .join('');
-};
-
-export const getCurrencyPrice = (
-  price: number | string,
-  currency: CurrencyType,
-  isIcon = true,
-): string | React.ReactNode => {
-  switch (currency) {
-    case 'USD': {
-      return isIcon ? `$${price}` : `${price} USD`;
-    }
-
-    case 'BTC': {
-      return isIcon ? (
-        <Row align="middle" gutter={[8, 8]}>
-          <Col style={{ display: 'flex' }}>
-            <BTCIcon />
-          </Col>
-
-          <Col>{price}</Col>
-        </Row>
-      ) : (
-        `${price} BTC`
-      );
-    }
-
-    case 'ETH': {
-      return isIcon ? (
-        <Row align="middle" gutter={[8, 8]}>
-          <Col style={{ display: 'flex' }}>
-            <ETHIcon />
-          </Col>
-
-          <Col>{price}</Col>
-        </Row>
-      ) : (
-        `${price} ETH`
-      );
-    }
-
-    default: {
-      return isIcon ? `$${price}` : `${price} USD`;
-    }
-  }
 };
 
 type MarkArea = {

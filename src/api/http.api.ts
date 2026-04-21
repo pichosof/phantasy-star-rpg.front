@@ -93,7 +93,7 @@ http.interceptors.request.use((config) => {
     (config.headers ??= {})['Authorization'] = `Bearer ${token}`;
   }
 
-  const clientSecret = process.env.REACT_APP_CLIENT_SECRET;
+  const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
   if (clientSecret) {
     (config.headers ??= {})['x-client-id'] = clientSecret;
   }
@@ -116,8 +116,8 @@ const SIMULATE_PROD_KEY = 'dev_simulate_prod';
 };
 
 function isProdBehaviour(): boolean {
-  if (process.env.NODE_ENV !== 'development') return true;
-  if (process.env.REACT_APP_SIMULATE_PROD === 'true') return true;
+  if (!import.meta.env.DEV) return true;
+  if (import.meta.env.VITE_SIMULATE_PROD === 'true') return true;
   return localStorage.getItem(SIMULATE_PROD_KEY) === '1';
 }
 

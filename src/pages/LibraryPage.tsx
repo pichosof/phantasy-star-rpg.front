@@ -56,6 +56,7 @@ import {
   uploadLibraryDocument,
 } from '@app/api/library.api';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
+import { UPLOAD_MAX_MB } from '@app/config/config';
 import {
   dividerMd,
   flex1Min0,
@@ -1003,8 +1004,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
           </Space>
         )}
         <Typography.Text type="secondary" style={textXs}>
-          PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB · max {process.env.REACT_APP_UPLOAD_MAX_MB || 30} MB per
-          file
+          PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB · max {UPLOAD_MAX_MB} MB per file
         </Typography.Text>
       </Space>
     </Card>
