@@ -155,6 +155,8 @@ echarts-for-react        (usa AntD? verificar)
 - Remover `expandIconPosition` remanescente em `Collapse`
 - Padronizar `Tabs` e `Collapse` legados via wrappers compatíveis com `items`
 - Validação: `yarn lint`, `yarn type-check`, `yarn build`
+- Tooling: remover `lessc --js` legado do build de temas
+- Tooling: migrar `vite.config.ts` para `vite.config.mts` e eliminar warning da API CJS do Vite
 
 ---
 

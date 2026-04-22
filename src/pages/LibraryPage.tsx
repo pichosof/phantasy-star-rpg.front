@@ -513,7 +513,7 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
     >
       {loading && (
         <div style={{ ...flexCenter, flex: 1 }}>
-          <Spin size="large" tip="Loading document…" />
+          <Spin size="large" description="Loading document…" />
         </div>
       )}
       {!loading &&

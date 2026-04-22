@@ -9,24 +9,28 @@ type CompatCollapseProps = CollapseProps & {
 
 const Panel: React.FC<LegacyPanelProps> = () => null;
 
-const getLegacyItems = (children: React.ReactNode): CollapseProps['items'] =>
-  React.Children.toArray(children).flatMap((child) => {
+const normalizeLegacyKey = (key: React.Key) => String(key).replace(/^\.\$?/, '');
+
+const getLegacyItems = (children: React.ReactNode): CollapseProps['items'] => {
+  const legacyItems: NonNullable<CollapseProps['items']> = [];
+
+  React.Children.forEach(children, (child) => {
     if (!React.isValidElement<LegacyPanelProps>(child) || child.key == null) {
-      return [];
+      return;
     }
 
     const { children: panelChildren, header, ref: legacyRef, ...itemProps } = child.props;
     void legacyRef;
 
-    return [
-      {
-        ...itemProps,
-        key: String(child.key),
-        label: header,
-        children: panelChildren,
-      },
-    ];
+    legacyItems.push({
+      ...itemProps,
+      key: normalizeLegacyKey(child.key),
+      label: header,
+      children: panelChildren,
+    });
   });
+  return legacyItems;
+};
 
 type CollapseComponent = React.FC<CompatCollapseProps> & {
   Panel: typeof Panel;

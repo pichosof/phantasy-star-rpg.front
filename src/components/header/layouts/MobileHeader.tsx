@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Row } from 'antd';
+import { Col, Row, Space } from 'antd';
 import { SettingsDropdown } from '../components/settingsDropdown/SettingsDropdown';
 import * as S from '../Header.styles';
 import { Popover } from '@app/components/common/Popover/Popover';
@@ -13,21 +13,19 @@ interface MobileHeaderProps {
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ toggleSider, isSiderOpened }) => {
   return (
-    <Row justify="space-between" align="middle">
-      <Col>
-        <Row align="middle">
-          <Col>
-            <SettingsDropdown />
-          </Col>
-          <Col>
+    <Row justify="space-between" align="middle" wrap={false} style={{ width: '100%' }}>
+      <Col flex="auto" style={{ minWidth: 0 }}>
+        <Space size={8} wrap={false}>
+          <SettingsDropdown />
+          <div>
             <Popover placement="bottomRight" trigger="click" content={<GMSwitchPanel />}>
               <Button size="small">GM</Button>
             </Popover>
-          </Col>
-        </Row>
+          </div>
+        </Space>
       </Col>
 
-      <S.BurgerCol>
+      <S.BurgerCol flex="none">
         <S.MobileBurger onClick={toggleSider} isCross={isSiderOpened} />
       </S.BurgerCol>
     </Row>
