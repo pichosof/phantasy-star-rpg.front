@@ -314,7 +314,7 @@ export const SessionsPage: React.FC = () => {
   // ── Header (compartilhado entre os dois modos) ────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         {/* Título + toggles de modo */}
         <Space style={spaceBetween} size={8}>
           <div>
@@ -548,7 +548,7 @@ export const SessionsPage: React.FC = () => {
         const vis = isVisible(s);
         return (
           <Card key={s.id} density="dense">
-            <Space direction="vertical" size={8} style={w100}>
+            <Space orientation="vertical" size={8} style={w100}>
               {/* linha 1: número + tags */}
               <Space style={spaceBetween} wrap>
                 <Space size={6}>
@@ -625,7 +625,7 @@ export const SessionsPage: React.FC = () => {
               title: 'Title',
               key: 'title',
               render: (_: any, s: Session) => (
-                <Space direction="vertical" size={2}>
+                <Space orientation="vertical" size={2}>
                   <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => openForView(s.id)}>
                     {s.title}
                   </Typography.Text>
@@ -743,7 +743,7 @@ export const SessionsPage: React.FC = () => {
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         {/* ── Ver ── */}
         <Tabs.TabPane tab="📖 Session" key="view">
-          <Space direction="vertical" size={16} style={w100}>
+          <Space orientation="vertical" size={16} style={w100}>
             <div style={{ borderRadius: 8, overflow: 'hidden' }}>
               <SessionCover session={openSession} height={240} />
             </div>
@@ -784,9 +784,9 @@ export const SessionsPage: React.FC = () => {
         {/* ── Editar (GM) ── */}
         {isGM && (
           <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Session Data">
-                <Space direction="vertical" size={10} style={w100}>
+                <Space orientation="vertical" size={10} style={w100}>
                   <div>
                     <Typography.Text type="secondary" style={textSm}>
                       Title
@@ -824,7 +824,7 @@ export const SessionsPage: React.FC = () => {
               </Card>
 
               <Card density="dense" title="Cover Image">
-                <Space direction="vertical" size={8} style={w100}>
+                <Space orientation="vertical" size={8} style={w100}>
                   <div>
                     <Typography.Text type="secondary" style={textSm}>
                       Image URL

@@ -222,7 +222,7 @@ export const QuestsAdminPage: React.FC = () => {
 
   const Header: React.FC = () => (
     <Card density="dense">
-      <Space direction="vertical" size={8} style={w100}>
+      <Space orientation="vertical" size={8} style={w100}>
         <Typography.Title level={5} style={m0}>
           Admin — Quests
         </Typography.Title>
@@ -365,7 +365,7 @@ export const QuestsAdminPage: React.FC = () => {
               title: 'Quest',
               key: 'title',
               render: (_: any, qt: Quest) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={8} wrap>
                     <span style={bold700}>{qt.title}</span>
                     <Tag>{qt.status ?? 'active'}</Tag>
@@ -464,7 +464,7 @@ export const QuestsAdminPage: React.FC = () => {
           <Tabs defaultActiveKey="edit">
             <Tabs.TabPane tab="Edit" key="edit">
               <Card density="dense" title="Data">
-                <Space direction="vertical" size={10} style={w100}>
+                <Space orientation="vertical" size={10} style={w100}>
                   <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" />
 
                   <Space wrap>
@@ -507,7 +507,7 @@ export const QuestsAdminPage: React.FC = () => {
             </Tabs.TabPane>
 
             <Tabs.TabPane tab="Preview" key="preview">
-              <Space direction="vertical" size={10} style={w100}>
+              <Space orientation="vertical" size={10} style={w100}>
                 <Card density="comfy" title="Description">
                   <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
                     {(editDescription ?? '').trim() ? (editDescription ?? '').trim() : '—'}

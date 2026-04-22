@@ -270,7 +270,7 @@ export const GmSheetsPage: React.FC = () => {
           </Button>,
         ]}
       >
-        <Space direction="vertical" style={w100} size={12}>
+        <Space orientation="vertical" style={w100} size={12}>
           <div>
             <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Character name

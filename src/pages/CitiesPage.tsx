@@ -1,6 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Modal, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import {
+  Divider,
+  Drawer,
+  Empty,
+  Modal,
+  Popconfirm,
+  Space,
+  Switch,
+  Tabs,
+  Tag,
+  Typography,
+  message,
+} from 'antd';
+import type { TabsProps } from 'antd';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -163,15 +176,17 @@ function CityImageCarousel({ city }: { city: any }) {
         footer={null}
         centered
         width="92vw"
-        bodyStyle={{
-          padding: 0,
-          background: '#000',
-          borderRadius: 8,
-          overflow: 'hidden',
-          textAlign: 'center',
-          position: 'relative',
+        styles={{
+          body: {
+            padding: 0,
+            background: '#000',
+            borderRadius: 8,
+            overflow: 'hidden',
+            textAlign: 'center',
+            position: 'relative',
+          },
         }}
-        destroyOnClose={false}
+        destroyOnHidden={false}
       >
         <img
           src={current.src}
@@ -236,6 +251,7 @@ export const CitiesPage: React.FC = () => {
         setViewMode(gm ? 'gm' : 'players');
       }
     };
+
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
@@ -260,13 +276,16 @@ export const CitiesPage: React.FC = () => {
 
   React.useEffect(() => {
     if (!openCity) return;
+
     if (!openCity.discovered) {
       setCityLores([]);
       setCityQuests([]);
       return;
     }
+
     let alive = true;
     setLinksLoading(true);
+
     Promise.all([listLoresByCityId(openCity.id), listQuestsByCityId(openCity.id)])
       .then(([lores, quests]) => {
         if (!alive) return;
@@ -283,6 +302,7 @@ export const CitiesPage: React.FC = () => {
         if (!alive) return;
         setLinksLoading(false);
       });
+
     return () => {
       alive = false;
     };
@@ -325,7 +345,9 @@ export const CitiesPage: React.FC = () => {
     e.preventDefault();
     const n = name.trim();
     const d = desc.trim();
+
     if (!n) return message.warning('Name is required');
+
     try {
       await CitiesApi.create({ name: n, description: d || null });
       setCreating(false);
@@ -351,6 +373,7 @@ export const CitiesPage: React.FC = () => {
   async function toggleVisible(c: City) {
     const next = !isCityVisible(c);
     setItems((prev) => prev.map((x) => (x.id === c.id ? { ...x, visible: next } : x)));
+
     try {
       await CitiesApi.setVisible(c.id, next);
       message.success(next ? 'City visible to players' : 'City hidden');
@@ -363,6 +386,7 @@ export const CitiesPage: React.FC = () => {
   async function toggleDiscovered(c: City) {
     const next = !c.discovered;
     setItems((prev) => prev.map((x) => (x.id === c.id ? { ...x, discovered: next } : x)));
+
     try {
       await CitiesApi.setDiscovered(c.id, next);
       message.success(next ? 'City marked as discovered' : 'City marked as undiscovered');
@@ -372,10 +396,9 @@ export const CitiesPage: React.FC = () => {
     }
   }
 
-  // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -387,6 +410,7 @@ export const CitiesPage: React.FC = () => {
                 : 'Visible cities — details appear when the GM marks as discovered.'}
             </Typography.Text>
           </div>
+
           <Space size={8} wrap>
             {isGM && (
               <Space size={4}>
@@ -402,6 +426,7 @@ export const CitiesPage: React.FC = () => {
                 </Button>
               </Space>
             )}
+
             {isGM && viewMode === 'gm' && (
               <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
                 {creating ? 'Close' : '+ New City'}
@@ -427,6 +452,7 @@ export const CitiesPage: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 360 }}
           />
+
           {isGM && viewMode === 'gm' && (
             <Space size={4}>
               {(['all', 'visible', 'hidden'] as const).map((v) => (
@@ -468,9 +494,9 @@ export const CitiesPage: React.FC = () => {
     </Card>
   );
 
-  // ── Cards (players + GM mobile) ───────────────────────────────────────────
   function CityCards({ data, mode }: { data: City[]; mode: ViewMode }) {
     if (loading) return <Spinner />;
+
     if (!data.length) {
       return (
         <Card density="comfy">
@@ -478,6 +504,7 @@ export const CitiesPage: React.FC = () => {
         </Card>
       );
     }
+
     return (
       <div style={cardGrid2(mobileOnly)}>
         {data.map((c) => {
@@ -525,6 +552,7 @@ export const CitiesPage: React.FC = () => {
                     ((c as any).imageUrl
                       ? { id: -1, src: resolveApiUrl((c as any).imageUrl), alt: (c as any).imageAlt ?? c.name }
                       : null);
+
                   return cover ? (
                     <div style={imgThumbTop}>
                       <img
@@ -535,6 +563,7 @@ export const CitiesPage: React.FC = () => {
                     </div>
                   ) : null;
                 })()}
+
               <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
                 {mode === 'players'
                   ? playerCanRead
@@ -557,6 +586,7 @@ export const CitiesPage: React.FC = () => {
                         unCheckedChildren={<EyeInvisibleOutlined />}
                       />
                     </Space>
+
                     <Space size={8}>
                       <span className="rpg-text-sm rpg-muted">Discovered:</span>
                       <Switch size="small" checked={c.discovered} onChange={() => void toggleDiscovered(c)} />
@@ -571,7 +601,6 @@ export const CitiesPage: React.FC = () => {
     );
   }
 
-  // ── Desktop GM Table ──────────────────────────────────────────────────────
   const DesktopAdminTable = (
     <Card density="dense" title="Manage Cities">
       <div style={tableWrap}>
@@ -616,13 +645,14 @@ export const CitiesPage: React.FC = () => {
               key: 'name',
               ellipsis: true,
               render: (_: any, c: City) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={6} wrap>
                     <Typography.Text strong>{c.name}</Typography.Text>
                     {!isCityVisible(c) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
                     {c.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
                     {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
                   </Space>
+
                   <Typography.Text
                     type="secondary"
                     style={{
@@ -674,41 +704,30 @@ export const CitiesPage: React.FC = () => {
     </Card>
   );
 
-  // ── CityDrawer (players view) ─────────────────────────────────────────────
-  const CityDrawer = openCity ? (
-    <Drawer
-      open      onClose={() => setOpenCityId(null)}
-      width={mobileOnly ? '100%' : 560}
-      title={
-        <Space wrap size={8}>
-          <span style={bold800}>{openCity.name}</span>
-          {isGM && viewMode === 'gm' && (
+  const cityDrawerTabItems: TabsProps['items'] = openCity
+    ? [
+        {
+          key: 'desc',
+          label: 'Description',
+          children: (
             <>
-              <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>
-                {isCityVisible(openCity) ? 'Visible' : 'Hidden'}
-              </Tag>
-              {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
+              <CityImageCarousel city={openCity as any} />
+              <Card density="comfy" title="Description">
+                <Typography.Paragraph style={preWrap}>
+                  {viewMode === 'players'
+                    ? openCity.discovered === true
+                      ? openCity.description?.trim() || 'No description yet.'
+                      : 'Information unavailable.'
+                    : openCity.description?.trim() || 'No description.'}
+                </Typography.Paragraph>
+              </Card>
             </>
-          )}
-        </Space>
-      }
-    >
-      <Tabs defaultActiveKey="desc">
-        <Tabs.TabPane tab="Description" key="desc">
-          <CityImageCarousel city={openCity as any} />
-          <Card density="comfy" title="Description">
-            <Typography.Paragraph style={preWrap}>
-              {viewMode === 'players'
-                ? openCity.discovered === true
-                  ? openCity.description?.trim() || 'No description yet.'
-                  : 'Information unavailable.'
-                : openCity.description?.trim() || 'No description.'}
-            </Typography.Paragraph>
-          </Card>
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
-          {!openCity.discovered ? (
+          ),
+        },
+        {
+          key: 'lores',
+          label: `Lores (${cityLores.length})`,
+          children: !openCity.discovered ? (
             <Card density="comfy">
               <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
             </Card>
@@ -729,11 +748,12 @@ export const CitiesPage: React.FC = () => {
                 </Card>
               ))}
             </div>
-          )}
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
-          {!openCity.discovered ? (
+          ),
+        },
+        {
+          key: 'quests',
+          label: `Quests (${cityQuests.length})`,
+          children: !openCity.discovered ? (
             <Card density="comfy">
               <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
             </Card>
@@ -760,53 +780,82 @@ export const CitiesPage: React.FC = () => {
                 </Card>
               ))}
             </div>
-          )}
-        </Tabs.TabPane>
+          ),
+        },
+        ...(isGM && viewMode === 'gm'
+          ? [
+              {
+                key: 'gm',
+                label: 'GM Actions',
+                children: (
+                  <Card density="dense" title="Controls">
+                    <Space orientation="vertical" size={12} style={w100}>
+                      <Space style={spaceBetween}>
+                        <div>
+                          <Typography.Text>Visible to players</Typography.Text>
+                          <br />
+                          <Typography.Text type="secondary" style={textSm}>
+                            Hidden cities do not appear in the list.
+                          </Typography.Text>
+                        </div>
+                        <Switch
+                          checked={isCityVisible(openCity)}
+                          onChange={() => void toggleVisible(openCity)}
+                          checkedChildren={<EyeOutlined />}
+                          unCheckedChildren={<EyeInvisibleOutlined />}
+                        />
+                      </Space>
 
-        {isGM && viewMode === 'gm' && (
-          <Tabs.TabPane tab="GM Actions" key="gm">
-            <Card density="dense" title="Controls">
-              <Space direction="vertical" size={12} style={w100}>
-                <Space style={spaceBetween}>
-                  <div>
-                    <Typography.Text>Visible to players</Typography.Text>
-                    <br />
-                    <Typography.Text type="secondary" style={textSm}>
-                      Hidden cities do not appear in the list.
-                    </Typography.Text>
-                  </div>
-                  <Switch
-                    checked={isCityVisible(openCity)}
-                    onChange={() => void toggleVisible(openCity)}
-                    checkedChildren={<EyeOutlined />}
-                    unCheckedChildren={<EyeInvisibleOutlined />}
-                  />
-                </Space>
-                <Space style={spaceBetween}>
-                  <div>
-                    <Typography.Text>Marked as discovered</Typography.Text>
-                    <br />
-                    <Typography.Text type="secondary" style={textSm}>
-                      Unlocks description, lores and quests for players.
-                    </Typography.Text>
-                  </div>
-                  <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
-                </Space>
-                <Divider style={dividerSm} />
-                <Typography.Text type="secondary" style={textSm}>
-                  Created: {formatDate((openCity as any).createdAt)}
-                  {'  ·  '}
-                  Updated: {formatDate((openCity as any).updatedAt)}
-                </Typography.Text>
-              </Space>
-            </Card>
-          </Tabs.TabPane>
-        )}
-      </Tabs>
+                      <Space style={spaceBetween}>
+                        <div>
+                          <Typography.Text>Marked as discovered</Typography.Text>
+                          <br />
+                          <Typography.Text type="secondary" style={textSm}>
+                            Unlocks description, lores and quests for players.
+                          </Typography.Text>
+                        </div>
+                        <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
+                      </Space>
+
+                      <Divider style={dividerSm} />
+
+                      <Typography.Text type="secondary" style={textSm}>
+                        Created: {formatDate((openCity as any).createdAt)}
+                        {'  ·  '}
+                        Updated: {formatDate((openCity as any).updatedAt)}
+                      </Typography.Text>
+                    </Space>
+                  </Card>
+                ),
+              },
+            ]
+          : []),
+      ]
+    : [];
+
+  const CityDrawer = openCity ? (
+    <Drawer
+      open={!!openCity}
+      onClose={() => setOpenCityId(null)}
+      size={mobileOnly ? '100%' : 560}
+      title={
+        <Space wrap size={8}>
+          <span style={bold800}>{openCity.name}</span>
+          {isGM && viewMode === 'gm' && (
+            <>
+              <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>
+                {isCityVisible(openCity) ? 'Visible' : 'Hidden'}
+              </Tag>
+              {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
+            </>
+          )}
+        </Space>
+      }
+    >
+      <Tabs defaultActiveKey="desc" items={cityDrawerTabItems} />
     </Drawer>
   ) : null;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       <PageTitle>Cities</PageTitle>

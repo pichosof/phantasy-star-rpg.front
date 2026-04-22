@@ -205,7 +205,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           {worlds.length === 0 ? (
             <Empty description="No worlds created yet." />
           ) : (
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {worlds.map((w) => (
                 <div
                   key={w.id}
@@ -217,7 +217,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                   }}
                 >
                   {editId === w.id ? (
-                    <Space direction="vertical" size={8} style={w100}>
+                    <Space orientation="vertical" size={8} style={w100}>
                       <Input
                         size="small"
                         value={editName}
@@ -294,7 +294,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           }
           key="create"
         >
-          <Space direction="vertical" size={10} style={w100}>
+          <Space orientation="vertical" size={10} style={w100}>
             <Form layout="vertical">
               <Form.Item label="Name" required>
                 <Input
@@ -787,7 +787,7 @@ export default function MapPage() {
   if (!world || !worldImg) {
     return (
       <div style={{ padding: 24 }}>
-        <Space direction="vertical" size={12}>
+        <Space orientation="vertical" size={12}>
           <Typography.Title level={4}>Map</Typography.Title>
           <Typography.Text type="secondary">No world with image defined.</Typography.Text>
           {isGM && (
@@ -818,7 +818,7 @@ export default function MapPage() {
 
   return (
     <div style={{ padding: 16 }}>
-      <Space direction="vertical" style={w100} size={12}>
+      <Space orientation="vertical" style={w100} size={12}>
         {!presentMode && (
           <Typography.Title level={3} style={m0}>
             Map — {world.name}
@@ -1217,7 +1217,7 @@ export default function MapPage() {
             <Tabs defaultActiveKey="details">
               {/* ── Details ── */}
               <Tabs.TabPane tab="Details" key="details">
-                <Space direction="vertical" size="small" style={w100}>
+                <Space orientation="vertical" size="small" style={w100}>
                   <Typography.Text type="secondary">{openCity.region || 'Region not specified'}</Typography.Text>
                   {openCity.imageUrl && (isGM || openCity.discovered) && (
                     <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 180, marginBottom: 8 }}>
@@ -1277,7 +1277,7 @@ export default function MapPage() {
               {/* ── Image (GM only) ── */}
               {isGM && (
                 <Tabs.TabPane tab="🖼️ Image" key="image">
-                  <Space direction="vertical" size={12} style={w100}>
+                  <Space orientation="vertical" size={12} style={w100}>
                     {openCity.imageUrl ? (
                       <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
                         <img
@@ -1306,7 +1306,7 @@ export default function MapPage() {
               {/* ── Controls (GM only) ── */}
               {isGM && (
                 <Tabs.TabPane tab="⚙️ Controls" key="controls">
-                  <Space direction="vertical" size={16} style={w100}>
+                  <Space orientation="vertical" size={16} style={w100}>
                     {/* Visible */}
                     <Space style={spaceBetween}>
                       <div>
@@ -1451,7 +1451,7 @@ export default function MapPage() {
           }
         >
           {openDungeon && (
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
               {openDungeon.description ? (
                 <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>

@@ -18,6 +18,7 @@ export const Card: React.FC<CardProps> = ({
   autoHeight = false,
   density = 'comfy',
   children,
+  variant = 'outlined',
   ...props
 }) => {
   const { isTablet, isDesktop } = useResponsive();
@@ -36,7 +37,7 @@ export const Card: React.FC<CardProps> = ({
     <S.Card
       size={resolvedSize}
       className={className}
-      bordered={false}
+      variant={variant}
       $padding={resolvedPadding}
       $autoHeight={autoHeight}
       {...props}

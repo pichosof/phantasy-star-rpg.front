@@ -34,7 +34,7 @@ export const Notification: React.FC<NotificationProps> = ({ type, mentionIconSrc
   return (
     <S.SpaceWrapper type={type} align="start" size="middle">
       {mentionIconSrc ? <S.NotificationIcon src={icon} alt="User icon" /> : icon}
-      <Space direction="vertical">
+      <Space orientation="vertical">
         <S.Title>{title}</S.Title>
         <S.Description>{description}</S.Description>
       </Space>

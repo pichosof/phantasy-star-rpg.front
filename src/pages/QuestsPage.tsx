@@ -276,7 +276,7 @@ export const QuestsPage: React.FC = () => {
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -513,7 +513,7 @@ export const QuestsPage: React.FC = () => {
         const status = (qt.status ?? 'active') as QuestStatus;
         return (
           <Card key={qt.id} density="dense">
-            <Space direction="vertical" size={8} style={w100}>
+            <Space orientation="vertical" size={8} style={w100}>
               <Space style={spaceBetween} wrap>
                 <Space size={6}>
                   <Tag color={STATUS_COLOR[status]} style={m0}>
@@ -596,7 +596,7 @@ export const QuestsPage: React.FC = () => {
               title: 'Quest',
               key: 'title',
               render: (_: any, qt: Quest) => (
-                <Space direction="vertical" size={2}>
+                <Space orientation="vertical" size={2}>
                   <Space size={6} wrap>
                     <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => openForView(qt.id)}>
                       {qt.title}
@@ -710,7 +710,7 @@ export const QuestsPage: React.FC = () => {
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         <Tabs.TabPane tab="📖 Quest" key="view">
-          <Space direction="vertical" size={16} style={w100}>
+          <Space orientation="vertical" size={16} style={w100}>
             <Space wrap size={8}>
               <Tag color={STATUS_COLOR[openQuest.status ?? 'active']}>{STATUS_LABEL[openQuest.status ?? 'active']}</Tag>
               {openQuest.reward && <Tag color="gold">🏆 {openQuest.reward}</Tag>}
@@ -758,9 +758,9 @@ export const QuestsPage: React.FC = () => {
 
         {isGM && (
           <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Quest Data">
-                <Space direction="vertical" size={10} style={w100}>
+                <Space orientation="vertical" size={10} style={w100}>
                   <div>
                     <Typography.Text type="secondary" style={textSm}>
                       Title

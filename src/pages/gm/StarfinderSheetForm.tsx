@@ -256,7 +256,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
                 {lbl} = {sign(total)}
               </div>
-              <Space direction="vertical" size={4} style={w100}>
+              <Space orientation="vertical" size={4} style={w100}>
                 <InputNumber
                   style={w100}
                   size="small"
@@ -324,7 +324,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 8 }}>{lbl}</div>
-              <Space direction="vertical" size={4} style={w100}>
+              <Space orientation="vertical" size={4} style={w100}>
                 <InputNumber
                   style={w100}
                   placeholder="Total"

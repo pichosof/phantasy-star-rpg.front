@@ -545,7 +545,7 @@ export const DungeonsPage: React.FC = () => {
             {
               title: 'Dungeon',
               render: (_: any, d: Dungeon) => (
-                <Space direction="vertical" size={2}>
+                <Space orientation="vertical" size={2}>
                   <Space size={6} wrap>
                     <Typography.Text
                       strong
@@ -641,7 +641,7 @@ export const DungeonsPage: React.FC = () => {
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         <Tabs.TabPane tab="⚔️ Dungeon" key="view">
-          <Space direction="vertical" size={16} style={w100}>
+          <Space orientation="vertical" size={16} style={w100}>
             <DungeonImageCarousel
               images={openDungeon.images ?? []}
               dungeonId={openDungeon.id}
@@ -686,9 +686,9 @@ export const DungeonsPage: React.FC = () => {
 
         {isGM && (
           <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Details">
-                <Space direction="vertical" size={10} style={w100}>
+                <Space orientation="vertical" size={10} style={w100}>
                   <div>
                     <Typography.Text type="secondary" style={textSm}>
                       Name *
@@ -768,7 +768,7 @@ export const DungeonsPage: React.FC = () => {
       <PageTitle>Dungeons</PageTitle>
 
       <Card density="dense" className="rpg-page-header-card">
-        <Space direction="vertical" size={10} style={w100}>
+        <Space orientation="vertical" size={10} style={w100}>
           <Space style={spaceBetween} size={8}>
             <div>
               <Typography.Title level={4} style={m0}>

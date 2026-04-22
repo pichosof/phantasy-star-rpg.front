@@ -10,7 +10,7 @@ export const SettingsDropdown: React.FC = () => {
 
   return (
     <Dropdown
-      dropdownRender={() => <SettingsOverlay />}
+      popupRender ={() => <SettingsOverlay />}
       trigger={['click']}
       onOpenChange={setOpened}
     >

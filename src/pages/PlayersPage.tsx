@@ -225,7 +225,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
         centered
         destroyOnClose
       >
-        <Space direction="vertical" size={12} style={w100}>
+        <Space orientation="vertical" size={12} style={w100}>
           <div>
             <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
               Title *
@@ -530,7 +530,7 @@ export const PlayersPage: React.FC = () => {
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -654,7 +654,7 @@ export const PlayersPage: React.FC = () => {
         <Spinner />
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
-          <Space direction="vertical" size={8} style={{ width: '100%', alignItems: 'center' }}>
+          <Space orientation="vertical" size={8} style={{ width: '100%', alignItems: 'center' }}>
             <Typography.Text type="secondary">No characters found.</Typography.Text>
           </Space>
         </Card>
@@ -688,7 +688,7 @@ export const PlayersPage: React.FC = () => {
                     }
                     key={`gm-${p.id}`}
                   >
-                    <Space direction="vertical" size={10} style={w100}>
+                    <Space orientation="vertical" size={10} style={w100}>
                       <Space style={spaceBetween}>
                         <Typography.Text style={textMd}>Visible to players</Typography.Text>
                         <Switch
@@ -703,7 +703,7 @@ export const PlayersPage: React.FC = () => {
 
                       {/* ── Edição de dados ── */}
                       {editingSet[p.id] ? (
-                        <Space direction="vertical" size={8} style={w100}>
+                        <Space orientation="vertical" size={8} style={w100}>
                           <Space wrap size={8}>
                             <Input
                               placeholder="Name *"

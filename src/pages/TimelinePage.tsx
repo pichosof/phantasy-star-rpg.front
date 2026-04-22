@@ -276,7 +276,7 @@ export const TimelinePage: React.FC = () => {
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -591,7 +591,7 @@ export const TimelinePage: React.FC = () => {
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
             <Tabs.TabPane tab="📅 View" key="view">
-              <Space direction="vertical" size={14} style={w100}>
+              <Space orientation="vertical" size={14} style={w100}>
                 <div>
                   <Typography.Text
                     style={{
@@ -663,7 +663,7 @@ export const TimelinePage: React.FC = () => {
 
             {isGM && (
               <Tabs.TabPane tab="✏️ Edit" key="edit">
-                <Space direction="vertical" size={12} style={w100}>
+                <Space orientation="vertical" size={12} style={w100}>
                   <Space style={spaceBetween}>
                     <Typography.Text style={textMd}>Visible to players</Typography.Text>
                     <Switch

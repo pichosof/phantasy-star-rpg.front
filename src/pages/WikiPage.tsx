@@ -785,7 +785,7 @@ export const WikiPage: React.FC = () => {
         </Space>
       </Space>
 
-      <Space direction="vertical" size={10} style={{ width: '100%', marginBottom: 16 }}>
+      <Space orientation="vertical" size={10} style={{ width: '100%', marginBottom: 16 }}>
         <Space wrap size={10} style={w100}>
           <div style={{ flex: 2, minWidth: 200 }}>
             <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Title *</div>

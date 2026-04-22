@@ -19,6 +19,7 @@ import {
 } from 'antd';
 import { SaveOutlined, DeleteOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
+import type { TabsProps } from 'antd';
 import type { CityForAdmin } from '@app/types/rpg';
 import { listWorlds, World } from '@app/api/worlds.api';
 import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
@@ -43,17 +44,18 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
   const [uploading, setUploading] = React.useState(false);
   const [altInput, setAltInput] = React.useState('');
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
+  const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
 
-  // Keep in sync when parent reloads the city object
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
-    setImages((city as any).images ?? []); // eslint-disable-line @typescript-eslint/no-explicit-any
-  }, [(city as any).images]); // eslint-disable-line @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps
+    setImages((city as any).images ?? []);
+  }, [city]);
 
   function handleUpload(options: RcCustomRequestOptions) {
     const { onError, onSuccess, file } = options;
     const f = file as File;
+
     setUploading(true);
+
     addCityImage(city.id, f, altInput.trim() || undefined)
       .then((img) => {
         onSuccess?.({}, undefined as unknown as XMLHttpRequest);
@@ -71,6 +73,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
 
   async function handleDelete(imgId: number) {
     setDeletingId(imgId);
+
     try {
       await deleteCityImage(city.id, imgId);
       setImages((prev) => prev.filter((i) => i.id !== imgId));
@@ -83,15 +86,13 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
     }
   }
 
-  const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
-
   return (
-    <Space direction="vertical" size={14} style={{ width: '100%' }}>
-      {/* Gallery grid */}
+    <Space orientation="vertical" size={14} style={{ width: '100%' }}>
       {images.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
           {images.map((img) => {
             const src = resolveApiUrl(img.url) ?? img.url;
+
             return (
               <div
                 key={img.id}
@@ -103,6 +104,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
                   onClick={() => setLightbox({ src, alt: img.alt ?? '' })}
                   style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
                 />
+
                 <Popconfirm
                   title="Remove this image?"
                   okText="Remove"
@@ -139,11 +141,11 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
         </div>
       )}
 
-      {/* Alt text for next upload */}
       <div>
         <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
           Alt text for next image (optional)
         </Typography.Text>
+
         <Input
           placeholder="e.g. Aerial view of the city"
           value={altInput}
@@ -172,8 +174,16 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
         footer={null}
         centered
         width="90vw"
-        bodyStyle={{ padding: 0, background: '#000', borderRadius: 8, overflow: 'hidden', textAlign: 'center' }}
-        destroyOnClose
+        styles={{
+          body: {
+            padding: 0,
+            background: '#000',
+            borderRadius: 8,
+            overflow: 'hidden',
+            textAlign: 'center',
+          },
+        }}
+        destroyOnHidden
       >
         {lightbox && (
           <img
@@ -192,19 +202,18 @@ type Props = {
   city: CityForAdmin | null;
   isGM: boolean;
   onClose: () => void;
-  onChanged: () => Promise<void>; // para dar reload na lista de cidades (worldId etc)
+  onChanged: () => Promise<void>;
 };
 
 export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, onChanged }) => {
   const { mobileOnly } = useResponsive();
   const isMobile = mobileOnly;
+
   const [, setLoading] = React.useState(false);
 
   const [worlds, setWorlds] = React.useState<World[]>([]);
-
   const [allLores, setAllLores] = React.useState<Lore[]>([]);
   const [allQuests, setAllQuests] = React.useState<Quest[]>([]);
-
   const [linkedLores, setLinkedLores] = React.useState<Lore[]>([]);
   const [linkedQuests, setLinkedQuests] = React.useState<Quest[]>([]);
 
@@ -222,6 +231,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     if (!open || !city || !isGM) return;
 
     setLoading(true);
+
     try {
       const [ws, loresAll, questsAll, loresLinked, questsLinked] = await Promise.all([
         listWorlds(),
@@ -254,13 +264,14 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       setEditDesc(city.description ?? '');
       setEditRegion(city.region ?? '');
     }
-  }, [city?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [city]);
 
   const linkedLoreIds = React.useMemo(() => new Set(linkedLores.map((x) => x.id)), [linkedLores]);
   const linkedQuestIds = React.useMemo(() => new Set(linkedQuests.map((x) => x.id)), [linkedQuests]);
 
   const availableLores = React.useMemo(() => {
     const s = qLore.trim().toLowerCase();
+
     return allLores
       .filter((l) => !linkedLoreIds.has(l.id))
       .filter((l) => (!s ? true : l.title.toLowerCase().includes(s)));
@@ -268,6 +279,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   const availableQuests = React.useMemo(() => {
     const s = qQuest.trim().toLowerCase();
+
     return allQuests
       .filter((q) => !linkedQuestIds.has(q.id))
       .filter((q) => (!s ? true : q.title.toLowerCase().includes(s)));
@@ -275,10 +287,15 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   async function doLinkLore(loreId: number) {
     if (!city) return;
+
     try {
       await linkLoreToCity(loreId, city.id);
       const lore = allLores.find((x) => x.id === loreId);
-      if (lore) setLinkedLores((prev) => [...prev, lore]);
+
+      if (lore) {
+        setLinkedLores((prev) => [...prev, lore]);
+      }
+
       message.success('Lore linked.');
     } catch {
       message.error('Failed to link lore.');
@@ -287,6 +304,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   async function doUnlinkLore(loreId: number) {
     if (!city) return;
+
     try {
       await unlinkLoreFromCity(loreId, city.id);
       setLinkedLores((prev) => prev.filter((x) => x.id !== loreId));
@@ -298,10 +316,15 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   async function doLinkQuest(questId: number) {
     if (!city) return;
+
     try {
       await linkQuestToCity(questId, city.id);
       const quest = allQuests.find((x) => x.id === questId);
-      if (quest) setLinkedQuests((prev) => [...prev, quest]);
+
+      if (quest) {
+        setLinkedQuests((prev) => [...prev, quest]);
+      }
+
       message.success('Quest linked.');
     } catch {
       message.error('Failed to link quest.');
@@ -310,6 +333,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   async function doUnlinkQuest(questId: number) {
     if (!city) return;
+
     try {
       await unlinkQuestFromCity(questId, city.id);
       setLinkedQuests((prev) => prev.filter((x) => x.id !== questId));
@@ -321,15 +345,22 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   async function saveEdit() {
     if (!city) return;
+
     const n = editName.trim();
-    if (!n) return message.warning('Name cannot be empty.');
+
+    if (!n) {
+      return message.warning('Name cannot be empty.');
+    }
+
     setSaving(true);
+
     try {
       await CitiesApi.update(city.id, {
         name: n,
         description: editDesc.trim() || null,
         region: editRegion.trim() || null,
       });
+
       message.success('City updated.');
       await onChanged();
     } catch {
@@ -352,7 +383,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     }
   }
 
-  const DrawerTitle = (
+  const drawerTitle = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'City'}</span>
@@ -361,50 +392,25 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {city?.visible === false && <Tag color="red">Hidden</Tag>}
         {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
-        {/* se quiser tags extras aqui (mapped/hidden etc), é aqui */}
       </div>
     </div>
   );
 
-  return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      placement={mobileOnly ? 'bottom' : 'right'}
-      width={mobileOnly ? undefined : 720}
-      height={mobileOnly ? '92vh' : undefined}
-      headerStyle={
-        isMobile
-          ? {
-              padding: `calc(12px + env(safe-area-inset-top)) 12px 8px`,
-              alignItems: 'flex-start',
-            }
-          : undefined
-      }
-      bodyStyle={isMobile ? { padding: 12, paddingBottom: `calc(12px + env(safe-area-inset-bottom))` } : undefined}
-      destroyOnClose
-      title={
-        isMobile ? (
-          DrawerTitle
-        ) : (
-          <Space>
-            <span>Admin · {city?.name ?? 'City'}</span>
-            {city?.visible === false && <Tag color="red">Hidden</Tag>}
-            {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
-          </Space>
-        )
-      }
-    >
-      {!city ? null : (
-        <Tabs defaultActiveKey="edit">
-          <Tabs.TabPane tab="✏️ Edit" key="edit">
-            <Space direction="vertical" size={14} style={{ width: '100%' }}>
+  const tabItems: TabsProps['items'] = !city
+    ? []
+    : [
+        {
+          key: 'edit',
+          label: '✏️ Edit',
+          children: (
+            <Space orientation="vertical" size={14} style={{ width: '100%' }}>
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                   Name *
                 </Typography.Text>
                 <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="City name" />
               </div>
+
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                   Region
@@ -415,6 +421,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   placeholder="E.g.: Motavia, Palma..."
                 />
               </div>
+
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                   Description
@@ -427,12 +434,14 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   style={{ resize: 'vertical' }}
                 />
               </div>
+
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                   🏷️ Tags
                 </Typography.Text>
                 <TagSelect entityType="city" entityId={cityId} />
               </div>
+
               <Button
                 type="primary"
                 icon={<SaveOutlined />}
@@ -443,10 +452,13 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 Save changes
               </Button>
             </Space>
-          </Tabs.TabPane>
-
-          <Tabs.TabPane tab="Lores" key="lores">
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+          ),
+        },
+        {
+          key: 'lores',
+          label: 'Lores',
+          children: (
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Typography.Text type="secondary">
                 Linked: {linkedLores.length} · Available: {availableLores.length}
               </Typography.Text>
@@ -454,6 +466,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               <Divider style={{ margin: '8px 0' }} />
 
               <Typography.Text strong>Linked</Typography.Text>
+
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedLores.map((l) => (
                   <div key={l.id} style={{ display: 'grid', gap: 6 }}>
@@ -468,12 +481,14 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                     </Button>
                   </div>
                 ))}
+
                 {!linkedLores.length && <Typography.Text type="secondary">No lores linked.</Typography.Text>}
               </div>
 
               <Divider />
 
               <Typography.Text strong>Link new</Typography.Text>
+
               <Input allowClear placeholder="Search lore..." value={qLore} onChange={(e) => setQLore(e.target.value)} />
 
               <div
@@ -498,13 +513,17 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                     </Button>
                   </div>
                 ))}
+
                 {!availableLores.length && <Typography.Text type="secondary">Nothing to link.</Typography.Text>}
               </div>
             </Space>
-          </Tabs.TabPane>
-
-          <Tabs.TabPane tab="Quests" key="quests">
-            <Space direction="vertical" style={{ width: '100%' }} size={12}>
+          ),
+        },
+        {
+          key: 'quests',
+          label: 'Quests',
+          children: (
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
               <Typography.Text type="secondary">
                 Linked: {linkedQuests.length} · Available: {availableQuests.length}
               </Typography.Text>
@@ -512,6 +531,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               <Divider style={{ margin: '8px 0' }} />
 
               <Typography.Text strong>Linked</Typography.Text>
+
               <div style={{ display: 'grid', gap: 8 }}>
                 {linkedQuests.map((q) => (
                   <div key={q.id} style={{ display: 'grid', gap: 6 }}>
@@ -520,17 +540,20 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                       {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
+
                     <Button danger size="small" block={mobileOnly} onClick={() => void doUnlinkQuest(q.id)}>
                       Unlink
                     </Button>
                   </div>
                 ))}
+
                 {!linkedQuests.length && <Typography.Text type="secondary">No quests linked.</Typography.Text>}
               </div>
 
               <Divider />
 
               <Typography.Text strong>Link new</Typography.Text>
+
               <Input
                 allowClear
                 placeholder="Search quest..."
@@ -554,23 +577,30 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                       {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
+
                     <Button type="primary" size="small" block={mobileOnly} onClick={() => void doLinkQuest(q.id)}>
                       Link
                     </Button>
                   </div>
                 ))}
+
                 {!availableQuests.length && <Typography.Text type="secondary">Nothing to link.</Typography.Text>}
               </div>
             </Space>
-          </Tabs.TabPane>
-
-          <Tabs.TabPane tab="Images" key="image">
-            <CityImagesTab city={city} onChanged={onChanged} />
-          </Tabs.TabPane>
-
-          <Tabs.TabPane tab="World" key="world">
-            <Space direction={mobileOnly ? 'vertical' : 'horizontal'} wrap style={{ width: '100%' }}>
+          ),
+        },
+        {
+          key: 'image',
+          label: 'Images',
+          children: <CityImagesTab city={city} onChanged={onChanged} />,
+        },
+        {
+          key: 'world',
+          label: 'World',
+          children: (
+            <Space orientation={mobileOnly ? 'vertical' : 'horizontal'} wrap style={{ width: '100%' }}>
               <span>World:</span>
+
               <Select
                 style={{ width: mobileOnly ? '100%' : 260 }}
                 value={city.worldId ?? null}
@@ -581,9 +611,44 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 ]}
               />
             </Space>
-          </Tabs.TabPane>
-        </Tabs>
-      )}
+          ),
+        },
+      ];
+
+  return (
+    <Drawer
+      open={open}
+      onClose={onClose}
+      placement={mobileOnly ? 'bottom' : 'right'}
+      size={mobileOnly ? '92vh' : 720}
+      styles={{
+        header: isMobile
+          ? {
+              padding: `calc(12px + env(safe-area-inset-top)) 12px 8px`,
+              alignItems: 'flex-start',
+            }
+          : undefined,
+        body: isMobile
+          ? {
+              padding: 12,
+              paddingBottom: `calc(12px + env(safe-area-inset-bottom))`,
+            }
+          : undefined,
+      }}
+      destroyOnHidden
+      title={
+        isMobile ? (
+          drawerTitle
+        ) : (
+          <Space>
+            <span>Admin · {city?.name ?? 'City'}</span>
+            {city?.visible === false && <Tag color="red">Hidden</Tag>}
+            {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
+          </Space>
+        )
+      }
+    >
+      {!city ? null : <Tabs defaultActiveKey="edit" items={tabItems} />}
     </Drawer>
   );
 };

@@ -231,7 +231,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="Image" key="image">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {monster.imageUrl && (
                 <div style={{ ...imgThumb, maxHeight: 220 }}>
                   <img
@@ -251,7 +251,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="Controls" key="controls">
-            <Space direction="vertical" size={16} style={w100}>
+            <Space orientation="vertical" size={16} style={w100}>
               <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Visible to players</Typography.Text>
@@ -452,7 +452,7 @@ export const BestiaryPage: React.FC = () => {
   // ── Header ────────────────────────────────────────────────────────────────
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -699,7 +699,7 @@ export const BestiaryPage: React.FC = () => {
               key: 'name',
               width: 220,
               render: (_: unknown, m: Monster) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={6} wrap>
                     <Typography.Text strong>{m.name}</Typography.Text>
                     {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
@@ -819,7 +819,7 @@ export const BestiaryPage: React.FC = () => {
                 )}
 
                 {openMonster.discovered ? (
-                  <Space direction="vertical" size={12} style={w100}>
+                  <Space orientation="vertical" size={12} style={w100}>
                     {openMonster.habitat && (
                       <Card density="dense" title="Habitat">
                         <Typography.Text>{openMonster.habitat}</Typography.Text>

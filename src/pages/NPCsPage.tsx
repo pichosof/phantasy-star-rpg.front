@@ -341,7 +341,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Portrait ── */}
           <Tabs.TabPane tab="Portrait" key="image">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {npc.imageUrl ? (
                 <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 260 }}>
                   <img
@@ -378,7 +378,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Sheet ── */}
           <Tabs.TabPane tab="Sheet" key="sheet">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {npc.sheetUrl && <NpcSheetViewer sheetUrl={npc.sheetUrl} />}
               {!npc.sheetUrl && (
                 <div style={{ padding: '24px 0', textAlign: 'center', color: '#8c8c8c' }}>No sheet attached yet.</div>
@@ -408,7 +408,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
           {/* ── Visibility ── */}
           <Tabs.TabPane tab="Visibility" key="ctrl">
-            <Space direction="vertical" size={16} style={w100}>
+            <Space orientation="vertical" size={16} style={w100}>
               <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Visible to players</Typography.Text>
@@ -670,7 +670,7 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
 
           {/* Content */}
           <div style={{ padding: '0 20px 24px' }}>
-            <Space direction="vertical" size={4} style={{ ...w100, marginBottom: 12 }}>
+            <Space orientation="vertical" size={4} style={{ ...w100, marginBottom: 12 }}>
               <Typography.Title level={3} style={m0}>
                 {npc.name}
               </Typography.Title>
@@ -904,7 +904,7 @@ export const NPCsPage: React.FC = () => {
             {
               title: 'NPC',
               render: (_: any, n: Npc) => (
-                <Space direction="vertical" size={2}>
+                <Space orientation="vertical" size={2}>
                   <Space size={6} wrap>
                     <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => setOpenId(n.id)}>
                       {n.name}
@@ -969,7 +969,7 @@ export const NPCsPage: React.FC = () => {
 
       {/* ── Header card ── */}
       <Card density="dense" className="rpg-page-header-card">
-        <Space direction="vertical" size={12} style={w100}>
+        <Space orientation="vertical" size={12} style={w100}>
           <Space style={spaceBetween} size={8}>
             <div>
               <Typography.Title level={4} style={m0}>

@@ -588,7 +588,7 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
       }}
     >
       <Card style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
-        <Space direction="vertical" size={20} style={w100}>
+        <Space orientation="vertical" size={20} style={w100}>
           <LockOutlined style={{ fontSize: 48, color: 'var(--primary-color)' }} />
           <div>
             <Typography.Title level={4} style={m0}>
@@ -750,7 +750,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
 
   return (
     <Modal open={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
-      <Space direction="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
+      <Space orientation="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
         <div>
           <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
             Title *
@@ -840,7 +840,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
   }
 
   return (
-    <Space direction="vertical" size={14} style={w100}>
+    <Space orientation="vertical" size={14} style={w100}>
       <Typography.Text type="secondary" style={textMd}>
         Set the access key players must enter to unlock the library. The key is stored as a <strong>scrypt hash</strong>{' '}
         — it cannot be read back. Min 12 chars, 2+ character classes.
@@ -953,7 +953,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
         </Space>
       }
     >
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space wrap style={w100}>
           <Input
             placeholder="Title (optional — each file defaults to its filename)"
@@ -988,7 +988,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
           </Button>
         </Upload>
         {uploads.size > 0 && (
-          <Space direction="vertical" size={6} style={w100}>
+          <Space orientation="vertical" size={6} style={w100}>
             {Array.from(uploads.entries()).map(([uid, entry]) => (
               <div key={uid}>
                 <Typography.Text style={textSm} ellipsis>
@@ -1114,10 +1114,10 @@ const LibraryPage: React.FC = () => {
     <>
       <PageTitle>Library</PageTitle>
 
-      <Space direction="vertical" size={16} style={w100}>
+      <Space orientation="vertical" size={16} style={w100}>
         {/* Header */}
         <Card size="small">
-          <Space direction="vertical" size={10} style={w100}>
+          <Space orientation="vertical" size={10} style={w100}>
             <Space style={spaceBetween}>
               <Typography.Title level={5} style={m0}>
                 Document Library
