@@ -32,7 +32,7 @@ const MainSider: React.FC<MainSiderProps> = ({ isCollapsed, setCollapsed, ...pro
           <SiderMenu setCollapsed={setCollapsed} />
         </S.SiderContent>
       </S.Sider>
-      {mobileOnly && <Overlay onClick={toggleSider} show={!isCollapsed} />}
+      {mobileOnly && <Overlay onClick={toggleSider} $show={!isCollapsed} />}
     </>
   );
 };

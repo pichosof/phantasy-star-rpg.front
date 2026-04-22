@@ -4,7 +4,8 @@ import { BORDER_RADIUS } from '@app/styles/themes/constants';
 
 export const SettingsOverlayMenu = styled.div`
   width: 13rem;
-  background: var(--component-background);
+  background: var(--additional-background-color);
+  border: 1px solid var(--border-color);
   border-radius: ${BORDER_RADIUS};
   box-shadow: var(--box-shadow);
   padding: 0.5rem 0 0;

@@ -217,9 +217,8 @@ export const GmSheetsPage: React.FC = () => {
       <Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        size={mobileOnly ? '100%' : 860}
+        size={mobileOnly ? '95vh' : 860}
         placement={mobileOnly ? 'bottom' : 'right'}
-        height={mobileOnly ? '95vh' : undefined}
         title={
           activeSheet ? (
             <Space size={12}>

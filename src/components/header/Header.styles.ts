@@ -46,6 +46,8 @@ export const DropdownCollapse = styled(Collapse)`
 export const BurgerCol = styled(Col)`
   z-index: 999;
   display: flex;
+  flex-shrink: 0;
+  margin-left: 0.75rem;
 `;
 
 export const MobileBurger = styled(BurgerIcon)`

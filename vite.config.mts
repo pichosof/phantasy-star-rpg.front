@@ -1,8 +1,10 @@
-import path from 'path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const srcPath = fileURLToPath(new URL('./src', import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -81,12 +83,7 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: { '@app': path.resolve(__dirname, 'src') },
-  },
-  css: {
-    preprocessorOptions: {
-      less: { javascriptEnabled: true },
-    },
+    alias: { '@app': srcPath },
   },
   server: { open: false, port: 3000 },
   build: { outDir: 'build', sourcemap: false },
