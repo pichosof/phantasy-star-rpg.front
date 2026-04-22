@@ -433,7 +433,7 @@ export const QuestsAdminPage: React.FC = () => {
       {/* ✅ Drawer INLINE (não vira componente interno) */}
       {openQuest && (
         <Drawer
-          visible={true}
+          open={true}
           onClose={closeDrawer}
           width={mobileOnly ? '100%' : 720}
           title={

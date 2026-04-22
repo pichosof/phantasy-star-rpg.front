@@ -1,6 +1,5 @@
 import React, { ComponentProps } from 'react';
-import { Select as AntSelect } from 'antd';
-import { RefSelectProps } from 'antd/lib/select';
+import { Select as AntSelect, RefSelectProps } from 'antd';
 import * as S from './Select.styles';
 
 export const { Option } = AntSelect;

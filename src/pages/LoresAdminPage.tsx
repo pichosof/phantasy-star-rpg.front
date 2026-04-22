@@ -623,7 +623,7 @@ export const LoresAdminPage: React.FC = () => {
   // ── Drawer ────────────────────────────────────────────────────────────────
   const DetailDrawer = openLore ? (
     <Drawer
-      visible
+      open
       onClose={() => setOpenId(null)}
       width={mobileOnly ? '100%' : 640}
       title={

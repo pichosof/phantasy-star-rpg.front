@@ -158,7 +158,7 @@ function CityImageCarousel({ city }: { city: any }) {
       )}
 
       <Modal
-        visible={lightbox}
+        open={lightbox}
         onCancel={() => setLightbox(false)}
         footer={null}
         centered
@@ -677,8 +677,7 @@ export const CitiesPage: React.FC = () => {
   // ── CityDrawer (players view) ─────────────────────────────────────────────
   const CityDrawer = openCity ? (
     <Drawer
-      visible
-      onClose={() => setOpenCityId(null)}
+      open      onClose={() => setOpenCityId(null)}
       width={mobileOnly ? '100%' : 560}
       title={
         <Space wrap size={8}>

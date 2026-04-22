@@ -706,7 +706,7 @@ export const SessionsPage: React.FC = () => {
   // ── Drawer (compartilhado) ────────────────────────────────────────────────
   const DetailDrawer = openSession ? (
     <Drawer
-      visible
+      open
       onClose={() => setOpenId(null)}
       width={mobileOnly ? '100%' : 700}
       title={

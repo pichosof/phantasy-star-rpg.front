@@ -107,7 +107,8 @@ export const PdfFrameWrapper = styled.div`
   max-height: 80vh;
 `;
 
-export const LinkLike = styled(Button).attrs({ type: 'text' })`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const LinkLike = styled(Button as any).attrs({ type: 'text' })`
   padding: 0;
   height: auto;
 `;

@@ -675,7 +675,7 @@ export const QuestsPage: React.FC = () => {
   // ── Drawer ────────────────────────────────────────────────────────────────
   const DetailDrawer = openQuest ? (
     <Drawer
-      visible
+      open
       onClose={() => setOpenId(null)}
       width={mobileOnly ? '100%' : 640}
       title={

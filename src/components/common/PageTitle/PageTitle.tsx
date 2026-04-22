@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
 import { WithChildrenProps } from '@app/types/generalTypes';
-import React from 'react';
-import { Helmet } from 'react-helmet';
 
 export const PageTitle: React.FC<WithChildrenProps> = ({ children }) => {
-  return (
-    <Helmet>
-      <title>{children} | RPG Companion</title>
-    </Helmet>
-  );
+  useEffect(() => {
+    const prev = document.title;
+    document.title = `${children} | RPG Companion`;
+    return () => {
+      document.title = prev;
+    };
+  }, [children]);
+
+  return null;
 };

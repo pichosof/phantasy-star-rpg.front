@@ -114,7 +114,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
 
       {/* Modal: Perfil (background completo + dados) */}
       <Modal
-        visible={openProfile}
+        open={openProfile}
         onCancel={() => setOpenProfile(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '760px'}
@@ -208,7 +208,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
 
       {/* Modal: Ficha (PDF) */}
       <Modal
-        visible={openPdf}
+        open={openPdf}
         title={`Sheet — ${player.name}`}
         onCancel={() => setOpenPdf(false)}
         footer={null}

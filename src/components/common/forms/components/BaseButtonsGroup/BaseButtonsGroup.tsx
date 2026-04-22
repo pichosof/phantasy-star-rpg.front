@@ -12,7 +12,7 @@ export const BaseButtonsGroup: React.FC<BaseButtonsGroupProps> = ({ className, o
   return (
     <Row className={className} gutter={[10, 10]} wrap={false}>
       <Col span={12}>
-        <Button block type="ghost" onClick={onCancel} {...props}>
+        <Button block ghost onClick={onCancel} {...props}>
           Cancel
         </Button>
       </Col>

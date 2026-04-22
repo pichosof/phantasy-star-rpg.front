@@ -28,7 +28,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -249,7 +249,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 500}
       title={
@@ -617,7 +617,7 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 520}
       bodyStyle={{ padding: 0 }}

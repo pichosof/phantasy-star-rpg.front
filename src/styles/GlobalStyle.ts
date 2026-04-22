@@ -5,7 +5,6 @@ import {
   lightThemeVariables,
   darkThemeVariables,
   commonThemeVariables,
-  antOverrideCssVariables,
 } from './themes/themeVariables';
 
 export default createGlobalStyle`
@@ -23,7 +22,6 @@ export default createGlobalStyle`
 
   :root {
     ${commonThemeVariables};
-    ${antOverrideCssVariables};
   } 
 
   [data-no-transition] * {
@@ -61,7 +59,7 @@ export default createGlobalStyle`
   a {
     color: var(--primary-color);
     &:hover,:active {
-      color: var(--ant-primary-color-hover);
+      color: var(--primary-color);
     }
   }
   

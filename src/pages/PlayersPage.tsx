@@ -35,7 +35,7 @@ import { Collapse } from '@app/components/common/Collapse/Collapse';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { useResponsive } from '@app/hooks/useResponsive';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 
 import type { Player } from '@app/types/rpg';
 import { PlayersApi } from '@app/api/rpg.api';
@@ -216,7 +216,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
       )}
 
       <Modal
-        visible={modalOpen}
+        open={modalOpen}
         onCancel={() => setModalOpen(false)}
         onOk={() => void handleSave()}
         okText={editing ? 'Save' : 'Add'}

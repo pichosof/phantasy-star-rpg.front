@@ -66,7 +66,7 @@ export const Button = styled(AntButton)<BtnProps>`
         }
       `}
 
-      ${props.type === 'ghost' &&
+      ${props.ghost &&
       css`
         &:hover {
           color: var(--secondary-color);

@@ -18,7 +18,7 @@ import {
   Spin,
 } from 'antd';
 import { SaveOutlined, DeleteOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import type { CityForAdmin } from '@app/types/rpg';
 import { listWorlds, World } from '@app/api/worlds.api';
 import { listLores, linkLoreToCity, unlinkLoreFromCity, Lore } from '@app/api/lore.api';
@@ -167,7 +167,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
       </Typography.Text>
 
       <Modal
-        visible={!!lightbox}
+        open={!!lightbox}
         onCancel={() => setLightbox(null)}
         footer={null}
         centered
@@ -368,7 +368,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
       placement={mobileOnly ? 'bottom' : 'right'}
       width={mobileOnly ? undefined : 720}

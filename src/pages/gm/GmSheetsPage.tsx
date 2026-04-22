@@ -214,7 +214,7 @@ export const GmSheetsPage: React.FC = () => {
 
       {/* ── Sheet editor drawer ── */}
       <Drawer
-        visible={drawerOpen}
+        open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={mobileOnly ? '100%' : 860}
         placement={mobileOnly ? 'bottom' : 'right'}
@@ -258,7 +258,7 @@ export const GmSheetsPage: React.FC = () => {
 
       {/* ── Create modal ── */}
       <Modal
-        visible={createOpen}
+        open={createOpen}
         title="New Character Sheet"
         onCancel={() => setCreateOpen(false)}
         footer={[

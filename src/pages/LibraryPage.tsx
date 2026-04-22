@@ -22,7 +22,7 @@ import {
   Typography,
   Upload,
 } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { apiErrorMessage } from '../utils/api-error';
 import {
   DeleteOutlined,
@@ -494,7 +494,7 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
 
   return (
     <Modal
-      visible={!!doc}
+      open={!!doc}
       onCancel={onClose}
       title={doc?.title ?? 'Document'}
       footer={null}
@@ -749,7 +749,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
   }
 
   return (
-    <Modal visible={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
+    <Modal open={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
       <Space direction="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
         <div>
           <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>

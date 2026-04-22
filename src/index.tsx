@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
+import 'antd/dist/reset.css';
 import App from './App';
 import { store } from '@app/store/store';
 import '@app/config/config';

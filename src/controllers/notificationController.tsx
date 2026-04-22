@@ -2,8 +2,6 @@ import React from 'react';
 import { notification } from 'antd';
 import styled from 'styled-components';
 import { CheckCircleFilled, ExclamationCircleFilled, InfoCircleFilled, StopFilled } from '@ant-design/icons';
-import { ArgsProps } from 'antd/lib/notification';
-
 interface IconWrapperProps {
   $isOnlyTitle: boolean;
 }
@@ -17,7 +15,7 @@ const EmptyDescription = styled.div`
   margin-top: -0.75rem;
 `;
 
-type NotificationProps = ArgsProps;
+type NotificationProps = Parameters<typeof notification.success>[0];
 
 const openSuccessNotification = (config: NotificationProps): void => {
   notification.success({

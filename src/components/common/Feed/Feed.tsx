@@ -12,6 +12,7 @@ export interface FeedProps {
 
 export const Feed: React.FC<FeedProps> = ({ next, hasMore, target = 'main-content', children }) => {
   return (
+    // @ts-expect-error react-infinite-scroll-component types not yet updated for React 19
     <InfiniteScroll
       dataLength={children.length}
       next={next}

@@ -2,17 +2,12 @@ import { ThemeType } from '@app/interfaces/interfaces';
 import { hexToRGB } from '@app/utils/utils';
 import { css } from 'styled-components';
 import { BASE_COLORS } from './constants';
-import { darkColorsTheme, antDarkColorsTheme } from './dark/darkTheme';
+import { darkColorsTheme } from './dark/darkTheme';
 import { lightColorsTheme } from './light/lightTheme';
 
 export const themeObject = {
   light: lightColorsTheme,
   dark: darkColorsTheme,
-};
-
-export const antThemeObject = {
-  light: {},
-  dark: antDarkColorsTheme,
 };
 
 const getThemeVariables = (theme: ThemeType) => css`
@@ -107,8 +102,6 @@ export const lightThemeVariables = css`
 
 export const darkThemeVariables = css`
   ${getThemeVariables('dark')}
-  --ant-success-color-deprecated-bg: ${antThemeObject['dark'].successBg} !important;
-  --ant-success-color-deprecated-border: ${antThemeObject['dark'].successBorder} !important;
 `;
 
 export const commonThemeVariables = css`
@@ -139,6 +132,3 @@ export const commonThemeVariables = css`
   --font-secondary: 'Lato', sans-serif;
 `;
 
-export const antOverrideCssVariables = css`
-  --ant-primary-1: var(--primary1-color) !important;
-`;

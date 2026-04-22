@@ -206,7 +206,7 @@ const DungeonImageCarousel: React.FC<{
       )}
 
       <Modal
-        visible={lightbox}
+        open={lightbox}
         onCancel={() => setLightbox(false)}
         footer={null}
         width="90vw"
@@ -609,8 +609,7 @@ export const DungeonsPage: React.FC = () => {
   // ── Drawer ─────────────────────────────────────────────────────────────────
   const DetailDrawer = openDungeon ? (
     <Drawer
-      visible
-      onClose={() => setOpenId(null)}
+      open      onClose={() => setOpenId(null)}
       width={mobileOnly ? '100%' : 680}
       title={
         <Space wrap size={8}>

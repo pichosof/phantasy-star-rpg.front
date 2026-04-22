@@ -1,6 +1,6 @@
 import React, { ComponentProps } from 'react';
 import { Form } from 'antd';
-import { ValidateErrorEntity } from 'rc-field-form/lib/interface';
+import type { ValidateErrorEntity } from '@rc-component/form/lib/interface';
 import { BaseFormTitle } from '@app/components/common/forms/components/BaseFormTitle/BaseFormTitle';
 import { BaseFormItem } from '@app/components/common/forms/components/BaseFormItem/BaseFormItem';
 import { BaseFormList } from '@app/components/common/forms/components/BaseFormList/BaseFormList';

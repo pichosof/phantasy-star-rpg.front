@@ -16,7 +16,7 @@ import {
 } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -166,7 +166,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 520}
       title={
@@ -794,7 +794,7 @@ export const BestiaryPage: React.FC = () => {
           {loading ? <Spinner /> : <MonsterCards data={playerItems} mode="players" />}
 
           <Drawer
-            visible={openId !== null}
+            open={openId !== null}
             onClose={() => setOpenId(null)}
             width={mobileOnly ? '100%' : 540}
             title={

@@ -582,7 +582,7 @@ export const TimelinePage: React.FC = () => {
 
       {/* Drawer de detalhes / edição */}
       <Drawer
-        visible={openId !== null}
+        open={openId !== null}
         onClose={() => setOpenId(null)}
         width={mobileOnly ? '100%' : 480}
         title={openEvent?.title ?? 'Event'}

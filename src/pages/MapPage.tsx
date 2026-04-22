@@ -21,7 +21,7 @@ import {
   Upload,
 } from 'antd';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { m0, w100, textXs, textSm, bold800, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
 
@@ -190,7 +190,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
       width={mobileOnly ? '100%' : 480}
       title={
@@ -1197,7 +1197,7 @@ export default function MapPage() {
         {/* ── City Drawer ── */}
         <Drawer
           zIndex={drawerZIndex}
-          visible={!!openCity}
+          open={!!openCity}
           onClose={() => setOpenCityId(null)}
           width={mobileOnly ? '100%' : 580}
           title={
@@ -1434,7 +1434,7 @@ export default function MapPage() {
         {/* ── Dungeon Drawer ── */}
         <Drawer
           zIndex={drawerZIndex}
-          visible={!!openDungeon}
+          open={!!openDungeon}
           onClose={() => setOpenDungeonId(null)}
           width={mobileOnly ? '100%' : 480}
           title={

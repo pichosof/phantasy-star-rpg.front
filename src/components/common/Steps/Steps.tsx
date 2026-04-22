@@ -1,16 +1,9 @@
-import { Steps as AntdSteps, StepsProps, StepProps } from 'antd';
+import React from 'react';
+import type { StepsProps } from 'antd';
 import * as S from './Steps.styles';
 
-const { Step: AntdStep } = AntdSteps;
+export type { StepsProps };
 
-export const Steps: React.FC<StepsProps> = ({ children, ...otherProps }) => {
-  return (
-    <S.Steps className="steps" {...otherProps}>
-      {children}
-    </S.Steps>
-  );
-};
-
-export const Step: React.FC<StepProps> = (props) => {
-  return <AntdStep {...props} />;
+export const Steps: React.FC<StepsProps> = ({ ...otherProps }) => {
+  return <S.Steps className="steps" {...otherProps} />;
 };
