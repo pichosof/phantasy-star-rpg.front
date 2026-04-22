@@ -85,6 +85,7 @@ export default defineConfig({
   resolve: {
     alias: { '@app': srcPath },
   },
-  server: { open: false, port: 3000 },
+  server: { host: '0.0.0.0', open: false, port: 3000 },
+  preview: { host: '0.0.0.0' },
   build: { outDir: 'build', sourcemap: false },
 });

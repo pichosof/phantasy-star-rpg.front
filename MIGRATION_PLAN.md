@@ -210,3 +210,99 @@ yarn lint
 # Build
 yarn build
 ```
+
+---
+
+## Addendum â€” LAN / PWA
+
+- Dev server liberado em `0.0.0.0` para acesso por IP na rede local
+- Exemplo atual de teste: `http://192.168.10.198:3000`
+- Botao de install restaurado na engrenagem
+- O prompt nativo de instalacao continua dependendo de contexto seguro
+  (`https` ou `localhost`), entao acesso por IP em `http` serve para uso e QA
+  mobile, mas nao garante instalacao PWA
+
+---
+
+## Draft â€” PR5 Mobile-First
+
+### Objetivo
+
+Transformar o frontend inteiro em mobile-first com `antd-mobile` como base das
+experiencias `< 768px`, mantendo paridade funcional entre desktop, player e GM.
+
+### Premissas
+
+- Mobile vira requisito padrao para toda tela nova ou alterada
+- Menu, header, GM mode, engrenagem, filtros, drawers, tabs, formularios e
+  fluxos de leitura/edicao precisam funcionar no celular
+- `antd-mobile` sera usado como biblioteca base do mobile; AntD desktop continua
+  para >= 768px
+- A migracao sera incremental por fases para evitar regressao ampla
+
+### Escopo
+
+1. Shell global
+   - Navegacao principal
+   - Header
+   - Settings / tema / PWA
+   - Botao e painel de GM
+2. Primitivas mobile compartilhadas
+   - Scaffold de pagina
+   - List/detail
+   - Filter sheet
+   - Action sheet
+   - Formularios mobile
+   - Sticky footer actions
+3. Paridade funcional por pagina
+   - Toda pagina deve manter acesso aos fluxos de player e GM no mobile
+4. Telas complexas
+   - Map
+   - Library
+   - Wiki
+   - GmSheets
+   - DiceRoller
+
+### Fases sugeridas
+
+1. PR5.1 â€” Infra + Shell
+   - Instalar `antd-mobile`
+   - Criar camada compartilhada de responsividade
+   - Refazer menu, header, settings, GM e CTA de PWA no mobile
+2. PR5.2 â€” Primitivas compartilhadas
+   - `MobilePageScaffold`
+   - `MobileSectionTabs`
+   - `MobileFilterSheet`
+   - `MobileActionSheet`
+   - `MobileFormDrawer` / `MobileFormPopup`
+3. PR5.3 â€” CRUDs e paginas de campanha
+   - Players, Cities, Quests, Sessions, Timeline, Lores, Bestiary, NPCs,
+     Dungeons e Tags
+4. PR5.4 â€” Conteudo e GM area
+   - Wiki, Library, GmNotes e GmImages
+5. PR5.5 â€” Fluxos complexos
+   - Map, GmSheets, GurpsSheetForm, StarfinderSheetForm e DiceRoller
+6. PR5.6 â€” Hardening
+   - QA cross-device
+   - Ajustes touch
+   - Revisao visual por tema
+   - Performance
+
+### Definition of Done por tela
+
+- Navegavel em 360px sem bloquear o fluxo principal
+- Sem horizontal scroll acidental
+- Acao principal acessivel por toque
+- Fluxos de GM disponiveis no mobile
+- Formularios usaveis com teclado virtual
+- Drawers, tabs e filtros com estado inicial correto
+- Smoke test em 360x800, 390x844 e 768x1024
+- Validacao minima com `yarn lint`, `yarn type-check` e teste manual mobile
+
+### Riscos conhecidos
+
+- Convivencia visual entre `antd` e `antd-mobile`
+- Sincronizacao de tema entre tokens desktop e mobile
+- Map/PDF/charts em interacao touch
+- Formularios grandes em drawers/popups
+- Paginas com tabela desktop precisando de variante card/list

@@ -1,16 +1,42 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { addDeferredPrompt } from '@app/store/slices/pwaSlice';
+import { useAppDispatch } from '@app/hooks/reduxHooks';
+import { addDeferredPrompt, clearDeferredPrompt, setStandalone } from '@app/store/slices/pwaSlice';
+
+const getIsStandalone = (): boolean =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 export const usePWA = (): void => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      dispatch(addDeferredPrompt(e));
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+
+    const syncStandalone = () => {
+      dispatch(setStandalone(getIsStandalone()));
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      dispatch(addDeferredPrompt(e as BeforeInstallPromptEvent));
+      syncStandalone();
+    };
+
+    const handleAppInstalled = () => {
+      dispatch(clearDeferredPrompt());
+      dispatch(setStandalone(true));
+    };
+
+    syncStandalone();
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    mediaQuery.addEventListener('change', syncStandalone);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      mediaQuery.removeEventListener('change', syncStandalone);
+    };
   }, [dispatch]);
 };
