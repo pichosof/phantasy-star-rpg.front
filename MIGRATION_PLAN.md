@@ -20,7 +20,7 @@ Branch de trabalho: `update-version`
 | ESLint | 7.28 | 8.57 |
 | Prettier | 2.3 | 3.8 |
 | @typescript-eslint | 5.x | 7.18 |
-| AntD | 4.22 (**ainda**) | — |
+| AntD | 4.22 | 6.3 |
 | Node | 16.x | >=20.0.0 |
 
 ### Erros TypeScript conhecidos (335 total) — todos pré-PR4
@@ -48,6 +48,7 @@ Serão resolvidos no PR4 (upgrade AntD).
 | `3ac3ddd` | PR3: TypeScript 4→5, ESLint 7→8, Prettier 2→3 |
 | `15654e4` | docs: MIGRATION_PLAN.md |
 | `ef176c4` | PR6: PWA + Workbox 7 via vite-plugin-pwa |
+| `f78e4c6` | PR4: Ant Design 4→6 + @ant-design/icons 4→6 |
 
 ---
 
@@ -86,7 +87,7 @@ Serão resolvidos no PR4 (upgrade AntD).
 
 ---
 
-### 🔲 PR4 — Ant Design 4 → 6
+### ✅ PR4 — Ant Design 4 → 6
 
 **Contexto:** AntD 5 introduziu design tokens (CSS-in-JS), removeu variáveis
 Less. AntD 6 refina isso. A migração 4→6 exige:
