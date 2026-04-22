@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Collapse, Divider, Input, InputNumber, Modal, Space, Typography, message } from 'antd';
+import { Button, Divider, Input, InputNumber, Modal, Space, Typography, message } from 'antd';
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import type {
   GurpsSheetData,
@@ -11,6 +11,7 @@ import type {
   GurpsLanguage,
 } from '@app/api/character-sheets.api';
 import { importGcaFile } from '@app/utils/gca-import';
+import { Collapse } from '@app/components/common/Collapse/Collapse';
 import { w100, hiddenInput } from '@app/styles/styleUtils';
 
 // ── GURPS Calculations ────────────────────────────────────────────────────────

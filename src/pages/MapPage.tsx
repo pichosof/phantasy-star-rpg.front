@@ -15,7 +15,6 @@ import {
   Space,
   Spin,
   Switch,
-  Tabs,
   Tag,
   Typography,
   Upload,
@@ -23,6 +22,7 @@ import {
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { m0, w100, textXs, textSm, bold800, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
 
 import {
@@ -192,7 +192,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
     <Drawer
       open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 480}
+      size={mobileOnly ? '100%' : 480}
       title={
         <Space>
           <SettingOutlined /> Manage Worlds
@@ -1199,7 +1199,7 @@ export default function MapPage() {
           zIndex={drawerZIndex}
           open={!!openCity}
           onClose={() => setOpenCityId(null)}
-          width={mobileOnly ? '100%' : 580}
+          size={mobileOnly ? '100%' : 580}
           title={
             openCity ? (
               <Space wrap size={8}>
@@ -1436,7 +1436,7 @@ export default function MapPage() {
           zIndex={drawerZIndex}
           open={!!openDungeon}
           onClose={() => setOpenDungeonId(null)}
-          width={mobileOnly ? '100%' : 480}
+          size={mobileOnly ? '100%' : 480}
           title={
             openDungeon ? (
               <Space wrap size={8}>

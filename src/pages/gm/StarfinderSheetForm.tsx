@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Collapse, Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
+import { Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from '@app/components/common/buttons/Button/Button';
+import { Collapse } from '@app/components/common/Collapse/Collapse';
 import type { StarfinderSheetData, SfWeapon, SfEquipmentItem } from '@app/api/character-sheets.api';
 import { w100, textSm, dividerMd } from '@app/styles/styleUtils';
 

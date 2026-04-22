@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import type { MenuProps } from 'antd';
 import * as S from './SiderMenu.styles';
 import { sidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
-import { Menu } from 'antd';
 
 interface SiderContentProps {
   setCollapsed: (isCollapsed: boolean) => void;
@@ -24,6 +24,27 @@ const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
     children?.some(({ url }) => url === location.pathname),
   );
   const defaultOpenKeys = openedSubmenu ? [openedSubmenu.key] : [];
+  const menuItems: MenuProps['items'] = sidebarNavigation.map((nav) =>
+    nav.children && nav.children.length > 0
+      ? {
+          key: nav.key,
+          label: nav.title,
+          icon: nav.icon,
+          popupClassName: 'd-none',
+          children: nav.children.map((childNav) => ({
+            key: childNav.key,
+            icon: childNav.icon,
+            label: <Link to={childNav.url || ''}>{childNav.title}</Link>,
+            title: '',
+          })),
+        }
+      : {
+          key: nav.key,
+          icon: nav.icon,
+          label: <Link to={nav.url || ''}>{nav.title}</Link>,
+          title: '',
+        },
+  );
 
   return (
     <S.Menu
@@ -31,29 +52,13 @@ const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
       defaultSelectedKeys={defaultSelectedKeys}
       defaultOpenKeys={defaultOpenKeys}
       onClick={() => setCollapsed(true)}
-    >
-      {sidebarNavigation.map((nav) =>
-        nav.children && nav.children.length > 0 ? (
-          <Menu.SubMenu
-            key={nav.key}
-            title={nav.title}
-            icon={nav.icon}
-            onTitleClick={() => setCollapsed(false)}
-            popupClassName="d-none"
-          >
-            {nav.children.map((childNav) => (
-              <Menu.Item key={childNav.key} title="">
-                <Link to={childNav.url || ''}>{childNav.title}</Link>
-              </Menu.Item>
-            ))}
-          </Menu.SubMenu>
-        ) : (
-          <Menu.Item key={nav.key} title="" icon={nav.icon}>
-            <Link to={nav.url || ''}>{nav.title}</Link>
-          </Menu.Item>
-        ),
-      )}
-    </S.Menu>
+      items={menuItems}
+      onOpenChange={(openKeys) => {
+        if (openKeys.length > 0) {
+          setCollapsed(false);
+        }
+      }}
+    />
   );
 };
 

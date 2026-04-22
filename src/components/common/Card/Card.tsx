@@ -31,7 +31,7 @@ export const Card: React.FC<CardProps> = ({
 
   const resolvedPadding = padding || padding === 0 ? padding : responsivePadding;
 
-  const resolvedSize = size ? size : isTablet ? 'default' : 'small';
+  const resolvedSize = size ? (size === 'default' ? 'medium' : size) : isTablet ? 'medium' : 'small';
 
   return (
     <S.Card

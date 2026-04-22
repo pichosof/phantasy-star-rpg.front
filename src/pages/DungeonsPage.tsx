@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Modal, Popconfirm, Select, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { Divider, Drawer, Empty, Modal, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -19,6 +19,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { resolveApiUrl } from '@app/api/http.api';
@@ -210,9 +211,9 @@ const DungeonImageCarousel: React.FC<{
         onCancel={() => setLightbox(false)}
         footer={null}
         width="90vw"
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
         centered
-        destroyOnClose
+        destroyOnHidden
       >
         <div
           style={{
@@ -609,8 +610,9 @@ export const DungeonsPage: React.FC = () => {
   // ── Drawer ─────────────────────────────────────────────────────────────────
   const DetailDrawer = openDungeon ? (
     <Drawer
-      open      onClose={() => setOpenId(null)}
-      width={mobileOnly ? '100%' : 680}
+      open
+      onClose={() => setOpenId(null)}
+      size={mobileOnly ? '100%' : 680}
       title={
         <Space wrap size={8}>
           <span style={bold800}>{openDungeon.name}</span>

@@ -118,8 +118,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         onCancel={() => setOpenProfile(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '760px'}
-        bodyStyle={{ padding: 0 }}
-        destroyOnClose
+        styles={{ body: { padding: 0 } }}
+        destroyOnHidden
         title={`Profile — ${player.name}`}
       >
         <div style={{ display: 'grid' }}>
@@ -213,8 +213,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         onCancel={() => setOpenPdf(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '82vw'}
-        bodyStyle={{ padding: 0, height: '80vh' }}
-        destroyOnClose
+        styles={{ body: { padding: 0, height: '80vh' } }}
+        destroyOnHidden
       >
         <S.PdfFrameWrapper>
           {sheetLoading ? (

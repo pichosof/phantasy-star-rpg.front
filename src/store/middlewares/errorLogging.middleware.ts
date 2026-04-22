@@ -6,7 +6,7 @@ import { notificationController } from '@app/controllers/notificationController'
  */
 export const errorLoggingMiddleware: Middleware = () => (next) => (action) => {
   if (isRejectedWithValue(action)) {
-    notificationController.error({ message: String(action.payload) });
+    notificationController.error({ title: String(action.payload) });
   }
 
   return next(action);

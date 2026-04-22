@@ -14,7 +14,7 @@ export const ClipboardInput: React.FC<ClipboardInputProps> = ({ valueToCopy, ...
     () =>
       valueToCopy &&
       navigator.clipboard.writeText(valueToCopy).then(() => {
-        notificationController.info({ message: 'Copied' });
+        notificationController.info({ title: 'Copied' });
       }),
     [valueToCopy],
   );

@@ -74,7 +74,7 @@ const EntityDetailModal: React.FC<{
 
   return (
     <Modal
-      visible
+      open
       onCancel={onClose}
       footer={null}
       title={

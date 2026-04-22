@@ -131,4 +131,3 @@ export const commonThemeVariables = css`
   --font-main: 'Montserrat', sans-serif;
   --font-secondary: 'Lato', sans-serif;
 `;
-

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/SessionsPage.tsx
 import React from 'react';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { Badge, Divider, Drawer, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
@@ -10,6 +10,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createSession, deleteSession, listSessions, setSessionVisibility, updateSession } from '@app/api/sessions.api';
@@ -708,7 +709,7 @@ export const SessionsPage: React.FC = () => {
     <Drawer
       open
       onClose={() => setOpenId(null)}
-      width={mobileOnly ? '100%' : 700}
+      size={mobileOnly ? '100%' : 700}
       title={
         <Space wrap size={8}>
           <span style={bold800}>

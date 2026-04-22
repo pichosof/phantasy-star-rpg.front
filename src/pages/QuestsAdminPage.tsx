@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/rpg/QuestsAdminPage.tsx
 import React from 'react';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Tag, Tabs, Typography, message } from 'antd';
+import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Tag, Typography, message } from 'antd';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -10,6 +10,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Switch } from '@app/components/common/Switch/Switch';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createQuest, deleteQuest, listQuestsPublic, setQuestVisibility, updateQuest } from '@app/api/quests.api';
@@ -435,7 +436,7 @@ export const QuestsAdminPage: React.FC = () => {
         <Drawer
           open={true}
           onClose={closeDrawer}
-          width={mobileOnly ? '100%' : 720}
+          size={mobileOnly ? '100%' : 720}
           title={
             <Space wrap size={8}>
               <span style={bold800}>Edit · {openQuest.title}</span>

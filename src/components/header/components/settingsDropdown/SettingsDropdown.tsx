@@ -9,11 +9,7 @@ export const SettingsDropdown: React.FC = () => {
   const [isOpened, setOpened] = useState(false);
 
   return (
-    <Dropdown
-      popupRender ={() => <SettingsOverlay />}
-      trigger={['click']}
-      onOpenChange={setOpened}
-    >
+    <Dropdown popupRender={() => <SettingsOverlay />} trigger={['click']} onOpenChange={setOpened}>
       <HeaderActionWrapper>
         <Button ghost={isOpened} type={isOpened ? 'default' : 'text'} icon={<SettingOutlined />} />
       </HeaderActionWrapper>

@@ -51,6 +51,11 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
   }
 
   const currentTags = allTags.filter((t) => entityTagIds.includes(t.id));
+  const options = allTags.map((tag) => ({
+    value: tag.id,
+    label: tag.name,
+    color: tag.color,
+  }));
 
   if (readonly) {
     if (currentTags.length === 0) return null;
@@ -75,7 +80,23 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
         value={entityTagIds}
         onChange={(ids: number[]) => void handleChange(ids)}
         loading={saving}
-        optionFilterProp="children"
+        optionFilterProp="label"
+        options={options}
+        optionRender={(option) => (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: (option.data as { color?: string }).color,
+                display: 'inline-block',
+                flexShrink: 0,
+              }}
+            />
+            {option.data.label}
+          </span>
+        )}
         tagRender={({ label, value, closable, onClose }) => {
           const tag = allTags.find((t) => t.id === (value as number));
           return (
@@ -84,25 +105,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
             </Tag>
           );
         }}
-      >
-        {allTags.map((t) => (
-          <Select.Option key={t.id} value={t.id}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: t.color,
-                  display: 'inline-block',
-                  flexShrink: 0,
-                }}
-              />
-              {t.name}
-            </span>
-          </Select.Option>
-        ))}
-      </Select>
+      />
 
       <div style={{ display: 'flex', gap: 4 }}>
         <input

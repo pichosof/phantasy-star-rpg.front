@@ -20,7 +20,7 @@ export interface BaseFormInterface<T> extends React.FC<T> {
 export const BaseForm: BaseFormInterface<BaseFormProps> = ({ onFinishFailed, layout = 'vertical', ...props }) => {
   const onFinishFailedDefault = (error: ValidateErrorEntity<unknown>) => {
     notificationController.error({
-      message: 'Error',
+      title: 'Error',
       description: error.errorFields[0].errors,
     });
   };

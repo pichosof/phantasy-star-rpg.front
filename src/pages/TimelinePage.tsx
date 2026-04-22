@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
+import { Divider, Drawer, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
@@ -9,6 +9,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import {
@@ -584,9 +585,9 @@ export const TimelinePage: React.FC = () => {
       <Drawer
         open={openId !== null}
         onClose={() => setOpenId(null)}
-        width={mobileOnly ? '100%' : 480}
+        size={mobileOnly ? '100%' : 480}
         title={openEvent?.title ?? 'Event'}
-        destroyOnClose
+        destroyOnHidden
       >
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>

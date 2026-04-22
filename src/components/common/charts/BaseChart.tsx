@@ -67,7 +67,6 @@ export const BaseChart: React.FC<BaseChartProps> = ({ option, width, height, onE
   return loading ? (
     <Loading />
   ) : (
-    // @ts-expect-error echarts-for-react types not yet updated for React 19
     <ReactECharts
       {...props}
       option={{ ...defaultOption, ...option }}

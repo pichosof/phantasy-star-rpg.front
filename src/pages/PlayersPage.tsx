@@ -1,18 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import {
-  message,
-  Collapse as AntdCollapse,
-  Empty,
-  Space,
-  Tag,
-  Typography,
-  Switch,
-  Divider,
-  Modal,
-  Popconfirm,
-  Spin,
-} from 'antd';
+import { message, Empty, Space, Tag, Typography, Switch, Divider, Modal, Popconfirm, Spin } from 'antd';
 import {
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -223,7 +211,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
         confirmLoading={saving}
         title={editing ? 'Edit note' : 'New note'}
         centered
-        destroyOnClose
+        destroyOnHidden
       >
         <Space orientation="vertical" size={12} style={w100}>
           <div>
@@ -677,7 +665,7 @@ export const PlayersPage: React.FC = () => {
 
               {isGM && (
                 <Collapse>
-                  <AntdCollapse.Panel
+                  <Collapse.Panel
                     header={
                       <Space size={8}>
                         <span>Manage</span>
@@ -790,7 +778,7 @@ export const PlayersPage: React.FC = () => {
                         </Button>
                       </Popconfirm>
                     </Space>
-                  </AntdCollapse.Panel>
+                  </Collapse.Panel>
                 </Collapse>
               )}
             </div>

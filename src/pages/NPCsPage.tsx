@@ -11,7 +11,6 @@ import {
   Select,
   Space,
   Switch,
-  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -29,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -251,7 +251,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
     <Drawer
       open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 500}
+      size={mobileOnly ? '100%' : 500}
       title={
         npc ? (
           <Space size={10} align="center">
@@ -619,8 +619,8 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
     <Drawer
       open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 520}
-      bodyStyle={{ padding: 0 }}
+      size={mobileOnly ? '100%' : 520}
+      styles={{ body: { padding: 0 } }}
       title={null}
       closable={false}
     >

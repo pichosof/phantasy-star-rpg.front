@@ -6,19 +6,30 @@ import { Button } from '@app/components/common/buttons/Button/Button';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import * as S from './SettingsOverlay.styles';
 
-export const SettingsOverlay: React.FC = ({ ...props }) => {
+export const SettingsOverlay: React.FC = () => {
   const { isPWASupported, event } = useAppSelector((state) => state.pwa);
+  const collapseItems = [
+    {
+      key: 'themePicker',
+      label: 'Change Theme',
+      children: <ThemePicker />,
+    },
+    {
+      key: 'nightMode',
+      label: 'Night Mode',
+      children: <NightModeSettings />,
+    },
+  ];
 
   return (
-    <S.SettingsOverlayMenu mode="inline" selectable={false} {...props}>
-      <DropdownCollapse bordered={false} expandIconPosition="end" ghost defaultActiveKey="themePicker">
-        <DropdownCollapse.Panel header="Change Theme" key="themePicker">
-          <ThemePicker />
-        </DropdownCollapse.Panel>
-        <DropdownCollapse.Panel header="Night Mode" key="nightMode">
-          <NightModeSettings />
-        </DropdownCollapse.Panel>
-      </DropdownCollapse>
+    <S.SettingsOverlayMenu>
+      <DropdownCollapse
+        bordered={false}
+        expandIconPlacement="end"
+        ghost
+        defaultActiveKey="themePicker"
+        items={collapseItems}
+      />
       {isPWASupported && (
         <S.PwaInstallWrapper>
           <Button block type="primary" onClick={() => event && (event as BeforeInstallPromptEvent).prompt()}>

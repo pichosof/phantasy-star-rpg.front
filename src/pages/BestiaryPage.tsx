@@ -1,19 +1,5 @@
 import React from 'react';
-import {
-  Divider,
-  Drawer,
-  Empty,
-  Form,
-  Input,
-  Popconfirm,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  Typography,
-  Upload,
-  message,
-} from 'antd';
+import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tag, Typography, Upload, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
@@ -23,6 +9,7 @@ import { Card } from '@app/components/common/Card/Card';
 import { Table } from '@app/components/common/Table/Table';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
 
@@ -168,7 +155,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
     <Drawer
       open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 520}
+      size={mobileOnly ? '100%' : 520}
       title={
         monster ? (
           <Space size={8} wrap>
@@ -796,7 +783,7 @@ export const BestiaryPage: React.FC = () => {
           <Drawer
             open={openId !== null}
             onClose={() => setOpenId(null)}
-            width={mobileOnly ? '100%' : 540}
+            size={mobileOnly ? '100%' : 540}
             title={
               openMonster ? (
                 <Space wrap size={8}>

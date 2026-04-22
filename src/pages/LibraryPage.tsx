@@ -500,8 +500,16 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
       footer={null}
       width={modalWidth}
       style={{ top: modalTop, padding: 0, margin: mobileOnly ? 0 : undefined, maxWidth: '100vw' }}
-      bodyStyle={{ padding: 0, height: bodyHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-      destroyOnClose
+      styles={{
+        body: {
+          padding: 0,
+          height: bodyHeight,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
+      destroyOnHidden
     >
       {loading && (
         <div style={{ ...flexCenter, flex: 1 }}>
@@ -749,7 +757,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
   }
 
   return (
-    <Modal open={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnClose>
+    <Modal open={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnHidden>
       <Space orientation="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
         <div>
           <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>

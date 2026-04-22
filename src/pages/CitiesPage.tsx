@@ -1,18 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import {
-  Divider,
-  Drawer,
-  Empty,
-  Modal,
-  Popconfirm,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  Typography,
-  message,
-} from 'antd';
+import { Divider, Drawer, Empty, Modal, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
 import type { TabsProps } from 'antd';
 import {
   DeleteOutlined,

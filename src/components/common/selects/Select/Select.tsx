@@ -2,8 +2,6 @@ import React, { ComponentProps } from 'react';
 import { Select as AntSelect, RefSelectProps } from 'antd';
 import * as S from './Select.styles';
 
-export const { Option } = AntSelect;
-
 export interface SelectProps extends ComponentProps<typeof AntSelect>, S.SelectProps {
   className?: string;
 }

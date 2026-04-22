@@ -139,6 +139,23 @@ antd-mask-input          (checar compatibilidade com AntD 6)
 echarts-for-react        (usa AntD? verificar)
 ```
 
+### ✅ PR4.5 — Cleanup de deprecated do AntD 6
+
+- Eliminar leftovers do PR4 que ainda disparavam warnings de deprecated em dev
+- Status final: fluxo de `/timeline` e paginas relacionadas sem warnings
+  deprecated do AntD 6; warnings restantes sao fora do escopo AntD
+- Trocar `destroyOnClose` → `destroyOnHidden`
+- Trocar `bodyStyle`/`headerStyle` legados por `styles.body`/`styles.header`
+- Trocar `notification.*({ message })` → `notification.*({ title })`
+- Trocar `Drawer width` → `size` e `Modal visible` → `open`
+- Normalizar `Card size="default"` → `medium` no wrapper compartilhado
+- Remover `Select.Option` remanescente
+- Remover `Menu.Item`/`Menu.SubMenu` remanescente no sider em favor de `items`
+- Remover warning de `Dropdown`/`Menu` no settings overlay com `popupRender`
+- Remover `expandIconPosition` remanescente em `Collapse`
+- Padronizar `Tabs` e `Collapse` legados via wrappers compatíveis com `items`
+- Validação: `yarn lint`, `yarn type-check`, `yarn build`
+
 ---
 
 ### 🔲 PR5 — AntD Mobile (telas mobile)

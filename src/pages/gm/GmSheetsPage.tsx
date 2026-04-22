@@ -1,10 +1,11 @@
 import React from 'react';
-import { Button, Drawer, Input, Modal, Space, Tag, Tabs, Typography, message } from 'antd';
+import { Button, Drawer, Input, Modal, Space, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 import {
   type CharacterSheet,
@@ -216,7 +217,7 @@ export const GmSheetsPage: React.FC = () => {
       <Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={mobileOnly ? '100%' : 860}
+        size={mobileOnly ? '100%' : 860}
         placement={mobileOnly ? 'bottom' : 'right'}
         height={mobileOnly ? '95vh' : undefined}
         title={
@@ -240,7 +241,7 @@ export const GmSheetsPage: React.FC = () => {
             Save
           </Button>
         }
-        destroyOnClose
+        destroyOnHidden
       >
         {activeSheet?.type === 'gurps' && (
           <GurpsSheetForm
