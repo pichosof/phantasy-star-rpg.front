@@ -27,8 +27,8 @@ Branch de trabalho: `update-version`
 
 - PR1 a PR4.5 concluidos
 - PR6 (PWA) concluido e integrado ao fluxo atual
-- PR5.1 em andamento com shell mobile, navegacao mobile, iconografia semantica
-  e guard de rotas GM
+- PR5.1 em andamento com shell mobile, iconografia semantica, guard de rotas
+  GM e Fase 0 do kit mobile compartilhado ja concluida
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -43,6 +43,8 @@ Branch de trabalho: `update-version`
 - Acesso LAN por IP mantido para QA mobile na mesma rede
 - `AppIcon` criado para mapear `@ant-design/icons` no desktop e
   `antd-mobile-icons` no mobile
+- Fase 0 concluida em `src/components/common/mobile` com scaffold, sheets,
+  action bar e wrappers compartilhados para componentes do `antd-mobile`
 - `Lores (GM)` movido para `GM Area`
 - Cleanup estrutural de estilos em dezenas de paginas e componentes com
   `styled-components`, `styleUtils`, `resetCss` e `GlobalStyle`
@@ -126,6 +128,16 @@ Entregue:
   - ordem visual invertida no menu mobile
 - `AppIcon` para mapear icones desktop/mobile com semantica unica
 - Guard de rotas GM com wrapper + pagina `403`
+- Fase 0 concluida com o kit compartilhado em `src/components/common/mobile`:
+  - `MobilePageScaffold`
+  - `MobileSectionHeader`
+  - `MobileFilterSheet`
+  - `MobileEntitySheet`
+  - `MobileActionBar`
+  - wrappers de `Card`, `List`, `Tabs`, `Popup`, `Dialog`, `Form`,
+    `SearchBar`, `Selector` e `ActionSheet`
+- Tokens e classes globais de suporte adicionados em `styleUtils` e
+  `GlobalStyle`
 - Inicio do cleanup estrutural de estilos em `*.styles.ts`
 
 Ja adiantado dentro da mesma rodada:
@@ -137,17 +149,14 @@ Ja adiantado dentro da mesma rodada:
 
 Fica para as proximas fatias:
 
-- Primitivas mobile compartilhadas de pagina, filtros e formularios
-- Conversao page-by-page dos fluxos restantes
+- Conversao page-by-page dos fluxos restantes, com `Players` como primeira tela
 - Hardening visual, touch e QA cross-device
 
 ### PR5.2 - Primitivas compartilhadas
 
-- `MobilePageScaffold`
-- `MobileSectionTabs`
-- `MobileFilterSheet`
-- `MobileActionSheet`
-- Base de formularios mobile e sticky footer actions
+- Aplicar e consolidar a Fase 0 nas primeiras paginas reais
+- Refinar os wrappers compartilhados a partir do uso em `Players`
+- Introduzir variantes adicionais somente quando o uso concreto exigir
 
 ### PR5.3 - CRUDs e paginas de campanha
 

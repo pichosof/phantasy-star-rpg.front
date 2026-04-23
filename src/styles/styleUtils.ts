@@ -1,5 +1,29 @@
 import type { CSSProperties } from 'react';
 
+export const MOBILE_PAGE_GUTTER = 16;
+export const MOBILE_SECTION_GAP = 14;
+export const MOBILE_STACK_GAP = 12;
+export const MOBILE_CARD_RADIUS = 18;
+export const MOBILE_SHEET_RADIUS = 20;
+export const MOBILE_ACTION_BAR_MIN_HEIGHT = 72;
+export const MOBILE_TOUCH_TARGET = 44;
+
+export function mobileStack(gap = MOBILE_STACK_GAP): CSSProperties {
+  return {
+    display: 'grid',
+    gap,
+  };
+}
+
+export function mobileCluster(gap = 8): CSSProperties {
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    gap,
+    flexWrap: 'wrap',
+  };
+}
+
 // ── Spacing ───────────────────────────────────────────────────────────────────
 export const m0: CSSProperties = { margin: 0 };
 export const mb4: CSSProperties = { marginBottom: 4 };

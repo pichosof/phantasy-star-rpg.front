@@ -2,6 +2,13 @@ import { createGlobalStyle } from 'styled-components';
 import { resetCss } from './resetCss';
 import { BREAKPOINTS, FONT_SIZE, FONT_WEIGHT, media } from './themes/constants';
 import { lightThemeVariables, darkThemeVariables, commonThemeVariables } from './themes/themeVariables';
+import {
+  MOBILE_ACTION_BAR_MIN_HEIGHT,
+  MOBILE_CARD_RADIUS,
+  MOBILE_PAGE_GUTTER,
+  MOBILE_SECTION_GAP,
+  MOBILE_SHEET_RADIUS,
+} from './styleUtils';
 
 export default createGlobalStyle`
 
@@ -36,6 +43,13 @@ export default createGlobalStyle`
     --adm-radius-s: 7px;
     --adm-radius-m: 10px;
     --adm-radius-l: 16px;
+    --psr-mobile-page-gutter: ${MOBILE_PAGE_GUTTER}px;
+    --psr-mobile-section-gap: ${MOBILE_SECTION_GAP}px;
+    --psr-mobile-card-radius: ${MOBILE_CARD_RADIUS}px;
+    --psr-mobile-sheet-radius: ${MOBILE_SHEET_RADIUS}px;
+    --psr-mobile-action-bar-min-height: ${MOBILE_ACTION_BAR_MIN_HEIGHT}px;
+    --psr-mobile-surface-bg: var(--secondary-background-color);
+    --psr-mobile-elevated-bg: var(--additional-background-color);
   } 
 
   [data-no-transition] * {
@@ -250,6 +264,30 @@ export default createGlobalStyle`
   
   .ant-menu-inline, .ant-menu-vertical {
     border-right: 0;
+  }
+
+  .psr-mobile-popup-body {
+    background: var(--psr-mobile-surface-bg);
+    color: var(--text-main-color);
+    box-shadow: var(--box-shadow);
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--bottom {
+    border-radius: var(--psr-mobile-sheet-radius) var(--psr-mobile-sheet-radius) 0 0;
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--top {
+    border-radius: 0 0 var(--psr-mobile-sheet-radius) var(--psr-mobile-sheet-radius);
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--fullscreen {
+    border-radius: 0;
+  }
+
+  .psr-mobile-dialog__body {
+    background: var(--psr-mobile-elevated-bg);
+    color: var(--text-main-color);
+    box-shadow: var(--box-shadow);
   }
   // notifications end
 `;
