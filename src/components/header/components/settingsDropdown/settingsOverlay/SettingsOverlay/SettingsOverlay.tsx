@@ -8,9 +8,14 @@ import { useAppDispatch, useAppSelector } from '@app/hooks/reduxHooks';
 import { clearDeferredPrompt } from '@app/store/slices/pwaSlice';
 import * as S from './SettingsOverlay.styles';
 
-export const SettingsOverlay: React.FC = () => {
+interface SettingsOverlayProps {
+  variant?: 'dropdown' | 'sheet';
+}
+
+export const SettingsOverlay: React.FC<SettingsOverlayProps> = ({ variant = 'dropdown' }) => {
   const dispatch = useAppDispatch();
   const { event, isStandalone } = useAppSelector((state) => state.pwa);
+  const isSheet = variant === 'sheet';
   const collapseItems = [
     {
       key: 'themePicker',
@@ -43,7 +48,7 @@ export const SettingsOverlay: React.FC = () => {
   };
 
   return (
-    <S.SettingsOverlayMenu>
+    <S.SettingsOverlayMenu $isSheet={isSheet}>
       <DropdownCollapse
         bordered={false}
         expandIconPlacement="end"

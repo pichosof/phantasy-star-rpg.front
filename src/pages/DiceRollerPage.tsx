@@ -2,11 +2,13 @@ import React from 'react';
 import { Badge, Button, Divider, Space, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, RollbackOutlined } from '@ant-design/icons';
 
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import { m0, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
+import * as S from './DiceRollerPage.styles';
 
 // ── Edge config ───────────────────────────────────────────────────────────────
 // Probability (%) that any single die roll edges instead of landing on a face.
@@ -14,16 +16,16 @@ import { m0, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
 const EDGE_CHANCE_PERCENT = 2;
 
 const EDGE_MESSAGES = [
-  '🪙 The die edged! It flat-out refused to pick a side.',
-  '🎰 EDGED! The die went on strike. No result recorded. Classic.',
-  '🪄 The die defied physics and balanced on its edge. Not even the GM saw that coming.',
-  '😱 EDGE DETECTED! The die is fine. The result... is not.',
-  '🎲 It edged like it was a 0.0001% chance. Because it was.',
-  '💀 The die balanced on its edge. The party laughs nervously.',
-  '🌀 Edge! The die entered philosophical mode and refused to commit to a face.',
-  '🤯 EDGED! This die was clearly crafted by a chaotic deity.',
-  "🫠 The die edged. It says it's not its fault.",
-  '⚡ EPIC EDGE! The die tested the limits of reality — and won.',
+  'The die edged! It flat-out refused to pick a side.',
+  'EDGED! The die went on strike. No result recorded. Classic.',
+  'The die defied physics and balanced on its edge. Not even the GM saw that coming.',
+  'Edge detected! The die is fine. The result... is not.',
+  'It edged like it was a 0.0001% chance. Because it was.',
+  'The die balanced on its edge. The party laughs nervously.',
+  'Edge! The die entered philosophical mode and refused to commit to a face.',
+  'EDGED! This die was clearly crafted by a chaotic deity.',
+  "The die edged. It says it's not its fault.",
+  'Epic edge! The die tested the limits of reality and won.',
 ];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -124,38 +126,8 @@ function DiceFaceDisplay({
 }) {
   if (value === 'edge') {
     return (
-      <div
-        title="EDGED! This die doesn't count."
-        style={{
-          width: size,
-          height: size,
-          clipPath: DIE_SHAPES[type],
-          background: 'linear-gradient(135deg, #faad14, #d4380d, #faad14)',
-          backgroundSize: '200% 200%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transform: 'rotate(45deg)',
-          flexShrink: 0,
-          boxShadow: `0 0 ${size / 3}px rgba(250,173,20,0.6)`,
-          cursor: 'default',
-          animation: 'edge-glow 1.4s ease-in-out infinite alternate',
-        }}
-      >
-        <span
-          style={{
-            fontSize: size < 44 ? 13 : 16,
-            fontWeight: 900,
-            color: '#fff',
-            lineHeight: 1,
-            userSelect: 'none',
-            transform: 'rotate(-45deg)',
-            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-            letterSpacing: 0,
-          }}
-        >
-          E!
-        </span>
+      <div title="EDGED! This die doesn't count." style={S.edgeDie(size, DIE_SHAPES[type])}>
+        <span style={S.edgeDieText(size)}>E!</span>
       </div>
     );
   }
@@ -179,31 +151,14 @@ function DiceFaceDisplay({
 
   return (
     <div
-      style={{
-        width: size,
-        height: size,
-        clipPath: DIE_SHAPES[type],
-        background: bgColor,
-        border: !isMax && !isMin ? `1.5px solid ${DIE_COLORS[type]}55` : undefined,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'background 0.2s',
-        cursor: 'default',
-        flexShrink: 0,
-      }}
+      style={S.dieFace(
+        size,
+        DIE_SHAPES[type],
+        bgColor,
+        !isMax && !isMin ? `1.5px solid ${DIE_COLORS[type]}55` : undefined,
+      )}
     >
-      <span
-        style={{
-          fontSize: size < 44 ? 11 : 14,
-          fontWeight: 800,
-          color: textColor,
-          lineHeight: 1,
-          userSelect: 'none',
-        }}
-      >
-        {value}
-      </span>
+      <span style={S.dieFaceText(size, textColor)}>{value}</span>
     </div>
   );
 }
@@ -224,110 +179,18 @@ function DieSelectorCard({
   const color = DIE_COLORS[type];
   const active = count > 0;
 
-  const cardBg = active ? `${color}18` : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
-  const cardBorder = active ? `${color}66` : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)';
-  const dieBg = active ? color : isDark ? `${color}45` : `${color}35`;
-  const btnBg = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)';
-  const btnColor = isDark ? '#fff' : '#000';
-  const btnDisabledBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
-  const btnDisabledColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-  const countColor = active ? color : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.22)';
-
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 8,
-        padding: '12px 8px',
-        borderRadius: 10,
-        background: cardBg,
-        border: `1px solid ${cardBorder}`,
-        transition: 'all 0.15s',
-        minWidth: 72,
-      }}
-    >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          clipPath: DIE_SHAPES[type],
-          background: dieBg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'background 0.15s',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: '#fff',
-            userSelect: 'none',
-            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-          }}
-        >
-          d{type}
-        </span>
+    <div style={S.selectorCard(active, isDark, color)}>
+      <div style={S.selectorDie(active, isDark, color, DIE_SHAPES[type])}>
+        <span style={S.selectorDieText}>d{type}</span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <button
-          onClick={() => onChange(-1)}
-          disabled={count === 0}
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 4,
-            border: 'none',
-            background: count === 0 ? btnDisabledBg : btnBg,
-            color: count === 0 ? btnDisabledColor : btnColor,
-            cursor: count === 0 ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
-            lineHeight: 1,
-            padding: 0,
-            transition: 'all 0.12s',
-          }}
-        >
+      <div style={S.selectorControls}>
+        <button onClick={() => onChange(-1)} disabled={count === 0} style={S.selectorAdjustButton(count === 0, isDark)}>
           −
         </button>
-        <span
-          style={{
-            minWidth: 18,
-            textAlign: 'center',
-            fontWeight: 700,
-            fontSize: 15,
-            color: countColor,
-            transition: 'color 0.15s',
-          }}
-        >
-          {count}
-        </span>
-        <button
-          onClick={() => onChange(1)}
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 4,
-            border: 'none',
-            background: btnBg,
-            color: btnColor,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
-            lineHeight: 1,
-            padding: 0,
-            transition: 'all 0.12s',
-          }}
-        >
+        <span style={S.selectorCount(active, isDark, color)}>{count}</span>
+        <button onClick={() => onChange(1)} style={S.selectorAdjustButton(false, isDark)}>
           +
         </button>
       </div>
@@ -350,68 +213,47 @@ function HistoryRow({
   const mins = entry.rolls.flatMap((r) => r.values).filter((v) => v === 1).length;
   const edges = countEdges(entry.rolls);
 
-  const rowBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
-  const rowBorder = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)';
   const totalColor = isDark ? '#fff' : 'rgba(0,0,0,0.85)';
-  const replayBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
-  const replayIconColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
 
   return (
-    <div
-      style={{
-        padding: '10px 12px',
-        borderRadius: 8,
-        background: rowBg,
-        border: `1px solid ${rowBorder}`,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
-          <Typography.Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+    <div style={S.historyRow(isDark)}>
+      <div style={S.historyHeader}>
+        <div style={S.historyMeta}>
+          <Typography.Text type="secondary" style={S.historyTime}>
             {formatTime(entry.timestamp)}
           </Typography.Text>
-          <Tag style={{ margin: 0, fontFamily: 'monospace', fontSize: 12 }}>{entry.label}</Tag>
+          <Tag style={S.historyLabelTag}>{entry.label}</Tag>
           {maxes > 0 && (
-            <Tag color="gold" style={{ margin: 0, fontSize: 11 }}>
+            <Tag color="gold" style={S.historyStatTag}>
               {maxes}× max
             </Tag>
           )}
           {mins > 0 && (
-            <Tag color="red" style={{ margin: 0, fontSize: 11 }}>
+            <Tag color="red" style={S.historyStatTag}>
               {mins}× min
             </Tag>
           )}
           {edges > 0 && (
-            <Tag color="orange" style={{ margin: 0, fontSize: 11, fontWeight: 700 }}>
-              🪙 {edges}× EDGED
+            <Tag color="orange" style={S.historyEdgeTag}>
+              <IconLabel icon="alert" gap={6}>
+                {edges}x EDGED
+              </IconLabel>
             </Tag>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: totalColor, whiteSpace: 'nowrap' }}>{entry.total}</span>
+        <div style={S.historyTotalWrap}>
+          <span style={S.historyTotalValue(totalColor)}>{entry.total}</span>
           <button
             onClick={() => onReplay(entry)}
             title="Roll again with the same dice"
-            style={{
-              width: 24,
-              height: 24,
-              borderRadius: 4,
-              border: 'none',
-              background: replayBg,
-              color: replayIconColor,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-            }}
+            style={S.historyReplayButton(isDark)}
           >
-            <RollbackOutlined style={{ fontSize: 12 }} />
+            <RollbackOutlined style={S.historyReplayIcon} />
           </button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+      <div style={S.historyDiceWrap}>
         {entry.rolls.flatMap((r) =>
           r.values.map((v, i) => (
             <DiceFaceDisplay key={`${r.type}-${i}`} type={r.type} value={v} size={34} isDark={isDark} />
@@ -494,9 +336,9 @@ export const DiceRollerPage: React.FC = () => {
 
         message.open({
           type: 'warning',
+          icon: <AppIcon name="alert" />,
           content: baseMsg + suffix,
           duration: 7,
-          style: { fontWeight: 600, fontSize: 14 },
         });
       }
     }, 120);
@@ -516,28 +358,14 @@ export const DiceRollerPage: React.FC = () => {
     <>
       <PageTitle>Dice Roller</PageTitle>
 
-      {/* Quina glow animation */}
-      <style>{`
-        @keyframes edge-glow {
-          from { box-shadow: 0 0 8px rgba(250,173,20,0.5), 0 0 16px rgba(212,56,13,0.3); }
-          to   { box-shadow: 0 0 16px rgba(250,173,20,0.9), 0 0 32px rgba(212,56,13,0.6); }
-        }
-      `}</style>
-
-      <div style={{ display: 'grid', gap: 16, maxWidth: 860, margin: '0 auto' }}>
+      <S.PageGrid>
         {/* ── Selector ── */}
         <Card density="comfy">
-          <Typography.Title level={4} style={{ margin: '0 0 16px' }}>
-            Dice Roller
+          <Typography.Title level={4} style={S.pageHeading}>
+            <IconLabel icon="dice">Dice Roller</IconLabel>
           </Typography.Title>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: mobileOnly ? 'repeat(4, 1fr)' : 'repeat(6, 1fr)',
-              gap: 8,
-            }}
-          >
+          <S.SelectorGrid $mobile={mobileOnly}>
             {ALL_DICE.map((d) => (
               <DieSelectorCard
                 key={d}
@@ -547,9 +375,9 @@ export const DiceRollerPage: React.FC = () => {
                 isDark={isDark}
               />
             ))}
-          </div>
+          </S.SelectorGrid>
 
-          <Divider style={{ margin: '16px 0' }} />
+          <Divider style={S.sectionDivider} />
 
           <Space wrap size={10} style={spaceBetween}>
             <Space wrap size={8}>
@@ -559,9 +387,9 @@ export const DiceRollerPage: React.FC = () => {
                 disabled={totalDice === 0}
                 loading={rolling}
                 onClick={() => doRoll()}
-                style={{ minWidth: 120, fontWeight: 700, fontSize: 16 }}
+                style={S.rollButton}
               >
-                🎲 Roll{totalDice > 0 ? ` (${totalDice})` : ''}
+                <IconLabel icon="dice">Roll{totalDice > 0 ? ` (${totalDice})` : ''}</IconLabel>
               </Button>
               {totalDice > 0 && (
                 <Button size="small" onClick={clearSelection}>
@@ -580,30 +408,17 @@ export const DiceRollerPage: React.FC = () => {
         {/* ── Last result ── */}
         {lastEntry && (
           <Card density="comfy">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-                flexWrap: 'wrap',
-                marginBottom: 14,
-              }}
-            >
+            <div style={S.lastHeader}>
               <Typography.Text type="secondary" style={textSm}>
                 Last result · {lastEntry.label}
               </Typography.Text>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 13, color: totalLabelColor }}>Total</span>
-                <span
-                  style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: totalValueColor, letterSpacing: -1 }}
-                >
-                  {lastEntry.total}
-                </span>
+              <div style={S.lastTotalWrap}>
+                <span style={S.totalLabel(totalLabelColor)}>Total</span>
+                <span style={S.totalValue(totalValueColor)}>{lastEntry.total}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={S.lastDiceWrap}>
               {lastEntry.rolls.flatMap((r) =>
                 r.values.map((v, i) => (
                   <DiceFaceDisplay key={`last-${r.type}-${i}`} type={r.type} value={v} size={52} isDark={isDark} />
@@ -627,65 +442,37 @@ export const DiceRollerPage: React.FC = () => {
 
               if (allEdged)
                 return (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(250,173,20,0.15)',
-                      border: '1px solid rgba(250,173,20,0.5)',
-                    }}
-                  >
-                    <Typography.Text style={{ color: '#faad14', fontWeight: 700 }}>
-                      🪙 TOTAL EDGE — every single die balanced on its edge. Historically useless. Absolutely legendary.
+                  <div style={S.resultBanner('rgba(250,173,20,0.15)', 'rgba(250,173,20,0.5)')}>
+                    <Typography.Text style={S.resultBannerText('#faad14', 700)}>
+                      <IconLabel icon="alert">
+                        TOTAL EDGE - every single die balanced on its edge. Historically useless. Absolutely legendary.
+                      </IconLabel>
                     </Typography.Text>
                   </div>
                 );
               if (allMax)
                 return (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(255,197,61,0.12)',
-                      border: '1px solid rgba(255,197,61,0.3)',
-                    }}
-                  >
-                    <Typography.Text style={{ color: '#ffc53d', fontWeight: 700 }}>
-                      ✨ All dice at maximum!
+                  <div style={S.resultBanner('rgba(255,197,61,0.12)', 'rgba(255,197,61,0.3)')}>
+                    <Typography.Text style={S.resultBannerText('#ffc53d', 700)}>
+                      <IconLabel icon="star">All dice at maximum!</IconLabel>
                     </Typography.Text>
                   </div>
                 );
               if (allMin)
                 return (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(255,77,79,0.12)',
-                      border: '1px solid rgba(255,77,79,0.3)',
-                    }}
-                  >
-                    <Typography.Text style={{ color: '#ff4d4f', fontWeight: 700 }}>
-                      💀 Total fumble — all dice at minimum!
+                  <div style={S.resultBanner('rgba(255,77,79,0.12)', 'rgba(255,77,79,0.3)')}>
+                    <Typography.Text style={S.resultBannerText('#ff4d4f', 700)}>
+                      <IconLabel icon="alert">Total fumble - all dice at minimum!</IconLabel>
                     </Typography.Text>
                   </div>
                 );
               if (edgeCount > 0)
                 return (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(250,173,20,0.08)',
-                      border: '1px solid rgba(250,173,20,0.25)',
-                    }}
-                  >
-                    <Typography.Text style={{ color: '#faad14', fontWeight: 600 }}>
-                      🪙 {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count toward the total.
+                  <div style={S.resultBanner('rgba(250,173,20,0.08)', 'rgba(250,173,20,0.25)')}>
+                    <Typography.Text style={S.resultBannerText('#faad14', 600)}>
+                      <IconLabel icon="alert">
+                        {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count toward the total.
+                      </IconLabel>
                     </Typography.Text>
                   </div>
                 );
@@ -701,12 +488,9 @@ export const DiceRollerPage: React.FC = () => {
             title={
               <Space size={10}>
                 <span>History</span>
-                <Badge
-                  count={history.length}
-                  style={{ backgroundColor: 'rgba(128,128,128,0.3)', color: isDark ? '#fff' : '#000' }}
-                />
+                <Badge count={history.length} style={S.historyBadge(isDark)} />
                 <Tag style={m0}>
-                  Total sum: <span style={{ fontWeight: 700, marginLeft: 4 }}>{historySum}</span>
+                  Total sum: <span style={S.historySumValue}>{historySum}</span>
                 </Tag>
               </Space>
             }
@@ -716,7 +500,7 @@ export const DiceRollerPage: React.FC = () => {
               </Button>
             }
           >
-            <div style={{ display: 'grid', gap: 8, maxHeight: 420, overflowY: 'auto', paddingRight: 4 }}>
+            <S.HistoryList>
               {history.map((e) => (
                 <HistoryRow
                   key={e.id}
@@ -728,10 +512,10 @@ export const DiceRollerPage: React.FC = () => {
                   }}
                 />
               ))}
-            </div>
+            </S.HistoryList>
           </Card>
         )}
-      </div>
+      </S.PageGrid>
     </>
   );
 };

@@ -10,6 +10,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import {
@@ -22,6 +23,7 @@ import {
 import type { TimelineEvent } from '@app/api/timeline.api';
 import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textMd, spaceBetween, dividerSm } from '@app/styles/styleUtils';
+import * as S from './TimelinePage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -42,18 +44,7 @@ function formatDate(v?: string | null) {
 
 // ── Dot do timeline ────────────────────────────────────────────────────────────
 const TimelineDot: React.FC<{ color: string; pulse?: boolean }> = ({ color, pulse }) => (
-  <div
-    style={{
-      width: 14,
-      height: 14,
-      borderRadius: '50%',
-      background: color,
-      border: `2px solid ${color}`,
-      boxShadow: `0 0 ${pulse ? 14 : 8}px ${color}, 0 0 ${pulse ? 28 : 16}px ${color}40`,
-      transition: 'all 0.25s ease',
-      flexShrink: 0,
-    }}
-  />
+  <div style={S.timelineDot(color, pulse)} />
 );
 
 // ── Card público de evento ─────────────────────────────────────────────────────
@@ -70,68 +61,24 @@ const EventCard: React.FC<{
     onMouseEnter={() => onHover(true)}
     onMouseLeave={() => onHover(false)}
     onClick={onClick}
-    style={{
-      background: 'var(--additional-background-color)',
-      border: `1px solid ${hovered ? color : 'var(--border-color)'}`,
-      borderRadius: 10,
-      padding: '14px 16px',
-      cursor: 'pointer',
-      transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-      boxShadow: hovered ? `0 8px 24px ${color}40, 0 0 0 1px ${color}55` : 'var(--box-shadow)',
-      transition: 'all 0.2s ease',
-      textAlign: side === 'right' ? 'left' : 'right',
-    }}
+    style={S.eventCard(color, hovered, side)}
   >
     {/* Date badge */}
-    <div
-      style={{
-        display: 'inline-block',
-        background: `${color}22`,
-        border: `1px solid ${color}55`,
-        borderRadius: 4,
-        padding: '2px 8px',
-        marginBottom: 8,
-        fontSize: 11,
-        letterSpacing: 1.5,
-        textTransform: 'uppercase',
-        color,
-        fontWeight: 600,
-      }}
-    >
-      {formatDate(event.date)}
-    </div>
+    <div style={S.dateBadge(color)}>{formatDate(event.date)}</div>
 
     {isGM && (
-      <div style={{ marginBottom: 6 }}>
-        <Tag color={isVisible(event) ? 'green' : 'red'} style={{ margin: 0, fontSize: 11 }}>
+      <div style={S.marginBottom6}>
+        <Tag color={isVisible(event) ? 'green' : 'red'} style={S.visibleTag}>
           {isVisible(event) ? <EyeOutlined /> : <EyeInvisibleOutlined />} {isVisible(event) ? 'Visible' : 'Hidden'}
         </Tag>
       </div>
     )}
 
-    <Typography.Text
-      strong
-      style={{ fontSize: 15, display: 'block', lineHeight: 1.4, color: 'var(--text-main-color)' }}
-    >
+    <Typography.Text strong style={S.eventTitle}>
       {event.title}
     </Typography.Text>
 
-    {event.description && (
-      <Typography.Text
-        style={{
-          fontSize: 13,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          marginTop: 6,
-          lineHeight: 1.5,
-          color: 'var(--text-light-color)',
-        }}
-      >
-        {event.description}
-      </Typography.Text>
-    )}
+    {event.description && <Typography.Text style={S.eventDescription}>{event.description}</Typography.Text>}
   </div>
 );
 
@@ -281,7 +228,7 @@ export const TimelinePage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              Timeline
+              <IconLabel icon="timeline">Timeline</IconLabel>
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {isGM
@@ -298,14 +245,14 @@ export const TimelinePage: React.FC = () => {
                   type={viewMode === 'timeline' ? 'primary' : 'default'}
                   onClick={() => setViewMode('timeline')}
                 >
-                  📅 Timeline
+                  <IconLabel icon="timeline">Timeline</IconLabel>
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
                 <Button type="primary" size="small" onClick={() => setCreating((v) => !v)}>
                   {creating ? 'Close' : '+ New Event'}
@@ -328,7 +275,7 @@ export const TimelinePage: React.FC = () => {
               placeholder="Search by title, date or description…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ maxWidth: 360 }}
+              style={S.headerSearch}
             />
             {isGM && (
               <Space size={4}>
@@ -350,21 +297,21 @@ export const TimelinePage: React.FC = () => {
         {isGM && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
+            <S.createForm onSubmit={(e) => void onCreate(e)}>
               <Typography.Text strong>New Event</Typography.Text>
               <Space wrap size={8}>
                 <Input
                   placeholder="Title *"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  style={{ minWidth: 240 }}
+                  style={S.createTitleInput}
                   required
                 />
                 <Input
                   placeholder="Date (e.g. Messiah 2284 / 2024-03-15) *"
                   value={newDate}
                   onChange={(e) => setNewDate(e.target.value)}
-                  style={{ minWidth: 200 }}
+                  style={S.createDateInput}
                   required
                 />
               </Space>
@@ -380,7 +327,7 @@ export const TimelinePage: React.FC = () => {
                 </Button>
                 <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
-            </form>
+            </S.createForm>
           </>
         )}
       </Space>
@@ -412,7 +359,7 @@ export const TimelinePage: React.FC = () => {
           dataIndex: 'title',
           render: (v: string, rec: TimelineEvent) => (
             <Typography.Text
-              style={{ cursor: 'pointer', fontSize: 13 }}
+              style={S.adminTitle}
               onClick={() => {
                 setOpenId(rec.id);
                 setDrawerTab('view');
@@ -473,36 +420,9 @@ export const TimelinePage: React.FC = () => {
         <Empty description="No events on the timeline." />
       </Card>
     ) : (
-      <div style={{ position: 'relative', padding: mobileOnly ? '8px 0 8px 32px' : '8px 0' }}>
+      <div style={S.timelineWrap(mobileOnly)}>
         {/* linha central do timeline */}
-        {mobileOnly ? (
-          <div
-            style={{
-              position: 'absolute',
-              left: 7,
-              top: 0,
-              bottom: 0,
-              width: 2,
-              background:
-                'linear-gradient(180deg, transparent 0%, #00C8E8 5%, #7722DD 30%, #FF6B1A 58%, #FF2244 82%, transparent 100%)',
-              borderRadius: 1,
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              bottom: 0,
-              width: 2,
-              transform: 'translateX(-50%)',
-              background:
-                'linear-gradient(180deg, transparent 0%, #00C8E8 5%, #7722DD 30%, #FF6B1A 58%, #FF2244 82%, transparent 100%)',
-              borderRadius: 1,
-            }}
-          />
-        )}
+        {mobileOnly ? <div style={S.mobileLine} /> : <div style={S.desktopLine} />}
 
         {displayItems.map((evt, idx) => {
           const color = eventColor(evt.id);
@@ -522,18 +442,9 @@ export const TimelinePage: React.FC = () => {
 
           if (mobileOnly) {
             return (
-              <div key={evt.id} style={{ position: 'relative', marginBottom: 24 }}>
+              <div key={evt.id} style={S.mobileItem}>
                 {/* dot */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: -28,
-                    top: 18,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
+                <div style={S.mobileDotWrap}>
                   <TimelineDot color={color} pulse={hovered} />
                 </div>
                 <EventCard {...cardProps} side="right" />
@@ -542,30 +453,17 @@ export const TimelinePage: React.FC = () => {
           }
 
           return (
-            <div
-              key={evt.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 56px 1fr',
-                alignItems: 'flex-start',
-                marginBottom: 32,
-                gap: 0,
-              }}
-            >
+            <div key={evt.id} style={S.timelineRow}>
               {/* left slot */}
-              <div style={{ paddingRight: 20, paddingTop: 4 }}>
-                {isLeft ? <EventCard {...cardProps} side="left" /> : null}
-              </div>
+              <div style={S.leftSlot}>{isLeft ? <EventCard {...cardProps} side="left" /> : null}</div>
 
               {/* dot + connector */}
-              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 18 }}>
+              <div style={S.centerSlot}>
                 <TimelineDot color={color} pulse={hovered} />
               </div>
 
               {/* right slot */}
-              <div style={{ paddingLeft: 20, paddingTop: 4 }}>
-                {!isLeft ? <EventCard {...cardProps} side="right" /> : null}
-              </div>
+              <div style={S.rightSlot}>{!isLeft ? <EventCard {...cardProps} side="right" /> : null}</div>
             </div>
           );
         })}
@@ -591,27 +489,16 @@ export const TimelinePage: React.FC = () => {
       >
         {openEvent && (
           <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-            <Tabs.TabPane tab="📅 View" key="view">
+            <Tabs.TabPane tab={<IconLabel icon="timeline">View</IconLabel>} key="view">
               <Space orientation="vertical" size={14} style={w100}>
                 <div>
-                  <Typography.Text
-                    style={{
-                      fontSize: 12,
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      color: 'var(--text-light-color)',
-                    }}
-                  >
-                    Data
-                  </Typography.Text>
+                  <Typography.Text style={S.drawerSectionLabel}>Data</Typography.Text>
                   <div>
-                    <Typography.Text strong style={{ fontSize: 15, color: 'var(--text-main-color)' }}>
+                    <Typography.Text strong style={S.drawerDateText}>
                       {formatDate(openEvent.date)}
                     </Typography.Text>
                     {openEvent.date !== formatDate(openEvent.date) && (
-                      <Typography.Text style={{ fontSize: 12, marginLeft: 8, color: 'var(--text-light-color)' }}>
-                        ({openEvent.date})
-                      </Typography.Text>
+                      <Typography.Text style={S.drawerRawDate}>({openEvent.date})</Typography.Text>
                     )}
                   </div>
                 </div>
@@ -624,19 +511,8 @@ export const TimelinePage: React.FC = () => {
                 )}
                 {openEvent.description && (
                   <div>
-                    <Typography.Text
-                      style={{
-                        fontSize: 12,
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        color: 'var(--text-light-color)',
-                      }}
-                    >
-                      Description
-                    </Typography.Text>
-                    <Typography.Paragraph style={{ marginTop: 4, marginBottom: 0, fontSize: 14, lineHeight: 1.7 }}>
-                      {openEvent.description}
-                    </Typography.Paragraph>
+                    <Typography.Text style={S.drawerSectionLabel}>Description</Typography.Text>
+                    <Typography.Paragraph style={S.drawerDescription}>{openEvent.description}</Typography.Paragraph>
                   </div>
                 )}
                 {isGM && (
@@ -663,7 +539,7 @@ export const TimelinePage: React.FC = () => {
             </Tabs.TabPane>
 
             {isGM && (
-              <Tabs.TabPane tab="✏️ Edit" key="edit">
+              <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
                 <Space orientation="vertical" size={12} style={w100}>
                   <Space style={spaceBetween}>
                     <Typography.Text style={textMd}>Visible to players</Typography.Text>
@@ -676,7 +552,7 @@ export const TimelinePage: React.FC = () => {
                     />
                   </Space>
                   <Divider style={dividerSm} />
-                  <form onSubmit={(e) => void onSaveEdit(e)} style={{ display: 'grid', gap: 10 }}>
+                  <S.editForm onSubmit={(e) => void onSaveEdit(e)}>
                     <Input placeholder="Title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                     <Input
                       placeholder="Date (e.g. Messiah 2284 / 2024-03-15)"
@@ -697,7 +573,7 @@ export const TimelinePage: React.FC = () => {
                         Cancel
                       </Button>
                     </Space>
-                  </form>
+                  </S.editForm>
                 </Space>
               </Tabs.TabPane>
             )}

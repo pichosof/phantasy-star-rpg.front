@@ -2,13 +2,13 @@ import styled from 'styled-components';
 import { Radio } from 'antd';
 import { BORDER_RADIUS } from '@app/styles/themes/constants';
 
-export const SettingsOverlayMenu = styled.div`
-  width: 13rem;
-  background: var(--additional-background-color);
-  border: 1px solid var(--border-color);
-  border-radius: ${BORDER_RADIUS};
-  box-shadow: var(--box-shadow);
-  padding: 0.5rem 0 0;
+export const SettingsOverlayMenu = styled.div<{ $isSheet?: boolean }>`
+  width: ${(props) => (props.$isSheet ? '100%' : '13rem')};
+  background: ${(props) => (props.$isSheet ? 'transparent' : 'var(--additional-background-color)')};
+  border: ${(props) => (props.$isSheet ? '0' : '1px solid var(--border-color)')};
+  border-radius: ${(props) => (props.$isSheet ? '0' : BORDER_RADIUS)};
+  box-shadow: ${(props) => (props.$isSheet ? 'none' : 'var(--box-shadow)')};
+  padding: ${(props) => (props.$isSheet ? '0.25rem 0 0' : '0.5rem 0 0')};
   overflow: hidden;
 `;
 

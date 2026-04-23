@@ -17,7 +17,7 @@ import {
   Popconfirm,
   Spin,
 } from 'antd';
-import { SaveOutlined, DeleteOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
+import { SaveOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import type { TabsProps } from 'antd';
 import type { CityForAdmin } from '@app/types/rpg';
@@ -31,6 +31,8 @@ import { addCityImage, deleteCityImage, CityImage } from '@app/api/cities.api';
 
 import { CitiesApi } from '@app/api/rpg.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import * as S from './CityAdminDrawer.styles';
 
 // ── Images Tab ────────────────────────────────────────────────────────────────
 
@@ -87,22 +89,19 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
   }
 
   return (
-    <Space orientation="vertical" size={14} style={{ width: '100%' }}>
+    <Space orientation="vertical" size={14} style={S.fullWidth}>
       {images.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+        <div style={S.imagesGrid}>
           {images.map((img) => {
             const src = resolveApiUrl(img.url) ?? img.url;
 
             return (
-              <div
-                key={img.id}
-                style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#111' }}
-              >
+              <div key={img.id} style={S.imageCard}>
                 <img
                   src={src}
                   alt={img.alt ?? undefined}
                   onClick={() => setLightbox({ src, alt: img.alt ?? '' })}
-                  style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+                  style={S.imageThumb}
                 />
 
                 <Popconfirm
@@ -116,7 +115,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
                     size="small"
                     danger
                     icon={deletingId === img.id ? <Spin size="small" /> : <DeleteOutlined />}
-                    style={{ position: 'absolute', top: 4, right: 4, opacity: 0.85 }}
+                    style={S.imageDeleteButton}
                   />
                 </Popconfirm>
               </div>
@@ -124,25 +123,13 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
           })}
         </div>
       ) : (
-        <div
-          style={{
-            height: 100,
-            borderRadius: 8,
-            border: '1px dashed rgba(255,255,255,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(255,255,255,0.25)',
-            fontSize: 13,
-            gap: 8,
-          }}
-        >
-          <PictureOutlined /> No images yet
+        <div style={S.emptyImagesState}>
+          <IconLabel icon="image">No images yet</IconLabel>
         </div>
       )}
 
       <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+        <Typography.Text type="secondary" style={S.fieldLabel}>
           Alt text for next image (optional)
         </Typography.Text>
 
@@ -164,7 +151,7 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
         </Button>
       </Upload>
 
-      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+      <Typography.Text type="secondary" style={S.uploadHint}>
         PNG, JPG, WebP or GIF · max {UPLOAD_MAX_MB} MB
       </Typography.Text>
 
@@ -175,23 +162,11 @@ const CityImagesTab: React.FC<CityImagesTabProps> = ({ city, onChanged }) => {
         centered
         width="90vw"
         styles={{
-          body: {
-            padding: 0,
-            background: '#000',
-            borderRadius: 8,
-            overflow: 'hidden',
-            textAlign: 'center',
-          },
+          body: S.lightboxBody,
         }}
         destroyOnHidden
       >
-        {lightbox && (
-          <img
-            src={lightbox.src}
-            alt={lightbox.alt}
-            style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
-          />
-        )}
+        {lightbox && <img src={lightbox.src} alt={lightbox.alt} style={S.lightboxImage} />}
       </Modal>
     </Space>
   );
@@ -384,12 +359,12 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
   }
 
   const drawerTitle = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>Admin · {city?.name ?? 'City'}</span>
+    <div style={S.drawerTitle}>
+      <div style={S.drawerTitleRow}>
+        <span style={S.drawerTitleText}>Admin · {city?.name ?? 'City'}</span>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      <div style={S.drawerTagRow}>
         {city?.visible === false && <Tag color="red">Hidden</Tag>}
         {city?.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Undiscovered</Tag>}
       </div>
@@ -401,18 +376,18 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
     : [
         {
           key: 'edit',
-          label: '✏️ Edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
           children: (
-            <Space orientation="vertical" size={14} style={{ width: '100%' }}>
+            <Space orientation="vertical" size={14} style={S.fullWidth}>
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                <Typography.Text type="secondary" style={S.fieldLabel}>
                   Name *
                 </Typography.Text>
                 <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="City name" />
               </div>
 
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                <Typography.Text type="secondary" style={S.fieldLabel}>
                   Region
                 </Typography.Text>
                 <Input
@@ -423,7 +398,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
               </div>
 
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                <Typography.Text type="secondary" style={S.fieldLabel}>
                   Description
                 </Typography.Text>
                 <Input.TextArea
@@ -431,13 +406,13 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                   onChange={(e) => setEditDesc(e.target.value)}
                   placeholder="City description..."
                   rows={6}
-                  style={{ resize: 'vertical' }}
+                  style={S.textAreaResize}
                 />
               </div>
 
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  🏷️ Tags
+                <Typography.Text type="secondary" style={S.fieldLabel}>
+                  <IconLabel icon="tags">Tags</IconLabel>
                 </Typography.Text>
                 <TagSelect entityType="city" entityId={cityId} />
               </div>
@@ -458,20 +433,20 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
           key: 'lores',
           label: 'Lores',
           children: (
-            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={S.fullWidth} size={12}>
               <Typography.Text type="secondary">
                 Linked: {linkedLores.length} · Available: {availableLores.length}
               </Typography.Text>
 
-              <Divider style={{ margin: '8px 0' }} />
+              <Divider style={S.dividerSpaced} />
 
               <Typography.Text strong>Linked</Typography.Text>
 
-              <div style={{ display: 'grid', gap: 8 }}>
+              <div style={S.sectionGrid}>
                 {linkedLores.map((l) => (
-                  <div key={l.id} style={{ display: 'grid', gap: 6 }}>
+                  <div key={l.id} style={S.listItem}>
                     <Space wrap size={6}>
-                      <Typography.Text style={{ fontWeight: 600 }}>{l.title}</Typography.Text>
+                      <Typography.Text style={S.itemTitle}>{l.title}</Typography.Text>
                       {l.category && <Tag>{l.category}</Tag>}
                       {(l as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
@@ -491,19 +466,11 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
 
               <Input allowClear placeholder="Search lore..." value={qLore} onChange={(e) => setQLore(e.target.value)} />
 
-              <div
-                style={{
-                  display: 'grid',
-                  gap: 10,
-                  maxHeight: mobileOnly ? '45vh' : 320,
-                  overflow: 'auto',
-                  paddingRight: 4,
-                }}
-              >
+              <div style={S.scrollList(mobileOnly)}>
                 {availableLores.map((l) => (
-                  <div key={l.id} style={{ display: 'grid', gap: 6 }}>
+                  <div key={l.id} style={S.listItem}>
                     <Space wrap size={6}>
-                      <Typography.Text style={{ fontWeight: 600 }}>{l.title}</Typography.Text>
+                      <Typography.Text style={S.itemTitle}>{l.title}</Typography.Text>
                       {l.category && <Tag>{l.category}</Tag>}
                       {(l as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
@@ -523,21 +490,21 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
           key: 'quests',
           label: 'Quests',
           children: (
-            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
+            <Space orientation="vertical" style={S.fullWidth} size={12}>
               <Typography.Text type="secondary">
                 Linked: {linkedQuests.length} · Available: {availableQuests.length}
               </Typography.Text>
 
-              <Divider style={{ margin: '8px 0' }} />
+              <Divider style={S.dividerSpaced} />
 
               <Typography.Text strong>Linked</Typography.Text>
 
-              <div style={{ display: 'grid', gap: 8 }}>
+              <div style={S.sectionGrid}>
                 {linkedQuests.map((q) => (
-                  <div key={q.id} style={{ display: 'grid', gap: 6 }}>
+                  <div key={q.id} style={S.listItem}>
                     <Space wrap size={6}>
-                      <Typography.Text style={{ fontWeight: 600 }}>{q.title}</Typography.Text>
-                      {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
+                      <Typography.Text style={S.itemTitle}>{q.title}</Typography.Text>
+                      {(q as any).status && <Tag style={S.statusTag}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
 
@@ -561,20 +528,12 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
                 onChange={(e) => setQQuest(e.target.value)}
               />
 
-              <div
-                style={{
-                  display: 'grid',
-                  gap: 10,
-                  maxHeight: mobileOnly ? '45vh' : 320,
-                  overflow: 'auto',
-                  paddingRight: 4,
-                }}
-              >
+              <div style={S.scrollList(mobileOnly)}>
                 {availableQuests.map((q) => (
-                  <div key={q.id} style={{ display: 'grid', gap: 6 }}>
+                  <div key={q.id} style={S.listItem}>
                     <Space wrap size={6}>
-                      <Typography.Text style={{ fontWeight: 600 }}>{q.title}</Typography.Text>
-                      {(q as any).status && <Tag style={{ marginLeft: 8 }}>{(q as any).status}</Tag>}
+                      <Typography.Text style={S.itemTitle}>{q.title}</Typography.Text>
+                      {(q as any).status && <Tag style={S.statusTag}>{(q as any).status}</Tag>}
                       {(q as any).visible === false && <Tag color="red">hidden</Tag>}
                     </Space>
 
@@ -591,18 +550,18 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
         },
         {
           key: 'image',
-          label: 'Images',
+          label: <IconLabel icon="image">Images</IconLabel>,
           children: <CityImagesTab city={city} onChanged={onChanged} />,
         },
         {
           key: 'world',
-          label: 'World',
+          label: <IconLabel icon="world">World</IconLabel>,
           children: (
-            <Space orientation={mobileOnly ? 'vertical' : 'horizontal'} wrap style={{ width: '100%' }}>
+            <Space orientation={mobileOnly ? 'vertical' : 'horizontal'} wrap style={S.fullWidth}>
               <span>World:</span>
 
               <Select
-                style={{ width: mobileOnly ? '100%' : 260 }}
+                style={S.worldSelect(mobileOnly)}
                 value={city.worldId ?? null}
                 onChange={(v) => void setCityWorld(v)}
                 options={[
@@ -621,20 +580,7 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
       onClose={onClose}
       placement={mobileOnly ? 'bottom' : 'right'}
       size={mobileOnly ? '92vh' : 720}
-      styles={{
-        header: isMobile
-          ? {
-              padding: `calc(12px + env(safe-area-inset-top)) 12px 8px`,
-              alignItems: 'flex-start',
-            }
-          : undefined,
-        body: isMobile
-          ? {
-              padding: 12,
-              paddingBottom: `calc(12px + env(safe-area-inset-bottom))`,
-            }
-          : undefined,
-      }}
+      styles={S.drawerStyles(isMobile)}
       destroyOnHidden
       title={
         isMobile ? (

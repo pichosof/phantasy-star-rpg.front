@@ -20,6 +20,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { resolveApiUrl } from '@app/api/http.api';
@@ -55,12 +56,12 @@ import {
   carouselRightLg,
   carouselCounter,
   carouselTopRight,
-  cardGrid,
   tableWrap,
   imgCoverH,
   imgContainH,
   lineHeight175,
 } from '@app/styles/styleUtils';
+import * as S from './DungeonsPage.styles';
 
 type CityOption = { id: number; name: string };
 
@@ -95,7 +96,7 @@ const DungeonImageCarousel: React.FC<{
 
   if (images.length === 0) {
     return gm ? (
-      <div style={{ padding: '24px 0', textAlign: 'center' }}>
+      <div style={S.emptyUploadState}>
         <input
           ref={fileRef}
           type="file"
@@ -108,7 +109,7 @@ const DungeonImageCarousel: React.FC<{
         </Button>
       </div>
     ) : (
-      <Empty description="No images" style={{ padding: 16 }} />
+      <Empty description="No images" style={S.emptyImages} />
     );
   }
 
@@ -129,7 +130,7 @@ const DungeonImageCarousel: React.FC<{
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <S.carouselWrap>
       <div style={blackBg}>
         <img src={imgUrl} alt={cur.alt ?? ''} style={imgContainH(340)} />
         <div style={carouselTopRight}>
@@ -169,26 +170,17 @@ const DungeonImageCarousel: React.FC<{
       </div>
 
       {images.length > 1 && (
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+        <S.thumbsRow>
           {images.map((img, i) => (
             <img
               key={img.id}
               src={resolveApiUrl(img.url)}
               alt={img.alt ?? ''}
               onClick={() => setIdx(i)}
-              style={{
-                width: 56,
-                height: 40,
-                objectFit: 'cover',
-                borderRadius: 4,
-                cursor: 'pointer',
-                border: i === idx ? '2px solid #1677ff' : '2px solid transparent',
-                opacity: i === idx ? 1 : 0.65,
-                flexShrink: 0,
-              }}
+              style={S.thumb(i === idx)}
             />
           ))}
-        </div>
+        </S.thumbsRow>
       )}
 
       {gm && (
@@ -211,21 +203,12 @@ const DungeonImageCarousel: React.FC<{
         onCancel={() => setLightbox(false)}
         footer={null}
         width="90vw"
-        styles={{ body: { padding: 0 } }}
+        styles={{ body: S.lightboxBody }}
         centered
         destroyOnHidden
       >
-        <div
-          style={{
-            position: 'relative',
-            background: '#000',
-            minHeight: 300,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <img src={imgUrl} alt={cur.alt ?? ''} style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain' }} />
+        <div style={S.lightboxFrame}>
+          <img src={imgUrl} alt={cur.alt ?? ''} style={S.lightboxImage} />
           {images.length > 1 && (
             <>
               <Button
@@ -244,7 +227,7 @@ const DungeonImageCarousel: React.FC<{
           )}
         </div>
       </Modal>
-    </div>
+    </S.carouselWrap>
   );
 };
 
@@ -435,40 +418,26 @@ export const DungeonsPage: React.FC = () => {
       <Empty description="No dungeons found." />
     </Card>
   ) : (
-    <div style={cardGrid(mobileOnly)}>
+    <S.PublicGrid $mobileOnly={mobileOnly}>
       {displayItems.map((d) => {
         const thumb = d.images?.[0];
         const cname = cityName(d.cityId);
         return (
-          <div
+          <S.PublicCard
             key={d.id}
-            style={{
-              borderRadius: 8,
-              overflow: 'hidden',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              background: 'var(--background-color,#fff)',
-              cursor: 'pointer',
-              transition: 'box-shadow 0.2s, transform 0.2s',
-            }}
             onClick={() => {
               setDrawerTab('view');
               setOpenId(d.id);
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 24px rgba(0,0,0,0.25)';
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)';
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
             }}
           >
             {thumb ? (
               <img src={resolveApiUrl(thumb.url)} alt={thumb.alt ?? d.name} style={imgCoverH(140)} />
             ) : (
-              <div style={dungeon404}>⚔️</div>
+              <div style={dungeon404}>
+                <AppIcon name="dungeon" size={42} />
+              </div>
             )}
-            <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={S.publicCardBody}>
               <Space size={6} wrap>
                 {d.type && (
                   <Tag color={TYPE_COLOR[d.type] ?? 'default'} style={m0}>
@@ -481,7 +450,7 @@ export const DungeonsPage: React.FC = () => {
                   </Tag>
                 )}
                 {isGM && (
-                  <Tag color={d.visible ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
+                  <Tag color={d.visible ? 'green' : 'red'} style={S.visibleTag}>
                     {d.visible ? 'Visible' : 'Hidden'}
                   </Tag>
                 )}
@@ -496,19 +465,21 @@ export const DungeonsPage: React.FC = () => {
               )}
               {cname && (
                 <Typography.Text type="secondary" style={textXs}>
-                  📍 {cname}
+                  <IconLabel icon="location" gap={6}>
+                    {cname}
+                  </IconLabel>
                 </Typography.Text>
               )}
               {d.description && (
-                <Typography.Paragraph style={{ margin: 0, fontSize: 12, color: '#595959' }} ellipsis={{ rows: 2 }}>
+                <Typography.Paragraph style={S.publicDescription} ellipsis={{ rows: 2 }}>
                   {d.description}
                 </Typography.Paragraph>
               )}
             </div>
-          </div>
+          </S.PublicCard>
         );
       })}
-    </div>
+    </S.PublicGrid>
   );
 
   // ── Admin table ────────────────────────────────────────────────────────────
@@ -520,7 +491,7 @@ export const DungeonsPage: React.FC = () => {
           dataSource={filtered}
           loading={loading}
           scroll={{ x: 800 }}
-          style={{ minWidth: 800 }}
+          style={S.tableMinWidth}
           columns={[
             { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={m0}>#{v}</Tag> },
             {
@@ -550,7 +521,7 @@ export const DungeonsPage: React.FC = () => {
                   <Space size={6} wrap>
                     <Typography.Text
                       strong
-                      style={{ cursor: 'pointer' }}
+                      style={S.clickableText}
                       onClick={() => {
                         setDrawerTab('view');
                         setOpenId(d.id);
@@ -571,7 +542,9 @@ export const DungeonsPage: React.FC = () => {
                   )}
                   {cityName(d.cityId) && (
                     <Typography.Text type="secondary" style={textXs}>
-                      📍 {cityName(d.cityId)}
+                      <IconLabel icon="location" gap={6}>
+                        {cityName(d.cityId)}
+                      </IconLabel>
                     </Typography.Text>
                   )}
                 </Space>
@@ -642,7 +615,7 @@ export const DungeonsPage: React.FC = () => {
       }
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-        <Tabs.TabPane tab="⚔️ Dungeon" key="view">
+        <Tabs.TabPane tab={<IconLabel icon="dungeon">Dungeon</IconLabel>} key="view">
           <Space orientation="vertical" size={16} style={w100}>
             <DungeonImageCarousel
               images={openDungeon.images ?? []}
@@ -655,7 +628,11 @@ export const DungeonsPage: React.FC = () => {
               {openDungeon.type && <Tag color={TYPE_COLOR[openDungeon.type] ?? 'default'}>{openDungeon.type}</Tag>}
               {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
               {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
-              {cityName(openDungeon.cityId) && <Tag color="geekblue">📍 {cityName(openDungeon.cityId)}</Tag>}
+              {cityName(openDungeon.cityId) && (
+                <Tag color="geekblue" icon={<AppIcon name="location" />}>
+                  {cityName(openDungeon.cityId)}
+                </Tag>
+              )}
             </Space>
 
             {openDungeon.description && (
@@ -665,7 +642,7 @@ export const DungeonsPage: React.FC = () => {
             )}
 
             <div>
-              <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
+              <Typography.Text type="secondary" style={S.tagsLabel}>
                 Tags
               </Typography.Text>
               <TagSelect entityType="dungeon" entityId={openDungeon.id} readonly={!isGM} />
@@ -675,7 +652,7 @@ export const DungeonsPage: React.FC = () => {
               <Space size={6} wrap>
                 <span style={mutedSm}>Visible:</span>
                 <Switch size="small" checked={!!openDungeon.visible} onChange={() => void toggleVisible(openDungeon)} />
-                <span style={{ fontSize: 12, color: '#8c8c8c', marginLeft: 8 }}>Discovered:</span>
+                <span style={S.discoveredMeta}>Discovered:</span>
                 <Switch
                   size="small"
                   checked={!!openDungeon.discovered}
@@ -687,7 +664,7 @@ export const DungeonsPage: React.FC = () => {
         </Tabs.TabPane>
 
         {isGM && (
-          <Tabs.TabPane tab="✏️ Edit" key="edit">
+          <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
             <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Details">
                 <Space orientation="vertical" size={10} style={w100}>
@@ -742,11 +719,11 @@ export const DungeonsPage: React.FC = () => {
                 </Space>
               </Card>
 
-              <Card density="dense" title="🏷️ Tags">
+              <Card density="dense" title={<IconLabel icon="tags">Tags</IconLabel>}>
                 <TagSelect entityType="dungeon" entityId={openDungeon.id} />
               </Card>
 
-              <Card density="dense" title="🖼️ Images">
+              <Card density="dense" title={<IconLabel icon="image">Images</IconLabel>}>
                 <DungeonImageCarousel
                   images={openDungeon.images ?? []}
                   dungeonId={openDungeon.id}
@@ -774,7 +751,11 @@ export const DungeonsPage: React.FC = () => {
           <Space style={spaceBetween} size={8}>
             <div>
               <Typography.Title level={4} style={m0}>
-                {viewMode === 'admin' ? '⚙️ GM Panel — Dungeons' : '⚔️ Dungeons'}
+                {viewMode === 'admin' ? (
+                  <IconLabel icon="gm">GM Panel - Dungeons</IconLabel>
+                ) : (
+                  <IconLabel icon="dungeon">Dungeons</IconLabel>
+                )}
               </Typography.Title>
               <Typography.Text type="secondary" style={textMd}>
                 Caves, towers, ruins and lairs of the campaign world.
@@ -788,14 +769,14 @@ export const DungeonsPage: React.FC = () => {
                     type={viewMode === 'public' ? 'primary' : 'default'}
                     onClick={() => setViewMode('public')}
                   >
-                    📖 View
+                    <IconLabel icon="read">View</IconLabel>
                   </Button>
                   <Button
                     size="small"
                     type={viewMode === 'admin' ? 'primary' : 'default'}
                     onClick={() => setViewMode('admin')}
                   >
-                    ⚙️ GM Panel
+                    <IconLabel icon="gm">GM Panel</IconLabel>
                   </Button>
                 </Space>
               )}
@@ -813,7 +794,7 @@ export const DungeonsPage: React.FC = () => {
               placeholder="Search dungeons…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ maxWidth: 320 }}
+              style={S.headerSearch}
             />
             {isGM && (
               <Space size={4}>
@@ -834,19 +815,19 @@ export const DungeonsPage: React.FC = () => {
           {isGM && viewMode === 'admin' && creating && (
             <>
               <Divider style={dividerSm} />
-              <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 720 }}>
+              <S.createForm onSubmit={(e) => void onCreate(e)}>
                 <Typography.Text strong>New Dungeon</Typography.Text>
                 <Space wrap size={8}>
                   <Input
                     placeholder="Name *"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    style={{ minWidth: 240 }}
+                    style={S.createNameInput}
                     required
                   />
                   <Select
                     allowClear
-                    style={{ minWidth: 160 }}
+                    style={S.createTypeInput}
                     value={newType ?? undefined}
                     onChange={(v) => setNewType(v ?? null)}
                     options={DUNGEON_TYPES.map((t) => ({ value: t, label: t }))}
@@ -856,11 +837,11 @@ export const DungeonsPage: React.FC = () => {
                     placeholder="Region"
                     value={newRegion}
                     onChange={(e) => setNewRegion(e.target.value)}
-                    style={{ minWidth: 160 }}
+                    style={S.createRegionInput}
                   />
                   <Select
                     allowClear
-                    style={{ minWidth: 200 }}
+                    style={S.createCityInput}
                     value={newCityId ?? undefined}
                     onChange={(v) => setNewCityId(v ?? null)}
                     options={cities.map((c) => ({ value: c.id, label: c.name }))}
@@ -879,7 +860,7 @@ export const DungeonsPage: React.FC = () => {
                   </Button>
                   <Button onClick={() => setCreating(false)}>Cancel</Button>
                 </Space>
-              </form>
+              </S.createForm>
             </>
           )}
         </Space>

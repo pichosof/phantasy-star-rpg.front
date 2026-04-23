@@ -11,6 +11,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createSession, deleteSession, listSessions, setSessionVisibility, updateSession } from '@app/api/sessions.api';
@@ -43,13 +44,8 @@ const SESSION_GRADIENTS = [
   'linear-gradient(135deg, #04100C 0%, #082820 50%, #0A1E18 100%)', // Frost Teal — gelo mineral
   'linear-gradient(135deg, #0C0A10 0%, #1A1428 50%, #22183A 100%)', // Espaço profundo — entre mundos
 ];
-const STAR_SYMBOLS = ['✦', '✧', '⋆', '★', '☆', '✶', '✸', '✹'];
-
 function sessionGradient(id: number) {
   return SESSION_GRADIENTS[id % SESSION_GRADIENTS.length];
-}
-function sessionStar(id: number) {
-  return STAR_SYMBOLS[id % STAR_SYMBOLS.length];
 }
 function isVisible(s: Session) {
   return (s.visible ?? false) === true;
@@ -98,8 +94,8 @@ const SessionCover: React.FC<{ session: Session; height?: number }> = ({ session
         position: 'relative',
       }}
     >
-      <span style={{ fontSize: 64, color: 'rgba(255,255,255,0.12)', userSelect: 'none' }}>
-        {sessionStar(session.id)}
+      <span style={{ color: 'rgba(255,255,255,0.12)', userSelect: 'none' }}>
+        <AppIcon name="star" size={64} />
       </span>
       <div
         style={{
@@ -320,7 +316,11 @@ export const SessionsPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'admin' ? '⚙️ GM Panel — Sessions' : 'Campaign Diary'}
+              {viewMode === 'admin' ? (
+                <IconLabel icon="gm">GM Panel - Sessions</IconLabel>
+              ) : (
+                <IconLabel icon="notes">Campaign Diary</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'admin'
@@ -337,14 +337,14 @@ export const SessionsPage: React.FC = () => {
                   type={viewMode === 'blog' ? 'primary' : 'default'}
                   onClick={() => setViewMode('blog')}
                 >
-                  📖 Blog
+                  <IconLabel icon="read">Blog</IconLabel>
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -501,7 +501,11 @@ export const SessionsPage: React.FC = () => {
                       </Tag>
                     )}
                   </Space>
-                  <div style={{ fontSize: 12, color: '#595959' }}>📅 {formatDate(session.date)}</div>
+                  <div style={{ fontSize: 12, color: '#595959' }}>
+                    <IconLabel icon="calendar" gap={6}>
+                      {formatDate(session.date)}
+                    </IconLabel>
+                  </div>
                   <Typography.Title
                     level={5}
                     style={{ margin: 0, lineHeight: 1.35, fontSize: mobileOnly ? 15 : 16 }}
@@ -577,7 +581,9 @@ export const SessionsPage: React.FC = () => {
               </Typography.Text>
               {/* data */}
               <Typography.Text type="secondary" style={textSm}>
-                📅 {s.date}
+                <IconLabel icon="calendar" gap={6}>
+                  {s.date}
+                </IconLabel>
               </Typography.Text>
               {/* preview resumo */}
               {s.summary && (
@@ -743,13 +749,13 @@ export const SessionsPage: React.FC = () => {
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
         {/* ── Ver ── */}
-        <Tabs.TabPane tab="📖 Session" key="view">
+        <Tabs.TabPane tab={<IconLabel icon="notes">Session</IconLabel>} key="view">
           <Space orientation="vertical" size={16} style={w100}>
             <div style={{ borderRadius: 8, overflow: 'hidden' }}>
               <SessionCover session={openSession} height={240} />
             </div>
             <Space wrap size={8}>
-              <Tag icon={<span>📅</span>} color="blue">
+              <Tag icon={<AppIcon name="calendar" />} color="blue">
                 {formatDate(openSession.date)}
               </Tag>
               <Tag color="default">Session #{sessionNumber(openSession.id)}</Tag>
@@ -784,7 +790,7 @@ export const SessionsPage: React.FC = () => {
 
         {/* ── Editar (GM) ── */}
         {isGM && (
-          <Tabs.TabPane tab="✏️ Edit" key="edit">
+          <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
             <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Session Data">
                 <Space orientation="vertical" size={10} style={w100}>

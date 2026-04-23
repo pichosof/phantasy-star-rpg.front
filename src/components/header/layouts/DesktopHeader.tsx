@@ -3,7 +3,7 @@ import { Col, Row } from 'antd';
 import { SettingsDropdown } from '../components/settingsDropdown/SettingsDropdown';
 import * as S from '../Header.styles';
 import { Popover } from '@app/components/common/Popover/Popover';
-import GMSwitchPanel from '@app/components/GMSwitchPanel';
+import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { Button } from '@app/components/common/buttons/Button/Button';
 
 interface DesktopHeaderProps {

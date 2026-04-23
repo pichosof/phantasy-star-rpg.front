@@ -29,6 +29,7 @@ import {
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -48,6 +49,7 @@ import { NpcApi } from '@app/api/npc.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textSm, textMd, bold700, spaceBetween, dividerSm, tableWrap } from '@app/styles/styleUtils';
+import * as S from './NPCsPage.styles';
 
 const GM_KEY = 'gm_api_key';
 
@@ -252,6 +254,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
       open={open}
       onClose={onClose}
       size={mobileOnly ? '100%' : 500}
+      styles={{ body: S.adminDrawerBody }}
       title={
         npc ? (
           <Space size={10} align="center">
@@ -325,7 +328,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   placeholder="History, motivations, behavior…"
                 />
               </Form.Item>
-              <Form.Item label="🏷️ Tags">
+              <Form.Item label={<IconLabel icon="tags">Tags</IconLabel>}>
                 <TagSelect entityType="npc" entityId={npc.id} />
               </Form.Item>
               <Space>
@@ -620,111 +623,69 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
       open={open}
       onClose={onClose}
       size={mobileOnly ? '100%' : 520}
-      styles={{ body: { padding: 0 } }}
+      styles={{ body: S.detailDrawerBody }}
       title={null}
       closable={false}
     >
       {npc && (
         <>
           {/* Hero portrait */}
-          <div style={{ position: 'relative' }}>
+          <div style={S.detailHeroShell}>
             {npc.imageUrl ? (
-              <div style={{ height: 260, overflow: 'hidden' }}>
-                <img
-                  src={resolveApiUrl(npc.imageUrl)}
-                  alt={npc.imageAlt ?? npc.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+              <div style={S.detailHeroImageWrap}>
+                <img src={resolveApiUrl(npc.imageUrl)} alt={npc.imageAlt ?? npc.name} style={S.detailHeroImage} />
               </div>
             ) : (
-              <div
-                style={{
-                  height: 180,
-                  background: `linear-gradient(135deg, ${meta.hex}50 0%, ${meta.hex}15 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Avatar size={100} style={{ background: meta.hex, fontSize: 36, fontWeight: 700 }}>
+              <div style={S.detailHeroFallback(meta.hex)}>
+                <Avatar size={100} style={S.detailHeroAvatar(meta.hex)}>
                   {initials(npc.name)}
                 </Avatar>
               </div>
             )}
             {/* Close button */}
-            <Button size="small" style={{ position: 'absolute', top: 10, right: 10 }} onClick={onClose}>
-              ✕
-            </Button>
+            <Button size="small" style={S.detailCloseButton} icon={<AppIcon name="close" />} onClick={onClose} />
             {/* Gradient fade */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 60,
-                background: 'linear-gradient(transparent, var(--background-color, #fff))',
-              }}
-            />
+            <div style={S.detailHeroFade} />
           </div>
 
           {/* Content */}
-          <div style={{ padding: '0 20px 24px' }}>
-            <Space orientation="vertical" size={4} style={{ ...w100, marginBottom: 12 }}>
-              <Typography.Title level={3} style={m0}>
-                {npc.name}
-              </Typography.Title>
-              <Space size={8} wrap>
-                {npc.role && (
-                  <Tag
-                    color={meta.color}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      padding: '2px 10px',
-                      background: meta.hex + '20',
-                      borderColor: meta.hex,
-                      color: meta.hex,
-                    }}
-                  >
-                    {npc.role}
-                  </Tag>
-                )}
-                {npc.location && (
-                  <Space size={4} style={{ color: '#8c8c8c', fontSize: 13 }}>
-                    <EnvironmentOutlined />
-                    <span>{npc.location}</span>
-                  </Space>
-                )}
+          <div style={S.detailContent}>
+            <Space orientation="vertical" size={16} style={w100}>
+              <Space orientation="vertical" size={4} style={S.detailHeaderStack}>
+                <Typography.Title level={3} style={m0}>
+                  {npc.name}
+                </Typography.Title>
+                <Space size={8} wrap>
+                  {npc.role && (
+                    <Tag color={meta.color} style={S.detailRoleTag(meta.hex)}>
+                      {npc.role}
+                    </Tag>
+                  )}
+                  {npc.location && (
+                    <Space size={4} style={S.detailLocationMeta}>
+                      <EnvironmentOutlined />
+                      <span>{npc.location}</span>
+                    </Space>
+                  )}
+                </Space>
               </Space>
+
+              <div style={S.detailAccent(meta.hex)} />
+
+              {npc.description ? (
+                <Card density="dense" title="Profile">
+                  <Typography.Paragraph style={S.detailParagraph}>{npc.description}</Typography.Paragraph>
+                </Card>
+              ) : (
+                <Typography.Text type="secondary">No information available.</Typography.Text>
+              )}
+
+              {isGM && npc.sheetUrl && (
+                <Card density="dense" title="Character Sheet">
+                  <NpcSheetViewer sheetUrl={npc.sheetUrl} />
+                </Card>
+              )}
             </Space>
-
-            <div
-              style={{
-                height: 3,
-                borderRadius: 2,
-                background: `linear-gradient(90deg, ${meta.hex}, ${meta.hex}20)`,
-                marginBottom: 16,
-              }}
-            />
-
-            {npc.description ? (
-              <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, color: '#262626' }}>
-                {npc.description}
-              </Typography.Paragraph>
-            ) : (
-              <Typography.Text type="secondary">No information available.</Typography.Text>
-            )}
-
-            {isGM && npc.sheetUrl && (
-              <>
-                <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '16px 0' }} />
-                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
-                  Character Sheet
-                </Typography.Text>
-                <NpcSheetViewer sheetUrl={npc.sheetUrl} />
-              </>
-            )}
           </div>
         </>
       )}
@@ -973,7 +934,11 @@ export const NPCsPage: React.FC = () => {
           <Space style={spaceBetween} size={8}>
             <div>
               <Typography.Title level={4} style={m0}>
-                {viewMode === 'admin' ? '⚙️ GM Panel — NPCs' : 'Character Codex'}
+                {viewMode === 'admin' ? (
+                  <IconLabel icon="gm">GM Panel - NPCs</IconLabel>
+                ) : (
+                  <IconLabel icon="npc">Character Codex</IconLabel>
+                )}
               </Typography.Title>
               <Typography.Text type="secondary" style={textMd}>
                 {viewMode === 'admin'
@@ -989,14 +954,14 @@ export const NPCsPage: React.FC = () => {
                     type={viewMode === 'public' ? 'primary' : 'default'}
                     onClick={() => setViewMode('public')}
                   >
-                    📖 View
+                    <IconLabel icon="read">View</IconLabel>
                   </Button>
                   <Button
                     size="small"
                     type={viewMode === 'admin' ? 'primary' : 'default'}
                     onClick={() => setViewMode('admin')}
                   >
-                    ⚙️ GM Panel
+                    <IconLabel icon="gm">GM Panel</IconLabel>
                   </Button>
                 </Space>
               )}

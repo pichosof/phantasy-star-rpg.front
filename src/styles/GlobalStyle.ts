@@ -18,6 +18,24 @@ export default createGlobalStyle`
 
   :root {
     ${commonThemeVariables};
+    --adm-color-primary: var(--primary-color);
+    --adm-color-success: var(--success-color);
+    --adm-color-warning: var(--warning-color);
+    --adm-color-danger: var(--error-color);
+    --adm-color-text: var(--text-main-color);
+    --adm-color-text-secondary: var(--text-secondary-color);
+    --adm-color-weak: var(--text-light-color);
+    --adm-color-light: var(--text-superLight-color);
+    --adm-color-border: var(--border-color);
+    --adm-color-background: var(--additional-background-color);
+    --adm-color-background-body: var(--background-color);
+    --adm-color-box: var(--secondary-background-color);
+    --adm-color-fill-content: var(--secondary-background-color);
+    --adm-border-color: var(--border-color);
+    --adm-font-family: var(--font-main);
+    --adm-radius-s: 7px;
+    --adm-radius-m: 10px;
+    --adm-radius-l: 16px;
   } 
 
   [data-no-transition] * {
@@ -61,6 +79,16 @@ export default createGlobalStyle`
   
   .d-none {
     display: none;
+  }
+
+  @keyframes edge-glow {
+    from {
+      box-shadow: 0 0 8px rgba(250,173,20,0.5), 0 0 16px rgba(212,56,13,0.3);
+    }
+
+    to {
+      box-shadow: 0 0 16px rgba(250,173,20,0.9), 0 0 32px rgba(212,56,13,0.6);
+    }
   }
 
   /* ── RPG utility classes ──────────────────────────────────────────────────── */

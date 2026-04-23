@@ -8,7 +8,8 @@ import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { type GmImage, deleteGmImage, listGmImages, resolveGmImageUrl, uploadGmImage } from '@app/api/gm-images.api';
 import { apiErrorMessage } from '../../utils/api-error';
-import { m0, textSm, hiddenInput } from '@app/styles/styleUtils';
+import { m0, hiddenInput } from '@app/styles/styleUtils';
+import * as S from './GmImagesPage.styles';
 
 function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -78,16 +79,7 @@ export const GmImagesPage: React.FC = () => {
     <>
       <PageTitle>GM — Images</PageTitle>
       <Card density="comfy">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-            flexWrap: 'wrap',
-            gap: 8,
-          }}
-        >
+        <S.HeaderRow>
           <Typography.Title level={4} style={m0}>
             GM Gallery · {images.length} images
           </Typography.Title>
@@ -106,49 +98,31 @@ export const GmImagesPage: React.FC = () => {
             style={hiddenInput}
             onChange={onFileChange}
           />
-        </div>
+        </S.HeaderRow>
 
         {images.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <S.EmptyState>
             <Typography.Text type="secondary">No images yet. Upload the first one!</Typography.Text>
-          </div>
+          </S.EmptyState>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gap: 12,
-              gridTemplateColumns: mobileOnly ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))',
-            }}
-          >
+          <S.ImageGrid $mobileOnly={mobileOnly}>
             {images.map((img) => (
-              <div
-                key={img.id}
-                style={{
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  border: '1px solid rgba(128,128,128,0.15)',
-                  background: 'rgba(128,128,128,0.05)',
-                }}
-              >
-                <div style={{ height: 140, background: '#111', position: 'relative', overflow: 'hidden' }}>
-                  <img
-                    src={resolveGmImageUrl(img.url)}
-                    alt={img.alt ?? img.filename}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
-                <div style={{ padding: '8px 10px' }}>
-                  <Typography.Text style={{ ...textSm, display: 'block' }} ellipsis>
+              <S.ImageCard key={img.id}>
+                <S.ImageFrame>
+                  <S.ImageThumb src={resolveGmImageUrl(img.url)} alt={img.alt ?? img.filename} />
+                </S.ImageFrame>
+                <S.CardBody>
+                  <Typography.Text style={S.fileName} ellipsis>
                     {img.filename}
                   </Typography.Text>
-                  <Space size={4} wrap style={{ marginTop: 4 }}>
-                    <Tag style={{ margin: 0, fontSize: 10 }}>{img.mime.split('/')[1]?.toUpperCase()}</Tag>
-                    <Tag style={{ margin: 0, fontSize: 10 }}>{fmtSize(img.size)}</Tag>
+                  <Space size={4} wrap style={S.tagsRow}>
+                    <Tag style={S.metaTag}>{img.mime.split('/')[1]?.toUpperCase()}</Tag>
+                    <Tag style={S.metaTag}>{fmtSize(img.size)}</Tag>
                   </Space>
-                  <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+                  <div style={S.actionsRow}>
                     <Button
                       size="small"
-                      style={{ flex: 1, fontSize: 11 }}
+                      style={S.copyButton}
                       onClick={() => {
                         navigator.clipboard.writeText(resolveGmImageUrl(img.url) ?? '');
                         message.success('URL copied');
@@ -158,10 +132,10 @@ export const GmImagesPage: React.FC = () => {
                     </Button>
                     <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmDelete(img)} />
                   </div>
-                </div>
-              </div>
+                </S.CardBody>
+              </S.ImageCard>
             ))}
-          </div>
+          </S.ImageGrid>
         )}
       </Card>
     </>

@@ -13,6 +13,7 @@ import type {
 import { importGcaFile } from '@app/utils/gca-import';
 import { Collapse } from '@app/components/common/Collapse/Collapse';
 import { w100, hiddenInput } from '@app/styles/styleUtils';
+import * as S from './GurpsSheetForm.styles';
 
 // ── GURPS Calculations ────────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ function ArraySection<T extends object>({
   renderRow: (item: T, idx: number, set: (v: T) => void, del: () => void) => React.ReactNode;
 }) {
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div style={S.gridGap8}>
       {items.map((item, idx) =>
         renderRow(
           item,
@@ -142,13 +143,13 @@ function NamePointsRow({
   pointLabel?: string;
 }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Name" value={item.name ?? ''} onChange={(e) => set({ ...item, name: e.target.value })} />
       <InputNumber
         placeholder={pointLabel}
         value={item.points}
         onChange={(v) => set({ ...item, points: v ?? undefined })}
-        style={{ width: 90 }}
+        style={S.width90}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -162,25 +163,25 @@ function SkillRow({ item, set, del }: { item: GurpsSkill; set: (v: GurpsSkill) =
         placeholder="Skill"
         value={item.name ?? ''}
         onChange={(e) => set({ ...item, name: e.target.value })}
-        style={{ width: 160 }}
+        style={S.width160}
       />
       <InputNumber
         placeholder="Level"
         value={item.level}
         onChange={(v) => set({ ...item, level: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Input
         placeholder="Rel. Level"
         value={item.relativeLevel ?? ''}
         onChange={(e) => set({ ...item, relativeLevel: e.target.value })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Pts"
         value={item.points}
         onChange={(v) => set({ ...item, points: v ?? undefined })}
-        style={{ width: 60 }}
+        style={S.width60}
       />
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
     </Space>
@@ -189,19 +190,19 @@ function SkillRow({ item, set, del }: { item: GurpsSkill; set: (v: GurpsSkill) =
 
 function LangRow({ item, set, del }: { item: GurpsLanguage; set: (v: GurpsLanguage) => void; del: () => void }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Language" value={item.name ?? ''} onChange={(e) => set({ ...item, name: e.target.value })} />
       <Input
         placeholder="Spoken"
         value={item.spoken ?? ''}
         onChange={(e) => set({ ...item, spoken: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <Input
         placeholder="Written"
         value={item.written ?? ''}
         onChange={(e) => set({ ...item, written: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -215,43 +216,43 @@ function HandWeaponRow({ item, set, del }: { item: GurpsWeapon; set: (v: GurpsWe
         placeholder="Weapon"
         value={item.weapon ?? ''}
         onChange={(e) => set({ ...item, weapon: e.target.value })}
-        style={{ width: 120 }}
+        style={S.width120}
       />
       <Input
         placeholder="Damage"
         value={item.damage ?? ''}
         onChange={(e) => set({ ...item, damage: e.target.value })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <Input
         placeholder="Reach"
         value={item.reach ?? ''}
         onChange={(e) => set({ ...item, reach: e.target.value })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Input
         placeholder="Parry"
         value={item.parry ?? ''}
         onChange={(e) => set({ ...item, parry: e.target.value })}
-        style={{ width: 60 }}
+        style={S.width60}
       />
       <Input
         placeholder="Notes"
         value={item.notes ?? ''}
         onChange={(e) => set({ ...item, notes: e.target.value })}
-        style={{ width: 140 }}
+        style={S.width140}
       />
       <InputNumber
         placeholder="Cost"
         value={item.cost}
         onChange={(v) => set({ ...item, cost: v ?? undefined })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Weight"
         value={item.weight}
         onChange={(v) => set({ ...item, weight: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
     </Space>
@@ -275,7 +276,7 @@ function RangedRow({
           placeholder={f}
           value={item[f] ?? ''}
           onChange={(e) => set({ ...item, [f]: e.target.value })}
-          style={{ width: f === 'weapon' ? 110 : f === 'notes' ? 140 : 60 }}
+          style={S.rangedInputWidth(f)}
         />
       ))}
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
@@ -293,25 +294,25 @@ function PossessionRow({
   del: () => void;
 }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Item" value={item.item ?? ''} onChange={(e) => set({ ...item, item: e.target.value })} />
       <Input
         placeholder="Location"
         value={item.location ?? ''}
         onChange={(e) => set({ ...item, location: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <InputNumber
         placeholder="Cost"
         value={item.cost}
         onChange={(v) => set({ ...item, cost: v ?? undefined })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Weight"
         value={item.weight}
         onChange={(v) => set({ ...item, weight: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -322,7 +323,7 @@ function PossessionRow({
 
 const LabelInput = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
-    <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 3 }}>
+    <Typography.Text type="secondary" style={S.labelText}>
       {label}
     </Typography.Text>
     {children}
@@ -330,17 +331,9 @@ const LabelInput = ({ label, children }: { label: string; children: React.ReactN
 );
 
 const Stat = ({ label, value }: { label: string; value: string | number }) => (
-  <div
-    style={{
-      textAlign: 'center',
-      padding: '6px 10px',
-      borderRadius: 6,
-      background: 'rgba(128,128,128,0.08)',
-      minWidth: 60,
-    }}
-  >
-    <div style={{ fontSize: 10, color: 'rgba(128,128,128,0.8)', marginBottom: 2 }}>{label}</div>
-    <div style={{ fontWeight: 700, fontSize: 15 }}>{value}</div>
+  <div style={S.statCard}>
+    <div style={S.statLabel}>{label}</div>
+    <div style={S.statValue}>{value}</div>
   </div>
 );
 
@@ -394,7 +387,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
+      <div style={S.importActions}>
         <input ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" style={hiddenInput} onChange={handleImport} />
         <Button size="small" icon={<UploadOutlined />} onClick={() => importRef.current?.click()}>
           Import GCA (.gca5 / .txt)
@@ -403,7 +396,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
       <Collapse defaultActiveKey={['identity', 'attrs']} style={w100}>
         {/* Identity */}
         <Collapse.Panel header="Identity" key="identity">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+          <div style={S.identityGrid}>
             <LabelInput label="Player">
               <Input value={data.player ?? ''} onChange={(e) => set({ player: e.target.value })} />
             </LabelInput>
@@ -433,7 +426,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <Input value={data.tl ?? ''} onChange={(e) => set({ tl: e.target.value })} />
             </LabelInput>
           </div>
-          <div style={{ marginTop: 10 }}>
+          <div style={S.sectionTopMargin}>
             <LabelInput label="Appearance">
               <Input value={data.appearance ?? ''} onChange={(e) => set({ appearance: e.target.value })} />
             </LabelInput>
@@ -442,14 +435,14 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Primary Attributes */}
         <Collapse.Panel header="Primary Attributes" key="attrs">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+          <div style={S.attributesGrid}>
             {(['st', 'dx', 'iq', 'ht'] as const).map((attr) => (
               <LabelInput key={attr} label={attr.toUpperCase()}>
                 <InputNumber style={w100} value={data[attr] ?? 10} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
               </LabelInput>
             ))}
           </div>
-          <Divider style={{ margin: '12px 0 8px' }} />
+          <Divider style={S.sectionDivider} />
           <Space wrap size={8}>
             <Stat label="Basic Lift" value={`${calc.basicLift} kg`} />
             <Stat label="Thr Damage" value={calc.damage.thr} />
@@ -458,7 +451,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <Stat label="Basic Move" value={calc.basicMove} />
             <Stat label="Dodge" value={calc.dodge} />
           </Space>
-          <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+          <div style={S.speedAdjustGrid}>
             <LabelInput label="Basic Speed Mod">
               <InputNumber
                 style={w100}
@@ -479,7 +472,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Secondary */}
         <Collapse.Panel header="Secondary Attributes" key="secondary">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
+          <div style={S.secondaryGrid}>
             {(
               [
                 ['hp', 'HP (base: ST)'],
@@ -515,12 +508,12 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Encumbrance */}
         <Collapse.Panel header="Encumbrance" key="encumbrance">
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <div style={S.encumbranceWrap}>
+            <table style={S.encumbranceTable}>
               <thead>
                 <tr>
                   {['Level', 'Max Weight (kg)', 'Movement', 'Dodge'].map((h) => (
-                    <th key={h} style={{ padding: '4px 8px', textAlign: 'left', opacity: 0.6 }}>
+                    <th key={h} style={S.encumbranceHeaderCell}>
                       {h}
                     </th>
                   ))}
@@ -529,10 +522,10 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <tbody>
                 {calc.encumbrance.map((row) => (
                   <tr key={row.label}>
-                    <td style={{ padding: '4px 8px' }}>{row.label}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.bl}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.move}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.dodge}</td>
+                    <td style={S.encumbranceCell}>{row.label}</td>
+                    <td style={S.encumbranceCell}>{row.bl}</td>
+                    <td style={S.encumbranceCell}>{row.move}</td>
+                    <td style={S.encumbranceCell}>{row.dodge}</td>
                   </tr>
                 ))}
               </tbody>
@@ -542,7 +535,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Combat */}
         <Collapse.Panel header="Combat" key="combat">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 10 }}>
+          <div style={S.combatGrid}>
             <LabelInput label="DR">
               <Input value={data.dr ?? ''} onChange={(e) => set({ dr: e.target.value })} />
             </LabelInput>
@@ -617,9 +610,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Ranged Weapons */}
         <Collapse.Panel header={`Ranged Weapons (${rw.length})`} key="rw">
-          <div style={{ marginBottom: 6, fontSize: 11, opacity: 0.6 }}>
-            Weapon · Damage · Acc · Range · RoF · Shots · ST · Bulk · Rcl · LC · Notes
-          </div>
+          <div style={S.rangedHint}>Weapon · Damage · Acc · Range · RoF · Shots · ST · Bulk · Rcl · LC · Notes</div>
           <ArraySection
             items={rw}
             onChange={(v) => set({ rangedWeapons: v })}
@@ -652,7 +643,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Reaction Modifiers */}
         <Collapse.Panel header="Reaction Modifiers" key="reaction">
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div style={S.gridGap8}>
             {(['appearance', 'status', 'reputation'] as const).map((k) => (
               <LabelInput key={k} label={k.charAt(0).toUpperCase() + k.slice(1)}>
                 <Input
@@ -670,7 +661,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             value={data.characterNotes ?? ''}
             onChange={(e) => set({ characterNotes: e.target.value })}
             rows={6}
-            style={{ resize: 'vertical' }}
+            style={S.notesTextarea}
           />
         </Collapse.Panel>
       </Collapse>

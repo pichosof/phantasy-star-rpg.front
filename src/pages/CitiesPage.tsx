@@ -19,6 +19,7 @@ import { Input } from '@app/components/common/inputs/Input/Input';
 import { TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import type { City } from '@app/types/rpg';
@@ -52,6 +53,7 @@ import {
   carouselCounterCenter,
   carouselCounterCenterLg,
 } from '@app/styles/styleUtils';
+import * as S from './CitiesPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -100,21 +102,8 @@ function CityImageCarousel({ city }: { city: any }) {
 
   return (
     <>
-      <div
-        style={{
-          position: 'relative',
-          marginBottom: 12,
-          borderRadius: 8,
-          overflow: 'hidden',
-          background: '#000',
-          userSelect: 'none',
-        }}
-      >
-        <img
-          src={current.src}
-          alt={current.alt}
-          style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
-        />
+      <div style={S.carouselFrame}>
+        <img src={current.src} alt={current.alt} style={S.carouselImage} />
 
         <button onClick={() => setLightbox(true)} style={carouselZoomBtn}>
           <FullscreenOutlined />
@@ -136,23 +125,14 @@ function CityImageCarousel({ city }: { city: any }) {
       </div>
 
       {all.length > 1 && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto' }}>
+        <div style={S.carouselThumbStrip}>
           {all.map((img, i) => (
             <img
               key={img.id}
               src={img.src}
               alt={img.alt}
               onClick={() => setIndex(i)}
-              style={{
-                width: 56,
-                height: 40,
-                objectFit: 'cover',
-                borderRadius: 4,
-                cursor: 'pointer',
-                flexShrink: 0,
-                border: i === index ? '2px solid #1890ff' : '2px solid transparent',
-                opacity: i === index ? 1 : 0.6,
-              }}
+              style={S.carouselThumb(i === index)}
             />
           ))}
         </div>
@@ -165,22 +145,11 @@ function CityImageCarousel({ city }: { city: any }) {
         centered
         width="92vw"
         styles={{
-          body: {
-            padding: 0,
-            background: '#000',
-            borderRadius: 8,
-            overflow: 'hidden',
-            textAlign: 'center',
-            position: 'relative',
-          },
+          body: S.carouselLightboxBody,
         }}
         destroyOnHidden={false}
       >
-        <img
-          src={current.src}
-          alt={current.alt}
-          style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', display: 'inline-block' }}
-        />
+        <img src={current.src} alt={current.alt} style={S.carouselLightboxImage} />
         {all.length > 1 && (
           <>
             <button onClick={prev} style={carouselNavBtnLeftLg}>
@@ -390,7 +359,11 @@ export const CitiesPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'gm' ? '⚙️ GM Panel — Cities' : 'Cities'}
+              {viewMode === 'gm' ? (
+                <IconLabel icon="gm">GM Panel - Cities</IconLabel>
+              ) : (
+                <IconLabel icon="location">Cities</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'gm'
@@ -407,10 +380,10 @@ export const CitiesPage: React.FC = () => {
                   type={viewMode === 'players' ? 'primary' : 'default'}
                   onClick={() => setViewMode('players')}
                 >
-                  📖 Cities
+                  <IconLabel icon="read">Cities</IconLabel>
                 </Button>
                 <Button size="small" type={viewMode === 'gm' ? 'primary' : 'default'} onClick={() => setViewMode('gm')}>
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -438,7 +411,7 @@ export const CitiesPage: React.FC = () => {
             placeholder="Search city…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 360 }}
+            style={S.searchField}
           />
 
           {isGM && viewMode === 'gm' && (
@@ -460,7 +433,7 @@ export const CitiesPage: React.FC = () => {
         {isGM && viewMode === 'gm' && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+            <form onSubmit={(e) => void onCreate(e)} style={S.createForm}>
               <Typography.Text strong>New City</Typography.Text>
               <Input placeholder="City name *" value={name} onChange={(e) => setName(e.target.value)} required />
               <TextArea
@@ -543,11 +516,7 @@ export const CitiesPage: React.FC = () => {
 
                   return cover ? (
                     <div style={imgThumbTop}>
-                      <img
-                        src={cover.src}
-                        alt={cover.alt}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      />
+                      <img src={cover.src} alt={cover.alt} style={S.cityCoverImage} />
                     </div>
                   ) : null;
                 })()}
@@ -596,7 +565,7 @@ export const CitiesPage: React.FC = () => {
           rowKey="id"
           dataSource={gmItems}
           loading={loading}
-          style={{ minWidth: 960 }}
+          style={S.adminTable}
           scroll={{ x: 960 }}
           columns={[
             {
@@ -641,16 +610,7 @@ export const CitiesPage: React.FC = () => {
                     {isCityMapped(c) ? <Tag color="cyan">Mapped</Tag> : null}
                   </Space>
 
-                  <Typography.Text
-                    type="secondary"
-                    style={{
-                      ...textSm,
-                      display: 'block',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <Typography.Text type="secondary" style={S.tableDescription}>
                     {c.description?.trim() || '—'}
                   </Typography.Text>
                 </Space>
@@ -688,7 +648,7 @@ export const CitiesPage: React.FC = () => {
           ]}
         />
       </div>
-      {!gmItems.length && !loading && <Empty description="No cities found." style={{ marginTop: 16 }} />}
+      {!gmItems.length && !loading && <Empty description="No cities found." style={S.emptyWithTopSpacing} />}
     </Card>
   );
 
@@ -726,13 +686,11 @@ export const CitiesPage: React.FC = () => {
               <Empty description="No lores linked to this city." />
             </Card>
           ) : (
-            <div style={{ display: 'grid', gap: 10 }}>
+            <div style={S.linkedCardsGrid}>
               {cityLores.map((l) => (
                 <Card key={l.id} density="comfy" title={l.title}>
                   {l.category ? <Tag>{l.category}</Tag> : null}
-                  <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
-                    {l.content?.trim() || '—'}
-                  </Typography.Paragraph>
+                  <Typography.Paragraph style={S.linkedParagraph}>{l.content?.trim() || '—'}</Typography.Paragraph>
                 </Card>
               ))}
             </div>
@@ -752,16 +710,16 @@ export const CitiesPage: React.FC = () => {
               <Empty description="No quests linked to this city." />
             </Card>
           ) : (
-            <div style={{ display: 'grid', gap: 10 }}>
+            <div style={S.linkedCardsGrid}>
               {cityQuests.map((qst) => (
                 <Card key={qst.id} density="comfy" title={qst.title}>
                   {qst.status ? <Tag>{qst.status}</Tag> : null}
                   {qst.reward ? <Tag color="gold">Reward</Tag> : null}
-                  <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                  <Typography.Paragraph style={S.linkedParagraph}>
                     {qst.description?.trim() || '—'}
                   </Typography.Paragraph>
                   {qst.reward ? (
-                    <Typography.Text type="secondary" style={{ display: 'block' }}>
+                    <Typography.Text type="secondary" style={S.rewardText}>
                       Reward: {qst.reward}
                     </Typography.Text>
                   ) : null}

@@ -2,28 +2,41 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import * as S from './SiderMenu.styles';
-import { sidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
+import { getSidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
+import { useGMMode } from '@app/hooks/useGMMode';
 
 interface SiderContentProps {
   setCollapsed: (isCollapsed: boolean) => void;
 }
 
-const sidebarNavFlat = sidebarNavigation.reduce(
-  (result: SidebarNavigationItem[], current) =>
-    result.concat(current.children && current.children.length > 0 ? current.children : current),
-  [],
-);
-
 const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
+  const isGM = useGMMode();
   const location = useLocation();
+  const sidebarNavigation = React.useMemo(() => getSidebarNavigation(isGM), [isGM]);
+  const sidebarNavFlat = React.useMemo(
+    () =>
+      sidebarNavigation.reduce(
+        (result: SidebarNavigationItem[], current) =>
+          result.concat(current.children && current.children.length > 0 ? current.children : current),
+        [],
+      ),
+    [sidebarNavigation],
+  );
 
   const currentMenuItem = sidebarNavFlat.find(({ url }) => url === location.pathname);
-  const defaultSelectedKeys = currentMenuItem ? [currentMenuItem.key] : [];
+  const selectedKeys = currentMenuItem ? [currentMenuItem.key] : [];
 
   const openedSubmenu = sidebarNavigation.find(({ children }) =>
     children?.some(({ url }) => url === location.pathname),
   );
-  const defaultOpenKeys = openedSubmenu ? [openedSubmenu.key] : [];
+  const derivedOpenKeys = React.useMemo(() => (openedSubmenu ? [openedSubmenu.key] : []), [openedSubmenu]);
+  const openKeysSignature = derivedOpenKeys.join('|');
+  const [openKeys, setOpenKeys] = React.useState<string[]>(derivedOpenKeys);
+
+  React.useEffect(() => {
+    setOpenKeys(derivedOpenKeys);
+  }, [derivedOpenKeys, openKeysSignature]);
+
   const menuItems: MenuProps['items'] = sidebarNavigation.map((nav) =>
     nav.children && nav.children.length > 0
       ? {
@@ -49,11 +62,12 @@ const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
   return (
     <S.Menu
       mode="inline"
-      defaultSelectedKeys={defaultSelectedKeys}
-      defaultOpenKeys={defaultOpenKeys}
+      selectedKeys={selectedKeys}
+      openKeys={openKeys}
       onClick={() => setCollapsed(true)}
       items={menuItems}
       onOpenChange={(openKeys) => {
+        setOpenKeys(openKeys as string[]);
         if (openKeys.length > 0) {
           setCollapsed(false);
         }

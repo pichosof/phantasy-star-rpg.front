@@ -20,6 +20,7 @@ import { Button } from '@app/components/common/buttons/Button/Button';
 import { Upload } from '@app/components/common/Upload/Upload';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Collapse } from '@app/components/common/Collapse/Collapse';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { useResponsive } from '@app/hooks/useResponsive';
 import type { UploadProps } from 'antd';
@@ -31,6 +32,7 @@ import { PlayerCard } from '@app/components/rpg/PlayerCard/PlayerCard';
 import { resolveApiUrl } from '@app/api/http.api';
 import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textSm, textMd, spaceBetween, dividerSm, dividerMd, tableWrap } from '@app/styles/styleUtils';
+import * as S from './PlayersPage.styles';
 import {
   type PlayerNote,
   listPlayerNotes,
@@ -126,23 +128,23 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <S.NotesHeader>
         <Space size={6}>
-          <FileTextOutlined style={{ color: '#8c8c8c' }} />
+          <FileTextOutlined style={S.noteEditIcon} />
           <Typography.Text strong style={textMd}>
             Notes
           </Typography.Text>
           {notes.length > 0 && <Tag style={m0}>{notes.length}</Tag>}
         </Space>
         {isGM && (
-          <Tag color="blue" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={openCreate}>
+          <Tag color="blue" style={S.addNoteTag} onClick={openCreate}>
             <PlusOutlined /> Add note
           </Tag>
         )}
-      </div>
+      </S.NotesHeader>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
+        <div style={S.NotesLoading}>
           <Spin size="small" />
         </div>
       ) : notes.length === 0 ? (
@@ -150,30 +152,19 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
           No notes yet.
         </Typography.Text>
       ) : (
-        <div style={{ display: 'grid', gap: 8 }}>
+        <S.NotesGrid>
           {notes.map((note) => (
-            <div
-              key={note.id}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: 6,
-                padding: '8px 10px',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <div style={{ minWidth: 0 }}>
-                  <Typography.Text strong style={{ fontSize: 13, display: 'block' }}>
+            <S.NoteCard key={note.id}>
+              <S.NoteCardHeader>
+                <div style={S.NoteMain}>
+                  <Typography.Text strong style={S.noteTitle}>
                     {note.title}
                   </Typography.Text>
-                  <Tag style={{ marginTop: 2, fontSize: 11 }}>{note.date}</Tag>
+                  <Tag style={S.noteDateTag}>{note.date}</Tag>
                 </div>
                 {isGM && (
-                  <Space size={4} style={{ flexShrink: 0 }}>
-                    <EditOutlined
-                      style={{ cursor: 'pointer', color: '#8c8c8c', fontSize: 13 }}
-                      onClick={() => openEdit(note)}
-                    />
+                  <Space size={4} style={S.noteActions}>
+                    <EditOutlined style={S.noteEditIcon} onClick={() => openEdit(note)} />
                     <Popconfirm
                       title="Remove this note?"
                       okText="Remove"
@@ -181,26 +172,19 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
                       cancelText="Cancel"
                       onConfirm={() => void handleDelete(note.id)}
                     >
-                      {deletingId === note.id ? (
-                        <Spin size="small" />
-                      ) : (
-                        <DeleteOutlined style={{ cursor: 'pointer', color: '#ff4d4f', fontSize: 13 }} />
-                      )}
+                      {deletingId === note.id ? <Spin size="small" /> : <DeleteOutlined style={S.noteDeleteIcon} />}
                     </Popconfirm>
                   </Space>
                 )}
-              </div>
+              </S.NoteCardHeader>
               {note.content && (
-                <Typography.Text
-                  type="secondary"
-                  style={{ fontSize: 12, display: 'block', marginTop: 6, whiteSpace: 'pre-wrap' }}
-                >
+                <Typography.Text type="secondary" style={S.noteContent}>
                   {note.content}
                 </Typography.Text>
               )}
-            </div>
+            </S.NoteCard>
           ))}
-        </div>
+        </S.NotesGrid>
       )}
 
       <Modal
@@ -215,7 +199,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
       >
         <Space orientation="vertical" size={12} style={w100}>
           <div>
-            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={S.fieldLabelTextSm}>
               Title *
             </Typography.Text>
             <Input
@@ -225,7 +209,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={S.fieldLabelTextSm}>
               Date *
             </Typography.Text>
             <Input
@@ -235,7 +219,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, isGM 
             />
           </div>
           <div>
-            <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={S.fieldLabelTextSm}>
               Content (optional)
             </Typography.Text>
             <TextArea
@@ -454,7 +438,7 @@ export const PlayersPage: React.FC = () => {
           dataSource={displayItems}
           loading={loading}
           scroll={{ x: 700 }}
-          style={{ minWidth: 700 }}
+          style={S.tableMinWidth}
           columns={[
             { title: '#', dataIndex: 'id', width: 60, render: (v: number) => <Tag style={m0}>#{v}</Tag> },
             {
@@ -474,13 +458,7 @@ export const PlayersPage: React.FC = () => {
               title: 'Player',
               render: (_: any, p: Player) => (
                 <Space size={6} wrap>
-                  {p.imageUrl && (
-                    <img
-                      src={resolveApiUrl(p.imageUrl)}
-                      alt={p.name}
-                      style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
-                    />
-                  )}
+                  {p.imageUrl && <img src={resolveApiUrl(p.imageUrl)} alt={p.name} style={S.playerAvatar} />}
                   <Typography.Text strong>{p.name}</Typography.Text>
                   <Tag color="geekblue">Lv {p.level}</Tag>
                   {p.background && (
@@ -511,7 +489,7 @@ export const PlayersPage: React.FC = () => {
           ]}
         />
       </div>
-      {!displayItems.length && !loading && <Empty description="No players found." style={{ marginTop: 16 }} />}
+      {!displayItems.length && !loading && <Empty description="No players found." style={S.emptyList} />}
     </Card>
   );
 
@@ -522,7 +500,7 @@ export const PlayersPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              Characters
+              <IconLabel icon="player">Characters</IconLabel>
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {isGM
@@ -538,14 +516,14 @@ export const PlayersPage: React.FC = () => {
                   type={viewMode === 'public' ? 'primary' : 'default'}
                   onClick={() => setViewMode('public')}
                 >
-                  📖 View
+                  <IconLabel icon="read">View</IconLabel>
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -569,7 +547,7 @@ export const PlayersPage: React.FC = () => {
             placeholder="Search by name or background…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 360 }}
+            style={S.headerSearch}
           />
           {isGM && (
             <Space size={4}>
@@ -590,14 +568,14 @@ export const PlayersPage: React.FC = () => {
         {isGM && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 520 }}>
+            <S.createForm onSubmit={(e) => void onCreate(e)}>
               <Typography.Text strong>New Character</Typography.Text>
               <Space wrap size={8}>
                 <Input
                   placeholder="Name *"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  style={{ minWidth: 240 }}
+                  style={S.createNameInput}
                   required
                 />
                 <Space size={6}>
@@ -619,7 +597,7 @@ export const PlayersPage: React.FC = () => {
                 </Button>
                 <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
-            </form>
+            </S.createForm>
           </>
         )}
       </Space>
@@ -642,20 +620,14 @@ export const PlayersPage: React.FC = () => {
         <Spinner />
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
-          <Space orientation="vertical" size={8} style={{ width: '100%', alignItems: 'center' }}>
+          <Space orientation="vertical" size={8} style={S.emptyCardState}>
             <Typography.Text type="secondary">No characters found.</Typography.Text>
           </Space>
         </Card>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gap: 16,
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          }}
-        >
+        <S.PublicGrid>
           {displayItems.map((p) => (
-            <div key={p.id} style={{ display: 'grid', gap: 8 }}>
+            <S.PlayerStack key={p.id}>
               <PlayerCard player={p} gm={isGM} onToggleVisible={toggleVisible} />
 
               {/* Notes — visible to everyone */}
@@ -702,7 +674,7 @@ export const PlayersPage: React.FC = () => {
                                   [p.id]: { ...prev[p.id], name: e.target.value },
                                 }))
                               }
-                              style={{ minWidth: 180 }}
+                              style={S.editNameInput}
                             />
                             <Space size={4}>
                               <Typography.Text type="secondary" style={textSm}>
@@ -717,7 +689,7 @@ export const PlayersPage: React.FC = () => {
                                     [p.id]: { ...prev[p.id], level: Number(n) || 1 },
                                   }))
                                 }
-                                style={{ width: 70 }}
+                                style={S.levelInput}
                               />
                             </Space>
                           </Space>
@@ -749,22 +721,22 @@ export const PlayersPage: React.FC = () => {
                       )}
 
                       <Divider style={dividerSm} />
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <S.mediaRow>
                         <Input
                           placeholder="Image alt text"
                           value={altById[p.id] ?? ''}
                           onChange={(e) => setAlt(p.id, e.target.value)}
-                          style={{ maxWidth: 200 }}
+                          style={S.altInput}
                         />
                         <Upload {...imageProps(p)}>
                           <Button size="small">Upload image</Button>
                         </Upload>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      </S.mediaRow>
+                      <S.mediaRow>
                         <Upload {...sheetProps(p)}>
                           <Button size="small">Upload PDF</Button>
                         </Upload>
-                      </div>
+                      </S.mediaRow>
                       <Divider style={dividerMd} />
                       <Popconfirm
                         title={`Delete "${p.name}"? This will permanently remove their image, sheet, notes and quest links.`}
@@ -781,9 +753,9 @@ export const PlayersPage: React.FC = () => {
                   </Collapse.Panel>
                 </Collapse>
               )}
-            </div>
+            </S.PlayerStack>
           ))}
-        </div>
+        </S.PublicGrid>
       )}
     </>
   );

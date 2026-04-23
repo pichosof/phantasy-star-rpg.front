@@ -11,6 +11,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 
@@ -35,6 +36,7 @@ import {
   dividerMd,
   tableWrap,
 } from '@app/styles/styleUtils';
+import * as S from './QuestsPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -281,7 +283,11 @@ export const QuestsPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'admin' ? '⚙️ GM Panel — Quests' : 'Quests Board'}
+              {viewMode === 'admin' ? (
+                <IconLabel icon="gm">GM Panel - Quests</IconLabel>
+              ) : (
+                <IconLabel icon="quest">Quests Board</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'admin'
@@ -297,14 +303,14 @@ export const QuestsPage: React.FC = () => {
                   type={viewMode === 'public' ? 'primary' : 'default'}
                   onClick={() => setViewMode('public')}
                 >
-                  📖 Quests
+                  <IconLabel icon="read">Quests</IconLabel>
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -331,7 +337,7 @@ export const QuestsPage: React.FC = () => {
             placeholder="Search by title, description or reward…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 360 }}
+            style={S.headerSearch}
           />
           <Space size={4}>
             {(['all', 'active', 'completed', 'failed'] as const).map((v) => (
@@ -364,18 +370,18 @@ export const QuestsPage: React.FC = () => {
         {isGM && viewMode === 'admin' && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 720 }}>
+            <S.createForm onSubmit={(e) => void onCreate(e)}>
               <Typography.Text strong>New Quest</Typography.Text>
               <Space wrap size={8}>
                 <Input
                   placeholder="Title *"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  style={{ minWidth: 280 }}
+                  style={S.createTitleInput}
                   required
                 />
                 <Select
-                  style={{ minWidth: 160 }}
+                  style={S.createStatusInput}
                   value={newStatus}
                   onChange={(v) => setNewStatus(v as QuestStatus)}
                   options={statusOptions}
@@ -394,7 +400,7 @@ export const QuestsPage: React.FC = () => {
                 </Button>
                 <Button onClick={() => setCreating(false)}>Cancel</Button>
               </Space>
-            </form>
+            </S.createForm>
           </>
         )}
       </Space>
@@ -413,92 +419,59 @@ export const QuestsPage: React.FC = () => {
           <Empty description="No quests found." />
         </Card>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 16, alignItems: 'start' }}>
+        <div style={S.publicGrid(gridCols)}>
           {displayItems.map((qt) => {
             const vis = isVisible(qt);
             const status = (qt.status ?? 'active') as QuestStatus;
             return (
-              <div
-                key={qt.id}
-                style={{
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-                  background: 'var(--background-color, #fff)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: 'box-shadow 0.2s, transform 0.2s',
-                }}
-                onClick={() => openForView(qt.id)}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 24px rgba(0,0,0,0.25)';
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)';
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ height: 8, background: STATUS_STRIP[status] ?? '#d9d9d9' }} />
-                <div
-                  style={{
-                    padding: '14px 16px 12px',
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
-                  }}
-                >
+              <S.PublicCard key={qt.id} onClick={() => openForView(qt.id)}>
+                <div style={S.statusStrip(STATUS_STRIP[status] ?? '#d9d9d9')} />
+                <div style={S.publicCardBody}>
                   <Space size={6} style={spaceBetween}>
                     <Tag color={STATUS_COLOR[status]} style={m0}>
                       {STATUS_LABEL[status] ?? status}
                     </Tag>
                     {isGM && (
-                      <Tag color={vis ? 'green' : 'red'} style={{ margin: 0, fontSize: 10 }}>
+                      <Tag color={vis ? 'green' : 'red'} style={S.visibleTag}>
                         {vis ? 'Visible' : 'Hidden'}
                       </Tag>
                     )}
                   </Space>
-                  <Typography.Title
-                    level={5}
-                    style={{ margin: 0, lineHeight: 1.35, fontSize: mobileOnly ? 15 : 16 }}
-                    ellipsis={{ rows: 2 }}
-                  >
+                  <Typography.Title level={5} style={S.questTitle(mobileOnly)} ellipsis={{ rows: 2 }}>
                     {qt.title}
                   </Typography.Title>
                   {qt.description && (
-                    <Typography.Paragraph style={{ margin: 0, fontSize: 13, color: '#595959' }} ellipsis={{ rows: 3 }}>
+                    <Typography.Paragraph style={S.publicDescription} ellipsis={{ rows: 3 }}>
                       {qt.description}
                     </Typography.Paragraph>
                   )}
                   {qt.reward && (
-                    <Tag color="gold" style={{ marginTop: 4, alignSelf: 'flex-start' }}>
-                      🏆 {qt.reward}
+                    <Tag color="gold" icon={<AppIcon name="reward" />} style={S.rewardTag}>
+                      {qt.reward}
                     </Tag>
                   )}
                   {questCities[qt.id] && questCities[qt.id].length > 0 && (
-                    <Space wrap size={4} style={{ marginTop: 2 }}>
+                    <Space wrap size={4} style={S.cityTags}>
                       {questCities[qt.id].map((c) => (
-                        <Tag key={c.id} color="geekblue" style={{ margin: 0, fontSize: 11 }}>
-                          📍 {c.name}
+                        <Tag key={c.id} color="geekblue" icon={<AppIcon name="location" />} style={S.cityTag}>
+                          {c.name}
                         </Tag>
                       ))}
                     </Space>
                   )}
-                  <div style={{ flex: 1 }} />
+                  <div style={S.spacer} />
                   <Divider style={dividerMd} />
                   <Space style={spaceBetween} size={6}>
-                    <span style={{ fontSize: 11, color: '#bfbfbf' }}>{formatDate((qt as any).createdAt)}</span>
+                    <span style={S.footerDate}>{formatDate((qt as any).createdAt)}</span>
                     <Space size={6} onClick={(e) => e.stopPropagation()}>
                       {isGM && <Switch size="small" checked={vis} onChange={() => void toggleVisible(qt)} />}
-                      <Button size="small" type="link" style={{ padding: 0, fontSize: 12 }}>
+                      <Button size="small" type="link" style={S.footerViewButton}>
                         View quest →
                       </Button>
                     </Space>
                   </Space>
                 </div>
-              </div>
+              </S.PublicCard>
             );
           })}
         </div>
@@ -508,7 +481,7 @@ export const QuestsPage: React.FC = () => {
 
   // ── Admin Mobile ──────────────────────────────────────────────────────────
   const AdminMobileCards = (
-    <div style={{ display: 'grid', gap: 10 }}>
+    <S.adminMobileGrid>
       {filtered.map((qt) => {
         const vis = isVisible(qt);
         const status = (qt.status ?? 'active') as QuestStatus;
@@ -537,28 +510,24 @@ export const QuestsPage: React.FC = () => {
                   </Popconfirm>
                 </Space>
               </Space>
-              <Typography.Text
-                strong
-                style={{ cursor: 'pointer', display: 'block' }}
-                onClick={() => openForView(qt.id)}
-              >
+              <Typography.Text strong style={S.adminClickableTitle} onClick={() => openForView(qt.id)}>
                 {qt.title}
               </Typography.Text>
               {qt.description && (
-                <Typography.Paragraph style={{ margin: 0, fontSize: 12, color: '#8c8c8c' }} ellipsis={{ rows: 2 }}>
+                <Typography.Paragraph style={S.adminCardDescription} ellipsis={{ rows: 2 }}>
                   {qt.description}
                 </Typography.Paragraph>
               )}
               {qt.reward && (
-                <Tag color="gold" style={{ fontSize: 11 }}>
-                  🏆 {qt.reward}
+                <Tag color="gold" icon={<AppIcon name="reward" />} style={S.adminRewardTag}>
+                  {qt.reward}
                 </Tag>
               )}
             </Space>
           </Card>
         );
       })}
-    </div>
+    </S.adminMobileGrid>
   );
 
   // ── Admin Desktop Table ───────────────────────────────────────────────────
@@ -570,7 +539,7 @@ export const QuestsPage: React.FC = () => {
           dataSource={filtered}
           loading={loading}
           scroll={{ x: 900 }}
-          style={{ minWidth: 900 }}
+          style={S.tableMinWidth}
           columns={[
             {
               title: '#',
@@ -599,7 +568,7 @@ export const QuestsPage: React.FC = () => {
               render: (_: any, qt: Quest) => (
                 <Space orientation="vertical" size={2}>
                   <Space size={6} wrap>
-                    <Typography.Text strong style={{ cursor: 'pointer' }} onClick={() => openForView(qt.id)}>
+                    <Typography.Text strong style={S.tableClickableText} onClick={() => openForView(qt.id)}>
                       {qt.title}
                     </Typography.Text>
                     <Tag color={STATUS_COLOR[qt.status ?? 'active']} style={m0}>
@@ -651,7 +620,7 @@ export const QuestsPage: React.FC = () => {
           ]}
         />
       </div>
-      {!filtered.length && !loading && <Empty description="No quests found." style={{ marginTop: 16 }} />}
+      {!filtered.length && !loading && <Empty description="No quests found." style={S.emptyList} />}
     </Card>
   );
 
@@ -684,7 +653,7 @@ export const QuestsPage: React.FC = () => {
           <span style={bold800}>{openQuest.title}</span>
           <Tag color={STATUS_COLOR[openQuest.status ?? 'active']}>{STATUS_LABEL[openQuest.status ?? 'active']}</Tag>
           <Tag color={isVisible(openQuest) ? 'green' : 'red'}>{isVisible(openQuest) ? 'Visible' : 'Hidden'}</Tag>
-          <Badge count={`#${openQuest.id}`} style={{ backgroundColor: '#595959' }} />
+          <Badge count={`#${openQuest.id}`} style={S.drawerBadge} />
         </Space>
       }
       extra={
@@ -710,11 +679,15 @@ export const QuestsPage: React.FC = () => {
       }
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-        <Tabs.TabPane tab="📖 Quest" key="view">
+        <Tabs.TabPane tab={<IconLabel icon="quest">Quest</IconLabel>} key="view">
           <Space orientation="vertical" size={16} style={w100}>
             <Space wrap size={8}>
               <Tag color={STATUS_COLOR[openQuest.status ?? 'active']}>{STATUS_LABEL[openQuest.status ?? 'active']}</Tag>
-              {openQuest.reward && <Tag color="gold">🏆 {openQuest.reward}</Tag>}
+              {openQuest.reward && (
+                <Tag color="gold" icon={<AppIcon name="reward" />}>
+                  {openQuest.reward}
+                </Tag>
+              )}
               {isGM && (
                 <Space size={6}>
                   <span className="rpg-text-sm rpg-muted">Publish:</span>
@@ -725,9 +698,7 @@ export const QuestsPage: React.FC = () => {
             <Divider style={dividerSm} />
             {openQuest.description ? (
               <Card density="dense" title="Description">
-                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75, fontSize: 14 }}>
-                  {openQuest.description}
-                </Typography.Paragraph>
+                <Typography.Paragraph style={S.drawerDescription}>{openQuest.description}</Typography.Paragraph>
               </Card>
             ) : (
               <Typography.Text type="secondary">No description.</Typography.Text>
@@ -737,7 +708,7 @@ export const QuestsPage: React.FC = () => {
               if (citiesLoading) return <Spinner />;
               if (!cities || cities.length === 0) return null;
               return (
-                <Card density="dense" title="📍 Cities">
+                <Card density="dense" title={<IconLabel icon="location">Cities</IconLabel>}>
                   <Space wrap size={6}>
                     {cities.map((c) => (
                       <Tag key={c.id} color="geekblue">
@@ -758,7 +729,7 @@ export const QuestsPage: React.FC = () => {
         </Tabs.TabPane>
 
         {isGM && (
-          <Tabs.TabPane tab="✏️ Edit" key="edit">
+          <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
             <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Quest Data">
                 <Space orientation="vertical" size={10} style={w100}>

@@ -11,6 +11,7 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 
@@ -251,7 +252,11 @@ export const LoresAdminPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'admin' ? '⚙️ GM Panel — Lores' : 'Lore Archive'}
+              {viewMode === 'admin' ? (
+                <IconLabel icon="gm">GM Panel - Lores</IconLabel>
+              ) : (
+                <IconLabel icon="lore">Lore Archive</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" style={textMd}>
               {viewMode === 'admin'
@@ -267,14 +272,14 @@ export const LoresAdminPage: React.FC = () => {
                   type={viewMode === 'public' ? 'primary' : 'default'}
                   onClick={() => setViewMode('public')}
                 >
-                  📖 Lores
+                  <IconLabel icon="read">Lores</IconLabel>
                 </Button>
                 <Button
                   size="small"
                   type={viewMode === 'admin' ? 'primary' : 'default'}
                   onClick={() => setViewMode('admin')}
                 >
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -662,7 +667,7 @@ export const LoresAdminPage: React.FC = () => {
       }
     >
       <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-        <Tabs.TabPane tab="📖 Lore" key="view">
+        <Tabs.TabPane tab={<IconLabel icon="lore">Lore</IconLabel>} key="view">
           <Space orientation="vertical" size={16} style={w100}>
             <Space wrap size={8}>
               {openLore.category && (
@@ -696,7 +701,7 @@ export const LoresAdminPage: React.FC = () => {
         </Tabs.TabPane>
 
         {isGM && (
-          <Tabs.TabPane tab="✏️ Edit" key="edit">
+          <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
             <Space orientation="vertical" size={12} style={w100}>
               <Card density="dense" title="Lore Data">
                 <Space orientation="vertical" size={10} style={w100}>

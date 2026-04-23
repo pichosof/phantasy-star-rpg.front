@@ -4,8 +4,10 @@ import { Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Collapse } from '@app/components/common/Collapse/Collapse';
+import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
 import type { StarfinderSheetData, SfWeapon, SfEquipmentItem } from '@app/api/character-sheets.api';
 import { w100, textSm, dividerMd } from '@app/styles/styleUtils';
+import * as S from './StarfinderSheetForm.styles';
 
 // ── Calculations ──────────────────────────────────────────────────────────────
 
@@ -86,7 +88,7 @@ const SF_SKILLS: Array<{
 
 const LabelInput = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
-    <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 3 }}>
+    <Typography.Text type="secondary" style={S.labelText}>
       {label}
     </Typography.Text>
     {children}
@@ -94,18 +96,9 @@ const LabelInput = ({ label, children }: { label: string; children: React.ReactN
 );
 
 const CalcBox = ({ label, value, color }: { label: string; value: number | string; color?: string }) => (
-  <div
-    style={{
-      textAlign: 'center',
-      padding: '6px 12px',
-      borderRadius: 6,
-      background: color ? `${color}18` : 'rgba(128,128,128,0.08)',
-      border: color ? `1px solid ${color}44` : undefined,
-      minWidth: 60,
-    }}
-  >
-    <div style={{ fontSize: 10, opacity: 0.6, marginBottom: 2 }}>{label}</div>
-    <div style={{ fontWeight: 800, fontSize: 16, color: color ?? 'inherit' }}>{value}</div>
+  <div style={S.calcBox(color)}>
+    <div style={S.calcBoxLabel}>{label}</div>
+    <div style={S.calcBoxValueColor(color)}>{value}</div>
   </div>
 );
 
@@ -141,7 +134,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
     <Collapse defaultActiveKey={['identity', 'stats']} style={w100}>
       {/* Identity */}
       <Collapse.Panel header="Identity" key="identity">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 10 }}>
+        <div style={S.identityGrid}>
           {(
             [
               ['description', 'Description'],
@@ -170,24 +163,24 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Ability Scores */}
       <Collapse.Panel header="Ability Scores" key="stats">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 8 }}>
+        <div style={S.abilitiesGrid}>
           {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((attr) => {
             const base = data[attr] ?? 10;
             const upgraded = (data as any)[`${attr}Upgraded`] as number | undefined;
             const score = upgraded ?? base;
             const mod = abilityMod(score);
             return (
-              <div key={attr} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.7, marginBottom: 4 }}>{attr.toUpperCase()}</div>
+              <div key={attr} style={S.abilityCell}>
+                <div style={S.abilityHeader}>{attr.toUpperCase()}</div>
                 <InputNumber style={w100} value={base} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
-                <div style={{ fontSize: 10, opacity: 0.5, margin: '3px 0' }}>Upg:</div>
+                <div style={S.abilityUpgradeLabel}>Upg:</div>
                 <InputNumber
                   style={w100}
                   value={upgraded}
                   placeholder="—"
                   onChange={(v) => set({ [`${attr}Upgraded`]: v ?? undefined } as any)}
                 />
-                <div style={{ marginTop: 4, fontWeight: 700, fontSize: 13 }}>{sign(mod)}</div>
+                <div style={S.abilityModValue}>{sign(mod)}</div>
               </div>
             );
           })}
@@ -196,13 +189,13 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Combat stats */}
       <Collapse.Panel header="Combat" key="combat">
-        <Space wrap size={8} style={{ marginBottom: 12 }}>
+        <Space wrap size={8} style={S.combatStatsRow}>
           <CalcBox label="Initiative" value={sign(calc.initiative)} color="#597ef7" />
           <CalcBox label="EAC" value={calc.eac} color="#36cfc9" />
           <CalcBox label="KAC" value={calc.kac} color="#73d13d" />
           <CalcBox label="AC vs CM" value={calc.acvsm} color="#ffc53d" />
         </Space>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 8 }}>
+        <div style={S.combatGrid}>
           <LabelInput label="Armor Bonus (EAC)">
             <InputNumber style={w100} value={data.armorBonus ?? 0} onChange={(v) => set({ armorBonus: v ?? 0 })} />
           </LabelInput>
@@ -238,11 +231,11 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <Input value={data.resistances ?? ''} onChange={(e) => set({ resistances: e.target.value })} />
           </LabelInput>
         </div>
-        <Divider style={{ margin: '12px 0 8px' }} />
+        <Divider style={S.sectionDivider} />
         <Typography.Text strong style={textSm}>
           Saving Throws
         </Typography.Text>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 8 }}>
+        <div style={S.savesGrid}>
           {(
             [
               ['fort', 'Fortitude', 'con', calc.fort],
@@ -250,11 +243,8 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               ['will', 'Will', 'wis', calc.will],
             ] as const
           ).map(([k, lbl, attr, total]) => (
-            <div
-              key={k}
-              style={{ padding: 8, borderRadius: 8, background: 'rgba(128,128,128,0.06)', textAlign: 'center' }}
-            >
-              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
+            <div key={k} style={S.saveCard}>
+              <div style={S.saveTitle}>
                 {lbl} = {sign(total)}
               </div>
               <Space orientation="vertical" size={4} style={w100}>
@@ -265,7 +255,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   value={(data as any)[`${k}Base`] ?? 0}
                   onChange={(v) => set({ [`${k}Base`]: v ?? 0 } as any)}
                 />
-                <div style={{ fontSize: 10, opacity: 0.5 }}>
+                <div style={S.saveHelper}>
                   {attr.toUpperCase()} mod: {sign(calc.mods[attr as 'con' | 'dex' | 'wis'])}
                 </div>
                 <InputNumber
@@ -279,13 +269,11 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             </div>
           ))}
         </div>
-        <Divider style={{ margin: '12px 0 8px' }} />
+        <Divider style={S.sectionDivider} />
         <Typography.Text strong style={textSm}>
           Attack Bonus
         </Typography.Text>
-        <div
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: 8, marginTop: 8 }}
-        >
+        <div style={S.attacksGrid}>
           <LabelInput label={`BAB`}>
             <InputNumber style={w100} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
           </LabelInput>
@@ -306,7 +294,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* HP */}
       <Collapse.Panel header="Hit Points" key="hp">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+        <div style={S.hpGrid}>
           {(
             [
               ['Stamina', 'staminaTotal', 'staminaCurrent', '#40a9ff'],
@@ -314,17 +302,8 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               ['Resolve', 'resolveTotal', 'resolveCurrent', '#9254de'],
             ] as const
           ).map(([lbl, tk, ck, color]) => (
-            <div
-              key={tk}
-              style={{
-                padding: 10,
-                borderRadius: 8,
-                background: `${color}10`,
-                border: `1px solid ${color}33`,
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 8 }}>{lbl}</div>
+            <div key={tk} style={S.hpCard(color)}>
+              <div style={S.hpCardTitle(color)}>{lbl}</div>
               <Space orientation="vertical" size={4} style={w100}>
                 <InputNumber
                   style={w100}
@@ -346,18 +325,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Skills */}
       <Collapse.Panel header="Skills" key="skills">
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 0', marginBottom: 8 }}>
+        <div style={S.skillsHeaderGrid}>
           <div />
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '60px 80px 60px 60px',
-              gap: 4,
-              padding: '0 4px',
-              fontSize: 11,
-              opacity: 0.6,
-            }}
-          >
+          <div style={S.skillsHeaderCols}>
             <span>Ranks</span>
             <span>Class (+3)</span>
             <span>Misc</span>
@@ -372,26 +342,19 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           const attrMod = calc.mods[sk.attr];
           const total = ranks + classBonus + attrMod + misc;
           return (
-            <div
-              key={sk.key}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto 1fr',
-                alignItems: 'center',
-                gap: 4,
-                marginBottom: 4,
-              }}
-            >
-              <div style={{ minWidth: 170, fontSize: 12 }}>
-                {sk.trainedOnly && <span style={{ color: '#ff4d4f', fontSize: 10 }}>✦ </span>}
+            <div key={sk.key} style={S.skillRow}>
+              <div style={S.skillName}>
+                {sk.trainedOnly && (
+                  <span style={S.trainedOnlyMark}>
+                    <AppIcon name="star" size={12} />{' '}
+                  </span>
+                )}
                 {sk.label}
-                <span style={{ opacity: 0.5, fontSize: 10, marginLeft: 4 }}>
+                <span style={S.skillAttr}>
                   ({sk.attr.toUpperCase()} {sign(attrMod)})
                 </span>
               </div>
-              <div
-                style={{ display: 'grid', gridTemplateColumns: '60px 80px 60px 60px', gap: 4, alignItems: 'center' }}
-              >
+              <div style={S.skillInputsGrid}>
                 <InputNumber size="small" min={0} value={ranks} onChange={(v) => setSkill(sk.key, { ranks: v ?? 0 })} />
                 <Switch
                   size="small"
@@ -401,7 +364,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   unCheckedChildren="—"
                 />
                 <InputNumber size="small" value={misc} onChange={(v) => setSkill(sk.key, { miscMod: v ?? 0 })} />
-                <span style={{ fontWeight: 700, fontSize: 13, textAlign: 'center' }}>{sign(total)}</span>
+                <span style={S.skillTotal}>{sign(total)}</span>
               </div>
             </div>
           );
@@ -412,14 +375,14 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <InputNumber
               value={data.skillRanksPerLevel}
               onChange={(v) => set({ skillRanksPerLevel: v ?? undefined })}
-              style={{ width: 80 }}
+              style={S.width80}
             />
           </LabelInput>
           <LabelInput label="Armor Check Penalty">
             <InputNumber
               value={data.armorCheckPenalty ?? 0}
               onChange={(v) => set({ armorCheckPenalty: v ?? 0 })}
-              style={{ width: 80 }}
+              style={S.width80}
             />
           </LabelInput>
         </Space>
@@ -428,27 +391,11 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
       {/* Weapons */}
       <Collapse.Panel header="Weapons" key="weapons">
         {weapons.map((w, i) => (
-          <div
-            key={i}
-            style={{
-              marginBottom: 12,
-              padding: 10,
-              borderRadius: 8,
-              background: 'rgba(128,128,128,0.05)',
-              border: '1px solid rgba(128,128,128,0.1)',
-            }}
-          >
-            <Typography.Text strong style={{ fontSize: 12, opacity: 0.6 }}>
+          <div key={i} style={S.weaponCard}>
+            <Typography.Text strong style={S.weaponCardTitle}>
               Weapon {i + 1}
             </Typography.Text>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))',
-                gap: 6,
-                marginTop: 6,
-              }}
-            >
+            <div style={S.weaponGrid}>
               {(
                 [
                   ['name', 'Name'],
@@ -481,7 +428,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Armor equipment */}
       <Collapse.Panel header="Equipped Armor" key="armor">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10 }}>
+        <div style={S.armorGrid}>
           <LabelInput label="Model">
             <Input value={data.armorModel ?? ''} onChange={(e) => set({ armorModel: e.target.value })} />
           </LabelInput>
@@ -530,7 +477,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             />
           </LabelInput>
         </div>
-        <div style={{ marginTop: 8 }}>
+        <div style={S.topMargin8}>
           <LabelInput label="Armor Notes">
             <Input.TextArea
               value={data.armorNotes ?? ''}
@@ -543,9 +490,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Abilities */}
       <Collapse.Panel header={`Class Abilities (${abilities.length})`} key="abilities">
-        <div style={{ display: 'grid', gap: 6 }}>
+        <div style={S.simpleListGrid}>
           {abilities.map((ab, i) => (
-            <Input.Group compact key={i} style={{ width: '100%', display: 'flex' }}>
+            <Input.Group compact key={i} style={S.compactGroup}>
               <Input
                 value={ab}
                 onChange={(e) => {
@@ -569,9 +516,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Feats */}
       <Collapse.Panel header={`Feats (${feats.length})`} key="feats">
-        <div style={{ display: 'grid', gap: 6 }}>
+        <div style={S.simpleListGrid}>
           {feats.map((f, i) => (
-            <Input.Group compact key={i} style={{ width: '100%', display: 'flex' }}>
+            <Input.Group compact key={i} style={S.compactGroup}>
               <Input
                 value={f}
                 onChange={(e) => {
@@ -599,19 +546,16 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           <InputNumber
             value={data.spellsKnownTotal}
             onChange={(v) => set({ spellsKnownTotal: v ?? undefined })}
-            style={{ width: 100 }}
+            style={S.width100}
           />
         </LabelInput>
-        <Divider style={{ margin: '10px 0' }} />
-        <div style={{ display: 'grid', gap: 10 }}>
+        <Divider style={S.spellsDivider} />
+        <div style={S.spellsLevelsGrid}>
           {['1st', '2nd', '3rd', '4th', '5th', '6th'].map((lvl) => {
             const s = spellSlots[lvl] ?? {};
             return (
-              <div
-                key={lvl}
-                style={{ display: 'grid', gridTemplateColumns: 'auto repeat(3,1fr)', gap: 6, alignItems: 'center' }}
-              >
-                <Typography.Text strong style={{ width: 40 }}>
+              <div key={lvl} style={S.spellLevelRow}>
+                <Typography.Text strong style={S.spellLevelLabel}>
                   {lvl}
                 </Typography.Text>
                 <LabelInput label="Known">
@@ -648,13 +592,13 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             );
           })}
         </div>
-        <Divider style={{ margin: '10px 0' }} />
+        <Divider style={S.spellsDivider} />
         <Typography.Text type="secondary" style={textSm}>
           Known spells list
         </Typography.Text>
-        <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
+        <div style={S.spellsListGrid}>
           {spellsList.map((sp, i) => (
-            <Input.Group compact key={i} style={{ width: '100%', display: 'flex' }}>
+            <Input.Group compact key={i} style={S.compactGroup}>
               <Input
                 value={sp}
                 onChange={(e) => {
@@ -678,7 +622,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Equipment */}
       <Collapse.Panel header={`Equipment (${equipment.length})`} key="equipment">
-        <div style={{ display: 'grid', gap: 6 }}>
+        <div style={S.simpleListGrid}>
           {equipment.map((eq, i) => (
             <Space wrap key={i} size={4}>
               <Input
@@ -689,7 +633,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   n[i] = { ...n[i], name: e.target.value };
                   set({ equipment: n });
                 }}
-                style={{ width: 200 }}
+                style={S.width200}
               />
               <Input
                 placeholder="Level"
@@ -699,7 +643,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   n[i] = { ...n[i], level: e.target.value };
                   set({ equipment: n });
                 }}
-                style={{ width: 70 }}
+                style={S.width70}
               />
               <Input
                 placeholder="Bulk"
@@ -709,7 +653,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
                   n[i] = { ...n[i], bulk: e.target.value };
                   set({ equipment: n });
                 }}
-                style={{ width: 70 }}
+                style={S.width70}
               />
               <Button
                 danger
@@ -723,7 +667,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             Add item
           </Button>
         </div>
-        <Divider style={{ margin: '10px 0' }} />
+        <Divider style={S.spellsDivider} />
         <Space wrap size={12}>
           <LabelInput label="Credits">
             <InputNumber value={data.credits} onChange={(v) => set({ credits: v ?? undefined })} />
@@ -732,11 +676,11 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <Input
               value={data.otherWealth ?? ''}
               onChange={(e) => set({ otherWealth: e.target.value })}
-              style={{ width: 200 }}
+              style={S.width200}
             />
           </LabelInput>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={S.backPacksLabel}>
               Backpacks
             </Typography.Text>
             <Space>
@@ -755,7 +699,7 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
             </Space>
           </div>
         </Space>
-        <Divider style={{ margin: '10px 0 6px' }} />
+        <Divider style={S.carryDivider} />
         <Space wrap size={12}>
           <CalcBox label="Unencumbered (Bulk)" value={calcStarfinder(data).carryUnenc} />
           <CalcBox label="Encumbered (Bulk)" value={calcStarfinder(data).carryEnc} />
@@ -765,9 +709,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
       {/* Languages */}
       <Collapse.Panel header={`Languages (${languages.length})`} key="languages">
-        <div style={{ display: 'grid', gap: 6 }}>
+        <div style={S.simpleListGrid}>
           {languages.map((l, i) => (
-            <Input.Group compact key={i} style={{ width: '100%', display: 'flex' }}>
+            <Input.Group compact key={i} style={S.compactGroup}>
               <Input
                 value={l}
                 onChange={(e) => {

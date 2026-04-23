@@ -10,6 +10,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
 
@@ -30,9 +31,9 @@ import {
   tableWrap,
   cardGrid2,
   imgCoverH,
-  imgThumb,
   preWrap,
 } from '@app/styles/styleUtils';
+import * as S from './BestiaryPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -174,7 +175,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       {monster ? (
         <Tabs defaultActiveKey="edit">
           <Tabs.TabPane tab="Edit" key="edit">
-            <Form layout="vertical" style={{ gap: 0 }}>
+            <Form layout="vertical" style={S.formCompact}>
               <Form.Item label="Name" required>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
               </Form.Item>
@@ -203,7 +204,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   placeholder="Full description for players…"
                 />
               </Form.Item>
-              <Form.Item label="🏷️ Tags">
+              <Form.Item label={<IconLabel icon="tags">Tags</IconLabel>}>
                 <TagSelect entityType="beast" entityId={monster.id} />
               </Form.Item>
               <Space>
@@ -220,7 +221,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           <Tabs.TabPane tab="Image" key="image">
             <Space orientation="vertical" size={12} style={w100}>
               {monster.imageUrl && (
-                <div style={{ ...imgThumb, maxHeight: 220 }}>
+                <div style={S.drawerImagePreview}>
                   <img
                     src={resolveApiUrl(monster.imageUrl)}
                     alt={monster.imageAlt ?? monster.name}
@@ -228,7 +229,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   />
                 </div>
               )}
-              <Form.Item label="Image alt text" style={{ marginBottom: 8 }}>
+              <Form.Item label="Image alt text" style={S.drawerImageFormItem}>
                 <Input value={imgAlt} onChange={(e) => setImgAlt(e.target.value)} placeholder={monster.name} />
               </Form.Item>
               <Upload {...uploadProps}>
@@ -443,7 +444,11 @@ export const BestiaryPage: React.FC = () => {
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'gm' ? '⚙️ GM Panel — Bestiary' : 'Bestiary'}
+              {viewMode === 'gm' ? (
+                <IconLabel icon="gm">GM Panel - Bestiary</IconLabel>
+              ) : (
+                <IconLabel icon="beast">Bestiary</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" className="rpg-text-md">
               {viewMode === 'gm'
@@ -459,10 +464,10 @@ export const BestiaryPage: React.FC = () => {
                   type={viewMode === 'players' ? 'primary' : 'default'}
                   onClick={() => setViewMode('players')}
                 >
-                  📖 Bestiary
+                  <IconLabel icon="read">Bestiary</IconLabel>
                 </Button>
                 <Button size="small" type={viewMode === 'gm' ? 'primary' : 'default'} onClick={() => setViewMode('gm')}>
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -488,7 +493,7 @@ export const BestiaryPage: React.FC = () => {
             placeholder="Search creature…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 360 }}
+            style={S.searchField}
           />
           {isGM && viewMode === 'gm' && (
             <Space size={4}>
@@ -509,7 +514,7 @@ export const BestiaryPage: React.FC = () => {
         {isGM && viewMode === 'gm' && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+            <form onSubmit={(e) => void onCreate(e)} style={S.createForm}>
               <Typography.Text strong>New Creature</Typography.Text>
               <Input placeholder="Name *" value={newName} onChange={(e) => setNewName(e.target.value)} required />
               <Input
@@ -595,14 +600,8 @@ export const BestiaryPage: React.FC = () => {
               }
             >
               {mode === 'players' && playerCanRead && m.imageUrl && (
-                <div
-                  style={{ margin: '-12px -12px 12px', borderRadius: '8px 8px 0 0', overflow: 'hidden', height: 140 }}
-                >
-                  <img
-                    src={resolveApiUrl(m.imageUrl)}
-                    alt={m.imageAlt ?? m.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
+                <div style={S.monsterCardCover}>
+                  <img src={resolveApiUrl(m.imageUrl)} alt={m.imageAlt ?? m.name} style={S.monsterCardCoverImage} />
                 </div>
               )}
               <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
@@ -649,7 +648,7 @@ export const BestiaryPage: React.FC = () => {
           rowKey="id"
           dataSource={gmItems}
           loading={loading}
-          style={{ minWidth: 1000 }}
+          style={S.adminTable}
           scroll={{ x: 1000 }}
           columns={[
             {
@@ -692,11 +691,7 @@ export const BestiaryPage: React.FC = () => {
                     {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
                   </Space>
                   {m.habitat && (
-                    <Typography.Text
-                      type="secondary"
-                      className="rpg-text-sm"
-                      style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                    >
+                    <Typography.Text type="secondary" className="rpg-text-sm" style={S.habitatEllipsis}>
                       Habitat: {m.habitat}
                     </Typography.Text>
                   )}
@@ -752,7 +747,7 @@ export const BestiaryPage: React.FC = () => {
           ]}
         />
       </div>
-      {!gmItems.length && !loading && <Empty description="No creatures found." style={{ marginTop: 16 }} />}
+      {!gmItems.length && !loading && <Empty description="No creatures found." style={S.emptyWithTopSpacing} />}
     </Card>
   );
 
@@ -796,7 +791,7 @@ export const BestiaryPage: React.FC = () => {
             {openMonster && (
               <>
                 {openMonster.discovered && openMonster.imageUrl && (
-                  <div style={{ ...imgThumb, maxHeight: 240, marginBottom: 16 }}>
+                  <div style={S.publicDrawerImagePreview}>
                     <img
                       src={resolveApiUrl(openMonster.imageUrl)}
                       alt={openMonster.imageAlt ?? openMonster.name}

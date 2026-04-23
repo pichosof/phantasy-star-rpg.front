@@ -38,6 +38,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
 } from '@ant-design/icons';
+import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
 import { useResponsive } from '@app/hooks/useResponsive';
 import {
   deleteLibraryDocument,
@@ -60,21 +61,17 @@ import { UPLOAD_MAX_MB } from '@app/config/config';
 import {
   dividerMd,
   flex1Min0,
-  flexCenter,
   flexCenterFull,
-  flexRowToCol,
   flexShrink0,
-  gridGap10,
   m0,
-  mb6,
   spaceBetween,
   textMd,
   textSm,
   textXs,
   w100,
-  wordBreakAll,
   wrapAnywhere,
 } from '@app/styles/styleUtils';
+import * as S from './LibraryPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -118,7 +115,7 @@ const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
   const layoutPlugin = defaultLayoutPlugin();
   return (
     <Worker workerUrl={PDF_WORKER_URL}>
-      <div style={{ height: '100%', overflow: 'auto' }}>
+      <div style={S.pdfViewer}>
         <Viewer fileUrl={url} plugins={[layoutPlugin]} />
       </div>
     </Worker>
@@ -145,26 +142,14 @@ const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobil
     };
   }, [url]);
 
-  if (err) return <div style={{ padding: 24, color: 'red' }}>{err}</div>;
+  if (err) return <div style={S.viewerError}>{err}</div>;
   if (!html)
     return (
       <div style={flexCenterFull}>
         <Spin />
       </div>
     );
-  return (
-    <div
-      style={{
-        height: '100%',
-        overflowY: 'auto',
-        background: '#fff',
-        lineHeight: 1.7,
-        padding: isMobile ? '16px' : '24px 40px',
-        fontSize: isMobile ? 15 : 16,
-      }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
+  return <div style={S.docxViewer(isMobile)} dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
 const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
@@ -188,24 +173,7 @@ const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile
         <Spin />
       </div>
     );
-  return (
-    <pre
-      style={{
-        height: '100%',
-        overflowY: 'auto',
-        margin: 0,
-        padding: isMobile ? '12px 14px' : '24px 32px',
-        fontFamily: 'monospace',
-        fontSize: isMobile ? 13 : 14,
-        lineHeight: 1.6,
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
-        background: '#fafafa',
-      }}
-    >
-      {text}
-    </pre>
-  );
+  return <pre style={S.txtViewer(isMobile)}>{text}</pre>;
 };
 
 // ── MOBI Viewer ────────────────────────────────────────────────────────────────
@@ -239,19 +207,8 @@ const MobiViewer: React.FC<MobiViewerProps> = ({ url, title, isMobile, onDownloa
 
   if (failed) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          gap: 16,
-          padding: 24,
-          textAlign: 'center',
-        }}
-      >
-        <Typography.Text type="secondary" style={{ maxWidth: 360 }}>
+      <div style={S.mobiFallback}>
+        <Typography.Text type="secondary" style={S.mobiFallbackText}>
           This MOBI file uses an older format that cannot be displayed in the browser. Download it and open with an
           e-reader (Calibre, KoReader, etc.).
         </Typography.Text>
@@ -307,19 +264,9 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: bg }}>
+    <S.EpubRoot $bg={bg}>
       {/* ── Toolbar ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: isMobile ? 4 : 8,
-          padding: isMobile ? '5px 8px' : '6px 12px',
-          borderBottom: `1px solid ${border}`,
-          background: bar,
-        }}
-      >
+      <S.EpubToolbar $mobile={isMobile} $border={border} $bar={bar}>
         <Button
           size="small"
           type={showToc ? 'primary' : 'default'}
@@ -329,16 +276,14 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
           {isMobile ? '≡' : 'Contents'}
         </Button>
 
-        <div style={{ flex: 1 }} />
+        <S.EpubToolbarSpacer />
 
         {/* Font size */}
         <Space size={2}>
           <Button size="small" onClick={() => changeFontSize(-10)}>
             A−
           </Button>
-          {!isMobile && (
-            <span style={{ fontSize: 12, minWidth: 34, textAlign: 'center', color: fgMuted }}>{fontSize}%</span>
-          )}
+          {!isMobile && <span style={S.epubFontSize(fgMuted)}>{fontSize}%</span>}
           <Button size="small" onClick={() => changeFontSize(10)}>
             A+
           </Button>
@@ -352,81 +297,44 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
             </Button>
           ))}
         </Space>
-      </div>
+      </S.EpubToolbar>
 
       {/* ── Body ── */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <S.EpubBody>
         {/* TOC — overlay on mobile, sidebar on desktop */}
         {showToc && (
-          <div
-            style={{
-              ...(isMobile
-                ? {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    zIndex: 10,
-                    boxShadow: '2px 0 12px rgba(0,0,0,0.18)',
-                  }
-                : { position: 'relative', borderRight: `1px solid ${border}` }),
-              width: isMobile ? '80vw' : 220,
-              maxWidth: 320,
-              overflowY: 'auto',
-              padding: '8px 0',
-              background: bar,
-            }}
-          >
+          <S.EpubTocPanel $mobile={isMobile} $border={border} $bar={bar}>
             {isMobile && (
-              <div
-                style={{
-                  padding: '6px 14px 10px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Typography.Text strong style={{ color: fgMuted, fontSize: 13 }}>
+              <S.EpubTocHeader>
+                <Typography.Text strong style={S.epubTocTitle(fgMuted)}>
                   Contents
                 </Typography.Text>
                 <Button size="small" onClick={() => setShowToc(false)}>
-                  ✕
+                  <AppIcon name="close" />
                 </Button>
-              </div>
+              </S.EpubTocHeader>
             )}
             {toc.map((item, i) => (
-              <div
+              <S.EpubTocItem
                 key={i}
+                $mobile={isMobile}
+                $themeVariant={theme}
                 onClick={() => {
                   setLocation(item.href);
                   setShowToc(false);
                 }}
-                style={{
-                  padding: isMobile ? '10px 16px' : '6px 14px',
-                  cursor: 'pointer',
-                  fontSize: isMobile ? 15 : 13,
-                  color: theme === 'dark' ? '#ccc' : theme === 'sepia' ? '#5b4636' : '#333',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = theme === 'dark' ? '#222' : '#f0f0f0')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 {item.label.trim()}
-              </div>
+              </S.EpubTocItem>
             ))}
-          </div>
+          </S.EpubTocPanel>
         )}
 
         {/* Dim overlay when TOC open on mobile */}
-        {showToc && isMobile && (
-          <div
-            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 9 }}
-            onClick={() => setShowToc(false)}
-          />
-        )}
+        {showToc && isMobile && <div style={S.epubBackdrop} onClick={() => setShowToc(false)} />}
 
         {/* Reader */}
-        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <div style={S.epubReaderPane}>
           <ReactReader
             url={url}
             title={title}
@@ -443,8 +351,8 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
             }}
           />
         </div>
-      </div>
-    </div>
+      </S.EpubBody>
+    </S.EpubRoot>
   );
 };
 
@@ -499,20 +407,12 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
       title={doc?.title ?? 'Document'}
       footer={null}
       width={modalWidth}
-      style={{ top: modalTop, padding: 0, margin: mobileOnly ? 0 : undefined, maxWidth: '100vw' }}
-      styles={{
-        body: {
-          padding: 0,
-          height: bodyHeight,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        },
-      }}
+      style={S.viewerModal(modalTop, mobileOnly)}
+      styles={S.viewerModalStyles(bodyHeight)}
       destroyOnHidden
     >
       {loading && (
-        <div style={{ ...flexCenter, flex: 1 }}>
+        <div style={S.viewerLoading}>
           <Spin size="large" description="Loading document…" />
         </div>
       )}
@@ -586,18 +486,10 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
-      }}
-    >
-      <Card style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
+    <div style={S.keyEntryScreen}>
+      <Card style={S.keyEntryCard}>
         <Space orientation="vertical" size={20} style={w100}>
-          <LockOutlined style={{ fontSize: 48, color: 'var(--primary-color)' }} />
+          <LockOutlined style={S.keyEntryIcon} />
           <div>
             <Typography.Title level={4} style={m0}>
               Library Access
@@ -649,9 +541,9 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
   }
 
   return (
-    <Card size="small" style={{ opacity: !doc.visible && isGM ? 0.65 : 1 }}>
+    <Card size="small" style={S.docCard(!doc.visible && isGM)}>
       {/* Header row — stacks on mobile so long titles don't crush the action buttons */}
-      <div style={{ ...flexRowToCol(isMobile), ...mb6 }}>
+      <div style={S.docHeaderRow(isMobile)}>
         {/* Title + badges */}
         <Space size={6} wrap style={flex1Min0}>
           <FileOutlined style={flexShrink0} />
@@ -670,7 +562,7 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
         </Space>
 
         {/* Action buttons */}
-        <Space size={6} wrap style={{ ...flexShrink0, justifyContent: isMobile ? 'flex-end' : undefined }}>
+        <Space size={6} wrap style={S.docActions(isMobile)}>
           {isGM && (
             <>
               <Switch
@@ -706,8 +598,8 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
           {doc.description}
         </Typography.Text>
       )}
-      <div style={{ marginTop: doc.description ? 6 : 0 }}>
-        <Typography.Text type="secondary" style={{ ...textXs, ...wordBreakAll }}>
+      <div style={S.docMetaWrap(Boolean(doc.description))}>
+        <Typography.Text type="secondary" style={S.docMetaText}>
           {formatBytes(doc.size)} · {doc.originalName}
         </Typography.Text>
       </div>
@@ -758,15 +650,15 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
 
   return (
     <Modal open={!!doc} onCancel={onClose} title="Edit Document" footer={null} destroyOnHidden>
-      <Space orientation="vertical" size={12} style={{ width: '100%', marginTop: 8 }}>
+      <Space orientation="vertical" size={12} style={S.editModalStack}>
         <div>
-          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={S.modalFieldLabel}>
             Title *
           </Typography.Text>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title" />
         </div>
         <div>
-          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={S.modalFieldLabel}>
             Category
           </Typography.Text>
           <Select
@@ -779,7 +671,7 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
           />
         </div>
         <div>
-          <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={S.modalFieldLabel}>
             Description
           </Typography.Text>
           <Input.TextArea
@@ -967,14 +859,14 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
             placeholder="Title (optional — each file defaults to its filename)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            style={{ minWidth: 220, flex: 1 }}
+            style={S.uploadTitleInput}
           />
           <Select
             allowClear
             placeholder="Category..."
             value={category || undefined}
             onChange={(v) => setCategory(v ?? '')}
-            style={{ minWidth: 160 }}
+            style={S.uploadCategorySelect}
             options={CATEGORIES.map((c) => ({ label: c, value: c }))}
           />
         </Space>
@@ -1151,7 +1043,7 @@ const LibraryPage: React.FC = () => {
               </>
             )}
 
-            <Divider style={{ margin: '6px 0' }} />
+            <Divider style={S.headerDivider} />
 
             <Space wrap>
               <Input
@@ -1159,7 +1051,7 @@ const LibraryPage: React.FC = () => {
                 placeholder="Search documents..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: 260 }}
+                style={S.headerSearchInput}
               />
               {categories.length > 0 && (
                 <Select
@@ -1167,7 +1059,7 @@ const LibraryPage: React.FC = () => {
                   placeholder="Filter by category..."
                   value={filterCat || undefined}
                   onChange={(v) => setFilterCat(v ?? '')}
-                  style={{ minWidth: 180 }}
+                  style={S.headerFilterSelect}
                   options={categories.map((c) => ({ label: c, value: c }))}
                 />
               )}
@@ -1193,7 +1085,7 @@ const LibraryPage: React.FC = () => {
             />
           </Card>
         ) : (
-          <div style={gridGap10}>
+          <S.DocListGrid>
             {filtered.map((doc) => (
               <DocCard
                 key={doc.id}
@@ -1206,7 +1098,7 @@ const LibraryPage: React.FC = () => {
                 onView={setViewDoc}
               />
             ))}
-          </div>
+          </S.DocListGrid>
         )}
       </Space>
 

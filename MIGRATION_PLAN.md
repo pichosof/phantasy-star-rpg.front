@@ -1,10 +1,10 @@
-# Migration Plan — phantasy-star-rpg.front
+# Migration Plan - phantasy-star-rpg.front
 
 Branch de trabalho: `update-version`
 
 ---
 
-## Estado atual (pós PR6)
+## Estado atual
 
 | Pacote | Antes | Depois |
 |--------|-------|--------|
@@ -23,179 +23,208 @@ Branch de trabalho: `update-version`
 | AntD | 4.22 | 6.3 |
 | Node | 16.x | >=20.0.0 |
 
-### Erros TypeScript conhecidos (335 total) — todos pré-PR4
+### Snapshot atual da branch
 
-Todos são incompatibilidades **AntD 4 + React 19 + styled-components 6**.
-Serão resolvidos no PR4 (upgrade AntD).
+- PR1 a PR4.5 concluidos
+- PR6 (PWA) concluido e integrado ao fluxo atual
+- PR5.1 em andamento com shell mobile, navegacao mobile, iconografia semantica
+  e guard de rotas GM
+- Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
+- Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
+  `inline styles` e estilos misturados com JSX
+- `antd-mobile` e `antd-mobile-icons` adotados como base do mobile
+- Rotas GM protegidas com redirecionamento para `/403` quando nao houver GM key
 
-- **TS2739** (230x): props `onPointerEnterCapture`/`onPointerLeaveCapture`
-  ausentes nos ícones do `@ant-design/icons@4` — React 19 adicionou esses
-  tipos nos elementos HTML e os ícones do AntD 4 não os declaram.
-- **TS2786** (99x): componentes AntD 4 (Menu, Tabs, etc.) incompatíveis com
-  `ReactNode` do React 19 — a tipagem de `render()` mudou.
-- **TS2345** (5x): `styled(Menu)`, `styled(Tabs)`, `styled(Skeleton)` —
-  `WebTarget` do styled-components 6 não aceita classes do AntD 4.
-- **TS2769** (1x): `Legend.tsx` — cascata do TS2739 em overload.
+### Entregas consolidadas desta rodada
+
+- Header mobile refeito com `NavBar`, settings sheet, painel de GM e CTA de PWA
+- Menu mobile refeito com abertura pela direita e ordem visual otimizada para
+  uso com uma mao
+- Acesso LAN por IP mantido para QA mobile na mesma rede
+- `AppIcon` criado para mapear `@ant-design/icons` no desktop e
+  `antd-mobile-icons` no mobile
+- `Lores (GM)` movido para `GM Area`
+- Cleanup estrutural de estilos em dezenas de paginas e componentes com
+  `styled-components`, `styleUtils`, `resetCss` e `GlobalStyle`
 
 ---
 
-## Commits realizados
+## Commits relevantes
 
-| Hash | Descrição |
+| Hash | Descricao |
 |------|-----------|
-| `b7eabec` | LibraryPage: responsividade mobile + novos exports em styleUtils |
-| `7373bb1` | PR1+PR2: CRA→Vite 5, React 17→19 |
-| `3ac3ddd` | PR3: TypeScript 4→5, ESLint 7→8, Prettier 2→3 |
-| `15654e4` | docs: MIGRATION_PLAN.md |
-| `ef176c4` | PR6: PWA + Workbox 7 via vite-plugin-pwa |
-| `f78e4c6` | PR4: Ant Design 4→6 + @ant-design/icons 4→6 |
+| `7373bb1` | PR1+PR2: CRA -> Vite 5, React 17 -> 19 |
+| `3ac3ddd` | PR3: TypeScript 4 -> 5, ESLint 7 -> 8, Prettier 2 -> 3 |
+| `f78e4c6` | PR4: Ant Design 4 -> 6 + @ant-design/icons 4 -> 6 |
+| `006047c` | chore: finish antd 6 deprecated cleanup |
+| `cccf74a` | chore: finish pr4.5 cleanup and tooling warnings |
+| `45e9d02` | feat: enable lan mobile access and restore pwa install |
 
 ---
 
 ## Roadmap de PRs
 
-### ✅ PR1 — CRA/Craco → Vite 5
+### PR1 - CRA/Craco -> Vite 5
+
 - Substituir `react-scripts` + `@craco/craco` por `vite` + `@vitejs/plugin-react`
-- `vite.config.ts` com `vite-tsconfig-paths`, suporte a Less, porta 3000
-- `index.html` na raiz (entry point do Vite), remover `public/index.html`
-- `src/vite-env.d.ts` com declarações `ImportMetaEnv`
-- Renomear `REACT_APP_*` → `VITE_*` no `.env.development` e nos arquivos fonte
-- Remover service worker, web-vitals, `craco.config.js`, patch do react-trello
-- Atualizar `.gitignore`: adicionar `build/`
-- `engines`: `node >=20.0.0`
+- Levar o projeto para `index.html` na raiz e `import.meta.env`
+- Remover service worker antigo e arquivos do CRA
 
-### ✅ PR2 — React 17 → 19
-- react/react-dom: 17 → 19 | @types/react/react-dom: 17 → 19
-- react-redux: 7 → 9 | @reduxjs/toolkit: 1 → 2
-- styled-components: 5 → 6 (remover @types/styled-components)
-- react-router-dom: 6.0 → 6.28 (remover @types/react-router-dom)
-- react-responsive: 8 → 9 | axios: 0.24 → 1.7
-- `ReactDOM.render` → `createRoot` em `src/index.tsx`
-- Remover `getCurrencyPrice` + imports SVG não usados de `utils.tsx`
-- Substituir `process.env.*` por `import.meta.env.*`
+### PR2 - React 17 -> 19
 
-### ✅ PR3 — TypeScript 4 → 5 + ESLint 7 → 8
-- typescript: 4.1.2 → 5.8.3
-- eslint: 7.28 → 8.57.1 | @typescript-eslint: 5.x → 7.18
-- prettier: 2.3 → 3.8.3 | eslint-plugin-prettier: 3.x → 5.x
-- eslint-config-prettier: 8.x → 9.x
-- `.eslintrc.js`: `ecmaVersion: 'latest'`, `no-var-requires` → `no-require-imports`
-- Fixes no código:
-  - `localStorage.service.ts`: `sex`/`lang` como `as const`
-  - `errorLogging.middleware.ts`: `String(action.payload)` para `unknown`
-  - `http.api.ts`: `config.headers.set()` em vez de `(??= {})` para Axios 1.x
+- Atualizar `react`, `react-dom`, `react-redux`, RTK, `styled-components`
+- Migrar `ReactDOM.render` para `createRoot`
+- Remover dependencias de runtime antigas do CRA
+
+### PR3 - TypeScript 4 -> 5 + ESLint 7 -> 8
+
+- Atualizar TypeScript, ESLint, Prettier e plugins associados
+- Ajustar regras e tipagens que quebraram com as novas versoes
+
+### PR4 - Ant Design 4 -> 6
+
+- Atualizar `antd` e `@ant-design/icons`
+- Migrar APIs principais de `Menu`, `Dropdown`, `Drawer`, `Modal`, `Tabs`,
+  `Collapse`, `Select` e notificacoes
+- Consolidar o sistema de tema sobre tokens e wrappers compartilhados
+
+### PR4.5 - Cleanup de deprecated do AntD 6
+
+- Eliminar leftovers do PR4 que ainda disparavam warnings de deprecated
+- Trocar `destroyOnClose` por `destroyOnHidden`
+- Trocar `bodyStyle`/`headerStyle` por `styles.body`/`styles.header`
+- Trocar `notification.*({ message })` por `notification.*({ title })`
+- Trocar `Drawer width` por `size` e `Modal visible` por `open`
+- Normalizar `Card size="default"` para `medium` no wrapper compartilhado
+- Remover `Select.Option`, `Menu.Item`, `Menu.SubMenu` e `Collapse` legados
+- Validacao final com `yarn lint`, `yarn type-check` e `yarn build`
+- Tooling:
+  - remover `lessc --js` legado do build de temas
+  - migrar `vite.config.ts` para `vite.config.mts`
+  - eliminar warning da API CJS do Vite
+
+### PR5 - Mobile-first com AntD Mobile
+
+Premissas:
+
+- Mobile virou requisito padrao do frontend
+- Tudo que for criado ou alterado para `< 768px` deve considerar
+  `antd-mobile` como camada principal de UX
+- Desktop/tablet continuam com AntD, mas o visual e o comportamento precisam
+  permanecer coerentes entre Motavia e Dezolis
+
+### PR5.1 - Infra + Shell mobile (em andamento)
+
+Entregue:
+
+- Instalacao de `antd-mobile` e `antd-mobile-icons`
+- Shell mobile compartilhado para header, menu, settings, PWA e GM mode
+- Tema revisado no shell mobile para Motavia e Dezolis
+- Ergonomia right-handed no mobile:
+  - botao do menu no lado direito
+  - abertura pela direita para a esquerda
+  - ordem visual invertida no menu mobile
+- `AppIcon` para mapear icones desktop/mobile com semantica unica
+- Guard de rotas GM com wrapper + pagina `403`
+- Inicio do cleanup estrutural de estilos em `*.styles.ts`
+
+Ja adiantado dentro da mesma rodada:
+
+- Remocao de varios `inline styles` em paginas e componentes de `src/pages`,
+  `src/pages/gm` e `src/components/rpg`
+- Substituicao de emojis de UI por iconografia semantica compartilhada
+- Ajustes finos de shell, cores e drawers em Motavia/Dezolis
+
+Fica para as proximas fatias:
+
+- Primitivas mobile compartilhadas de pagina, filtros e formularios
+- Conversao page-by-page dos fluxos restantes
+- Hardening visual, touch e QA cross-device
+
+### PR5.2 - Primitivas compartilhadas
+
+- `MobilePageScaffold`
+- `MobileSectionTabs`
+- `MobileFilterSheet`
+- `MobileActionSheet`
+- Base de formularios mobile e sticky footer actions
+
+### PR5.3 - CRUDs e paginas de campanha
+
+- Players
+- Cities
+- Quests
+- Sessions
+- Timeline
+- Lores
+- Bestiary
+- NPCs
+- Dungeons
+- Tags
+
+### PR5.4 - Conteudo e GM area
+
+- Wiki
+- Library
+- GmNotes
+- GmImages
+
+### PR5.5 - Fluxos complexos
+
+- Map
+- GmSheets
+- GurpsSheetForm
+- StarfinderSheetForm
+- DiceRoller
+
+### PR5.6 - Hardening
+
+- QA cross-device
+- Ajustes touch
+- Revisao visual por tema
+- Performance
+
+### PR6 - Workbox v7 + PWA (`ef176c4`)
+
+- `vite-plugin-pwa@^1.2.0` com Workbox 7
+- `registerType: 'autoUpdate'`
+- Manifest gerado no build
+- Runtime caching para fontes, `/api/*` e assets remotos
 
 ---
 
-### ✅ PR4 — Ant Design 4 → 6
+## Decisoes de arquitetura
 
-**Contexto:** AntD 5 introduziu design tokens (CSS-in-JS), removeu variáveis
-Less. AntD 6 refina isso. A migração 4→6 exige:
-
-#### O que muda nas APIs
-
-| AntD 4 | AntD 5/6 |
-|--------|----------|
-| `Menu` com `items` array de JSX | `items` como array de objetos (`MenuItemType[]`) |
-| `Dropdown.Button` | `Dropdown` com `menu` prop |
-| `PageHeader` | Removido — usar layout manual |
-| `Select.Option` (JSX) | `options` prop com array |
-| `Form.Item` com `rules` | Igual, mas tipos mudaram |
-| Ícones sem `onPointerEnterCapture` | `@ant-design/icons@6` resolve |
-| `styled(Menu)` | Funciona com AntD 6 + styled-components 6 |
-| Variáveis Less (`@primary-color`) | Design tokens (`theme.token.colorPrimary`) |
-| `notification.open()` | API unificada `notification.info()` etc. |
-
-#### Arquivos mais afetados (mapeamento inicial)
-
-- `src/components/common/Menu/` — renderização de itens
-- `src/components/header/` — Header e SettingsDropdown
-- `src/components/layouts/main/sider/` — SiderMenu, SiderLogo
-- `src/controllers/notificationController.tsx` — API de notificações
-- `src/styles/themes/` — variáveis Less → tokens
-- `src/pages/` — todos os pages que usam Select, Form, Dropdown
-
-#### Estratégia
-
-1. Fazer upgrade do `antd` e `@ant-design/icons` para `^6.x`
-2. Instalar e executar codemod oficial: `@ant-design/codemod-v5`
-   (migra a maior parte automaticamente de v4→v5; revisar manualmente para v6)
-3. Migrar sistema de temas Less → ConfigProvider com tokens
-4. Corrigir componentes afetados um a um
-5. Verificar `skipLibCheck: true` no tsconfig para silenciar erros de libs
-   de terceiros durante a transição
-
-#### Pacotes a atualizar no PR4
-
-```
-antd:                    ^4.22.4   → ^6.x
-@ant-design/icons:       ^4.6.2    → ^6.x
-```
-
-#### Pacotes que PODEM precisar de atenção no PR4
-
-```
-antd-mask-input          (checar compatibilidade com AntD 6)
-echarts-for-react        (usa AntD? verificar)
-```
-
-### ✅ PR4.5 — Cleanup de deprecated do AntD 6
-
-- Eliminar leftovers do PR4 que ainda disparavam warnings de deprecated em dev
-- Status final: fluxo de `/timeline` e paginas relacionadas sem warnings
-  deprecated do AntD 6; warnings restantes sao fora do escopo AntD
-- Trocar `destroyOnClose` → `destroyOnHidden`
-- Trocar `bodyStyle`/`headerStyle` legados por `styles.body`/`styles.header`
-- Trocar `notification.*({ message })` → `notification.*({ title })`
-- Trocar `Drawer width` → `size` e `Modal visible` → `open`
-- Normalizar `Card size="default"` → `medium` no wrapper compartilhado
-- Remover `Select.Option` remanescente
-- Remover `Menu.Item`/`Menu.SubMenu` remanescente no sider em favor de `items`
-- Remover warning de `Dropdown`/`Menu` no settings overlay com `popupRender`
-- Remover `expandIconPosition` remanescente em `Collapse`
-- Padronizar `Tabs` e `Collapse` legados via wrappers compatíveis com `items`
-- Validação: `yarn lint`, `yarn type-check`, `yarn build`
-- Tooling: remover `lessc --js` legado do build de temas
-- Tooling: migrar `vite.config.ts` para `vite.config.mts` e eliminar warning da API CJS do Vite
-
----
-
-### 🔲 PR5 — AntD Mobile (telas mobile)
-
-Adicionar `@ant-design/mobile` ou `antd-mobile` para telas < 768px onde
-a UX mobile é crítica.
-
----
-
-### ✅ PR6 — Workbox v7 + PWA (`ef176c4`)
-
-- `vite-plugin-pwa@^1.2.0` (Workbox 7 embutido)
-- `registerType: 'autoUpdate'` — SW atualiza silenciosamente
-- Manifest: name/icons/theme #040A16/display standalone
-- Precache: 137 entradas (~6.5 MB)
-- Runtime: Google Fonts CacheFirst, `/api/*` NetworkFirst, S3 StaleWhileRevalidate
-- Removido `public/manifest.json` (plugin gera `manifest.webmanifest`)
-- Removido `<link rel="manifest">` do `index.html` (plugin injeta no build)
-
----
-
-## Decisões de arquitetura
-
-- **Ambientes**: apenas `.env.development` por enquanto. Outros serão
-  configurados manualmente pelo time quando necessário.
-- **PWA/Service Worker**: desativado intencionalmente até o PR6.
-- **`skipLibCheck: true`**: mantido — necessário enquanto AntD 4 está
-  instalado com React 19 (muitos erros de tipos em `node_modules`).
-- **`--no-verify`**: usado nos commits de migração para contornar o hook
-  lint-staged que falha durante transições de toolchain. Remover depois
-  que o ESLint estiver estável no projeto.
+- **Ambientes**: apenas `.env.development` por enquanto. Outros ambientes
+  continuam sendo configurados pelo time quando necessario.
+- **PWA/Service Worker**: desativado intencionalmente ate o PR6.
+- **`skipLibCheck: true`**: mantido durante a migracao para evitar ruido de
+  tipagens de bibliotecas de terceiros.
 - **yarn.lock**: mantido via Yarn Berry 3.1.1 com `node-modules` linker.
-- **CRLF/LF**: `core.autocrlf=true` no Windows. Prettier v3 normaliza para
-  LF em cada `--fix`. Padrão do repo é LF no índice git.
+- **Rotas GM**: `LORES`, `GM_NOTES`, `GM_IMAGES` e `GM_SHEETS` exigem GM key
+  ativa no cliente; sem ela o usuario e redirecionado para `/403`.
+- **Shell mobile**: o fluxo de menu e acoes segue ergonomia right-handed, com
+  entrada pelo lado direito e foco em navegacao por um unico dedo.
+- **Estilos**: separar JSX e estilo continua sendo regra; novas telas e
+  refactors devem priorizar `*.styles.ts`, `styled-components`, `styleUtils`,
+  `resetCss` e `GlobalStyle`.
 
 ---
 
-## Comandos úteis
+## Addendum - LAN / PWA
+
+- Dev server liberado em `0.0.0.0` para acesso por IP na rede local
+- Exemplo atual de teste: `http://192.168.10.198:3000`
+- Botao de install restaurado na engrenagem
+- O prompt nativo de instalacao continua dependendo de contexto seguro
+  (`https` ou `localhost`), entao acesso por IP em `http` serve para uso e QA
+  mobile, mas nao garante instalacao PWA
+- `localhost` continua sendo o melhor fluxo para validar o prompt real de PWA
+- O acesso por IP e o fluxo recomendado para QA manual no celular durante a PR5
+
+---
+
+## Comandos uteis
 
 ```bash
 # Iniciar dev server
@@ -210,99 +239,3 @@ yarn lint
 # Build
 yarn build
 ```
-
----
-
-## Addendum â€” LAN / PWA
-
-- Dev server liberado em `0.0.0.0` para acesso por IP na rede local
-- Exemplo atual de teste: `http://192.168.10.198:3000`
-- Botao de install restaurado na engrenagem
-- O prompt nativo de instalacao continua dependendo de contexto seguro
-  (`https` ou `localhost`), entao acesso por IP em `http` serve para uso e QA
-  mobile, mas nao garante instalacao PWA
-
----
-
-## Draft â€” PR5 Mobile-First
-
-### Objetivo
-
-Transformar o frontend inteiro em mobile-first com `antd-mobile` como base das
-experiencias `< 768px`, mantendo paridade funcional entre desktop, player e GM.
-
-### Premissas
-
-- Mobile vira requisito padrao para toda tela nova ou alterada
-- Menu, header, GM mode, engrenagem, filtros, drawers, tabs, formularios e
-  fluxos de leitura/edicao precisam funcionar no celular
-- `antd-mobile` sera usado como biblioteca base do mobile; AntD desktop continua
-  para >= 768px
-- A migracao sera incremental por fases para evitar regressao ampla
-
-### Escopo
-
-1. Shell global
-   - Navegacao principal
-   - Header
-   - Settings / tema / PWA
-   - Botao e painel de GM
-2. Primitivas mobile compartilhadas
-   - Scaffold de pagina
-   - List/detail
-   - Filter sheet
-   - Action sheet
-   - Formularios mobile
-   - Sticky footer actions
-3. Paridade funcional por pagina
-   - Toda pagina deve manter acesso aos fluxos de player e GM no mobile
-4. Telas complexas
-   - Map
-   - Library
-   - Wiki
-   - GmSheets
-   - DiceRoller
-
-### Fases sugeridas
-
-1. PR5.1 â€” Infra + Shell
-   - Instalar `antd-mobile`
-   - Criar camada compartilhada de responsividade
-   - Refazer menu, header, settings, GM e CTA de PWA no mobile
-2. PR5.2 â€” Primitivas compartilhadas
-   - `MobilePageScaffold`
-   - `MobileSectionTabs`
-   - `MobileFilterSheet`
-   - `MobileActionSheet`
-   - `MobileFormDrawer` / `MobileFormPopup`
-3. PR5.3 â€” CRUDs e paginas de campanha
-   - Players, Cities, Quests, Sessions, Timeline, Lores, Bestiary, NPCs,
-     Dungeons e Tags
-4. PR5.4 â€” Conteudo e GM area
-   - Wiki, Library, GmNotes e GmImages
-5. PR5.5 â€” Fluxos complexos
-   - Map, GmSheets, GurpsSheetForm, StarfinderSheetForm e DiceRoller
-6. PR5.6 â€” Hardening
-   - QA cross-device
-   - Ajustes touch
-   - Revisao visual por tema
-   - Performance
-
-### Definition of Done por tela
-
-- Navegavel em 360px sem bloquear o fluxo principal
-- Sem horizontal scroll acidental
-- Acao principal acessivel por toque
-- Fluxos de GM disponiveis no mobile
-- Formularios usaveis com teclado virtual
-- Drawers, tabs e filtros com estado inicial correto
-- Smoke test em 360x800, 390x844 e 768x1024
-- Validacao minima com `yarn lint`, `yarn type-check` e teste manual mobile
-
-### Riscos conhecidos
-
-- Convivencia visual entre `antd` e `antd-mobile`
-- Sincronizacao de tema entre tokens desktop e mobile
-- Map/PDF/charts em interacao touch
-- Formularios grandes em drawers/popups
-- Paginas com tabela desktop precisando de variante card/list

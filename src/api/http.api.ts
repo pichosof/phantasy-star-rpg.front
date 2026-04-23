@@ -3,6 +3,13 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/config';
 
 const KEY_STORAGE = 'gm_api_key';
+export const GM_MODE_CHANGE_EVENT = 'gm-mode-changed';
+
+function emitGMModeChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(GM_MODE_CHANGE_EVENT));
+  }
+}
 
 export const http = axios.create({
   baseURL: API_BASE_URL,
@@ -44,6 +51,7 @@ export async function loginGM(
     const { token } = res.data;
     localStorage.setItem(KEY_STORAGE, token);
     http.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    emitGMModeChange();
     return { success: true };
   } catch (err: any) {
     if (err?.response?.status === 429) {
@@ -61,6 +69,7 @@ export async function loginGM(
 export function logoutGM() {
   localStorage.removeItem(KEY_STORAGE);
   delete http.defaults.headers.common['Authorization'];
+  emitGMModeChange();
 }
 
 /** Restores the Authorization header from a stored valid token on page load. */
@@ -71,6 +80,7 @@ export function initGMKeyFromStorage() {
   } else if (token) {
     // Expired token — clear it so isGM checks return false
     localStorage.removeItem(KEY_STORAGE);
+    emitGMModeChange();
   }
 }
 

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Select, Tag, message } from 'antd';
+import { message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { listTags, createTag, getEntityTags, setEntityTags } from '@app/api/tags.api';
 import type { Tag as TagType, EntityTagType } from '@app/types/rpg';
+import * as S from './TagSelect.styles';
 
 type Props = {
   entityType: EntityTagType;
@@ -20,7 +21,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
     Promise.all([listTags(), getEntityTags(entityType, entityId)])
       .then(([all, entity]) => {
         setAllTags(all);
-        setEntityTagIds(entity.map((t) => t.id));
+        setEntityTagIds(entity.map((tag) => tag.id));
       })
       .catch(() => undefined);
   }, [entityType, entityId]);
@@ -40,6 +41,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
   async function handleCreateTag(name: string) {
     const trimmed = name.trim();
     if (!trimmed) return;
+
     try {
       const created = await createTag({ name: trimmed });
       setAllTags((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
@@ -50,7 +52,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
     }
   }
 
-  const currentTags = allTags.filter((t) => entityTagIds.includes(t.id));
+  const currentTags = allTags.filter((tag) => entityTagIds.includes(tag.id));
   const options = allTags.map((tag) => ({
     value: tag.id,
     label: tag.name,
@@ -59,66 +61,48 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
 
   if (readonly) {
     if (currentTags.length === 0) return null;
+
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {currentTags.map((t) => (
-          <Tag key={t.id} color={t.color} style={{ margin: 0 }}>
-            {t.name}
-          </Tag>
+      <S.ReadonlyTags>
+        {currentTags.map((tag) => (
+          <S.ReadonlyTag key={tag.id} color={tag.color}>
+            {tag.name}
+          </S.ReadonlyTag>
         ))}
-      </div>
+      </S.ReadonlyTags>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <Select
+    <S.Root>
+      <S.FullWidthSelect
         mode="multiple"
         allowClear
-        style={{ width: '100%' }}
-        placeholder="Add tags…"
+        placeholder="Add tagsâ€¦"
         value={entityTagIds}
-        onChange={(ids: number[]) => void handleChange(ids)}
+        onChange={(ids) => void handleChange(ids as number[])}
         loading={saving}
         optionFilterProp="label"
         options={options}
         optionRender={(option) => (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: (option.data as { color?: string }).color,
-                display: 'inline-block',
-                flexShrink: 0,
-              }}
-            />
+          <S.OptionLabel>
+            <S.OptionDot $color={(option.data as { color?: string }).color} />
             {option.data.label}
-          </span>
+          </S.OptionLabel>
         )}
         tagRender={({ label, value, closable, onClose }) => {
-          const tag = allTags.find((t) => t.id === (value as number));
+          const tag = allTags.find((entry) => entry.id === (value as number));
           return (
-            <Tag color={tag?.color ?? '#1677ff'} closable={closable} onClose={onClose} style={{ marginRight: 4 }}>
+            <S.SelectedTag color={tag?.color ?? '#1677ff'} closable={closable} onClose={onClose}>
               {label}
-            </Tag>
+            </S.SelectedTag>
           );
         }}
       />
 
-      <div style={{ display: 'flex', gap: 4 }}>
-        <input
-          style={{
-            flex: 1,
-            padding: '4px 8px',
-            border: '1px solid #d9d9d9',
-            borderRadius: 4,
-            background: 'transparent',
-            color: 'inherit',
-            fontSize: 13,
-          }}
-          placeholder="New tag name…"
+      <S.CreateRow>
+        <S.CreateInput
+          placeholder="New tag nameâ€¦"
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           onKeyDown={(e) => {
@@ -128,21 +112,10 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
             }
           }}
         />
-        <button
-          style={{
-            padding: '4px 10px',
-            border: '1px solid #d9d9d9',
-            borderRadius: 4,
-            cursor: 'pointer',
-            background: 'transparent',
-            color: 'inherit',
-          }}
-          onClick={() => void handleCreateTag(newTagName)}
-          type="button"
-        >
+        <S.CreateButton onClick={() => void handleCreateTag(newTagName)} type="button">
           <PlusOutlined /> Add
-        </button>
-      </div>
-    </div>
+        </S.CreateButton>
+      </S.CreateRow>
+    </S.Root>
   );
 };
