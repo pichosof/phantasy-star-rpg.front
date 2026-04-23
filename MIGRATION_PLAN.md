@@ -32,7 +32,8 @@ Branch de trabalho: `update-version`
 - PR5.7 concluido com Tags e LoresAdmin
 - PR5.8 concluido com Bestiary e NPCs
 - PR5.9 concluido com Dungeons
-- PR5.10 em revisao com GmNotes e GmImages
+- PR5.10 concluido com GmNotes e GmImages
+- PR5.11 em revisao com Conteudo e GM area
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -72,6 +73,7 @@ Branch de trabalho: `update-version`
 | `22bcee9` | feat: add mobile-first timeline page |
 | `22577f2` | feat: add mobile-first tags and lores admin |
 | `d8ae0c3` | feat: add mobile-first bestiary and npcs |
+| `89dc30e` | feat: add mobile-first dungeons page |
 
 ---
 
@@ -296,10 +298,26 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos mobile consolidados em `DungeonsPage.styles.ts`
 
-### PR5.10 - GmNotes e GmImages (em revisao)
+### PR5.10 - GmNotes e GmImages (concluido)
 
-- GmNotes
-- GmImages
+- `GmNotes` convertido para fluxo mobile-first
+- Entregue:
+  - lista mobile com busca e filtros por tag em sheet
+  - cards touch-friendly com status de pinned e preview de conteudo
+  - detalhe da nota em `MobileEntitySheet`
+  - criacao e edicao mobile com `MobileForm`
+  - pin/unpin e exclusao em fluxo mobile GM
+  - preservacao do fluxo desktop/tablet com sidebar e editor
+  - estilos mobile consolidados em `GmNotesPage.styles.ts`
+- `GmImages` convertido para fluxo mobile-first
+- Entregue:
+  - galeria mobile com busca por filename, alt e mime
+  - cards mobile com preview, metadados e acoes de abrir/copiar URL
+  - preview de imagem em `MobileEntitySheet`
+  - upload, copia de URL e exclusao em fluxo mobile GM
+  - remocao dos estilos inline remanescentes da galeria desktop
+  - preservacao do fluxo desktop/tablet
+  - estilos mobile consolidados em `GmImagesPage.styles.ts`
 
 ### PR5.11 - Conteudo e GM area
 

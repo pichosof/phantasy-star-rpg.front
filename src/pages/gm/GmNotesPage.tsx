@@ -1,10 +1,29 @@
 import React from 'react';
 import { Button, Modal, Tag, Typography, Input, Space, message } from 'antd';
 import { DeleteOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons';
+import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import { AddOutline, DeleteOutline, EditSOutline, FilterOutline, StarFill, StarOutline } from 'antd-mobile-icons';
 
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+} from '@app/components/common/mobile';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import { type GmNote, createGmNote, deleteGmNote, listGmNotes, updateGmNote } from '@app/api/gm-notes.api';
@@ -71,6 +90,8 @@ export const GmNotesPage: React.FC = () => {
 
   const [tagFilter, setTagFilter] = React.useState<string | null>(null);
   const [searchQ, setSearchQ] = React.useState('');
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<GmNote | null>(null);
 
   const activeNote = React.useMemo(() => notes.find((note) => note.id === activeId) ?? null, [notes, activeId]);
 
@@ -120,6 +141,7 @@ export const GmNotesPage: React.FC = () => {
   }
 
   function startEdit(note: GmNote) {
+    setActiveId(note.id);
     setEditTitle(note.title);
     setEditContent(note.content ?? '');
     setEditTags(note.tags ?? '');
@@ -168,6 +190,7 @@ export const GmNotesPage: React.FC = () => {
         setActiveId(null);
         setEditing(false);
       }
+      setDeleteTarget(null);
       await load();
       message.success('Note removed');
     } catch (error) {
@@ -176,6 +199,11 @@ export const GmNotesPage: React.FC = () => {
   }
 
   function confirmDelete(note: GmNote) {
+    if (mobileOnly) {
+      setDeleteTarget(note);
+      return;
+    }
+
     Modal.confirm({
       title: `Delete "${note.title}"?`,
       okText: 'Delete',
@@ -188,6 +216,249 @@ export const GmNotesPage: React.FC = () => {
   const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
 
   if (loading) return <Spinner />;
+
+  const mobileTagOptions = [{ label: 'All tags', value: 'all' }, ...allTags.map((tag) => ({ label: tag, value: tag }))];
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {notes.length} notes
+      </AdmMobileTag>
+      <AdmMobileTag color="warning" fill="outline" round>
+        {notes.filter((note) => note.pinned).length} pinned
+      </AdmMobileTag>
+      {tagFilter ? (
+        <AdmMobileTag color="primary" fill="outline" round>
+          {tagFilter}
+        </AdmMobileTag>
+      ) : null}
+    </S.MobileMetaTags>
+  );
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar inset={false} onChange={setSearchQ} placeholder="Search GM notes..." value={searchQ} />
+      <S.MobileFilterRow>
+        <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+          <FilterOutline fontSize={16} /> Tags
+        </AdmMobileButton>
+        <AdmMobileButton color="primary" onClick={startNew} size="small">
+          <AddOutline fontSize={16} /> New note
+        </AdmMobileButton>
+      </S.MobileFilterRow>
+    </>
+  );
+
+  const mobileEditorTitle = activeId ? 'Edit note' : 'New note';
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>GM - Notes</PageTitle>
+
+        <MobilePageScaffold
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle="Fast private notes, clues and pinned reminders for the GM table."
+          title={<IconLabel icon="notes">GM Notes</IconLabel>}
+        >
+          {filteredNotes.length === 0 ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>No notes found.</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileNotesList>
+              {filteredNotes.map((note) => {
+                const tags = parseTags(note.tags);
+
+                return (
+                  <MobileCard compact key={note.id} onClick={() => setActiveId(note.id)}>
+                    <S.MobileNoteBody>
+                      <S.MobileNoteHeader>
+                        <S.MobileNoteIdentity>
+                          <S.MobileMetaTags>
+                            <AdmMobileTag fill="outline" round>
+                              #{note.id}
+                            </AdmMobileTag>
+                            {note.pinned ? (
+                              <AdmMobileTag color="warning" fill="outline" round>
+                                <StarFill fontSize={13} /> Pinned
+                              </AdmMobileTag>
+                            ) : null}
+                          </S.MobileMetaTags>
+                          <S.MobileNoteTitle>{note.title}</S.MobileNoteTitle>
+                        </S.MobileNoteIdentity>
+                      </S.MobileNoteHeader>
+
+                      {tags.length > 0 ? (
+                        <S.MobileMetaTags>
+                          {tags.slice(0, 4).map((tag) => (
+                            <AdmMobileTag fill="outline" key={tag} round>
+                              {tag}
+                            </AdmMobileTag>
+                          ))}
+                        </S.MobileMetaTags>
+                      ) : null}
+
+                      <S.MobileNotePreview>{note.content?.trim() || 'No content yet.'}</S.MobileNotePreview>
+                    </S.MobileNoteBody>
+                  </MobileCard>
+                );
+              })}
+            </S.MobileNotesList>
+          )}
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Filter notes by one campaign tag."
+          onClose={() => setFilterSheetOpen(false)}
+          title="Note filters"
+          visible={filterSheetOpen}
+        >
+          {allTags.length === 0 ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>No tags found in the current notes.</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <MobileSelector<string>
+              columns={1}
+              inset={false}
+              onChange={(values) => {
+                const value = values[0] ?? 'all';
+                setTagFilter(value === 'all' ? null : value);
+              }}
+              options={mobileTagOptions}
+              value={[tagFilter ?? 'all']}
+            />
+          )}
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          description={activeNote ? `${parseTags(activeNote.tags).length} tags linked to this note.` : undefined}
+          footer={
+            activeNote ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton block color="primary" onClick={() => startEdit(activeNote)}>
+                    <EditSOutline fontSize={17} /> Edit
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={() => void togglePin(activeNote)}>
+                    {activeNote.pinned ? <StarFill fontSize={17} /> : <StarOutline fontSize={17} />}
+                    {activeNote.pinned ? ' Unpin' : ' Pin'}
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={() => setActiveId(null)}
+          subtitle={activeNote?.pinned ? 'Pinned note' : 'GM note'}
+          title={activeNote?.title ?? 'Note'}
+          visible={Boolean(activeNote) && !editing}
+        >
+          {activeNote ? (
+            <S.MobileSectionStack>
+              {parseTags(activeNote.tags).length > 0 ? (
+                <MobileCard compact title="Tags">
+                  <S.MobileTagsPanel>
+                    {parseTags(activeNote.tags).map((tag) => (
+                      <AdmMobileTag fill="outline" key={tag} round>
+                        {tag}
+                      </AdmMobileTag>
+                    ))}
+                  </S.MobileTagsPanel>
+                </MobileCard>
+              ) : null}
+
+              <MobileCard compact title="Content">
+                <S.MobileBodyText>{activeNote.content?.trim() || 'No content yet.'}</S.MobileBodyText>
+              </MobileCard>
+
+              <MobileCard compact title="Danger Zone">
+                <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteTarget(activeNote)}>
+                  <DeleteOutline fontSize={17} /> Delete note
+                </AdmMobileButton>
+              </MobileCard>
+            </S.MobileSectionStack>
+          ) : null}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description={activeId ? 'Update this private GM note.' : 'Create a new private GM note.'}
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" loading={saving} onClick={() => void save()}>
+                  Save note
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton block fill="outline" onClick={() => setEditing(false)}>
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setEditing(false)}
+          subtitle="GM only"
+          title={mobileEditorTitle}
+          visible={editing}
+        >
+          <MobileCard compact title="Note details">
+            <MobileForm>
+              <MobileForm.Item label="Title">
+                <AdmMobileInput clearable onChange={setEditTitle} placeholder="Title *" value={editTitle} />
+              </MobileForm.Item>
+              <MobileForm.Item label="Tags">
+                <AdmMobileInput
+                  clearable
+                  onChange={setEditTags}
+                  placeholder="comma, separated, tags"
+                  value={editTags}
+                />
+              </MobileForm.Item>
+              <MobileForm.Item label="Content">
+                <AdmMobileTextArea
+                  autoSize={{ minRows: 8, maxRows: 14 }}
+                  onChange={setEditContent}
+                  placeholder="Note content..."
+                  value={editContent}
+                />
+              </MobileForm.Item>
+            </MobileForm>
+          </MobileCard>
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteTarget(null),
+            },
+            {
+              key: 'delete',
+              text: 'Delete note',
+              bold: true,
+              danger: true,
+              onClick: () => {
+                if (deleteTarget) {
+                  return doDelete(deleteTarget.id);
+                }
+              },
+            },
+          ]}
+          content={deleteTarget ? `Delete "${deleteTarget.title}" permanently?` : ''}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete note?"
+          visible={Boolean(deleteTarget)}
+        />
+      </>
+    );
+  }
 
   const sidebar = (
     <S.Sidebar>
@@ -301,7 +572,7 @@ export const GmNotesPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>GM — Notes</PageTitle>
+      <PageTitle>GM - Notes</PageTitle>
       <S.PageGrid $mobile={mobileOnly}>
         <Card density="dense">{sidebar}</Card>
         <Card density="comfy">{mainArea}</Card>
