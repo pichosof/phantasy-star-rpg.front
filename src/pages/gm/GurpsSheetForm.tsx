@@ -1,6 +1,14 @@
 import React from 'react';
-import { Button, Collapse, Divider, Input, InputNumber, Modal, Space, Typography, message } from 'antd';
+import { Button, Divider, Input, InputNumber, Modal, Space, Typography, message } from 'antd';
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import {
+  Button as AdmMobileButton,
+  Collapse as AdmMobileCollapse,
+  Input as AdmMobileInput,
+  Stepper as AdmMobileStepper,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import { AddOutline, DeleteOutline, UploadOutline } from 'antd-mobile-icons';
 import type {
   GurpsSheetData,
   GurpsWeapon,
@@ -11,7 +19,11 @@ import type {
   GurpsLanguage,
 } from '@app/api/character-sheets.api';
 import { importGcaFile } from '@app/utils/gca-import';
+import { Collapse } from '@app/components/common/Collapse/Collapse';
+import { MobileCard, MobileForm } from '@app/components/common/mobile';
+import { useResponsive } from '@app/hooks/useResponsive';
 import { w100, hiddenInput } from '@app/styles/styleUtils';
+import * as S from './GurpsSheetForm.styles';
 
 // ── GURPS Calculations ────────────────────────────────────────────────────────
 
@@ -107,7 +119,7 @@ function ArraySection<T extends object>({
   renderRow: (item: T, idx: number, set: (v: T) => void, del: () => void) => React.ReactNode;
 }) {
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div style={S.gridGap8}>
       {items.map((item, idx) =>
         renderRow(
           item,
@@ -141,13 +153,13 @@ function NamePointsRow({
   pointLabel?: string;
 }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Name" value={item.name ?? ''} onChange={(e) => set({ ...item, name: e.target.value })} />
       <InputNumber
         placeholder={pointLabel}
         value={item.points}
         onChange={(v) => set({ ...item, points: v ?? undefined })}
-        style={{ width: 90 }}
+        style={S.width90}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -161,25 +173,25 @@ function SkillRow({ item, set, del }: { item: GurpsSkill; set: (v: GurpsSkill) =
         placeholder="Skill"
         value={item.name ?? ''}
         onChange={(e) => set({ ...item, name: e.target.value })}
-        style={{ width: 160 }}
+        style={S.width160}
       />
       <InputNumber
         placeholder="Level"
         value={item.level}
         onChange={(v) => set({ ...item, level: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Input
         placeholder="Rel. Level"
         value={item.relativeLevel ?? ''}
         onChange={(e) => set({ ...item, relativeLevel: e.target.value })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Pts"
         value={item.points}
         onChange={(v) => set({ ...item, points: v ?? undefined })}
-        style={{ width: 60 }}
+        style={S.width60}
       />
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
     </Space>
@@ -188,19 +200,19 @@ function SkillRow({ item, set, del }: { item: GurpsSkill; set: (v: GurpsSkill) =
 
 function LangRow({ item, set, del }: { item: GurpsLanguage; set: (v: GurpsLanguage) => void; del: () => void }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Language" value={item.name ?? ''} onChange={(e) => set({ ...item, name: e.target.value })} />
       <Input
         placeholder="Spoken"
         value={item.spoken ?? ''}
         onChange={(e) => set({ ...item, spoken: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <Input
         placeholder="Written"
         value={item.written ?? ''}
         onChange={(e) => set({ ...item, written: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -214,43 +226,43 @@ function HandWeaponRow({ item, set, del }: { item: GurpsWeapon; set: (v: GurpsWe
         placeholder="Weapon"
         value={item.weapon ?? ''}
         onChange={(e) => set({ ...item, weapon: e.target.value })}
-        style={{ width: 120 }}
+        style={S.width120}
       />
       <Input
         placeholder="Damage"
         value={item.damage ?? ''}
         onChange={(e) => set({ ...item, damage: e.target.value })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <Input
         placeholder="Reach"
         value={item.reach ?? ''}
         onChange={(e) => set({ ...item, reach: e.target.value })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Input
         placeholder="Parry"
         value={item.parry ?? ''}
         onChange={(e) => set({ ...item, parry: e.target.value })}
-        style={{ width: 60 }}
+        style={S.width60}
       />
       <Input
         placeholder="Notes"
         value={item.notes ?? ''}
         onChange={(e) => set({ ...item, notes: e.target.value })}
-        style={{ width: 140 }}
+        style={S.width140}
       />
       <InputNumber
         placeholder="Cost"
         value={item.cost}
         onChange={(v) => set({ ...item, cost: v ?? undefined })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Weight"
         value={item.weight}
         onChange={(v) => set({ ...item, weight: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
     </Space>
@@ -274,7 +286,7 @@ function RangedRow({
           placeholder={f}
           value={item[f] ?? ''}
           onChange={(e) => set({ ...item, [f]: e.target.value })}
-          style={{ width: f === 'weapon' ? 110 : f === 'notes' ? 140 : 60 }}
+          style={S.rangedInputWidth(f)}
         />
       ))}
       <Button danger size="small" icon={<DeleteOutlined />} onClick={del} />
@@ -292,25 +304,25 @@ function PossessionRow({
   del: () => void;
 }) {
   return (
-    <Input.Group compact style={{ width: '100%', display: 'flex' }}>
+    <Input.Group compact style={S.compactGroup}>
       <Input placeholder="Item" value={item.item ?? ''} onChange={(e) => set({ ...item, item: e.target.value })} />
       <Input
         placeholder="Location"
         value={item.location ?? ''}
         onChange={(e) => set({ ...item, location: e.target.value })}
-        style={{ width: 100 }}
+        style={S.width100}
       />
       <InputNumber
         placeholder="Cost"
         value={item.cost}
         onChange={(v) => set({ ...item, cost: v ?? undefined })}
-        style={{ width: 80 }}
+        style={S.width80}
       />
       <InputNumber
         placeholder="Weight"
         value={item.weight}
         onChange={(v) => set({ ...item, weight: v ?? undefined })}
-        style={{ width: 70 }}
+        style={S.width70}
       />
       <Button danger icon={<DeleteOutlined />} onClick={del} />
     </Input.Group>
@@ -321,7 +333,7 @@ function PossessionRow({
 
 const LabelInput = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
-    <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 3 }}>
+    <Typography.Text type="secondary" style={S.labelText}>
       {label}
     </Typography.Text>
     {children}
@@ -329,19 +341,87 @@ const LabelInput = ({ label, children }: { label: string; children: React.ReactN
 );
 
 const Stat = ({ label, value }: { label: string; value: string | number }) => (
-  <div
-    style={{
-      textAlign: 'center',
-      padding: '6px 10px',
-      borderRadius: 6,
-      background: 'rgba(128,128,128,0.08)',
-      minWidth: 60,
-    }}
-  >
-    <div style={{ fontSize: 10, color: 'rgba(128,128,128,0.8)', marginBottom: 2 }}>{label}</div>
-    <div style={{ fontWeight: 700, fontSize: 15 }}>{value}</div>
+  <div style={S.statCard}>
+    <div style={S.statLabel}>{label}</div>
+    <div style={S.statValue}>{value}</div>
   </div>
 );
+
+const MobileTextField = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) => (
+  <MobileForm.Item label={label}>
+    <AdmMobileInput clearable onChange={onChange} placeholder={placeholder ?? label} value={value ?? ''} />
+  </MobileForm.Item>
+);
+
+const MobileNumberField = ({
+  label,
+  value,
+  onChange,
+  min,
+  step,
+}: {
+  label: string;
+  value?: number;
+  onChange: (value: number | undefined) => void;
+  min?: number;
+  step?: number;
+}) => (
+  <MobileForm.Item label={label}>
+    <AdmMobileStepper
+      allowEmpty
+      min={min}
+      onChange={(next) => onChange(next ?? undefined)}
+      step={step}
+      value={value ?? null}
+    />
+  </MobileForm.Item>
+);
+
+function MobileArraySection<T extends object>({
+  items,
+  onChange,
+  blank,
+  renderRow,
+  addLabel,
+}: {
+  items: T[];
+  onChange: (v: T[]) => void;
+  blank: T;
+  renderRow: (item: T, idx: number, set: (v: T) => void) => React.ReactNode;
+  addLabel: string;
+}) {
+  return (
+    <S.MobileList>
+      {items.map((item, idx) => (
+        <S.MobileListItem key={idx}>
+          {renderRow(item, idx, (value) => {
+            const next = [...items];
+            next[idx] = value;
+            onChange(next);
+          })}
+          <S.MobileListActions>
+            <AdmMobileButton color="danger" fill="outline" onClick={() => onChange(items.filter((_, i) => i !== idx))}>
+              <DeleteOutline fontSize={16} /> Remove
+            </AdmMobileButton>
+          </S.MobileListActions>
+        </S.MobileListItem>
+      ))}
+      <AdmMobileButton block fill="outline" onClick={() => onChange([...items, { ...blank }])}>
+        <AddOutline fontSize={16} /> {addLabel}
+      </AdmMobileButton>
+    </S.MobileList>
+  );
+}
 
 // ── Main form ─────────────────────────────────────────────────────────────────
 
@@ -351,6 +431,7 @@ interface Props {
 }
 
 export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
+  const { mobileOnly } = useResponsive();
   const calc = React.useMemo(() => calcGurps(data), [data]);
   const set = (patch: Partial<GurpsSheetData>) => onChange({ ...data, ...patch });
   const importRef = React.useRef<HTMLInputElement>(null);
@@ -391,9 +472,484 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
   const rw = data.rangedWeapons ?? [];
   const poss = data.possessions ?? [];
 
+  if (mobileOnly) {
+    return (
+      <S.MobileStack>
+        <MobileCard compact>
+          <S.HiddenFileInput ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" onChange={handleImport} />
+          <AdmMobileButton block fill="outline" onClick={() => importRef.current?.click()}>
+            <UploadOutline fontSize={17} /> Import GCA (.gca5 / .txt)
+          </AdmMobileButton>
+        </MobileCard>
+
+        <AdmMobileCollapse defaultActiveKey={['identity', 'attrs']}>
+          <AdmMobileCollapse.Panel key="identity" title="Identity">
+            <MobileCard compact>
+              <MobileForm>
+                <S.MobileGrid>
+                  <MobileTextField label="Player" value={data.player} onChange={(value) => set({ player: value })} />
+                  <MobileTextField label="TL" value={data.tl} onChange={(value) => set({ tl: value })} />
+                  <MobileNumberField
+                    label="Point Total"
+                    value={data.pointTotal}
+                    onChange={(value) => set({ pointTotal: value })}
+                  />
+                  <MobileNumberField
+                    label="Unspent Pts"
+                    value={data.unspentPts}
+                    onChange={(value) => set({ unspentPts: value })}
+                  />
+                  <MobileNumberField
+                    label="Height (cm)"
+                    value={data.heightCm}
+                    onChange={(value) => set({ heightCm: value })}
+                  />
+                  <MobileNumberField
+                    label="Weight (kg)"
+                    value={data.weightKg}
+                    onChange={(value) => set({ weightKg: value })}
+                  />
+                  <MobileNumberField
+                    label="Size Modifier"
+                    value={data.sizeModifier}
+                    onChange={(value) => set({ sizeModifier: value })}
+                  />
+                  <MobileNumberField label="Age" value={data.age} onChange={(value) => set({ age: value })} />
+                </S.MobileGrid>
+                <MobileTextField
+                  label="Appearance"
+                  value={data.appearance}
+                  onChange={(value) => set({ appearance: value })}
+                />
+              </MobileForm>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="attrs" title="Primary Attributes">
+            <MobileCard compact>
+              <MobileForm>
+                <S.MobileGrid>
+                  {(['st', 'dx', 'iq', 'ht'] as const).map((attr) => (
+                    <MobileNumberField
+                      key={attr}
+                      label={attr.toUpperCase()}
+                      min={1}
+                      value={data[attr] ?? 10}
+                      onChange={(value) => set({ [attr]: value ?? 10 })}
+                    />
+                  ))}
+                </S.MobileGrid>
+              </MobileForm>
+            </MobileCard>
+            <MobileCard compact title="Calculated">
+              <S.MobileStatGrid>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Basic Lift</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.basicLift} kg</S.MobileStatValue>
+                </S.MobileStatCard>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Thr Damage</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.damage.thr}</S.MobileStatValue>
+                </S.MobileStatCard>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Sw Damage</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.damage.sw}</S.MobileStatValue>
+                </S.MobileStatCard>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Dodge</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.dodge}</S.MobileStatValue>
+                </S.MobileStatCard>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Basic Speed</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.basicSpeed}</S.MobileStatValue>
+                </S.MobileStatCard>
+                <S.MobileStatCard>
+                  <S.MobileStatLabel>Basic Move</S.MobileStatLabel>
+                  <S.MobileStatValue>{calc.basicMove}</S.MobileStatValue>
+                </S.MobileStatCard>
+              </S.MobileStatGrid>
+            </MobileCard>
+            <MobileCard compact title="Modifiers">
+              <MobileForm>
+                <S.MobileGrid>
+                  <MobileNumberField
+                    label="Basic Speed Mod"
+                    step={0.25}
+                    value={data.basicSpeedMod ?? 0}
+                    onChange={(value) => set({ basicSpeedMod: value ?? 0 })}
+                  />
+                  <MobileNumberField
+                    label="Basic Move Mod"
+                    value={data.basicMoveMod ?? 0}
+                    onChange={(value) => set({ basicMoveMod: value ?? 0 })}
+                  />
+                </S.MobileGrid>
+              </MobileForm>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="secondary" title="Secondary Attributes">
+            <MobileCard compact>
+              <MobileForm>
+                <S.MobileGrid>
+                  {(
+                    [
+                      ['hp', 'HP', calc.hp],
+                      ['will', 'Will', calc.will],
+                      ['per', 'Perception', calc.per],
+                      ['fp', 'Fatigue Points', calc.fp],
+                      ['currentHp', 'Current HP', data.currentHp ?? calc.hp],
+                      ['currentFp', 'Current FP', data.currentFp ?? calc.fp],
+                    ] as const
+                  ).map(([key, label, value]) => (
+                    <MobileNumberField
+                      key={key}
+                      label={label}
+                      value={(data[key] as number | undefined) ?? value}
+                      onChange={(next) => set({ [key]: next })}
+                    />
+                  ))}
+                </S.MobileGrid>
+              </MobileForm>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="encumbrance" title="Encumbrance">
+            <MobileCard compact>
+              <S.MobileTableWrap>
+                <S.MobileEncumbranceTable>
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <th>Max Weight</th>
+                      <th>Move</th>
+                      <th>Dodge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calc.encumbrance.map((row) => (
+                      <tr key={row.label}>
+                        <td>{row.label}</td>
+                        <td>{row.bl}</td>
+                        <td>{row.move}</td>
+                        <td>{row.dodge}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </S.MobileEncumbranceTable>
+              </S.MobileTableWrap>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="combat" title="Combat">
+            <MobileCard compact>
+              <MobileForm>
+                <S.MobileGrid>
+                  <MobileTextField label="DR" value={data.dr} onChange={(value) => set({ dr: value })} />
+                  <MobileTextField label="Parry" value={data.parry} onChange={(value) => set({ parry: value })} />
+                  <MobileTextField label="Block" value={data.block} onChange={(value) => set({ block: value })} />
+                </S.MobileGrid>
+              </MobileForm>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="lang" title={`Languages (${languages.length})`}>
+            <MobileArraySection
+              items={languages}
+              onChange={(value) => set({ languages: value })}
+              blank={{ name: '', spoken: '', written: '' }}
+              addLabel="Add language"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Language"
+                    value={item.name}
+                    onChange={(value) => update({ ...item, name: value })}
+                  />
+                  <S.MobileGrid>
+                    <MobileTextField
+                      label="Spoken"
+                      value={item.spoken}
+                      onChange={(value) => update({ ...item, spoken: value })}
+                    />
+                    <MobileTextField
+                      label="Written"
+                      value={item.written}
+                      onChange={(value) => update({ ...item, written: value })}
+                    />
+                  </S.MobileGrid>
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="cf" title={`Cultural Familiarities (${cf.length})`}>
+            <MobileArraySection
+              items={cf}
+              onChange={(value) => set({ culturalFamiliarities: value })}
+              blank={{ name: '', points: 0 }}
+              addLabel="Add familiarity"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Name"
+                    value={item.name}
+                    onChange={(value) => update({ ...item, name: value })}
+                  />
+                  <MobileNumberField
+                    label="Points"
+                    value={item.points}
+                    onChange={(value) => update({ ...item, points: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="adv" title={`Advantages (${adv.length})`}>
+            <MobileArraySection
+              items={adv}
+              onChange={(value) => set({ advantages: value })}
+              blank={{ name: '', points: 0 }}
+              addLabel="Add advantage"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Name"
+                    value={item.name}
+                    onChange={(value) => update({ ...item, name: value })}
+                  />
+                  <MobileNumberField
+                    label="Points"
+                    value={item.points}
+                    onChange={(value) => update({ ...item, points: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="dis" title={`Disadvantages (${dis.length})`}>
+            <MobileArraySection
+              items={dis}
+              onChange={(value) => set({ disadvantages: value })}
+              blank={{ name: '', points: 0 }}
+              addLabel="Add disadvantage"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Name"
+                    value={item.name}
+                    onChange={(value) => update({ ...item, name: value })}
+                  />
+                  <MobileNumberField
+                    label="Points"
+                    value={item.points}
+                    onChange={(value) => update({ ...item, points: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="skills" title={`Skills (${skills.length})`}>
+            <MobileArraySection
+              items={skills}
+              onChange={(value) => set({ skills: value })}
+              blank={{ name: '', level: 0, relativeLevel: '', points: 0 }}
+              addLabel="Add skill"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Skill"
+                    value={item.name}
+                    onChange={(value) => update({ ...item, name: value })}
+                  />
+                  <S.MobileGrid>
+                    <MobileNumberField
+                      label="Level"
+                      value={item.level}
+                      onChange={(value) => update({ ...item, level: value })}
+                    />
+                    <MobileNumberField
+                      label="Points"
+                      value={item.points}
+                      onChange={(value) => update({ ...item, points: value })}
+                    />
+                  </S.MobileGrid>
+                  <MobileTextField
+                    label="Relative Level"
+                    value={item.relativeLevel}
+                    onChange={(value) => update({ ...item, relativeLevel: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="hw" title={`Melee Weapons (${hw.length})`}>
+            <MobileArraySection
+              items={hw}
+              onChange={(value) => set({ handWeapons: value })}
+              blank={{ weapon: '', damage: '', reach: '', parry: '', notes: '' }}
+              addLabel="Add melee weapon"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Weapon"
+                    value={item.weapon}
+                    onChange={(value) => update({ ...item, weapon: value })}
+                  />
+                  <S.MobileGrid>
+                    <MobileTextField
+                      label="Damage"
+                      value={item.damage}
+                      onChange={(value) => update({ ...item, damage: value })}
+                    />
+                    <MobileTextField
+                      label="Reach"
+                      value={item.reach}
+                      onChange={(value) => update({ ...item, reach: value })}
+                    />
+                    <MobileTextField
+                      label="Parry"
+                      value={item.parry}
+                      onChange={(value) => update({ ...item, parry: value })}
+                    />
+                    <MobileNumberField
+                      label="Cost"
+                      value={item.cost}
+                      onChange={(value) => update({ ...item, cost: value })}
+                    />
+                    <MobileNumberField
+                      label="Weight"
+                      value={item.weight}
+                      onChange={(value) => update({ ...item, weight: value })}
+                    />
+                  </S.MobileGrid>
+                  <MobileTextField
+                    label="Notes"
+                    value={item.notes}
+                    onChange={(value) => update({ ...item, notes: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="rw" title={`Ranged Weapons (${rw.length})`}>
+            <MobileArraySection
+              items={rw}
+              onChange={(value) => set({ rangedWeapons: value })}
+              blank={{
+                weapon: '',
+                damage: '',
+                acc: '',
+                range: '',
+                rof: '',
+                shots: '',
+                st: '',
+                bulk: '',
+                rcl: '',
+                lc: '',
+                notes: '',
+              }}
+              addLabel="Add ranged weapon"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Weapon"
+                    value={item.weapon}
+                    onChange={(value) => update({ ...item, weapon: value })}
+                  />
+                  <S.MobileGrid>
+                    {(['damage', 'acc', 'range', 'rof', 'shots', 'st', 'bulk', 'rcl', 'lc'] as const).map((field) => (
+                      <MobileTextField
+                        key={field}
+                        label={field.toUpperCase()}
+                        value={item[field]}
+                        onChange={(value) => update({ ...item, [field]: value })}
+                      />
+                    ))}
+                  </S.MobileGrid>
+                  <MobileTextField
+                    label="Notes"
+                    value={item.notes}
+                    onChange={(value) => update({ ...item, notes: value })}
+                  />
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="poss" title={`Possessions & Armor (${poss.length})`}>
+            <MobileArraySection
+              items={poss}
+              onChange={(value) => set({ possessions: value })}
+              blank={{ item: '', location: '', cost: 0, weight: 0 }}
+              addLabel="Add item"
+              renderRow={(item, _, update) => (
+                <MobileForm>
+                  <MobileTextField
+                    label="Item"
+                    value={item.item}
+                    onChange={(value) => update({ ...item, item: value })}
+                  />
+                  <MobileTextField
+                    label="Location"
+                    value={item.location}
+                    onChange={(value) => update({ ...item, location: value })}
+                  />
+                  <S.MobileGrid>
+                    <MobileNumberField
+                      label="Cost"
+                      value={item.cost}
+                      onChange={(value) => update({ ...item, cost: value })}
+                    />
+                    <MobileNumberField
+                      label="Weight"
+                      value={item.weight}
+                      onChange={(value) => update({ ...item, weight: value })}
+                    />
+                  </S.MobileGrid>
+                </MobileForm>
+              )}
+            />
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="reaction" title="Reaction Modifiers">
+            <MobileCard compact>
+              <MobileForm>
+                {(['appearance', 'status', 'reputation'] as const).map((key) => (
+                  <MobileTextField
+                    key={key}
+                    label={key.charAt(0).toUpperCase() + key.slice(1)}
+                    value={data.reactionModifiers?.[key]}
+                    onChange={(value) => set({ reactionModifiers: { ...data.reactionModifiers, [key]: value } })}
+                  />
+                ))}
+              </MobileForm>
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+
+          <AdmMobileCollapse.Panel key="notes" title="Character Notes">
+            <MobileCard compact>
+              <AdmMobileTextArea
+                autoSize={{ minRows: 6, maxRows: 12 }}
+                onChange={(value) => set({ characterNotes: value })}
+                placeholder="Character notes..."
+                value={data.characterNotes ?? ''}
+              />
+            </MobileCard>
+          </AdmMobileCollapse.Panel>
+        </AdmMobileCollapse>
+      </S.MobileStack>
+    );
+  }
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
+      <div style={S.importActions}>
         <input ref={importRef} type="file" accept=".gca5,.gca4,.txt,.xml" style={hiddenInput} onChange={handleImport} />
         <Button size="small" icon={<UploadOutlined />} onClick={() => importRef.current?.click()}>
           Import GCA (.gca5 / .txt)
@@ -402,7 +958,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
       <Collapse defaultActiveKey={['identity', 'attrs']} style={w100}>
         {/* Identity */}
         <Collapse.Panel header="Identity" key="identity">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+          <div style={S.identityGrid}>
             <LabelInput label="Player">
               <Input value={data.player ?? ''} onChange={(e) => set({ player: e.target.value })} />
             </LabelInput>
@@ -432,7 +988,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <Input value={data.tl ?? ''} onChange={(e) => set({ tl: e.target.value })} />
             </LabelInput>
           </div>
-          <div style={{ marginTop: 10 }}>
+          <div style={S.sectionTopMargin}>
             <LabelInput label="Appearance">
               <Input value={data.appearance ?? ''} onChange={(e) => set({ appearance: e.target.value })} />
             </LabelInput>
@@ -441,14 +997,14 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Primary Attributes */}
         <Collapse.Panel header="Primary Attributes" key="attrs">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+          <div style={S.attributesGrid}>
             {(['st', 'dx', 'iq', 'ht'] as const).map((attr) => (
               <LabelInput key={attr} label={attr.toUpperCase()}>
                 <InputNumber style={w100} value={data[attr] ?? 10} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
               </LabelInput>
             ))}
           </div>
-          <Divider style={{ margin: '12px 0 8px' }} />
+          <Divider style={S.sectionDivider} />
           <Space wrap size={8}>
             <Stat label="Basic Lift" value={`${calc.basicLift} kg`} />
             <Stat label="Thr Damage" value={calc.damage.thr} />
@@ -457,7 +1013,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             <Stat label="Basic Move" value={calc.basicMove} />
             <Stat label="Dodge" value={calc.dodge} />
           </Space>
-          <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+          <div style={S.speedAdjustGrid}>
             <LabelInput label="Basic Speed Mod">
               <InputNumber
                 style={w100}
@@ -478,7 +1034,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Secondary */}
         <Collapse.Panel header="Secondary Attributes" key="secondary">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
+          <div style={S.secondaryGrid}>
             {(
               [
                 ['hp', 'HP (base: ST)'],
@@ -514,12 +1070,12 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Encumbrance */}
         <Collapse.Panel header="Encumbrance" key="encumbrance">
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <div style={S.encumbranceWrap}>
+            <table style={S.encumbranceTable}>
               <thead>
                 <tr>
                   {['Level', 'Max Weight (kg)', 'Movement', 'Dodge'].map((h) => (
-                    <th key={h} style={{ padding: '4px 8px', textAlign: 'left', opacity: 0.6 }}>
+                    <th key={h} style={S.encumbranceHeaderCell}>
                       {h}
                     </th>
                   ))}
@@ -528,10 +1084,10 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <tbody>
                 {calc.encumbrance.map((row) => (
                   <tr key={row.label}>
-                    <td style={{ padding: '4px 8px' }}>{row.label}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.bl}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.move}</td>
-                    <td style={{ padding: '4px 8px' }}>{row.dodge}</td>
+                    <td style={S.encumbranceCell}>{row.label}</td>
+                    <td style={S.encumbranceCell}>{row.bl}</td>
+                    <td style={S.encumbranceCell}>{row.move}</td>
+                    <td style={S.encumbranceCell}>{row.dodge}</td>
                   </tr>
                 ))}
               </tbody>
@@ -541,7 +1097,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Combat */}
         <Collapse.Panel header="Combat" key="combat">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 10 }}>
+          <div style={S.combatGrid}>
             <LabelInput label="DR">
               <Input value={data.dr ?? ''} onChange={(e) => set({ dr: e.target.value })} />
             </LabelInput>
@@ -616,9 +1172,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Ranged Weapons */}
         <Collapse.Panel header={`Ranged Weapons (${rw.length})`} key="rw">
-          <div style={{ marginBottom: 6, fontSize: 11, opacity: 0.6 }}>
-            Weapon · Damage · Acc · Range · RoF · Shots · ST · Bulk · Rcl · LC · Notes
-          </div>
+          <div style={S.rangedHint}>Weapon · Damage · Acc · Range · RoF · Shots · ST · Bulk · Rcl · LC · Notes</div>
           <ArraySection
             items={rw}
             onChange={(v) => set({ rangedWeapons: v })}
@@ -651,7 +1205,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
 
         {/* Reaction Modifiers */}
         <Collapse.Panel header="Reaction Modifiers" key="reaction">
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div style={S.gridGap8}>
             {(['appearance', 'status', 'reputation'] as const).map((k) => (
               <LabelInput key={k} label={k.charAt(0).toUpperCase() + k.slice(1)}>
                 <Input
@@ -669,7 +1223,7 @@ export const GurpsSheetForm: React.FC<Props> = ({ data, onChange }) => {
             value={data.characterNotes ?? ''}
             onChange={(e) => set({ characterNotes: e.target.value })}
             rows={6}
-            style={{ resize: 'vertical' }}
+            style={S.notesTextarea}
           />
         </Collapse.Panel>
       </Collapse>

@@ -5,6 +5,6 @@ import * as S from './Table.styles';
 import './Table.less';
 
 // TODO make generic!
-export const Table: React.FC<TableProps<any>> = (props) => {
-  return <S.Table {...props} />;
+export const Table: React.FC<TableProps<any>> = ({ rowKey, ...props }) => {
+  return <S.Table rowKey={rowKey as string | undefined} {...props} />;
 };

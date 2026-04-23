@@ -1,12 +1,14 @@
 import { createGlobalStyle } from 'styled-components';
 import { resetCss } from './resetCss';
 import { BREAKPOINTS, FONT_SIZE, FONT_WEIGHT, media } from './themes/constants';
+import { lightThemeVariables, darkThemeVariables, commonThemeVariables } from './themes/themeVariables';
 import {
-  lightThemeVariables,
-  darkThemeVariables,
-  commonThemeVariables,
-  antOverrideCssVariables,
-} from './themes/themeVariables';
+  MOBILE_ACTION_BAR_MIN_HEIGHT,
+  MOBILE_CARD_RADIUS,
+  MOBILE_PAGE_GUTTER,
+  MOBILE_SECTION_GAP,
+  MOBILE_SHEET_RADIUS,
+} from './styleUtils';
 
 export default createGlobalStyle`
 
@@ -23,7 +25,31 @@ export default createGlobalStyle`
 
   :root {
     ${commonThemeVariables};
-    ${antOverrideCssVariables};
+    --adm-color-primary: var(--primary-color);
+    --adm-color-success: var(--success-color);
+    --adm-color-warning: var(--warning-color);
+    --adm-color-danger: var(--error-color);
+    --adm-color-text: var(--text-main-color);
+    --adm-color-text-secondary: var(--text-secondary-color);
+    --adm-color-weak: var(--text-light-color);
+    --adm-color-light: var(--text-superLight-color);
+    --adm-color-border: var(--border-color);
+    --adm-color-background: var(--additional-background-color);
+    --adm-color-background-body: var(--background-color);
+    --adm-color-box: var(--secondary-background-color);
+    --adm-color-fill-content: var(--secondary-background-color);
+    --adm-border-color: var(--border-color);
+    --adm-font-family: var(--font-main);
+    --adm-radius-s: 7px;
+    --adm-radius-m: 10px;
+    --adm-radius-l: 16px;
+    --psr-mobile-page-gutter: ${MOBILE_PAGE_GUTTER}px;
+    --psr-mobile-section-gap: ${MOBILE_SECTION_GAP}px;
+    --psr-mobile-card-radius: ${MOBILE_CARD_RADIUS}px;
+    --psr-mobile-sheet-radius: ${MOBILE_SHEET_RADIUS}px;
+    --psr-mobile-action-bar-min-height: ${MOBILE_ACTION_BAR_MIN_HEIGHT}px;
+    --psr-mobile-surface-bg: var(--secondary-background-color);
+    --psr-mobile-elevated-bg: var(--additional-background-color);
   } 
 
   [data-no-transition] * {
@@ -61,12 +87,22 @@ export default createGlobalStyle`
   a {
     color: var(--primary-color);
     &:hover,:active {
-      color: var(--ant-primary-color-hover);
+      color: var(--primary-color);
     }
   }
   
   .d-none {
     display: none;
+  }
+
+  @keyframes edge-glow {
+    from {
+      box-shadow: 0 0 8px rgba(250,173,20,0.5), 0 0 16px rgba(212,56,13,0.3);
+    }
+
+    to {
+      box-shadow: 0 0 16px rgba(250,173,20,0.9), 0 0 32px rgba(212,56,13,0.6);
+    }
   }
 
   /* ── RPG utility classes ──────────────────────────────────────────────────── */
@@ -228,6 +264,30 @@ export default createGlobalStyle`
   
   .ant-menu-inline, .ant-menu-vertical {
     border-right: 0;
+  }
+
+  .psr-mobile-popup-body {
+    background: var(--psr-mobile-surface-bg);
+    color: var(--text-main-color);
+    box-shadow: var(--box-shadow);
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--bottom {
+    border-radius: var(--psr-mobile-sheet-radius) var(--psr-mobile-sheet-radius) 0 0;
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--top {
+    border-radius: 0 0 var(--psr-mobile-sheet-radius) var(--psr-mobile-sheet-radius);
+  }
+
+  .psr-mobile-popup-body.psr-mobile-popup-body--fullscreen {
+    border-radius: 0;
+  }
+
+  .psr-mobile-dialog__body {
+    background: var(--psr-mobile-elevated-bg);
+    color: var(--text-main-color);
+    box-shadow: var(--box-shadow);
   }
   // notifications end
 `;

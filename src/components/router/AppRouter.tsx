@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import MainLayout from '@app/components/layouts/main/MainLayout/MainLayout';
+import RequireGMRoute from '@app/components/router/RequireGMRoute';
 import { withLoading } from '@app/hocs/withLoading.hoc';
 import { ROUTES } from '@app/constants/routes';
 
@@ -12,6 +13,7 @@ const CitiesPage = React.lazy(() => import('@app/pages/CitiesPage'));
 const QuestsPage = React.lazy(() => import('@app/pages/QuestsPage'));
 const MapPage = React.lazy(() => import('@app/pages/MapPage'));
 const ServerErrorPage = React.lazy(() => import('@app/pages/ServerErrorPage'));
+const Error403Page = React.lazy(() => import('@app/pages/Error403Page'));
 const Error404Page = React.lazy(() => import('@app/pages/Error404Page'));
 const LoresAdminPage = React.lazy(() => import('@app/pages/LoresAdminPage'));
 const SessionsPage = React.lazy(() => import('@app/pages/SessionsPage'));
@@ -37,6 +39,7 @@ const Players = withLoading(PlayersPage);
 const Cities = withLoading(CitiesPage);
 const Quests = withLoading(QuestsPage);
 const ServerError = withLoading(ServerErrorPage);
+const Error403 = withLoading(Error403Page);
 const Error404 = withLoading(Error404Page);
 const ComingSoon = withLoading(ComingSoonPage);
 const Bestiary = withLoading(BestiaryPage);
@@ -64,7 +67,14 @@ export const AppRouter: React.FC = () => {
           <Route path={ROUTES.CITIES} element={<Cities />} />
           <Route path={ROUTES.QUESTS} element={<Quests />} />
           <Route path={ROUTES.WORLDS} element={<Map />} />
-          <Route path={ROUTES.LORES} element={<Lores />} />
+          <Route
+            path={ROUTES.LORES}
+            element={
+              <RequireGMRoute>
+                <Lores />
+              </RequireGMRoute>
+            }
+          />
 
           {/* Backend já existe, UI ainda não: deixa WIP */}
           <Route path={ROUTES.NPCS} element={<Npcs />} />
@@ -78,10 +88,32 @@ export const AppRouter: React.FC = () => {
           <Route path={ROUTES.DICE} element={<DiceRoller />} />
           <Route path={ROUTES.DUNGEONS} element={<Dungeons />} />
           <Route path={ROUTES.TAGS} element={<Tags />} />
-          <Route path={ROUTES.GM_NOTES} element={<GmNotes />} />
-          <Route path={ROUTES.GM_IMAGES} element={<GmImages />} />
-          <Route path={ROUTES.GM_SHEETS} element={<GmSheets />} />
+          <Route
+            path={ROUTES.GM_NOTES}
+            element={
+              <RequireGMRoute>
+                <GmNotes />
+              </RequireGMRoute>
+            }
+          />
+          <Route
+            path={ROUTES.GM_IMAGES}
+            element={
+              <RequireGMRoute>
+                <GmImages />
+              </RequireGMRoute>
+            }
+          />
+          <Route
+            path={ROUTES.GM_SHEETS}
+            element={
+              <RequireGMRoute>
+                <GmSheets />
+              </RequireGMRoute>
+            }
+          />
 
+          <Route path={ROUTES.FORBIDDEN} element={<Error403 />} />
           <Route path={ROUTES.SERVER_ERROR} element={<ServerError />} />
 
           {/* 404 */}

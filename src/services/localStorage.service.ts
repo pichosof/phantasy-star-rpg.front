@@ -1,5 +1,5 @@
 import { UserModel } from '@app/domain/UserModel';
-const avatarImg = process.env.REACT_APP_ASSETS_BUCKET + '/avatars/avatar5.webp';
+const avatarImg = import.meta.env.VITE_ASSETS_BUCKET + '/avatars/avatar5.webp';
 
 const testUser = {
   id: 1,
@@ -15,9 +15,9 @@ const testUser = {
     number: '+18143519459',
     verified: true,
   },
-  sex: 'male',
+  sex: 'male' as const,
   birthday: '01/26/2022',
-  lang: 'en',
+  lang: 'en' as const,
   country: 'GB',
   city: 'London',
   address1: '14 London Road',

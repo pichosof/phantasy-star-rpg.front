@@ -3,7 +3,7 @@ import { Col, Row } from 'antd';
 import { SettingsDropdown } from '../components/settingsDropdown/SettingsDropdown';
 import * as S from '../Header.styles';
 import { Popover } from '@app/components/common/Popover/Popover';
-import GMSwitchPanel from '@app/components/GMSwitchPanel';
+import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { Button } from '@app/components/common/buttons/Button/Button';
 
 interface DesktopHeaderProps {
@@ -21,7 +21,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout
   );
 
   return (
-    <Row justify="space-between" align="middle">
+    <Row justify="space-between" align="middle" style={{ width: '100%' }}>
       {leftSide}
 
       <S.ProfileColumn xl={8} xxl={7} $isTwoColumnsLayout={isTwoColumnsLayout}>

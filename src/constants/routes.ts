@@ -18,5 +18,6 @@ export const ROUTES = {
   GM_NOTES: '/gm/notes',
   GM_IMAGES: '/gm/images',
   GM_SHEETS: '/gm/sheets',
+  FORBIDDEN: '/403',
   SERVER_ERROR: '/server-error',
 } as const;

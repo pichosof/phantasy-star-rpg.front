@@ -39,12 +39,10 @@ export const Icons = styled.div`
   flex-wrap: nowrap;
 `;
 
-type ReturnType<T> = (props: T) => JSX.Element;
-
-export function withStyles<T>(Component: React.ComponentType<T>): ReturnType<T> {
+export function withStyles<T extends object>(Component: React.ComponentType<T>): React.FC<T> {
   return styled(Component)`
     font-size: 2rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
-  `;
+  ` as unknown as React.FC<T>;
 }

@@ -1,17 +1,7 @@
 import styled, { css } from 'styled-components';
-import { Col, Collapse, Menu } from 'antd';
+import { Col, Collapse } from 'antd';
 import { BurgerIcon } from '@app/components/common/Burger/BurgerIcon';
 import { BORDER_RADIUS, LAYOUT, media } from '@app/styles/themes/constants';
-
-export const DropdownMenu = styled(Menu)`
-  line-height: 1.5715;
-
-  border-radius: ${BORDER_RADIUS};
-
-  &.ant-dropdown-menu {
-    box-shadow: var(--box-shadow);
-  }
-`;
 
 export const HeaderActionWrapper = styled.div`
   cursor: pointer;
@@ -31,6 +21,8 @@ export const HeaderActionWrapper = styled.div`
 `;
 
 export const DropdownCollapse = styled(Collapse)`
+  border-radius: ${BORDER_RADIUS};
+
   & > .ant-collapse-item > .ant-collapse-header {
     font-weight: 600;
     font-size: 0.875rem;
@@ -54,6 +46,8 @@ export const DropdownCollapse = styled(Collapse)`
 export const BurgerCol = styled(Col)`
   z-index: 999;
   display: flex;
+  flex-shrink: 0;
+  margin-left: 0.75rem;
 `;
 
 export const MobileBurger = styled(BurgerIcon)`

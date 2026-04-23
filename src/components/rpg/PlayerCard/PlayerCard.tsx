@@ -1,10 +1,7 @@
 import React from 'react';
 import { EyeOutlined, IdcardOutlined } from '@ant-design/icons';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { Button } from '@app/components/common/buttons/Button/Button';
+import { PdfDocumentViewer } from '@app/components/common/pdf/PdfDocumentViewer/PdfDocumentViewer';
 import { Switch } from '@app/components/common/Switch/Switch';
 import { Modal } from '@app/components/common/Modal/Modal';
 import { Spin } from 'antd';
@@ -13,24 +10,10 @@ import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import type { Player } from '@app/types/rpg';
 import * as S from './PlayerCard.styles';
 
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-
-const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
-  const layoutPlugin = defaultLayoutPlugin();
-  return (
-    <Worker workerUrl={PDF_WORKER_URL}>
-      <div style={{ height: '100%', overflow: 'auto' }}>
-        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
-      </div>
-    </Worker>
-  );
-};
-
 type PlayerCardProps = {
   player: Player;
-  /** Mostra controles do GM (visibilidade, etc) */
   gm?: boolean;
-  onToggleVisible?: (p: Player) => void;
+  onToggleVisible?: (player: Player) => void;
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onToggleVisible }) => {
@@ -41,13 +24,15 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
   const [sheetBlobUrl, setSheetBlobUrl] = React.useState<string | null>(null);
   const [sheetLoading, setSheetLoading] = React.useState(false);
 
-  const img = player.imageUrl ? resolveApiUrl(player.imageUrl) : '/assets/images/stub-avatar.webp';
-  const hasSheet = !!player.sheetUrl;
+  const imageUrl = player.imageUrl ? resolveApiUrl(player.imageUrl) : '/assets/images/stub-avatar.webp';
+  const hasSheet = Boolean(player.sheetUrl);
 
   function openSheet() {
     if (!player.sheetUrl) return;
+
     setOpenPdf(true);
     if (sheetBlobUrl) return;
+
     setSheetLoading(true);
     fetchBlobUrl(player.sheetUrl)
       .then((url) => setSheetBlobUrl(url))
@@ -55,44 +40,41 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
       .finally(() => setSheetLoading(false));
   }
 
-  // Renderiza o background com quebras preservadas
   const renderBackground = (text: string) => {
-    const norm = text.replace(/\r\n/g, '\n');
-    const paragraphs = norm.split(/\n{2,}/);
+    const paragraphs = text.replace(/\r\n/g, '\n').split(/\n{2,}/);
+
     return (
-      <div style={{ display: 'grid', gap: 12 }}>
-        {paragraphs.map((para, idx) => (
-          <p key={idx} style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-            {para}
-          </p>
+      <S.BackgroundParagraphs>
+        {paragraphs.map((paragraph, index) => (
+          <S.BackgroundParagraph key={index}>{paragraph}</S.BackgroundParagraph>
         ))}
-      </div>
+      </S.BackgroundParagraphs>
     );
   };
 
-  const previewBg =
+  const previewBackground =
     player.background && player.background.length > 120
-      ? player.background.slice(0, 120).trimEnd() + '…'
+      ? `${player.background.slice(0, 120).trimEnd()}`
       : player.background || '';
 
   return (
     <>
-      <S.Card padding={0} $img={img}>
-        {/* topo com imagem e overlay; a imagem "some" com zoom no hover e o BG do card assume */}
-        <S.PlayerImage src={img} alt={player.imageAlt || player.name} />
+      <S.Card padding={0} $img={imageUrl}>
+        <S.PlayerImage src={imageUrl} alt={player.imageAlt || player.name} />
         <S.TopOverlay />
 
-        {/* conteúdo */}
         <S.Info>
           <S.HeaderRow>
             <S.Title>{player.name}</S.Title>
             <S.LevelBadge>LV {player.level}</S.LevelBadge>
           </S.HeaderRow>
 
-          {!!previewBg && <S.BackgroundPreview title={player.background || ''}>{previewBg}</S.BackgroundPreview>}
+          {!!previewBackground && (
+            <S.BackgroundPreview title={player.background || ''}>{previewBackground}</S.BackgroundPreview>
+          )}
 
           <S.ActionsRow>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <S.ActionButtonsRow>
               <Button icon={<IdcardOutlined />} onClick={() => setOpenProfile(true)}>
                 Profile
               </Button>
@@ -100,11 +82,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
               <Button disabled={!hasSheet} type="primary" icon={<EyeOutlined />} onClick={openSheet}>
                 {hasSheet ? 'Sheet' : 'No sheet'}
               </Button>
-            </div>
+            </S.ActionButtonsRow>
 
             {gm && (
               <S.GMRow>
-                <span style={{ opacity: 0.75 }}>Visible</span>
+                <S.VisibleLabel>Visible</S.VisibleLabel>
                 <Switch checked={player.visible ?? true} onChange={() => onToggleVisible?.(player)} />
               </S.GMRow>
             )}
@@ -112,77 +94,36 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         </S.Info>
       </S.Card>
 
-      {/* Modal: Perfil (background completo + dados) */}
       <Modal
-        visible={openProfile}
+        open={openProfile}
         onCancel={() => setOpenProfile(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '760px'}
-        bodyStyle={{ padding: 0 }}
-        destroyOnClose
-        title={`Profile — ${player.name}`}
+        styles={{ body: { padding: 0 } }}
+        destroyOnHidden
+        title={`Profile â€” ${player.name}`}
       >
-        <div style={{ display: 'grid' }}>
-          {/* header com imagem */}
-          <div style={{ position: 'relative', height: mobileOnly ? 220 : 260 }}>
-            <img
-              src={img}
-              alt={player.imageAlt || player.name}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center top',
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0) 100%)',
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                left: 16,
-                right: 16,
-                bottom: 12,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                color: '#fff',
-              }}
-            >
-              <div style={{ fontWeight: 800, fontSize: mobileOnly ? 18 : 22 }}>{player.name}</div>
-              <div
-                style={{
-                  fontWeight: 700,
-                  padding: '2px 10px',
-                  borderRadius: 10,
-                  background: 'rgba(0,0,0,0.45)',
-                  fontSize: 12,
-                }}
-              >
-                LV {player.level}
-              </div>
-            </div>
-          </div>
+        <S.ProfileContent>
+          <S.ProfileHero $height={mobileOnly ? 220 : 260}>
+            <S.ProfileHeroImage src={imageUrl} alt={player.imageAlt || player.name} />
+            <S.ProfileHeroOverlay />
+            <S.ProfileHeroMeta>
+              <S.ProfileHeroName $mobile={mobileOnly}>{player.name}</S.ProfileHeroName>
+              <S.ProfileHeroLevel>LV {player.level}</S.ProfileHeroLevel>
+            </S.ProfileHeroMeta>
+          </S.ProfileHero>
 
-          {/* detalhes */}
-          <div style={{ padding: 16, display: 'grid', gap: 16 }}>
+          <S.ProfileSections>
             {player.background && (
               <section>
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>Story</div>
+                <S.SectionTitle>Story</S.SectionTitle>
                 {renderBackground(player.background)}
               </section>
             )}
 
-            <section style={{ display: 'grid', gap: 8 }}>
-              <div style={{ fontWeight: 700 }}>Details</div>
-              <div style={{ display: 'grid', gap: 6 }}>
+            <S.DetailsSection>
+              <S.SectionTitle>Details</S.SectionTitle>
+              <S.DetailsList>
                 <div>
                   <b>Name:</b> {player.name}
                 </div>
@@ -200,31 +141,30 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
                 <div>
                   <b>Updated:</b> {new Date(player.updatedAt).toLocaleString()}
                 </div>
-              </div>
-            </section>
-          </div>
-        </div>
+              </S.DetailsList>
+            </S.DetailsSection>
+          </S.ProfileSections>
+        </S.ProfileContent>
       </Modal>
 
-      {/* Modal: Ficha (PDF) */}
       <Modal
-        visible={openPdf}
-        title={`Sheet — ${player.name}`}
+        open={openPdf}
+        title={`Sheet â€” ${player.name}`}
         onCancel={() => setOpenPdf(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '82vw'}
-        bodyStyle={{ padding: 0, height: '80vh' }}
-        destroyOnClose
+        styles={{ body: { padding: 0, height: '80vh' } }}
+        destroyOnHidden
       >
         <S.PdfFrameWrapper>
           {sheetLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+            <S.LoadingShell>
               <Spin size="large" />
-            </div>
+            </S.LoadingShell>
           ) : sheetBlobUrl ? (
-            <PdfViewer url={sheetBlobUrl} />
+            <PdfDocumentViewer url={sheetBlobUrl} />
           ) : (
-            <div style={{ padding: 16 }}>No sheet attached.</div>
+            <S.EmptySheet>No sheet attached.</S.EmptySheet>
           )}
         </S.PdfFrameWrapper>
       </Modal>

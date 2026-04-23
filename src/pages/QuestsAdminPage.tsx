@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/rpg/QuestsAdminPage.tsx
 import React from 'react';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Tag, Tabs, Typography, message } from 'antd';
+import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Tag, Typography, message } from 'antd';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -10,12 +10,14 @@ import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Switch } from '@app/components/common/Switch/Switch';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
 import { useResponsive } from '@app/hooks/useResponsive';
 
 import { createQuest, deleteQuest, listQuestsPublic, setQuestVisibility, updateQuest } from '@app/api/quests.api';
 import { apiErrorMessage } from '../utils/api-error';
 import type { Quest, QuestStatus } from '@app/api/quests.api';
-import { m0, w100, bold700, bold800, spaceBetween, dividerMd, tableWrap } from '@app/styles/styleUtils';
+import { m0, w100, bold700, bold800, spaceBetween, dividerMd, tableWrap, mutedSm } from '@app/styles/styleUtils';
+import * as S from './QuestsAdminPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -207,7 +209,7 @@ export const QuestsAdminPage: React.FC = () => {
       <>
         <PageTitle>Quests (GM)</PageTitle>
         <Card density="comfy">
-          <Typography.Title level={5} style={{ marginTop: 0 }}>
+          <Typography.Title level={5} style={S.restrictedTitle}>
             Restricted access
           </Typography.Title>
           <Typography.Text type="secondary">
@@ -222,7 +224,7 @@ export const QuestsAdminPage: React.FC = () => {
 
   const Header: React.FC = () => (
     <Card density="dense">
-      <Space direction="vertical" size={8} style={w100}>
+      <Space orientation="vertical" size={8} style={w100}>
         <Typography.Title level={5} style={m0}>
           Admin — Quests
         </Typography.Title>
@@ -250,7 +252,7 @@ export const QuestsAdminPage: React.FC = () => {
               placeholder="Search (title/description/reward)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ maxWidth: 380 }}
+              style={S.searchField}
             />
             <Button onClick={() => setCreating((v) => !v)}>{creating ? 'Close' : 'Create quest'}</Button>
           </Space>
@@ -259,13 +261,13 @@ export const QuestsAdminPage: React.FC = () => {
         {creating && (
           <>
             <Divider style={dividerMd} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 920 }}>
+            <form onSubmit={(e) => void onCreate(e)} style={S.createForm}>
               <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
 
               <Space wrap>
                 <span>Status:</span>
                 <Select
-                  style={{ minWidth: 220 }}
+                  style={S.statusSelect}
                   value={newStatus}
                   onChange={(v) => setNewStatus(v as QuestStatus)}
                   options={statusOptions}
@@ -306,7 +308,7 @@ export const QuestsAdminPage: React.FC = () => {
     }
 
     return (
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr' }}>
+      <div style={S.mobileCardsGrid}>
         {filtered.map((qt) => (
           <Card
             key={qt.id}
@@ -333,11 +335,11 @@ export const QuestsAdminPage: React.FC = () => {
 
             <Space wrap size={14}>
               <Space size={8}>
-                <span style={{ color: '#666' }}>Visible:</span>
+                <span style={mutedSm}>Visible:</span>
                 <Switch checked={isQuestVisible(qt)} onChange={() => void toggleVisible(qt)} />
               </Space>
               <Space size={8}>
-                <span style={{ color: '#666' }}>Status:</span>
+                <span style={mutedSm}>Status:</span>
                 <Tag>{qt.status ?? 'active'}</Tag>
               </Space>
             </Space>
@@ -354,7 +356,7 @@ export const QuestsAdminPage: React.FC = () => {
           rowKey="id"
           dataSource={filtered}
           loading={loading}
-          style={{ minWidth: 1020 }}
+          style={S.adminTable}
           scroll={{ x: 1020 }}
           onRow={(qt: Quest) => ({
             onClick: () => setOpenId(qt.id),
@@ -365,7 +367,7 @@ export const QuestsAdminPage: React.FC = () => {
               title: 'Quest',
               key: 'title',
               render: (_: any, qt: Quest) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={8} wrap>
                     <span style={bold700}>{qt.title}</span>
                     <Tag>{qt.status ?? 'active'}</Tag>
@@ -410,12 +412,12 @@ export const QuestsAdminPage: React.FC = () => {
         />
       </div>
 
-      <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+      <Typography.Text type="secondary" style={S.helperText}>
         Click a row to open the admin panel.
       </Typography.Text>
 
       {!filtered.length && !loading && (
-        <Card density="comfy" style={{ marginTop: 12 }}>
+        <Card density="comfy" style={S.helperCard}>
           <Empty description="No quests found." />
         </Card>
       )}
@@ -433,9 +435,9 @@ export const QuestsAdminPage: React.FC = () => {
       {/* ✅ Drawer INLINE (não vira componente interno) */}
       {openQuest && (
         <Drawer
-          visible={true}
+          open={true}
           onClose={closeDrawer}
-          width={mobileOnly ? '100%' : 720}
+          size={mobileOnly ? '100%' : 720}
           title={
             <Space wrap size={8}>
               <span style={bold800}>Edit · {openQuest.title}</span>
@@ -464,13 +466,13 @@ export const QuestsAdminPage: React.FC = () => {
           <Tabs defaultActiveKey="edit">
             <Tabs.TabPane tab="Edit" key="edit">
               <Card density="dense" title="Data">
-                <Space direction="vertical" size={10} style={w100}>
+                <Space orientation="vertical" size={10} style={w100}>
                   <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" />
 
                   <Space wrap>
                     <span>Status:</span>
                     <Select
-                      style={{ minWidth: 240 }}
+                      style={S.drawerStatusSelect}
                       value={editStatus}
                       onChange={(v) => setEditStatus(v as QuestStatus)}
                       options={statusOptions}
@@ -490,7 +492,7 @@ export const QuestsAdminPage: React.FC = () => {
                     placeholder="Reward (optional)"
                   />
 
-                  <Divider style={{ margin: '6px 0' }} />
+                  <Divider style={S.drawerDivider} />
 
                   <Space style={spaceBetween}>
                     <Typography.Text>Visible to players</Typography.Text>
@@ -507,15 +509,15 @@ export const QuestsAdminPage: React.FC = () => {
             </Tabs.TabPane>
 
             <Tabs.TabPane tab="Preview" key="preview">
-              <Space direction="vertical" size={10} style={w100}>
+              <Space orientation="vertical" size={10} style={w100}>
                 <Card density="comfy" title="Description">
-                  <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                  <Typography.Paragraph style={S.previewParagraph}>
                     {(editDescription ?? '').trim() ? (editDescription ?? '').trim() : '—'}
                   </Typography.Paragraph>
                 </Card>
 
                 <Card density="comfy" title="Reward">
-                  <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                  <Typography.Paragraph style={S.previewParagraph}>
                     {(editReward ?? '').trim() ? (editReward ?? '').trim() : '—'}
                   </Typography.Paragraph>
                 </Card>

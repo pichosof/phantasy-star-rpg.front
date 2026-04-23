@@ -2,7 +2,7 @@
 
 const consoleError = console.error.bind(console);
 console.error = (errObj, ...args) => {
-  if (process.env.NODE_ENV === 'development' && typeof errObj === 'string' && args.includes('findDOMNode')) {
+  if (import.meta.env.DEV && typeof errObj === 'string' && args.includes('findDOMNode')) {
     return;
   }
   consoleError(errObj, ...args);
@@ -10,5 +10,5 @@ console.error = (errObj, ...args) => {
 
 export default {};
 
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3010';
-export const UPLOAD_MAX_MB = Number(process.env.REACT_APP_UPLOAD_MAX_MB || 30);
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3010';
+export const UPLOAD_MAX_MB = Number(import.meta.env.VITE_UPLOAD_MAX_MB || 30);

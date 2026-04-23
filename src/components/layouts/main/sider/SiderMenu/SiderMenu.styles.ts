@@ -3,8 +3,16 @@ import { Menu as AntMenu } from 'antd';
 import { FONT_SIZE } from '@app/styles/themes/constants';
 
 export const Menu = styled(AntMenu)`
-  background: transparent;
+  && {
+    background: transparent;
+    color: var(--text-sider-secondary-color);
+  }
+
   border-right: 0;
+
+  && .ant-menu-sub.ant-menu-inline {
+    background: transparent;
+  }
 
   a {
     width: 100%;
@@ -20,18 +28,21 @@ export const Menu = styled(AntMenu)`
     width: 1.25rem;
   }
 
-  .ant-menu-submenu-expand-icon,
-  .ant-menu-submenu-arrow,
-  span[role='img'],
-  a,
-  .ant-menu-item,
-  .ant-menu-submenu {
+  && .ant-menu-submenu-title,
+  && .ant-menu-title-content,
+  && .ant-menu-submenu-expand-icon,
+  && .ant-menu-submenu-arrow,
+  && span[role='img'],
+  && a,
+  && .ant-menu-item,
+  && .ant-menu-submenu,
+  && .ant-menu-item-icon {
     color: var(--text-sider-secondary-color);
     fill: var(--text-sider-secondary-color);
   }
 
-  .ant-menu-item:hover,
-  .ant-menu-submenu-title:hover {
+  && .ant-menu-item:hover,
+  && .ant-menu-submenu-title:hover {
     .ant-menu-submenu-expand-icon,
     .ant-menu-submenu-arrow,
     span[role='img'],
@@ -43,34 +54,36 @@ export const Menu = styled(AntMenu)`
     }
   }
 
-  .ant-menu-submenu-selected {
-    .ant-menu-submenu-title {
+  && .ant-menu-submenu-selected {
+    > .ant-menu-submenu-title {
       color: var(--text-sider-primary-color);
 
       .ant-menu-submenu-expand-icon,
       .ant-menu-submenu-arrow,
-      span[role='img'] {
+      span[role='img'],
+      .ant-menu-title-content {
         color: var(--text-sider-primary-color);
         fill: var(--text-sider-primary-color);
       }
     }
   }
 
-  .ant-menu-item-selected {
+  && .ant-menu-item-selected {
     background-color: transparent !important;
 
     .ant-menu-submenu-expand-icon,
     .ant-menu-submenu-arrow,
     span[role='img'],
     .ant-menu-item-icon,
-    a {
+    a,
+    .ant-menu-title-content {
       color: var(--text-sider-primary-color);
       fill: var(--text-sider-primary-color);
     }
   }
 
-  .ant-menu-item-active,
-  .ant-menu-submenu-active .ant-menu-submenu-title {
+  && .ant-menu-item-active,
+  && .ant-menu-submenu-active .ant-menu-submenu-title {
     background-color: transparent !important;
   }
 `;

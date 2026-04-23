@@ -1,6 +1,2 @@
-import { AppDate } from 'constants/Dates';
-import dayjsGenerateConfig from 'rc-picker/lib/generate/dayjs';
-import generatePicker from 'antd/es/date-picker/generatePicker';
-import 'antd/es/date-picker/style/index';
-
-export const DayjsDatePicker = generatePicker<AppDate>(dayjsGenerateConfig);
+// AntD 6 DatePicker already uses dayjs natively — generatePicker not needed
+export { DatePicker as DayjsDatePicker } from 'antd';

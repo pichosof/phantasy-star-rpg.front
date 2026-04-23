@@ -18,6 +18,7 @@ export const Card: React.FC<CardProps> = ({
   autoHeight = false,
   density = 'comfy',
   children,
+  variant = 'outlined',
   ...props
 }) => {
   const { isTablet, isDesktop } = useResponsive();
@@ -25,18 +26,18 @@ export const Card: React.FC<CardProps> = ({
   const responsivePadding: [number, number] = isDesktop
     ? defaultPaddings[density].desktop
     : isTablet
-    ? defaultPaddings[density].tablet
-    : defaultPaddings[density].mobile;
+      ? defaultPaddings[density].tablet
+      : defaultPaddings[density].mobile;
 
   const resolvedPadding = padding || padding === 0 ? padding : responsivePadding;
 
-  const resolvedSize = size ? size : isTablet ? 'default' : 'small';
+  const resolvedSize = size ? (size === 'default' ? 'medium' : size) : isTablet ? 'medium' : 'small';
 
   return (
     <S.Card
       size={resolvedSize}
       className={className}
-      bordered={false}
+      variant={variant}
       $padding={resolvedPadding}
       $autoHeight={autoHeight}
       {...props}

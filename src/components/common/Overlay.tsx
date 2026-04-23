@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components';
 
 interface OverlayProps {
-  show: boolean;
+  $show: boolean;
 }
 
 export default styled.div<OverlayProps>`
@@ -10,7 +10,7 @@ export default styled.div<OverlayProps>`
   height: 0;
 
   ${(props) =>
-    props.show &&
+    props.$show &&
     css`
       backdrop-filter: blur(6px);
       width: 100vw;

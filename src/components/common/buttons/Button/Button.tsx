@@ -11,7 +11,7 @@ export interface ButtonProps extends AntButtonProps {
   noStyle?: boolean;
 }
 
-export const Button = React.forwardRef<HTMLElement, ButtonProps>(
+export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
   ({ className, severity, noStyle, children, ...props }, ref) => (
     <S.Button ref={ref} className={className} $noStyle={noStyle} {...props} $severity={severity}>
       {children}

@@ -3,6 +3,22 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Badge, Divider, Empty, Input, Popconfirm, Space, Switch, Tag, Tooltip, Typography, message } from 'antd';
 import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import {
+  AddOutline,
+  DeleteOutline,
+  EditSOutline,
+  FilterOutline,
+  PictureOutline,
+  StarFill,
+  StarOutline,
+} from 'antd-mobile-icons';
+import {
   BookOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -15,11 +31,24 @@ import {
   PushpinOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import styled from 'styled-components';
 
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+  MobileTabs,
+} from '@app/components/common/mobile';
+import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
 import {
@@ -32,252 +61,10 @@ import {
 } from '@app/api/wiki.api';
 import type { WikiPage as WikiPageType } from '@app/api/wiki.api';
 import { apiErrorMessage } from '../utils/api-error';
-import { w100, spaceBetween, hiddenInput } from '@app/styles/styleUtils';
-
-const GM_KEY = 'gm_api_key';
+import { w100, spaceBetween } from '@app/styles/styleUtils';
+import * as S from './WikiPage.styles';
 
 // ── Styled components ────────────────────────────────────────────────────────
-
-const Shell = styled.div`
-  display: flex;
-  gap: 0;
-  min-height: calc(100vh - 10rem);
-`;
-
-const Sidebar = styled.aside<{ $mobile: boolean }>`
-  width: ${(p) => (p.$mobile ? '100%' : '260px')};
-  flex-shrink: 0;
-  border-right: 1px solid var(--border-color);
-  padding: ${(p) => (p.$mobile ? '12px 0 0' : '16px 0')};
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  background: var(--additional-background-color);
-`;
-
-const SidebarLabel = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-superLight-color);
-  padding: 10px 16px 4px;
-`;
-
-const SidebarItem = styled.div<{ $active?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 16px;
-  cursor: pointer;
-  border-radius: 0;
-  background: ${(p) => (p.$active ? 'var(--item-hover-bg)' : 'transparent')};
-  border-left: 3px solid ${(p) => (p.$active ? 'var(--primary-color)' : 'transparent')};
-  transition: all 0.15s;
-
-  &:hover {
-    background: var(--item-hover-bg);
-  }
-`;
-
-const SidebarItemTitle = styled.span<{ $active?: boolean }>`
-  font-size: 13px;
-  font-weight: ${(p) => (p.$active ? 600 : 400)};
-  color: ${(p) => (p.$active ? 'var(--primary-color)' : 'var(--text-main-color)')};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-`;
-
-const MainArea = styled.main`
-  flex: 1;
-  min-width: 0;
-  padding: 24px 28px;
-  background: var(--background-color);
-`;
-
-const ArticleBody = styled.div`
-  /* Markdown renderer styles */
-  color: var(--text-main-color);
-  font-size: 15px;
-  line-height: 1.8;
-
-  h1,
-  h2,
-  h3,
-  h4 {
-    color: var(--heading-color);
-    margin: 1.4em 0 0.5em;
-    line-height: 1.3;
-    &:first-child {
-      margin-top: 0;
-    }
-  }
-  h1 {
-    font-size: 1.6em;
-  }
-  h2 {
-    font-size: 1.3em;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 6px;
-  }
-  h3 {
-    font-size: 1.1em;
-  }
-
-  p {
-    margin: 0.7em 0;
-  }
-
-  a {
-    color: var(--primary-color);
-  }
-
-  code {
-    background: var(--background-base-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 0.88em;
-    color: var(--primary-color);
-  }
-
-  pre {
-    background: var(--additional-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 14px 16px;
-    overflow-x: auto;
-    code {
-      background: none;
-      border: none;
-      padding: 0;
-      color: var(--text-main-color);
-      font-size: 0.9em;
-    }
-  }
-
-  blockquote {
-    margin: 1em 0;
-    padding: 8px 16px;
-    border-left: 3px solid var(--primary-color);
-    background: var(--additional-background-color);
-    color: var(--text-light-color);
-    border-radius: 0 6px 6px 0;
-    p {
-      margin: 0;
-    }
-  }
-
-  ul,
-  ol {
-    padding-left: 1.6em;
-    margin: 0.6em 0;
-    li {
-      margin: 0.25em 0;
-    }
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1em 0;
-    font-size: 0.92em;
-    th {
-      background: var(--additional-background-color);
-      color: var(--heading-color);
-      padding: 8px 12px;
-      text-align: left;
-      border: 1px solid var(--border-color);
-      font-weight: 600;
-    }
-    td {
-      padding: 7px 12px;
-      border: 1px solid var(--border-color);
-      vertical-align: top;
-    }
-    tr:nth-child(even) td {
-      background: var(--background-base-color);
-    }
-  }
-
-  hr {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 1.5em 0;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 0.6em 0;
-    display: block;
-    border: 1px solid var(--border-color);
-  }
-
-  strong {
-    color: var(--text-dark-color);
-  }
-  em {
-    color: var(--text-light-color);
-  }
-`;
-
-const EditorToolbar = styled.div`
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  padding: 6px 8px;
-  background: var(--additional-background-color);
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-`;
-
-const ToolbarBtn = styled.button`
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 3px 8px;
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--text-light-color);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s;
-  &:hover {
-    background: var(--item-hover-bg);
-    border-color: var(--border-color);
-    color: var(--text-main-color);
-  }
-`;
-
-const EditorGrid = styled.div<{ $split: boolean }>`
-  display: grid;
-  grid-template-columns: ${(p) => (p.$split ? '1fr 1fr' : '1fr')};
-  gap: 16px;
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const EditorPane = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PreviewPane = styled.div`
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  background: var(--additional-background-color);
-  min-height: 320px;
-  overflow-y: auto;
-`;
 
 // Renderer customizado: resolve URLs relativas de imagens contra o backend
 const mdComponents = {
@@ -302,11 +89,20 @@ function groupByCategory(pages: WikiPageType[]) {
   return { pinned, byCategory: map };
 }
 
+function wikiExcerpt(page: WikiPageType, length = 120) {
+  const text = (page.content ?? '')
+    .replace(/[#*`>\n]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return 'No content yet.';
+  return text.length > length ? `${text.slice(0, length).trim()}...` : text;
+}
+
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export const WikiPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
-  const isGM = Boolean(localStorage.getItem(GM_KEY));
+  const isGM = useGMMode();
 
   const [pages, setPages] = React.useState<WikiPageType[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -315,6 +111,8 @@ export const WikiPage: React.FC = () => {
   // navegação
   const [activeCat, setActiveCat] = React.useState<string | null>(null); // null = todas
   const [openId, setOpenId] = React.useState<number | null>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<WikiPageType | null>(null);
 
   // editor
   const [editing, setEditing] = React.useState(false);
@@ -334,7 +132,7 @@ export const WikiPage: React.FC = () => {
   const [uploading, setUploading] = React.useState(false);
 
   const openPage = React.useMemo(
-    () => (openId != null ? pages.find((p) => p.id === openId) ?? null : null),
+    () => (openId != null ? (pages.find((p) => p.id === openId) ?? null) : null),
     [pages, openId],
   );
 
@@ -451,6 +249,7 @@ export const WikiPage: React.FC = () => {
     try {
       await deleteWikiPage(id);
       if (openId === id) setOpenId(null);
+      setDeleteTarget(null);
       await load();
       message.success('Article removed');
     } catch (e) {
@@ -531,10 +330,10 @@ export const WikiPage: React.FC = () => {
 
   // ── Sidebar ───────────────────────────────────────────────────────────────
   const SidebarContent = (
-    <Sidebar $mobile={mobileOnly}>
-      <div style={{ padding: '0 12px 10px' }}>
+    <S.Sidebar $mobile={mobileOnly}>
+      <div style={S.sidebarSearchWrap}>
         <Input
-          prefix={<SearchOutlined style={{ color: 'var(--text-superLight-color)' }} />}
+          prefix={<SearchOutlined style={S.searchIcon} />}
           placeholder="Search articles…"
           value={search}
           onChange={(e) => {
@@ -543,11 +342,11 @@ export const WikiPage: React.FC = () => {
           }}
           allowClear
           size="small"
-          style={{ borderRadius: 6 }}
+          style={S.searchInput}
         />
       </div>
 
-      <SidebarItem
+      <S.SidebarItem
         $active={activeCat === null}
         onClick={() => {
           setActiveCat(null);
@@ -555,26 +354,17 @@ export const WikiPage: React.FC = () => {
           setEditing(false);
         }}
       >
-        <SidebarItemTitle $active={activeCat === null}>
-          <BookOutlined style={{ marginRight: 6 }} />
+        <S.SidebarItemTitle $active={activeCat === null}>
+          <BookOutlined style={S.menuIcon} />
           All articles
-        </SidebarItemTitle>
-        <Badge
-          count={pages.filter((p) => isGM || p.visible).length}
-          showZero
-          style={{
-            backgroundColor: 'var(--border-color)',
-            color: 'var(--text-light-color)',
-            boxShadow: 'none',
-            fontSize: 10,
-          }}
-        />
-      </SidebarItem>
+        </S.SidebarItemTitle>
+        <Badge count={pages.filter((p) => isGM || p.visible).length} showZero style={S.badgeStyle} />
+      </S.SidebarItem>
 
       {pinned.length > 0 && (
         <>
-          <SidebarLabel>Pinned</SidebarLabel>
-          <SidebarItem
+          <S.SidebarLabel>Pinned</S.SidebarLabel>
+          <S.SidebarItem
             $active={activeCat === '__pinned'}
             onClick={() => {
               setActiveCat('__pinned');
@@ -582,30 +372,21 @@ export const WikiPage: React.FC = () => {
               setEditing(false);
             }}
           >
-            <SidebarItemTitle $active={activeCat === '__pinned'}>
-              <PushpinFilled style={{ marginRight: 6, color: 'var(--warning-color)' }} />
+            <S.SidebarItemTitle $active={activeCat === '__pinned'}>
+              <PushpinFilled style={S.pinnedLabelIcon} />
               Pinned articles
-            </SidebarItemTitle>
-            <Badge
-              count={pinned.length}
-              showZero
-              style={{
-                backgroundColor: 'var(--border-color)',
-                color: 'var(--text-light-color)',
-                boxShadow: 'none',
-                fontSize: 10,
-              }}
-            />
-          </SidebarItem>
+            </S.SidebarItemTitle>
+            <Badge count={pinned.length} showZero style={S.badgeStyle} />
+          </S.SidebarItem>
         </>
       )}
 
-      {categories.length > 0 && <SidebarLabel>Categories</SidebarLabel>}
+      {categories.length > 0 && <S.SidebarLabel>Categories</S.SidebarLabel>}
       {categories.map((cat) => {
         const count = (byCategory.get(cat) ?? []).length;
         const isActive = activeCat === cat;
         return (
-          <SidebarItem
+          <S.SidebarItem
             key={cat}
             $active={isActive}
             onClick={() => {
@@ -614,73 +395,50 @@ export const WikiPage: React.FC = () => {
               setEditing(false);
             }}
           >
-            <SidebarItemTitle $active={isActive}>{cat}</SidebarItemTitle>
-            <Badge
-              count={count}
-              showZero
-              style={{
-                backgroundColor: 'var(--border-color)',
-                color: 'var(--text-light-color)',
-                boxShadow: 'none',
-                fontSize: 10,
-              }}
-            />
-          </SidebarItem>
+            <S.SidebarItemTitle $active={isActive}>{cat}</S.SidebarItemTitle>
+            <Badge count={count} showZero style={S.badgeStyle} />
+          </S.SidebarItem>
         );
       })}
 
       {isGM && (
-        <div style={{ marginTop: 'auto', padding: '12px 12px 4px' }}>
+        <div style={S.sidebarFooter}>
           <Button type="primary" size="small" block icon={<PlusOutlined />} onClick={startNew}>
             New Article
           </Button>
         </div>
       )}
-    </Sidebar>
+    </S.Sidebar>
   );
 
   // ── Article list (when no article open) ──────────────────────────────────
   const ArticleList = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <S.listWrap>
       {visible.length === 0 && (
-        <Empty description={q ? 'No articles found.' : 'No articles in this category.'} style={{ marginTop: 48 }} />
+        <Empty description={q ? 'No articles found.' : 'No articles in this category.'} style={S.emptyState} />
       )}
       {visible.map((page) => (
-        <div
+        <S.ArticleCard
           key={page.id}
           onClick={() => {
             setOpenId(page.id);
             setEditing(false);
           }}
-          style={{
-            padding: '14px 18px',
-            border: '1px solid var(--border-color)',
-            borderRadius: 8,
-            cursor: 'pointer',
-            background: 'var(--additional-background-color)',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--primary-color)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)';
-          }}
         >
           <Space style={spaceBetween} wrap>
             <Space size={6}>
-              {page.pinned && <PushpinFilled style={{ color: 'var(--warning-color)', fontSize: 12 }} />}
-              <Typography.Text strong style={{ color: 'var(--text-main-color)', fontSize: 14 }}>
+              {page.pinned && <PushpinFilled style={S.pinnedIcon} />}
+              <Typography.Text strong style={S.articleTitle}>
                 {page.title}
               </Typography.Text>
-              {page.category && <Tag style={{ margin: 0, fontSize: 11 }}>{page.category}</Tag>}
+              {page.category && <Tag style={S.categoryTag}>{page.category}</Tag>}
               {isGM && !page.visible && (
-                <Tag color="red" style={{ margin: 0, fontSize: 11 }}>
+                <Tag color="red" style={S.hiddenTag}>
                   Hidden
                 </Tag>
               )}
             </Space>
-            <Typography.Text style={{ fontSize: 12, color: 'var(--text-superLight-color)' }}>
+            <Typography.Text style={S.articleExcerpt}>
               {page.content
                 ? `${page.content
                     .slice(0, 80)
@@ -689,19 +447,19 @@ export const WikiPage: React.FC = () => {
                 : 'No content'}
             </Typography.Text>
           </Space>
-        </div>
+        </S.ArticleCard>
       ))}
-    </div>
+    </S.listWrap>
   );
 
   // ── Article view ─────────────────────────────────────────────────────────
   const ArticleView =
     openPage && !editing ? (
       <div>
-        <Space style={{ justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', marginBottom: 6 }} size={8}>
+        <Space style={S.articleHeader} size={8}>
           <Space size={8} wrap>
-            {openPage.pinned && <PushpinFilled style={{ color: 'var(--warning-color)' }} />}
-            <Typography.Title level={3} style={{ margin: 0, color: 'var(--heading-color)' }}>
+            {openPage.pinned && <PushpinFilled style={S.warningIcon} />}
+            <Typography.Title level={3} style={S.articleTitleMain}>
               {openPage.title}
             </Typography.Title>
             {openPage.category && <Tag>{openPage.category}</Tag>}
@@ -714,9 +472,7 @@ export const WikiPage: React.FC = () => {
                 <Button
                   size="small"
                   type="text"
-                  icon={
-                    openPage.pinned ? <PushpinFilled style={{ color: 'var(--warning-color)' }} /> : <PushpinOutlined />
-                  }
+                  icon={openPage.pinned ? <PushpinFilled style={S.warningIcon} /> : <PushpinOutlined />}
                   onClick={() => void handleTogglePin(openPage)}
                 />
               </Tooltip>
@@ -751,16 +507,16 @@ export const WikiPage: React.FC = () => {
           )}
         </Space>
 
-        <Divider style={{ margin: '12px 0 20px' }} />
+        <Divider style={S.articleDivider} />
 
         {openPage.content ? (
-          <ArticleBody>
+          <S.ArticleBody>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
               {openPage.content}
             </ReactMarkdown>
-          </ArticleBody>
+          </S.ArticleBody>
         ) : (
-          <Empty description="Article has no content." style={{ marginTop: 40 }} />
+          <Empty description="Article has no content." style={S.articleEmpty} />
         )}
       </div>
     ) : null;
@@ -768,8 +524,8 @@ export const WikiPage: React.FC = () => {
   // ── Editor ────────────────────────────────────────────────────────────────
   const Editor = editing ? (
     <div>
-      <Space style={{ justifyContent: 'space-between', width: '100%', marginBottom: 16 }} wrap>
-        <Typography.Title level={4} style={{ margin: 0, color: 'var(--heading-color)' }}>
+      <Space style={S.editorHeader} wrap>
+        <Typography.Title level={4} style={S.editorTitle}>
           {isNew ? 'New Article' : `Editing: ${openPage?.title ?? ''}`}
         </Typography.Title>
         <Space size={6}>
@@ -785,14 +541,14 @@ export const WikiPage: React.FC = () => {
         </Space>
       </Space>
 
-      <Space direction="vertical" size={10} style={{ width: '100%', marginBottom: 16 }}>
+      <Space orientation="vertical" size={10} style={S.editorFields}>
         <Space wrap size={10} style={w100}>
-          <div style={{ flex: 2, minWidth: 200 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Title *</div>
+          <div style={S.editorTitleField}>
+            <div style={S.editorFieldLabel}>Title *</div>
             <Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="Article title" />
           </div>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)', marginBottom: 4 }}>Category</div>
+          <div style={S.editorCategoryField}>
+            <div style={S.editorFieldLabel}>Category</div>
             <Input
               value={fCategory}
               onChange={(e) => setFCategory(e.target.value)}
@@ -803,69 +559,68 @@ export const WikiPage: React.FC = () => {
 
         <Space size={24}>
           <Space size={8}>
-            <PushpinOutlined style={{ color: 'var(--warning-color)' }} />
-            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Pinned</span>
+            <PushpinOutlined style={S.warningIcon} />
+            <span style={S.toggleText}>Pinned</span>
             <Switch size="small" checked={fPinned} onChange={setFPinned} />
           </Space>
           <Space size={8}>
             <EyeOutlined />
-            <span style={{ fontSize: 13, color: 'var(--text-main-color)' }}>Visible</span>
+            <span style={S.toggleText}>Visible</span>
             <Switch size="small" checked={fVisible} onChange={setFVisible} />
           </Space>
         </Space>
       </Space>
 
-      <EditorGrid $split={preview}>
-        <EditorPane>
-          <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>
-            Content — supports <strong style={{ color: 'var(--primary-color)' }}>Markdown</strong>
+      <S.EditorGrid $split={preview}>
+        <S.EditorPane>
+          <div style={S.contentLabel}>
+            Content — supports <strong style={S.markdownAccent}>Markdown</strong>
           </div>
 
           <div>
-            <EditorToolbar>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('**', '**')} title="Bold">
+            <S.EditorToolbar>
+              <S.ToolbarBtn type="button" onClick={() => insertMarkdown('**', '**')} title="Bold">
                 <b>B</b>
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('*', '*')} title="Italic">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertMarkdown('*', '*')} title="Italic">
                 <i>I</i>
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertMarkdown('`', '`')} title="Code">
-                <code style={{ fontSize: 11 }}>{'<>'}</code>
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n## ')} title="Subtitle">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertMarkdown('`', '`')} title="Code">
+                <code style={S.codeChip}>{'<>'}</code>
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n## ')} title="Subtitle">
                 H2
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n### ')} title="Smaller heading">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n### ')} title="Smaller heading">
                 H3
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n- ')} title="List">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n- ')} title="List">
                 — list
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n> ')} title="Blockquote">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n> ')} title="Blockquote">
                 {'" bq.'}
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n```\n\n```\n')} title="Code block">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n```\n\n```\n')} title="Code block">
                 {'```'}
-              </ToolbarBtn>
-              <ToolbarBtn type="button" onClick={() => insertAtCursor('\n---\n')} title="Divider">
+              </S.ToolbarBtn>
+              <S.ToolbarBtn type="button" onClick={() => insertAtCursor('\n---\n')} title="Divider">
                 —
-              </ToolbarBtn>
-              <ToolbarBtn
+              </S.ToolbarBtn>
+              <S.ToolbarBtn
                 type="button"
                 onClick={() => imgInputRef.current?.click()}
                 title="Insert image"
                 disabled={uploading}
-                style={{ color: 'var(--primary-color)', fontWeight: 600 }}
+                style={S.imageButton}
               >
                 {uploading ? <LoadingOutlined /> : <FileImageOutlined />} {uploading ? 'Uploading…' : 'Image'}
-              </ToolbarBtn>
-            </EditorToolbar>
+              </S.ToolbarBtn>
+            </S.EditorToolbar>
 
-            <input
+            <S.HiddenFileInput
               ref={imgInputRef}
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
-              style={hiddenInput}
               onChange={(e) => void handleImageUpload(e)}
             />
 
@@ -877,55 +632,399 @@ export const WikiPage: React.FC = () => {
               placeholder={
                 '# Title\n\nWrite the content in Markdown...\n\n## Section\n\n- Item 1\n- Item 2\n\n> Important quote'
               }
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '0 0 8px 8px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--additional-background-color)',
-                color: 'var(--text-main-color)',
-                fontSize: 13,
-                fontFamily: 'monospace',
-                lineHeight: 1.6,
-                resize: 'vertical',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
+              style={S.editorTextarea}
             />
           </div>
-        </EditorPane>
+        </S.EditorPane>
 
         {preview && (
-          <EditorPane>
-            <div style={{ fontSize: 12, color: 'var(--text-light-color)' }}>Preview</div>
-            <PreviewPane>
+          <S.EditorPane>
+            <div style={S.previewLabel}>Preview</div>
+            <S.PreviewPane>
               {fContent.trim() ? (
-                <ArticleBody>
+                <S.ArticleBody>
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
                     {fContent}
                   </ReactMarkdown>
-                </ArticleBody>
+                </S.ArticleBody>
               ) : (
-                <span style={{ color: 'var(--text-superLight-color)', fontSize: 13 }}>
-                  Start typing to see the preview…
-                </span>
+                <span style={S.previewEmpty}>Start typing to see the preview…</span>
               )}
-            </PreviewPane>
-          </EditorPane>
+            </S.PreviewPane>
+          </S.EditorPane>
         )}
-      </EditorGrid>
+      </S.EditorGrid>
     </div>
   ) : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
   const mainContent = editing ? Editor : openPage ? ArticleView : ArticleList;
 
+  const mobileCategoryValue = activeCat ?? '__all';
+  const mobileCategoryOptions = [
+    { label: 'All articles', value: '__all' },
+    ...(pinned.length > 0 ? [{ label: 'Pinned articles', value: '__pinned' }] : []),
+    ...categories.map((cat) => ({ label: cat, value: cat })),
+  ];
+
+  const mobileActiveFilterLabel = activeCat === '__pinned' ? 'Pinned' : activeCat ? activeCat : 'All articles';
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {visible.length} shown
+      </AdmMobileTag>
+      <AdmMobileTag fill="outline" round>
+        {categories.length} categories
+      </AdmMobileTag>
+      {isGM ? (
+        <AdmMobileTag color="warning" fill="outline" round>
+          GM
+        </AdmMobileTag>
+      ) : null}
+      <AdmMobileTag color="primary" fill="outline" round>
+        {mobileActiveFilterLabel}
+      </AdmMobileTag>
+    </S.MobileMetaTags>
+  );
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar
+        inset={false}
+        onChange={(value) => {
+          setSearch(value);
+          setOpenId(null);
+        }}
+        placeholder="Search wiki..."
+        value={search}
+      />
+      <S.MobileFilterRow>
+        <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+          <FilterOutline fontSize={16} /> Categories
+        </AdmMobileButton>
+        {isGM ? (
+          <AdmMobileButton color="primary" onClick={startNew} size="small">
+            <AddOutline fontSize={16} /> New article
+          </AdmMobileButton>
+        ) : null}
+      </S.MobileFilterRow>
+    </>
+  );
+
+  const mobileReader = openPage ? (
+    <S.MobileSectionStack>
+      <MobileCard compact>
+        <S.MobileMetaTags>
+          {openPage.pinned ? (
+            <AdmMobileTag color="warning" fill="outline" round>
+              <StarFill fontSize={13} /> Pinned
+            </AdmMobileTag>
+          ) : null}
+          {openPage.category ? (
+            <AdmMobileTag fill="outline" round>
+              {openPage.category}
+            </AdmMobileTag>
+          ) : null}
+          {isGM ? (
+            <AdmMobileTag color={openPage.visible ? 'success' : 'danger'} fill="outline" round>
+              {openPage.visible ? 'Visible' : 'Hidden'}
+            </AdmMobileTag>
+          ) : null}
+        </S.MobileMetaTags>
+      </MobileCard>
+
+      <MobileCard compact title="Article">
+        {openPage.content ? (
+          <S.MobileArticleReader>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+              {openPage.content}
+            </ReactMarkdown>
+          </S.MobileArticleReader>
+        ) : (
+          <S.MobileEmptyState>Article has no content.</S.MobileEmptyState>
+        )}
+      </MobileCard>
+
+      {isGM ? (
+        <MobileCard compact title="GM Controls">
+          <S.MobileInlineControls>
+            <S.MobileSwitchRow>
+              <S.MobileSwitchLabel>Pinned article</S.MobileSwitchLabel>
+              <AdmMobileSwitch checked={Boolean(openPage.pinned)} onChange={() => void handleTogglePin(openPage)} />
+            </S.MobileSwitchRow>
+            <S.MobileSwitchRow>
+              <S.MobileSwitchLabel>Visible to players</S.MobileSwitchLabel>
+              <AdmMobileSwitch
+                checked={Boolean(openPage.visible)}
+                onChange={() => void handleToggleVisible(openPage)}
+              />
+            </S.MobileSwitchRow>
+            <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteTarget(openPage)}>
+              <DeleteOutline fontSize={17} /> Delete article
+            </AdmMobileButton>
+          </S.MobileInlineControls>
+        </MobileCard>
+      ) : null}
+    </S.MobileSectionStack>
+  ) : null;
+
+  const mobileEditorTitle = isNew ? 'New article' : `Edit ${openPage?.title ?? 'article'}`;
+  const mobileEditor = (
+    <S.MobileSectionStack>
+      <MobileCard compact title="Article details">
+        <MobileForm>
+          <MobileForm.Item label="Title">
+            <AdmMobileInput clearable onChange={setFTitle} placeholder="Article title *" value={fTitle} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Category">
+            <AdmMobileInput clearable onChange={setFCategory} placeholder="Worlds, rules, lore..." value={fCategory} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Flags">
+            <S.MobileInlineControls>
+              <S.MobileSwitchRow>
+                <S.MobileSwitchLabel>Pinned</S.MobileSwitchLabel>
+                <AdmMobileSwitch checked={fPinned} onChange={setFPinned} />
+              </S.MobileSwitchRow>
+              <S.MobileSwitchRow>
+                <S.MobileSwitchLabel>Visible</S.MobileSwitchLabel>
+                <AdmMobileSwitch checked={fVisible} onChange={setFVisible} />
+              </S.MobileSwitchRow>
+            </S.MobileInlineControls>
+          </MobileForm.Item>
+        </MobileForm>
+      </MobileCard>
+
+      <MobileCard compact title="Markdown">
+        <S.MobileEditorToolbar>
+          <S.MobileMarkdownButton onClick={() => insertMarkdown('**', '**')} type="button">
+            Bold
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertMarkdown('*', '*')} type="button">
+            Italic
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertAtCursor('\n## ')} type="button">
+            H2
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertAtCursor('\n- ')} type="button">
+            List
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => imgInputRef.current?.click()} type="button">
+            <PictureOutline fontSize={15} /> {uploading ? 'Uploading' : 'Image'}
+          </S.MobileMarkdownButton>
+        </S.MobileEditorToolbar>
+        <S.HiddenFileInput
+          ref={imgInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          onChange={(event) => void handleImageUpload(event)}
+        />
+      </MobileCard>
+
+      <MobileTabs activeKey={preview ? 'preview' : 'write'} onChange={(key) => setPreview(key === 'preview')}>
+        <MobileTabs.Tab key="write" title="Write">
+          <AdmMobileTextArea
+            autoSize={{ minRows: 12, maxRows: 22 }}
+            onChange={setFContent}
+            placeholder={'# Title\n\nWrite in Markdown...'}
+            value={fContent}
+          />
+        </MobileTabs.Tab>
+        <MobileTabs.Tab key="preview" title="Preview">
+          <S.MobilePreviewPane>
+            {fContent.trim() ? (
+              <S.MobileArticleReader>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+                  {fContent}
+                </ReactMarkdown>
+              </S.MobileArticleReader>
+            ) : (
+              <S.MobileEmptyState>Start typing to see the preview.</S.MobileEmptyState>
+            )}
+          </S.MobilePreviewPane>
+        </MobileTabs.Tab>
+      </MobileTabs>
+    </S.MobileSectionStack>
+  );
+
   if (mobileOnly) {
     return (
       <>
         <PageTitle>Wiki</PageTitle>
-        {SidebarContent}
-        <div style={{ padding: '16px' }}>{loading ? <Spinner /> : mainContent}</div>
+
+        <MobilePageScaffold
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle="Read campaign knowledge, pinned references and GM-managed markdown notes."
+          title={<IconLabel icon="lore">Wiki</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                <Spinner />
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : visible.length === 0 ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>{q ? 'No articles found.' : 'No articles in this category.'}</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileArticleList>
+              {visible.map((page) => (
+                <MobileCard compact key={page.id} onClick={() => setOpenId(page.id)}>
+                  <S.MobileArticleBody>
+                    <S.MobileMetaTags>
+                      {page.pinned ? (
+                        <AdmMobileTag color="warning" fill="outline" round>
+                          <StarFill fontSize={13} /> Pinned
+                        </AdmMobileTag>
+                      ) : null}
+                      {page.category ? (
+                        <AdmMobileTag fill="outline" round>
+                          {page.category}
+                        </AdmMobileTag>
+                      ) : null}
+                      {isGM && !page.visible ? (
+                        <AdmMobileTag color="danger" fill="outline" round>
+                          Hidden
+                        </AdmMobileTag>
+                      ) : null}
+                    </S.MobileMetaTags>
+                    <S.MobileArticleTitle>{page.title}</S.MobileArticleTitle>
+                    <S.MobileArticleExcerpt>{wikiExcerpt(page)}</S.MobileArticleExcerpt>
+                  </S.MobileArticleBody>
+                </MobileCard>
+              ))}
+            </S.MobileArticleList>
+          )}
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Choose one wiki category or show pinned articles."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => setFilterSheetOpen(false)}>
+                  Apply
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setActiveCat(null);
+                    setFilterSheetOpen(false);
+                  }}
+                >
+                  Reset
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setFilterSheetOpen(false)}
+          title="Wiki filters"
+          visible={filterSheetOpen}
+        >
+          <MobileSelector<string>
+            columns={1}
+            inset={false}
+            onChange={(values) => {
+              const value = values[0] ?? '__all';
+              setActiveCat(value === '__all' ? null : value);
+              setOpenId(null);
+              setEditing(false);
+            }}
+            options={mobileCategoryOptions}
+            value={[mobileCategoryValue]}
+          />
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          footer={
+            openPage && isGM ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton
+                    block
+                    color="primary"
+                    onClick={() => {
+                      setIsNew(false);
+                      setEditing(true);
+                      setPreview(false);
+                    }}
+                  >
+                    <EditSOutline fontSize={17} /> Edit
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={() => void handleTogglePin(openPage)}>
+                    {openPage.pinned ? <StarFill fontSize={17} /> : <StarOutline fontSize={17} />}
+                    {openPage.pinned ? ' Unpin' : ' Pin'}
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={() => setOpenId(null)}
+          subtitle={openPage?.category ?? 'Wiki article'}
+          title={openPage?.title ?? 'Article'}
+          visible={Boolean(openPage) && !editing}
+        >
+          {mobileReader}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Write markdown, preview it and insert uploaded images."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => void handleSave()}>
+                  Save article
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton block fill="outline" onClick={cancelEdit}>
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={cancelEdit}
+          subtitle="GM editor"
+          title={mobileEditorTitle}
+          visible={editing}
+        >
+          {mobileEditor}
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteTarget(null),
+            },
+            {
+              key: 'delete',
+              text: 'Delete article',
+              bold: true,
+              danger: true,
+              onClick: () => {
+                if (deleteTarget) {
+                  return handleDelete(deleteTarget.id);
+                }
+              },
+            },
+          ]}
+          content={deleteTarget ? `Delete "${deleteTarget.title}" permanently?` : ''}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete article?"
+          visible={Boolean(deleteTarget)}
+        />
       </>
     );
   }
@@ -933,10 +1032,10 @@ export const WikiPage: React.FC = () => {
   return (
     <>
       <PageTitle>Wiki</PageTitle>
-      <Shell>
+      <S.Shell>
         {SidebarContent}
-        <MainArea>{loading ? <Spinner /> : mainContent}</MainArea>
-      </Shell>
+        <S.MainArea>{loading ? <Spinner /> : mainContent}</S.MainArea>
+      </S.Shell>
     </>
   );
 };

@@ -2,32 +2,45 @@
 import React from 'react';
 import { Divider, Empty, Modal, Popconfirm, Space, Spin, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, TagOutlined } from '@ant-design/icons';
-import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
-import { Card } from '@app/components/common/Card/Card';
-import { Input } from '@app/components/common/inputs/Input/Input';
-import { Button } from '@app/components/common/buttons/Button/Button';
-import { Spinner } from '@app/components/common/Spinner/Spinner';
-import { useResponsive } from '@app/hooks/useResponsive';
+import { Button as AdmMobileButton, Input as AdmMobileInput, SpinLoading, Tag as AdmMobileTag } from 'antd-mobile';
+import { AddOutline, DeleteOutline, EditSOutline } from 'antd-mobile-icons';
+
 import { resolveApiUrl } from '@app/api/http.api';
-import { listTags, createTag, updateTag, deleteTag, getTagEntities } from '@app/api/tags.api';
-import { apiErrorMessage } from '../utils/api-error';
+import { createTag, deleteTag, getTagEntities, listTags, updateTag } from '@app/api/tags.api';
+import { AppIconName, IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import { Card } from '@app/components/common/Card/Card';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileForm,
+  MobileList,
+  MobilePageScaffold,
+  MobileSearchBar,
+} from '@app/components/common/mobile';
+import { Button } from '@app/components/common/buttons/Button/Button';
+import { Input } from '@app/components/common/inputs/Input/Input';
+import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
+import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { useGMMode } from '@app/hooks/useGMMode';
+import { useResponsive } from '@app/hooks/useResponsive';
+import { m0, spaceBetween, textMd, textSm, w100 } from '@app/styles/styleUtils';
 import type { Tag as TagType, TagEntities } from '@app/types/rpg';
-import { m0, w100, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
+import { apiErrorMessage } from '../utils/api-error';
+import * as S from './TagsPage.styles';
 
-const GM_KEY = 'gm_api_key';
-
-const ENTITY_LABELS: Record<string, string> = {
-  beasts: '🦎 Beasts',
-  npcs: '🧑 NPCs',
-  cities: '🏙️ Cities',
-  dungeons: '⚔️ Dungeons',
-  worlds: '🌍 Worlds',
-  players: '👤 Players',
-  lores: '📖 Lores',
-  quests: '🏴 Quests',
+const ENTITY_META: Record<string, { icon: AppIconName; label: string }> = {
+  beasts: { icon: 'beast', label: 'Beasts' },
+  npcs: { icon: 'npc', label: 'NPCs' },
+  cities: { icon: 'location', label: 'Cities' },
+  dungeons: { icon: 'dungeon', label: 'Dungeons' },
+  worlds: { icon: 'world', label: 'Worlds' },
+  players: { icon: 'player', label: 'Players' },
+  lores: { icon: 'lore', label: 'Lores' },
+  quests: { icon: 'quest', label: 'Quests' },
 };
 
-// ── Entity detail fields by type ─────────────────────────────────────────────
 const ENTITY_DETAIL_FIELDS: Record<string, Array<{ label: string; key: string }>> = {
   beasts: [
     { label: 'Type', key: 'type' },
@@ -61,25 +74,35 @@ const ENTITY_DETAIL_FIELDS: Record<string, Array<{ label: string; key: string }>
   ],
 };
 
-// ── Entity detail modal ───────────────────────────────────────────────────────
+function entityTitle(item: any) {
+  return item?.name ?? item?.title ?? '-';
+}
+
+function entityPreview(item: any) {
+  const preview = item?.description ?? item?.content ?? item?.background ?? item?.status;
+  return preview == null || preview === '' ? undefined : String(preview);
+}
+
 const EntityDetailModal: React.FC<{
   entityType: string | null;
   item: any | null;
   onClose: () => void;
 }> = ({ entityType, item, onClose }) => {
   if (!item || !entityType) return null;
-  const title = item.name ?? item.title ?? '—';
+
+  const title = entityTitle(item);
   const fields = ENTITY_DETAIL_FIELDS[entityType] ?? [];
-  const label = ENTITY_LABELS[entityType] ?? entityType;
+  const meta = ENTITY_META[entityType];
+  const label = meta ? <IconLabel icon={meta.icon}>{meta.label}</IconLabel> : entityType;
 
   return (
     <Modal
-      visible
-      onCancel={onClose}
       footer={null}
+      onCancel={onClose}
+      open
       title={
         <Space size={8}>
-          <Typography.Text type="secondary" style={textSm}>
+          <Typography.Text style={S.detailModalTitleLabel} type="secondary">
             {label}
           </Typography.Text>
           <Typography.Text strong>{title}</Typography.Text>
@@ -88,22 +111,19 @@ const EntityDetailModal: React.FC<{
       width={480}
     >
       <Space direction="vertical" size={12} style={w100}>
-        {item.imageUrl && (
-          <img
-            src={resolveApiUrl(item.imageUrl)}
-            alt={item.imageAlt ?? title}
-            style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
-          />
-        )}
-        {fields.map(({ label: fl, key }) => {
-          const val = item[key];
-          if (val == null || val === '') return null;
+        {item.imageUrl ? (
+          <img alt={item.imageAlt ?? title} src={resolveApiUrl(item.imageUrl)} style={S.detailAvatar} />
+        ) : null}
+        {fields.map(({ label: fieldLabel, key }) => {
+          const value = item[key];
+          if (value == null || value === '') return null;
+
           return (
             <div key={key}>
-              <Typography.Text type="secondary" style={{ ...textSm, display: 'block', marginBottom: 2 }}>
-                {fl}
+              <Typography.Text style={S.detailFieldLabel} type="secondary">
+                {fieldLabel}
               </Typography.Text>
-              <Typography.Text style={{ whiteSpace: 'pre-wrap' }}>{String(val)}</Typography.Text>
+              <Typography.Text style={S.detailFieldValue}>{String(value)}</Typography.Text>
             </div>
           );
         })}
@@ -112,37 +132,30 @@ const EntityDetailModal: React.FC<{
   );
 };
 
-// ── Entity list inside the tag panel ─────────────────────────────────────────
 const EntityGroup: React.FC<{
-  label: string;
+  label: React.ReactNode;
   entityType: string;
   items: any[];
   onSelect: (type: string, item: any) => void;
 }> = ({ label, entityType, items, onSelect }) => {
   if (items.length === 0) return null;
+
   return (
     <div>
-      <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+      <Typography.Text style={S.entityGroupLabel} type="secondary">
         {label}
       </Typography.Text>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+      <div style={S.entityGroupItems}>
         {items.map((item: any) => (
-          <Tag key={item.id} style={{ cursor: 'pointer' }} onClick={() => onSelect(entityType, item)}>
-            {item.imageUrl && (
+          <Tag key={item.id} onClick={() => onSelect(entityType, item)} style={S.entityTag}>
+            {item.imageUrl ? (
               <img
-                src={resolveApiUrl(item.imageUrl)}
                 alt={item.imageAlt ?? item.name ?? ''}
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginRight: 4,
-                  verticalAlign: 'middle',
-                }}
+                src={resolveApiUrl(item.imageUrl)}
+                style={S.entityTagAvatar}
               />
-            )}
-            {item.name ?? item.title}
+            ) : null}
+            {entityTitle(item)}
           </Tag>
         ))}
       </div>
@@ -150,40 +163,39 @@ const EntityGroup: React.FC<{
   );
 };
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export const TagsPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
-  const isGM = Boolean(localStorage.getItem(GM_KEY));
+  const isGM = useGMMode();
 
   const [tags, setTags] = React.useState<TagType[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [search, setSearch] = React.useState('');
 
-  // Create form
   const [newName, setNewName] = React.useState('');
   const [newColor, setNewColor] = React.useState('#1677ff');
   const [creating, setCreating] = React.useState(false);
+  const [creatingTag, setCreatingTag] = React.useState(false);
 
-  // Edit inline
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editName, setEditName] = React.useState('');
   const [editColor, setEditColor] = React.useState('#1677ff');
 
-  // Tag detail panel
   const [selectedTag, setSelectedTag] = React.useState<TagType | null>(null);
   const [tagEntities, setTagEntities] = React.useState<TagEntities | null>(null);
   const [entitiesLoading, setEntitiesLoading] = React.useState(false);
 
-  // Entity detail modal
   const [detailType, setDetailType] = React.useState<string | null>(null);
   const [detailItem, setDetailItem] = React.useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<TagType | null>(null);
+
+  const editingTag = React.useMemo(() => tags.find((tag) => tag.id === editingId) ?? null, [editingId, tags]);
 
   const load = React.useCallback(async () => {
     setLoading(true);
     try {
-      setTags(await listTags());
-    } catch (e) {
-      message.error(apiErrorMessage(e, 'Failed to load tags'));
+      setTags((await listTags()).sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (error) {
+      message.error(apiErrorMessage(error, 'Failed to load tags.'));
     } finally {
       setLoading(false);
     }
@@ -197,6 +209,7 @@ export const TagsPage: React.FC = () => {
     setSelectedTag(tag);
     setTagEntities(null);
     setEntitiesLoading(true);
+
     try {
       setTagEntities(await getTagEntities(tag.id));
     } catch {
@@ -206,21 +219,29 @@ export const TagsPage: React.FC = () => {
     }
   }
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
+  function resetCreateForm() {
+    setNewName('');
+    setNewColor('#1677ff');
+  }
+
+  async function handleCreate() {
     const name = newName.trim();
-    if (!name) return message.warning('Name required');
-    setCreating(true);
+    if (!name) {
+      message.warning('Name required.');
+      return;
+    }
+
+    setCreatingTag(true);
     try {
       const created = await createTag({ name, color: newColor });
       setTags((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
-      setNewName('');
-      setNewColor('#1677ff');
-      message.success('Tag created');
-    } catch (e) {
-      message.error(apiErrorMessage(e, 'Failed to create tag'));
-    } finally {
+      resetCreateForm();
       setCreating(false);
+      message.success('Tag created.');
+    } catch (error) {
+      message.error(apiErrorMessage(error, 'Failed to create tag.'));
+    } finally {
+      setCreatingTag(false);
     }
   }
 
@@ -230,49 +251,388 @@ export const TagsPage: React.FC = () => {
     setEditColor(tag.color);
   }
 
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName('');
+    setEditColor('#1677ff');
+  }
+
   async function saveEdit(tag: TagType) {
+    const name = editName.trim();
+    if (!name) {
+      message.warning('Name required.');
+      return;
+    }
+
     try {
-      await updateTag(tag.id, { name: editName.trim(), color: editColor });
+      await updateTag(tag.id, { name, color: editColor });
       setTags((prev) =>
         prev
-          .map((t) => (t.id === tag.id ? { ...t, name: editName.trim(), color: editColor } : t))
+          .map((item) => (item.id === tag.id ? { ...item, name, color: editColor } : item))
           .sort((a, b) => a.name.localeCompare(b.name)),
       );
-      if (selectedTag?.id === tag.id)
-        setSelectedTag((prev) => (prev ? { ...prev, name: editName.trim(), color: editColor } : prev));
-      setEditingId(null);
-      message.success('Tag updated');
-    } catch (e) {
-      message.error(apiErrorMessage(e, 'Failed to update tag'));
+
+      if (selectedTag?.id === tag.id) {
+        setSelectedTag((prev) => (prev ? { ...prev, name, color: editColor } : prev));
+      }
+
+      cancelEdit();
+      message.success('Tag updated.');
+    } catch (error) {
+      message.error(apiErrorMessage(error, 'Failed to update tag.'));
     }
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(tag: TagType) {
     try {
-      await deleteTag(id);
-      setTags((prev) => prev.filter((t) => t.id !== id));
-      if (selectedTag?.id === id) {
+      await deleteTag(tag.id);
+      setTags((prev) => prev.filter((item) => item.id !== tag.id));
+      if (selectedTag?.id === tag.id) {
         setSelectedTag(null);
         setTagEntities(null);
       }
-      message.success('Tag deleted');
-    } catch (e) {
-      message.error(apiErrorMessage(e, 'Failed to delete tag'));
+      if (editingId === tag.id) {
+        cancelEdit();
+      }
+      setDeleteTarget(null);
+      message.success('Tag deleted.');
+    } catch (error) {
+      message.error(apiErrorMessage(error, 'Failed to delete tag.'));
     }
   }
 
-  const q = search.trim().toLowerCase();
-  const filtered = tags.filter((t) => !q || t.name.toLowerCase().includes(q));
+  const query = search.trim().toLowerCase();
+  const filtered = tags.filter((tag) => !query || tag.name.toLowerCase().includes(query));
 
   const totalEntities = tagEntities
     ? Object.values(tagEntities)
         .filter(Array.isArray)
-        .reduce((s: number, arr: any[]) => s + arr.length, 0)
+        .reduce((sum: number, items: any[]) => sum + items.length, 0)
     : 0;
+
+  const mobileEntityDetail =
+    detailItem && detailType ? (
+      <S.MobileSectionStack>
+        {detailItem.imageUrl ? (
+          <MobileCard compact>
+            <S.MobileAvatar
+              alt={detailItem.imageAlt ?? entityTitle(detailItem)}
+              src={resolveApiUrl(detailItem.imageUrl)}
+            />
+          </MobileCard>
+        ) : null}
+
+        <MobileCard compact title="Details">
+          <S.MobileDetailGrid>
+            {(ENTITY_DETAIL_FIELDS[detailType] ?? []).map(({ label, key }) => {
+              const value = detailItem[key];
+              if (value == null || value === '') return null;
+
+              return (
+                <S.MobileDetailItem key={key}>
+                  <S.MobileDetailLabel>{label}</S.MobileDetailLabel>
+                  <S.MobileDetailValue>{String(value)}</S.MobileDetailValue>
+                </S.MobileDetailItem>
+              );
+            })}
+          </S.MobileDetailGrid>
+        </MobileCard>
+      </S.MobileSectionStack>
+    ) : null;
+
+  const mobileTagEntities = selectedTag ? (
+    entitiesLoading ? (
+      <MobileCard compact>
+        <S.MobileEmptyState>
+          <SpinLoading color="primary" />
+        </S.MobileEmptyState>
+      </MobileCard>
+    ) : !tagEntities ? (
+      <MobileCard compact>
+        <S.MobileEmptyState>Failed to load entities.</S.MobileEmptyState>
+      </MobileCard>
+    ) : totalEntities === 0 ? (
+      <MobileCard compact>
+        <S.MobileEmptyState>No entities have this tag yet.</S.MobileEmptyState>
+      </MobileCard>
+    ) : (
+      <S.MobileSectionStack>
+        {Object.entries(ENTITY_META).map(([key, meta]) => {
+          const items = ((tagEntities as any)[key] as any[]) ?? [];
+          if (!items.length) return null;
+
+          return (
+            <MobileCard compact key={key} title={<IconLabel icon={meta.icon}>{meta.label}</IconLabel>}>
+              <MobileList inset={false}>
+                {items.map((item) => {
+                  const preview = entityPreview(item);
+
+                  return (
+                    <MobileList.Item
+                      description={preview ? <S.MobileEntityPreview>{preview}</S.MobileEntityPreview> : undefined}
+                      key={item.id}
+                      onClick={() => {
+                        setDetailType(key);
+                        setDetailItem(item);
+                      }}
+                    >
+                      {entityTitle(item)}
+                    </MobileList.Item>
+                  );
+                })}
+              </MobileList>
+            </MobileCard>
+          );
+        })}
+      </S.MobileSectionStack>
+    )
+  ) : null;
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>Tags</PageTitle>
+
+        <MobilePageScaffold
+          actions={
+            isGM ? (
+              <AdmMobileButton color="primary" onClick={() => setCreating(true)} size="small">
+                <AddOutline fontSize={17} /> New tag
+              </AdmMobileButton>
+            ) : null
+          }
+          filters={<MobileSearchBar inset={false} onChange={setSearch} placeholder="Search tags..." value={search} />}
+          meta={
+            <S.MobileMetaTags>
+              <AdmMobileTag fill="outline" round>
+                {tags.length} tags
+              </AdmMobileTag>
+              {selectedTag ? (
+                <AdmMobileTag color="primary" fill="outline" round>
+                  {selectedTag.name}
+                </AdmMobileTag>
+              ) : null}
+            </S.MobileMetaTags>
+          }
+          subtitle="Browse campaign labels and inspect every linked entity from mobile."
+          title={<IconLabel icon="tags">Tags</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                <SpinLoading color="primary" />
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : !filtered.length ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>No tags found.</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileTagsGrid>
+              {filtered.map((tag) => (
+                <MobileCard compact key={tag.id}>
+                  <S.MobileTagBody>
+                    <S.MobileTagHeader>
+                      <S.MobileTagIdentity>
+                        <S.MobileMetaTags>
+                          <S.MobileColorDot $color={tag.color} />
+                          <AdmMobileTag fill="outline" round>
+                            #{tag.id}
+                          </AdmMobileTag>
+                        </S.MobileMetaTags>
+                        <S.MobileTagName>{tag.name}</S.MobileTagName>
+                      </S.MobileTagIdentity>
+                    </S.MobileTagHeader>
+
+                    <S.MobileTagActions>
+                      <AdmMobileButton block color="primary" onClick={() => void loadTagEntities(tag)}>
+                        Open tag
+                      </AdmMobileButton>
+                      {isGM ? (
+                        <AdmMobileButton block fill="outline" onClick={() => startEdit(tag)}>
+                          <EditSOutline fontSize={17} /> Edit
+                        </AdmMobileButton>
+                      ) : (
+                        <AdmMobileButton block fill="outline" onClick={() => void loadTagEntities(tag)}>
+                          Entities
+                        </AdmMobileButton>
+                      )}
+                    </S.MobileTagActions>
+                  </S.MobileTagBody>
+                </MobileCard>
+              ))}
+            </S.MobileTagsGrid>
+          )}
+        </MobilePageScaffold>
+
+        <MobileEntitySheet
+          description={selectedTag ? `Linked entities for ${selectedTag.name}.` : undefined}
+          onClose={() => {
+            setSelectedTag(null);
+            setTagEntities(null);
+          }}
+          subtitle={selectedTag ? `${totalEntities} linked entities` : undefined}
+          title={selectedTag?.name ?? 'Tag'}
+          visible={Boolean(selectedTag)}
+        >
+          {mobileTagEntities}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Create a reusable campaign label."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" loading={creatingTag} onClick={() => void handleCreate()}>
+                  Create tag
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setCreating(false);
+                    resetCreateForm();
+                  }}
+                >
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => {
+            setCreating(false);
+            resetCreateForm();
+          }}
+          subtitle="GM only"
+          title="New tag"
+          visible={creating && isGM}
+        >
+          <MobileCard compact title="Tag details">
+            <MobileForm>
+              <MobileForm.Item label="Name">
+                <AdmMobileInput
+                  clearable
+                  onChange={setNewName}
+                  placeholder="Faction, planet, mystery..."
+                  value={newName}
+                />
+              </MobileForm.Item>
+              <MobileForm.Item label="Color">
+                <S.MobileColorField>
+                  <S.MobileColorInput
+                    onChange={(event) => setNewColor(event.target.value)}
+                    type="color"
+                    value={newColor}
+                  />
+                  <AdmMobileTag fill="outline" round>
+                    {newName || 'preview'}
+                  </AdmMobileTag>
+                </S.MobileColorField>
+              </MobileForm.Item>
+            </MobileForm>
+          </MobileCard>
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description={editingTag ? `Update ${editingTag.name}.` : undefined}
+          footer={
+            editingTag ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton block color="primary" onClick={() => void saveEdit(editingTag)}>
+                    Save changes
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={cancelEdit}>
+                    Cancel
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={cancelEdit}
+          subtitle="GM only"
+          title="Edit tag"
+          visible={Boolean(editingTag) && isGM}
+        >
+          <MobileCard compact title="Tag details">
+            <MobileForm>
+              <MobileForm.Item label="Name">
+                <AdmMobileInput clearable onChange={setEditName} placeholder="Tag name" value={editName} />
+              </MobileForm.Item>
+              <MobileForm.Item label="Color">
+                <S.MobileColorField>
+                  <S.MobileColorInput
+                    onChange={(event) => setEditColor(event.target.value)}
+                    type="color"
+                    value={editColor}
+                  />
+                  <AdmMobileTag fill="outline" round>
+                    {editName || 'preview'}
+                  </AdmMobileTag>
+                </S.MobileColorField>
+              </MobileForm.Item>
+            </MobileForm>
+          </MobileCard>
+
+          {editingTag ? (
+            <MobileCard compact title="Danger zone">
+              <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteTarget(editingTag)}>
+                <DeleteOutline fontSize={17} /> Delete tag
+              </AdmMobileButton>
+            </MobileCard>
+          ) : null}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description={detailType ? ENTITY_META[detailType]?.label : undefined}
+          onClose={() => {
+            setDetailType(null);
+            setDetailItem(null);
+          }}
+          title={detailItem ? entityTitle(detailItem) : 'Entity'}
+          visible={Boolean(detailItem)}
+        >
+          {mobileEntityDetail}
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteTarget(null),
+            },
+            {
+              key: 'delete',
+              text: 'Delete tag',
+              bold: true,
+              danger: true,
+              onClick: () => {
+                if (deleteTarget) {
+                  return handleDelete(deleteTarget);
+                }
+              },
+            },
+          ]}
+          content={deleteTarget ? `Delete "${deleteTarget.name}"? It will be removed from all entities.` : ''}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete tag?"
+          visible={Boolean(deleteTarget)}
+        />
+      </>
+    );
+  }
 
   return (
     <>
       <PageTitle>Tags</PageTitle>
+
       <EntityDetailModal
         entityType={detailType}
         item={detailItem}
@@ -282,56 +642,51 @@ export const TagsPage: React.FC = () => {
         }}
       />
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: mobileOnly ? '1fr' : 'minmax(280px,360px) 1fr',
-          gap: 16,
-          alignItems: 'start',
-        }}
-      >
-        {/* ── Left: tag list ──────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={S.layoutGrid(mobileOnly)}>
+        <div style={S.sidebarColumn}>
           <Card density="dense">
             <Space direction="vertical" size={10} style={w100}>
               <Typography.Title level={4} style={m0}>
-                🏷️ Tags
+                <IconLabel icon="tags">Tags</IconLabel>
               </Typography.Title>
-              <Typography.Text type="secondary" style={textMd}>
+              <Typography.Text style={textMd} type="secondary">
                 Click a tag to see all entities with that label.
               </Typography.Text>
-              <Input allowClear placeholder="Search tags…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input
+                allowClear
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search tags..."
+                value={search}
+              />
             </Space>
           </Card>
 
           {isGM && (
-            <Card density="dense" title="➕ New Tag">
-              <form onSubmit={(e) => void handleCreate(e)}>
+            <Card density="dense" title={<IconLabel icon="add">New Tag</IconLabel>}>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleCreate();
+                }}
+              >
                 <Space direction="vertical" size={8} style={w100}>
                   <Input
+                    onChange={(event) => setNewName(event.target.value)}
                     placeholder="Tag name *"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
                     required
+                    value={newName}
                   />
                   <Space size={8}>
                     <Typography.Text style={textSm}>Color:</Typography.Text>
                     <input
+                      onChange={(event) => setNewColor(event.target.value)}
+                      style={S.colorInput}
                       type="color"
                       value={newColor}
-                      onChange={(e) => setNewColor(e.target.value)}
-                      style={{
-                        width: 36,
-                        height: 28,
-                        padding: 2,
-                        border: '1px solid #d9d9d9',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                      }}
                     />
                     <Tag color={newColor}>{newName || 'preview'}</Tag>
                   </Space>
-                  <Button type="primary" htmlType="submit" loading={creating} block>
+                  <Button block htmlType="submit" loading={creatingTag} type="primary">
                     Create Tag
                   </Button>
                 </Space>
@@ -349,87 +704,63 @@ export const TagsPage: React.FC = () => {
                 {filtered.map((tag) => (
                   <div
                     key={tag.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '6px 8px',
-                      borderRadius: 6,
-                      cursor: 'pointer',
-                      background: selectedTag?.id === tag.id ? 'rgba(22,119,255,0.08)' : 'transparent',
-                      transition: 'background 0.15s',
-                    }}
                     onClick={() => void loadTagEntities(tag)}
+                    style={S.selectedTagRow(selectedTag?.id === tag.id)}
                   >
                     {editingId === tag.id ? (
                       <>
                         <input
+                          onChange={(event) => setEditColor(event.target.value)}
+                          style={S.editColorInput}
                           type="color"
                           value={editColor}
-                          onChange={(e) => setEditColor(e.target.value)}
-                          style={{
-                            width: 28,
-                            height: 22,
-                            padding: 1,
-                            border: '1px solid #d9d9d9',
-                            borderRadius: 4,
-                            cursor: 'pointer',
-                          }}
                         />
                         <input
-                          style={{
-                            flex: 1,
-                            padding: '2px 6px',
-                            border: '1px solid #d9d9d9',
-                            borderRadius: 4,
-                            background: 'transparent',
-                            color: 'inherit',
-                            fontSize: 13,
-                          }}
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void saveEdit(tag);
-                            if (e.key === 'Escape') setEditingId(null);
-                          }}
                           autoFocus
-                          onClick={(e) => e.stopPropagation()}
+                          onChange={(event) => setEditName(event.target.value)}
+                          onClick={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') void saveEdit(tag);
+                            if (event.key === 'Escape') cancelEdit();
+                          }}
+                          style={S.editNameInput}
+                          value={editName}
                         />
                         <Button
-                          size="small"
-                          type="primary"
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={(event) => {
+                            event.stopPropagation();
                             void saveEdit(tag);
                           }}
+                          size="small"
+                          type="primary"
                         >
-                          ✓
+                          Save
                         </Button>
                         <Button
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingId(null);
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            cancelEdit();
                           }}
+                          size="small"
                         >
-                          ✕
+                          Cancel
                         </Button>
                       </>
                     ) : (
                       <>
-                        <Tag color={tag.color} icon={<TagOutlined />} style={{ margin: 0, flex: 1 }}>
+                        <Tag color={tag.color} icon={<TagOutlined />} style={S.selectedTagChip}>
                           {tag.name}
                         </Tag>
                         {isGM && (
-                          <Space size={4} onClick={(e) => e.stopPropagation()}>
-                            <Button size="small" icon={<EditOutlined />} onClick={() => startEdit(tag)} />
+                          <Space onClick={(event) => event.stopPropagation()} size={4}>
+                            <Button icon={<EditOutlined />} onClick={() => startEdit(tag)} size="small" />
                             <Popconfirm
-                              title={`Delete tag "${tag.name}"? It will be removed from all entities.`}
-                              okText="Delete"
                               cancelText="Cancel"
-                              onConfirm={() => void handleDelete(tag.id)}
+                              okText="Delete"
+                              onConfirm={() => void handleDelete(tag)}
+                              title={`Delete tag "${tag.name}"? It will be removed from all entities.`}
                             >
-                              <Button size="small" danger icon={<DeleteOutlined />} />
+                              <Button danger icon={<DeleteOutlined />} size="small" />
                             </Popconfirm>
                           </Space>
                         )}
@@ -442,22 +773,21 @@ export const TagsPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* ── Right: entities with selected tag ──────────────────────────── */}
-        <Card density="dense" style={{ minHeight: 200 }}>
+        <Card density="dense" style={S.detailCard}>
           {!selectedTag ? (
-            <div style={{ padding: '40px 0', textAlign: 'center' }}>
-              <TagOutlined style={{ fontSize: 48, opacity: 0.2 }} />
-              <div style={{ marginTop: 12, color: '#8c8c8c' }}>Select a tag to see its entities</div>
+            <div style={S.emptySelection}>
+              <TagOutlined style={S.emptySelectionIcon} />
+              <div style={S.emptySelectionText}>Select a tag to see its entities</div>
             </div>
           ) : (
             <Space direction="vertical" size={16} style={w100}>
               <Space size={8} style={spaceBetween} wrap>
                 <Space size={8}>
-                  <Tag color={selectedTag.color} style={{ fontSize: 14, padding: '4px 12px' }}>
+                  <Tag color={selectedTag.color} style={S.selectedTagPill}>
                     <TagOutlined /> {selectedTag.name}
                   </Tag>
                   {!entitiesLoading && tagEntities && (
-                    <Typography.Text type="secondary" style={textSm}>
+                    <Typography.Text style={textSm} type="secondary">
                       {totalEntities} {totalEntities === 1 ? 'entity' : 'entities'}
                     </Typography.Text>
                   )}
@@ -467,7 +797,7 @@ export const TagsPage: React.FC = () => {
               <Divider style={m0} />
 
               {entitiesLoading ? (
-                <div style={{ textAlign: 'center', padding: 40 }}>
+                <div style={S.loadingState}>
                   <Spin size="large" />
                 </div>
               ) : !tagEntities ? (
@@ -476,14 +806,14 @@ export const TagsPage: React.FC = () => {
                 <Empty description="No entities have this tag yet." />
               ) : (
                 <Space direction="vertical" size={16} style={w100}>
-                  {Object.entries(ENTITY_LABELS).map(([key, label]) => {
+                  {Object.entries(ENTITY_META).map(([key, meta]) => {
                     const items = (tagEntities as any)[key] as any[];
                     return (
                       <EntityGroup
-                        key={key}
-                        label={label}
                         entityType={key}
                         items={items ?? []}
+                        key={key}
+                        label={<IconLabel icon={meta.icon}>{meta.label}</IconLabel>}
                         onSelect={(type, item) => {
                           setDetailType(type);
                           setDetailItem(item);

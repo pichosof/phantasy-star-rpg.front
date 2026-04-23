@@ -1,28 +1,38 @@
 import React from 'react';
-import {
-  Divider,
-  Drawer,
-  Empty,
-  Form,
-  Input,
-  Popconfirm,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  Typography,
-  Upload,
-  message,
-} from 'antd';
+import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tag, Typography, Upload, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
+import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  SpinLoading,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import { AddOutline, DeleteOutline, FilterOutline, PictureOutline, SetOutline } from 'antd-mobile-icons';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { Table } from '@app/components/common/Table/Table';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+  MobileTabs,
+} from '@app/components/common/mobile';
+import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
 
@@ -43,13 +53,13 @@ import {
   tableWrap,
   cardGrid2,
   imgCoverH,
-  imgThumb,
   preWrap,
 } from '@app/styles/styleUtils';
-
-const GM_KEY_STORAGE = 'gm_api_key';
+import * as S from './BestiaryPage.styles';
 
 type ViewMode = 'players' | 'gm';
+type VisibilityFilter = 'all' | 'visible' | 'hidden';
+type MonsterSheetTab = 'overview' | 'gm';
 
 const TYPE_COLORS: Record<string, string> = {
   doméstico: 'blue',
@@ -68,6 +78,15 @@ function typeColor(type?: string | null) {
   if (!type) return 'default';
   const key = type.toLowerCase();
   return TYPE_COLORS[key] ?? 'default';
+}
+
+function mobileTypeColor(type?: string | null): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
+  const color = typeColor(type);
+  if (color === 'red' || color === 'volcano') return 'danger';
+  if (color === 'green' || color === 'lime') return 'success';
+  if (color === 'gold' || color === 'orange') return 'warning';
+  if (color === 'default') return 'default';
+  return 'primary';
 }
 
 function isVisible(m: Monster) {
@@ -166,9 +185,9 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 520}
+      size={mobileOnly ? '100%' : 520}
       title={
         monster ? (
           <Space size={8} wrap>
@@ -187,7 +206,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
       {monster ? (
         <Tabs defaultActiveKey="edit">
           <Tabs.TabPane tab="Edit" key="edit">
-            <Form layout="vertical" style={{ gap: 0 }}>
+            <Form layout="vertical" style={S.formCompact}>
               <Form.Item label="Name" required>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
               </Form.Item>
@@ -216,7 +235,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   placeholder="Full description for players…"
                 />
               </Form.Item>
-              <Form.Item label="🏷️ Tags">
+              <Form.Item label={<IconLabel icon="tags">Tags</IconLabel>}>
                 <TagSelect entityType="beast" entityId={monster.id} />
               </Form.Item>
               <Space>
@@ -231,9 +250,9 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="Image" key="image">
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {monster.imageUrl && (
-                <div style={{ ...imgThumb, maxHeight: 220 }}>
+                <div style={S.drawerImagePreview}>
                   <img
                     src={resolveApiUrl(monster.imageUrl)}
                     alt={monster.imageAlt ?? monster.name}
@@ -241,7 +260,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
                   />
                 </div>
               )}
-              <Form.Item label="Image alt text" style={{ marginBottom: 8 }}>
+              <Form.Item label="Image alt text" style={S.drawerImageFormItem}>
                 <Input value={imgAlt} onChange={(e) => setImgAlt(e.target.value)} placeholder={monster.name} />
               </Form.Item>
               <Upload {...uploadProps}>
@@ -251,7 +270,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
           </Tabs.TabPane>
 
           <Tabs.TabPane tab="Controls" key="controls">
-            <Space direction="vertical" size={16} style={w100}>
+            <Space orientation="vertical" size={16} style={w100}>
               <Space style={spaceBetween}>
                 <div>
                   <Typography.Text>Visible to players</Typography.Text>
@@ -298,17 +317,19 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
 
 export const BestiaryPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
+  const isGM = useGMMode();
+  const imageInputRef = React.useRef<HTMLInputElement | null>(null);
+  const initialViewModeSyncedRef = React.useRef(false);
 
   const [items, setItems] = React.useState<Monster[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   const [search, setSearch] = React.useState('');
-  const [filterVis, setFilterVis] = React.useState<'all' | 'visible' | 'hidden'>('all');
+  const [filterVis, setFilterVis] = React.useState<VisibilityFilter>('all');
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
 
-  const [isGM, setIsGM] = React.useState(() => Boolean(localStorage.getItem(GM_KEY_STORAGE)));
-  const [viewMode, setViewMode] = React.useState<ViewMode>(() =>
-    Boolean(localStorage.getItem(GM_KEY_STORAGE)) ? 'gm' : 'players',
-  );
+  const [viewMode, setViewMode] = React.useState<ViewMode>('players');
+  const [monsterSheetTab, setMonsterSheetTab] = React.useState<MonsterSheetTab>('overview');
 
   const [openId, setOpenId] = React.useState<number | null>(null);
   const openMonster = React.useMemo(() => items.find((x) => x.id === openId) ?? null, [items, openId]);
@@ -325,18 +346,40 @@ export const BestiaryPage: React.FC = () => {
   const [newType, setNewType] = React.useState('');
   const [newHabitat, setNewHabitat] = React.useState('');
   const [newDesc, setNewDesc] = React.useState('');
+  const [creatingMonster, setCreatingMonster] = React.useState(false);
+
+  const [mobileName, setMobileName] = React.useState('');
+  const [mobileType, setMobileType] = React.useState('');
+  const [mobileHabitat, setMobileHabitat] = React.useState('');
+  const [mobileWeaknesses, setMobileWeaknesses] = React.useState('');
+  const [mobileDesc, setMobileDesc] = React.useState('');
+  const [mobileImgAlt, setMobileImgAlt] = React.useState('');
+  const [mobileSaving, setMobileSaving] = React.useState(false);
+  const [mobileUploadingImage, setMobileUploadingImage] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === GM_KEY_STORAGE) {
-        const gm = Boolean(e.newValue);
-        setIsGM(gm);
-        setViewMode(gm ? 'gm' : 'players');
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+    if (!initialViewModeSyncedRef.current) {
+      initialViewModeSyncedRef.current = true;
+      if (isGM) setViewMode('gm');
+    }
+
+    if (!isGM) {
+      setViewMode('players');
+      setFilterVis('all');
+      setMonsterSheetTab('overview');
+    }
+  }, [isGM]);
+
+  React.useEffect(() => {
+    if (!openMonster) return;
+    setMobileName(openMonster.name ?? '');
+    setMobileType(openMonster.type ?? '');
+    setMobileHabitat(openMonster.habitat ?? '');
+    setMobileWeaknesses(openMonster.weaknesses ?? '');
+    setMobileDesc(openMonster.description ?? '');
+    setMobileImgAlt(openMonster.imageAlt ?? '');
+  }, [openMonster]);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -420,16 +463,29 @@ export const BestiaryPage: React.FC = () => {
     try {
       await BestiaryApi.remove(id);
       setItems((prev) => prev.filter((x) => x.id !== id));
+      if (openId === id) setOpenId(null);
+      if (adminId === id) {
+        setAdminId(null);
+        setAdminOpen(false);
+      }
+      setDeleteDialogOpen(false);
       message.success('Monster deleted');
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to delete monster'));
     }
   }
 
-  async function onCreate(e: React.FormEvent) {
-    e.preventDefault();
+  function resetCreateForm() {
+    setNewName('');
+    setNewType('');
+    setNewHabitat('');
+    setNewDesc('');
+  }
+
+  async function createMonster() {
     const n = newName.trim();
     if (!n) return message.warning('Name is required');
+    setCreatingMonster(true);
     try {
       await BestiaryApi.create({
         name: n,
@@ -438,25 +494,607 @@ export const BestiaryPage: React.FC = () => {
         description: newDesc.trim() || null,
       });
       setCreating(false);
-      setNewName('');
-      setNewType('');
-      setNewHabitat('');
-      setNewDesc('');
+      resetCreateForm();
       await load();
       message.success('Monster created');
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to create monster'));
+    } finally {
+      setCreatingMonster(false);
+    }
+  }
+
+  async function onCreate(e: React.FormEvent) {
+    e.preventDefault();
+    await createMonster();
+  }
+
+  async function saveMobileMonster() {
+    if (!openMonster) return;
+    const n = mobileName.trim();
+    if (!n) {
+      message.warning('Name is required');
+      return;
+    }
+
+    setMobileSaving(true);
+    try {
+      await BestiaryApi.update(openMonster.id, {
+        name: n,
+        type: mobileType.trim() || null,
+        habitat: mobileHabitat.trim() || null,
+        weaknesses: mobileWeaknesses.trim() || null,
+        description: mobileDesc.trim() || null,
+      });
+      await load();
+      message.success('Monster updated');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save monster'));
+    } finally {
+      setMobileSaving(false);
+    }
+  }
+
+  async function uploadMobileMonsterImage(file: File) {
+    if (!openMonster) return;
+    setMobileUploadingImage(true);
+    try {
+      await BestiaryApi.uploadImage(openMonster.id, file, mobileImgAlt || undefined);
+      await load();
+      message.success('Image uploaded');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Upload failed'));
+    } finally {
+      setMobileUploadingImage(false);
     }
   }
 
   // ── Header ────────────────────────────────────────────────────────────────
+  function resetMobileDraft() {
+    if (!openMonster) return;
+    setMobileName(openMonster.name ?? '');
+    setMobileType(openMonster.type ?? '');
+    setMobileHabitat(openMonster.habitat ?? '');
+    setMobileWeaknesses(openMonster.weaknesses ?? '');
+    setMobileDesc(openMonster.description ?? '');
+    setMobileImgAlt(openMonster.imageAlt ?? '');
+  }
+
+  const mobileItems = viewMode === 'gm' && isGM ? gmItems : playerItems;
+  const mobileCanReadOpen = Boolean(openMonster && (openMonster.discovered || (isGM && viewMode === 'gm')));
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar inset={false} onChange={setSearch} placeholder="Search creatures..." value={search} />
+      {isGM ? (
+        <S.MobileFilterRow>
+          <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+            <FilterOutline fontSize={16} /> Filters
+          </AdmMobileButton>
+          <AdmMobileButton color="primary" onClick={() => setCreating(true)} size="small">
+            <AddOutline fontSize={16} /> New creature
+          </AdmMobileButton>
+        </S.MobileFilterRow>
+      ) : null}
+    </>
+  );
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {stats.total} creatures
+      </AdmMobileTag>
+      {isGM ? (
+        <>
+          <AdmMobileTag color="success" fill="outline" round>
+            {stats.visible} visible
+          </AdmMobileTag>
+          <AdmMobileTag color="warning" fill="outline" round>
+            {stats.discovered} discovered
+          </AdmMobileTag>
+        </>
+      ) : null}
+    </S.MobileMetaTags>
+  );
+
+  const mobileMonsterOverview = openMonster ? (
+    <S.MobileSectionStack>
+      <MobileCard compact>
+        <S.MobileMonsterHero>
+          {mobileCanReadOpen && openMonster.imageUrl ? (
+            <S.MobileMonsterImage
+              alt={openMonster.imageAlt ?? openMonster.name}
+              src={resolveApiUrl(openMonster.imageUrl)}
+            />
+          ) : (
+            <S.MobileMonsterFallback>
+              <AppIcon name="beast" size={44} />
+            </S.MobileMonsterFallback>
+          )}
+        </S.MobileMonsterHero>
+        <S.MobileMonsterInfo>
+          <S.MobileMonsterTitle>{openMonster.name}</S.MobileMonsterTitle>
+          <S.MobileMetaTags>
+            {openMonster.type ? (
+              <AdmMobileTag color={mobileTypeColor(openMonster.type)} fill="outline" round>
+                {openMonster.type}
+              </AdmMobileTag>
+            ) : null}
+            {openMonster.habitat ? (
+              <AdmMobileTag fill="outline" round>
+                {openMonster.habitat}
+              </AdmMobileTag>
+            ) : null}
+            {isGM ? (
+              <AdmMobileTag color={isVisible(openMonster) ? 'success' : 'danger'} fill="outline" round>
+                {isVisible(openMonster) ? 'Visible' : 'Hidden'}
+              </AdmMobileTag>
+            ) : null}
+            <AdmMobileTag color={openMonster.discovered ? 'warning' : 'default'} fill="outline" round>
+              {openMonster.discovered ? 'Discovered' : 'Unknown'}
+            </AdmMobileTag>
+          </S.MobileMetaTags>
+        </S.MobileMonsterInfo>
+      </MobileCard>
+
+      {mobileCanReadOpen ? (
+        <>
+          <MobileCard compact title="Creature Details">
+            <S.MobileDetailGrid>
+              <S.MobileDetailItem>
+                <S.MobileDetailLabel>Habitat</S.MobileDetailLabel>
+                <S.MobileDetailValue>{openMonster.habitat || 'Unknown'}</S.MobileDetailValue>
+              </S.MobileDetailItem>
+              <S.MobileDetailItem>
+                <S.MobileDetailLabel>Weaknesses / Behavior</S.MobileDetailLabel>
+                <S.MobileDetailValue>{openMonster.weaknesses || 'Not documented yet.'}</S.MobileDetailValue>
+              </S.MobileDetailItem>
+            </S.MobileDetailGrid>
+          </MobileCard>
+
+          <MobileCard compact title="Description">
+            <S.MobileBodyText>{openMonster.description?.trim() || 'No description yet.'}</S.MobileBodyText>
+          </MobileCard>
+        </>
+      ) : (
+        <MobileCard compact title="Unknown creature">
+          <S.MobileBodyText>Information about this creature has not been revealed yet.</S.MobileBodyText>
+        </MobileCard>
+      )}
+    </S.MobileSectionStack>
+  ) : null;
+
+  const mobileMonsterGM = openMonster ? (
+    <S.MobileSectionStack>
+      <MobileCard compact title="Profile">
+        <MobileForm>
+          <MobileForm.Item label="Name">
+            <AdmMobileInput clearable onChange={setMobileName} placeholder="Creature name" value={mobileName} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Type">
+            <AdmMobileInput
+              clearable
+              onChange={setMobileType}
+              placeholder="Predator, swarm, flora..."
+              value={mobileType}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="Habitat">
+            <AdmMobileInput
+              clearable
+              onChange={setMobileHabitat}
+              placeholder="Dunes, caves, aquifers..."
+              value={mobileHabitat}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="Weaknesses / Behavior">
+            <AdmMobileTextArea
+              autoSize={{ minRows: 3, maxRows: 6 }}
+              onChange={setMobileWeaknesses}
+              placeholder="Fire, sound, pack behavior..."
+              value={mobileWeaknesses}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="Description">
+            <AdmMobileTextArea
+              autoSize={{ minRows: 4, maxRows: 8 }}
+              onChange={setMobileDesc}
+              placeholder="Full player-facing description"
+              value={mobileDesc}
+            />
+          </MobileForm.Item>
+        </MobileForm>
+      </MobileCard>
+
+      <MobileCard compact title="Visibility">
+        <S.MobileVisibilityRow>
+          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
+          <AdmMobileSwitch checked={isVisible(openMonster)} onChange={() => void toggleVisible(openMonster)} />
+        </S.MobileVisibilityRow>
+        <S.MobileVisibilityRow>
+          <S.MobileInlineLabel>Marked as discovered</S.MobileInlineLabel>
+          <AdmMobileSwitch checked={openMonster.discovered} onChange={() => void toggleDiscovered(openMonster)} />
+        </S.MobileVisibilityRow>
+      </MobileCard>
+
+      <MobileCard compact title="Image">
+        <S.MobileUploadStack>
+          <S.MobileFieldLabel htmlFor={`monster-image-alt-${openMonster.id}`}>Image alt text</S.MobileFieldLabel>
+          <AdmMobileInput
+            clearable
+            id={`monster-image-alt-${openMonster.id}`}
+            onChange={setMobileImgAlt}
+            placeholder="Describe the creature image"
+            value={mobileImgAlt}
+          />
+          <AdmMobileButton
+            block
+            fill="outline"
+            loading={mobileUploadingImage}
+            onClick={() => imageInputRef.current?.click()}
+          >
+            <PictureOutline fontSize={17} /> {openMonster.imageUrl ? 'Change image' : 'Upload image'}
+          </AdmMobileButton>
+        </S.MobileUploadStack>
+      </MobileCard>
+
+      <MobileCard compact title="Tags">
+        <TagSelect entityId={openMonster.id} entityType="beast" />
+      </MobileCard>
+
+      <MobileCard compact title="Danger Zone">
+        <S.MobileDangerZone>
+          <S.MobileBodyText>Deleting a creature removes it from the bestiary permanently.</S.MobileBodyText>
+          <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteDialogOpen(true)}>
+            <DeleteOutline fontSize={17} /> Delete creature
+          </AdmMobileButton>
+        </S.MobileDangerZone>
+      </MobileCard>
+    </S.MobileSectionStack>
+  ) : null;
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>Bestiary</PageTitle>
+
+        <MobilePageScaffold
+          actions={
+            isGM ? (
+              <S.MobileFilterRow>
+                <AdmMobileButton
+                  fill={viewMode === 'players' ? 'solid' : 'outline'}
+                  onClick={() => setViewMode('players')}
+                  size="small"
+                >
+                  <IconLabel icon="read" iconSize={16}>
+                    View
+                  </IconLabel>
+                </AdmMobileButton>
+                <AdmMobileButton
+                  color="primary"
+                  fill={viewMode === 'gm' ? 'solid' : 'outline'}
+                  onClick={() => setViewMode('gm')}
+                  size="small"
+                >
+                  <SetOutline fontSize={16} /> GM
+                </AdmMobileButton>
+              </S.MobileFilterRow>
+            ) : null
+          }
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle={
+            isGM
+              ? 'Manage discovery, visibility, images and lore-safe creature cards.'
+              : 'Creatures of Motavia, revealed as the campaign discovers them.'
+          }
+          title={<IconLabel icon="beast">Bestiary</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                <SpinLoading color="primary" />
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : !mobileItems.length ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>No creatures found.</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileBestiaryGrid>
+              {mobileItems.map((monster) => {
+                const gmPanel = isGM && viewMode === 'gm';
+                const canRead = monster.discovered || gmPanel;
+
+                return (
+                  <MobileCard compact key={monster.id}>
+                    <S.MobileMonsterCardBody>
+                      <S.MobileMonsterCardMedia>
+                        {canRead && monster.imageUrl ? (
+                          <S.MobileMonsterCardImage
+                            alt={monster.imageAlt ?? monster.name}
+                            src={resolveApiUrl(monster.imageUrl)}
+                          />
+                        ) : (
+                          <S.MobileMonsterFallback>
+                            <AppIcon name="beast" size={38} />
+                          </S.MobileMonsterFallback>
+                        )}
+                      </S.MobileMonsterCardMedia>
+
+                      <S.MobileMonsterTitle>{monster.name}</S.MobileMonsterTitle>
+                      <S.MobileMetaTags>
+                        {monster.type ? (
+                          <AdmMobileTag color={mobileTypeColor(monster.type)} fill="outline" round>
+                            {monster.type}
+                          </AdmMobileTag>
+                        ) : null}
+                        {monster.habitat ? (
+                          <AdmMobileTag fill="outline" round>
+                            {monster.habitat}
+                          </AdmMobileTag>
+                        ) : null}
+                        {gmPanel ? (
+                          <AdmMobileTag color={isVisible(monster) ? 'success' : 'danger'} fill="outline" round>
+                            {isVisible(monster) ? 'Visible' : 'Hidden'}
+                          </AdmMobileTag>
+                        ) : null}
+                      </S.MobileMetaTags>
+
+                      <S.MobileMonsterPreview>
+                        {canRead ? monster.description?.trim() || 'No description yet.' : 'Information unavailable.'}
+                      </S.MobileMonsterPreview>
+
+                      <S.MobileActionGrid>
+                        <AdmMobileButton
+                          block
+                          color="primary"
+                          onClick={() => {
+                            setMonsterSheetTab('overview');
+                            setOpenId(monster.id);
+                          }}
+                        >
+                          Open entry
+                        </AdmMobileButton>
+                        {gmPanel ? (
+                          <AdmMobileButton
+                            block
+                            fill="outline"
+                            onClick={() => {
+                              setMonsterSheetTab('gm');
+                              setOpenId(monster.id);
+                            }}
+                          >
+                            <SetOutline fontSize={17} /> GM controls
+                          </AdmMobileButton>
+                        ) : null}
+                      </S.MobileActionGrid>
+                    </S.MobileMonsterCardBody>
+                  </MobileCard>
+                );
+              })}
+            </S.MobileBestiaryGrid>
+          )}
+        </MobilePageScaffold>
+
+        {isGM ? (
+          <MobileFilterSheet
+            description="Switch panels and filter what the GM list should show."
+            footer={
+              <MobileActionBar sticky={false}>
+                <AdmMobileButton block color="primary" onClick={() => setFilterSheetOpen(false)}>
+                  Done
+                </AdmMobileButton>
+              </MobileActionBar>
+            }
+            onClose={() => setFilterSheetOpen(false)}
+            title="Bestiary filters"
+            visible={filterSheetOpen}
+          >
+            <S.MobileSectionStack>
+              <S.MobileCreateField>
+                <S.MobileFieldLabel>Panel</S.MobileFieldLabel>
+                <MobileSelector<ViewMode>
+                  columns={2}
+                  inset={false}
+                  onChange={(values) => setViewMode((values[0] as ViewMode | undefined) ?? 'players')}
+                  options={[
+                    { label: 'Bestiary', value: 'players' },
+                    { label: 'GM panel', value: 'gm' },
+                  ]}
+                  value={[viewMode]}
+                />
+              </S.MobileCreateField>
+
+              <S.MobileCreateField>
+                <S.MobileFieldLabel>Visibility</S.MobileFieldLabel>
+                <MobileSelector<VisibilityFilter>
+                  columns={3}
+                  inset={false}
+                  onChange={(values) => setFilterVis((values[0] as VisibilityFilter | undefined) ?? 'all')}
+                  options={[
+                    { label: 'All', value: 'all' },
+                    { label: 'Visible', value: 'visible' },
+                    { label: 'Hidden', value: 'hidden' },
+                  ]}
+                  value={[filterVis]}
+                />
+              </S.MobileCreateField>
+            </S.MobileSectionStack>
+          </MobileFilterSheet>
+        ) : null}
+
+        <MobileEntitySheet
+          description={
+            openMonster
+              ? mobileCanReadOpen
+                ? 'Creature profile and campaign-facing details.'
+                : 'This entry is still hidden from the party.'
+              : undefined
+          }
+          footer={
+            openMonster && isGM && monsterSheetTab === 'gm' ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton
+                    block
+                    color="primary"
+                    loading={mobileSaving}
+                    onClick={() => void saveMobileMonster()}
+                  >
+                    Save changes
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
+                    Reset
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={() => {
+            setOpenId(null);
+            setMonsterSheetTab('overview');
+          }}
+          subtitle={openMonster?.type ?? undefined}
+          title={openMonster?.name ?? 'Creature'}
+          visible={Boolean(openMonster)}
+        >
+          {openMonster && isGM ? (
+            <MobileTabs
+              activeKey={monsterSheetTab}
+              items={[
+                { key: 'overview', title: 'Overview', children: mobileMonsterOverview },
+                { key: 'gm', title: 'GM', children: mobileMonsterGM },
+              ]}
+              onChange={(key) => setMonsterSheetTab(key as MonsterSheetTab)}
+            />
+          ) : (
+            mobileMonsterOverview
+          )}
+
+          <input
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                void uploadMobileMonsterImage(file);
+                event.currentTarget.value = '';
+              }
+            }}
+            ref={imageInputRef}
+            type="file"
+          />
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Create a creature now, then add image and tags from GM controls."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" loading={creatingMonster} onClick={() => void createMonster()}>
+                  Create creature
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setCreating(false);
+                    resetCreateForm();
+                  }}
+                >
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => {
+            setCreating(false);
+            resetCreateForm();
+          }}
+          subtitle="GM only"
+          title="New creature"
+          visible={creating && isGM}
+        >
+          <MobileCard compact title="Creature details">
+            <MobileForm>
+              <MobileForm.Item label="Name">
+                <AdmMobileInput clearable onChange={setNewName} placeholder="Creature name" value={newName} />
+              </MobileForm.Item>
+              <MobileForm.Item label="Type">
+                <AdmMobileInput
+                  clearable
+                  onChange={setNewType}
+                  placeholder="Predator, domestic, swarm..."
+                  value={newType}
+                />
+              </MobileForm.Item>
+              <MobileForm.Item label="Habitat">
+                <AdmMobileInput
+                  clearable
+                  onChange={setNewHabitat}
+                  placeholder="Dunes, canyons, aquifers..."
+                  value={newHabitat}
+                />
+              </MobileForm.Item>
+              <MobileForm.Item label="Description">
+                <AdmMobileTextArea
+                  autoSize={{ minRows: 4, maxRows: 8 }}
+                  onChange={setNewDesc}
+                  placeholder="Initial description"
+                  value={newDesc}
+                />
+              </MobileForm.Item>
+            </MobileForm>
+          </MobileCard>
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteDialogOpen(false),
+            },
+            {
+              key: 'delete',
+              text: 'Delete creature',
+              danger: true,
+              bold: true,
+              onClick: () => {
+                if (openMonster) {
+                  return deleteMonster(openMonster.id);
+                }
+              },
+            },
+          ]}
+          content={openMonster ? `Delete "${openMonster.name}" permanently?` : ''}
+          onClose={() => setDeleteDialogOpen(false)}
+          title="Delete creature?"
+          visible={deleteDialogOpen}
+        />
+      </>
+    );
+  }
+
   const Header = (
     <Card density="dense" className="rpg-page-header-card">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space style={spaceBetween} size={8}>
           <div>
             <Typography.Title level={4} style={m0}>
-              {viewMode === 'gm' ? '⚙️ GM Panel — Bestiary' : 'Bestiary'}
+              {viewMode === 'gm' ? (
+                <IconLabel icon="gm">GM Panel - Bestiary</IconLabel>
+              ) : (
+                <IconLabel icon="beast">Bestiary</IconLabel>
+              )}
             </Typography.Title>
             <Typography.Text type="secondary" className="rpg-text-md">
               {viewMode === 'gm'
@@ -472,10 +1110,10 @@ export const BestiaryPage: React.FC = () => {
                   type={viewMode === 'players' ? 'primary' : 'default'}
                   onClick={() => setViewMode('players')}
                 >
-                  📖 Bestiary
+                  <IconLabel icon="read">Bestiary</IconLabel>
                 </Button>
                 <Button size="small" type={viewMode === 'gm' ? 'primary' : 'default'} onClick={() => setViewMode('gm')}>
-                  ⚙️ GM Panel
+                  <IconLabel icon="gm">GM Panel</IconLabel>
                 </Button>
               </Space>
             )}
@@ -501,7 +1139,7 @@ export const BestiaryPage: React.FC = () => {
             placeholder="Search creature…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 360 }}
+            style={S.searchField}
           />
           {isGM && viewMode === 'gm' && (
             <Space size={4}>
@@ -522,7 +1160,7 @@ export const BestiaryPage: React.FC = () => {
         {isGM && viewMode === 'gm' && creating && (
           <>
             <Divider style={dividerSm} />
-            <form onSubmit={(e) => void onCreate(e)} style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+            <form onSubmit={(e) => void onCreate(e)} style={S.createForm}>
               <Typography.Text strong>New Creature</Typography.Text>
               <Input placeholder="Name *" value={newName} onChange={(e) => setNewName(e.target.value)} required />
               <Input
@@ -608,14 +1246,8 @@ export const BestiaryPage: React.FC = () => {
               }
             >
               {mode === 'players' && playerCanRead && m.imageUrl && (
-                <div
-                  style={{ margin: '-12px -12px 12px', borderRadius: '8px 8px 0 0', overflow: 'hidden', height: 140 }}
-                >
-                  <img
-                    src={resolveApiUrl(m.imageUrl)}
-                    alt={m.imageAlt ?? m.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
+                <div style={S.monsterCardCover}>
+                  <img src={resolveApiUrl(m.imageUrl)} alt={m.imageAlt ?? m.name} style={S.monsterCardCoverImage} />
                 </div>
               )}
               <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
@@ -662,7 +1294,7 @@ export const BestiaryPage: React.FC = () => {
           rowKey="id"
           dataSource={gmItems}
           loading={loading}
-          style={{ minWidth: 1000 }}
+          style={S.adminTable}
           scroll={{ x: 1000 }}
           columns={[
             {
@@ -699,17 +1331,13 @@ export const BestiaryPage: React.FC = () => {
               key: 'name',
               width: 220,
               render: (_: unknown, m: Monster) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={6} wrap>
                     <Typography.Text strong>{m.name}</Typography.Text>
                     {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
                   </Space>
                   {m.habitat && (
-                    <Typography.Text
-                      type="secondary"
-                      className="rpg-text-sm"
-                      style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                    >
+                    <Typography.Text type="secondary" className="rpg-text-sm" style={S.habitatEllipsis}>
                       Habitat: {m.habitat}
                     </Typography.Text>
                   )}
@@ -765,7 +1393,7 @@ export const BestiaryPage: React.FC = () => {
           ]}
         />
       </div>
-      {!gmItems.length && !loading && <Empty description="No creatures found." style={{ marginTop: 16 }} />}
+      {!gmItems.length && !loading && <Empty description="No creatures found." style={S.emptyWithTopSpacing} />}
     </Card>
   );
 
@@ -794,9 +1422,9 @@ export const BestiaryPage: React.FC = () => {
           {loading ? <Spinner /> : <MonsterCards data={playerItems} mode="players" />}
 
           <Drawer
-            visible={openId !== null}
+            open={openId !== null}
             onClose={() => setOpenId(null)}
-            width={mobileOnly ? '100%' : 540}
+            size={mobileOnly ? '100%' : 540}
             title={
               openMonster ? (
                 <Space wrap size={8}>
@@ -809,7 +1437,7 @@ export const BestiaryPage: React.FC = () => {
             {openMonster && (
               <>
                 {openMonster.discovered && openMonster.imageUrl && (
-                  <div style={{ ...imgThumb, maxHeight: 240, marginBottom: 16 }}>
+                  <div style={S.publicDrawerImagePreview}>
                     <img
                       src={resolveApiUrl(openMonster.imageUrl)}
                       alt={openMonster.imageAlt ?? openMonster.name}
@@ -819,7 +1447,7 @@ export const BestiaryPage: React.FC = () => {
                 )}
 
                 {openMonster.discovered ? (
-                  <Space direction="vertical" size={12} style={w100}>
+                  <Space orientation="vertical" size={12} style={w100}>
                     {openMonster.habitat && (
                       <Card density="dense" title="Habitat">
                         <Typography.Text>{openMonster.habitat}</Typography.Text>

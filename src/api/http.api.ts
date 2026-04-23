@@ -3,6 +3,13 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/config';
 
 const KEY_STORAGE = 'gm_api_key';
+export const GM_MODE_CHANGE_EVENT = 'gm-mode-changed';
+
+function emitGMModeChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(GM_MODE_CHANGE_EVENT));
+  }
+}
 
 export const http = axios.create({
   baseURL: API_BASE_URL,
@@ -44,6 +51,7 @@ export async function loginGM(
     const { token } = res.data;
     localStorage.setItem(KEY_STORAGE, token);
     http.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    emitGMModeChange();
     return { success: true };
   } catch (err: any) {
     if (err?.response?.status === 429) {
@@ -61,6 +69,7 @@ export async function loginGM(
 export function logoutGM() {
   localStorage.removeItem(KEY_STORAGE);
   delete http.defaults.headers.common['Authorization'];
+  emitGMModeChange();
 }
 
 /** Restores the Authorization header from a stored valid token on page load. */
@@ -71,6 +80,7 @@ export function initGMKeyFromStorage() {
   } else if (token) {
     // Expired token — clear it so isGM checks return false
     localStorage.removeItem(KEY_STORAGE);
+    emitGMModeChange();
   }
 }
 
@@ -90,12 +100,12 @@ export async function fetchBlobUrl(relativeUrl: string): Promise<string> {
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem(KEY_STORAGE);
   if (token && isTokenValid(token)) {
-    (config.headers ??= {})['Authorization'] = `Bearer ${token}`;
+    config.headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const clientSecret = process.env.REACT_APP_CLIENT_SECRET;
+  const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
   if (clientSecret) {
-    (config.headers ??= {})['x-client-id'] = clientSecret;
+    config.headers.set('x-client-id', clientSecret);
   }
 
   return config;
@@ -116,8 +126,8 @@ const SIMULATE_PROD_KEY = 'dev_simulate_prod';
 };
 
 function isProdBehaviour(): boolean {
-  if (process.env.NODE_ENV !== 'development') return true;
-  if (process.env.REACT_APP_SIMULATE_PROD === 'true') return true;
+  if (!import.meta.env.DEV) return true;
+  if (import.meta.env.VITE_SIMULATE_PROD === 'true') return true;
   return localStorage.getItem(SIMULATE_PROD_KEY) === '1';
 }
 

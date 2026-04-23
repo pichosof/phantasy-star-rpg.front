@@ -39,25 +39,25 @@ export function apiErrorMessage(err: unknown, fallback = 'An error occurred.'): 
 }
 
 /**
- * Returns `{ message, description? }` ready to spread into notificationController.error().
+ * Returns `{ title, description? }` ready to spread into notificationController.error().
  * If there is both a label and a detail, the label becomes the title and the
  * detail becomes the description so the user sees the full context.
  */
 export function apiErrorNotification(
   err: unknown,
   fallback = 'An error occurred.',
-): { message: string; description?: string } {
-  if (!err || typeof err !== 'object') return { message: fallback };
+): { title: string; description?: string } {
+  if (!err || typeof err !== 'object') return { title: fallback };
 
   const data: Record<string, unknown> | undefined = (err as any)?.response?.data;
-  if (!data) return { message: (err as any)?.message ?? fallback };
+  if (!data) return { title: (err as any)?.message ?? fallback };
 
   const label = typeof data['error'] === 'string' ? data['error'] : '';
   const detail = apiErrorMessage(err, '');
 
   if (label && detail && detail !== label) {
-    return { message: label, description: detail };
+    return { title: label, description: detail };
   }
 
-  return { message: detail || label || fallback };
+  return { title: detail || label || fallback };
 }

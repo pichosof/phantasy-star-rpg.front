@@ -15,15 +15,47 @@ import {
   Space,
   Spin,
   Switch,
-  Tabs,
   Tag,
   Typography,
   Upload,
 } from 'antd';
 import type { UploadProps } from 'antd';
-import type { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
+import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
-import { m0, w100, textXs, textSm, bold800, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
+import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  SearchBar as AdmMobileSearchBar,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import {
+  ArrowsAltOutline,
+  CompassOutline,
+  EyeInvisibleOutline,
+  EyeOutline,
+  FilterOutline,
+  LocationFill,
+  PictureOutline,
+  SetOutline,
+} from 'antd-mobile-icons';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
+import { Tabs } from '@app/components/common/Tabs/Tabs';
+import { m0, w100, textXs, textSm, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+  MobileTabs,
+} from '@app/components/common/mobile';
 
 import {
   listWorlds,
@@ -51,6 +83,7 @@ import type { Quest } from '@app/api/quests.api';
 import { resolveApiUrl } from '@app/api/http.api';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { apiErrorMessage } from '../utils/api-error';
+import * as S from './MapPage.styles';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -190,9 +223,9 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
 
   return (
     <Drawer
-      visible={open}
+      open={open}
       onClose={onClose}
-      width={mobileOnly ? '100%' : 480}
+      size={mobileOnly ? '100%' : 480}
       title={
         <Space>
           <SettingOutlined /> Manage Worlds
@@ -205,19 +238,11 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           {worlds.length === 0 ? (
             <Empty description="No worlds created yet." />
           ) : (
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {worlds.map((w) => (
-                <div
-                  key={w.id}
-                  style={{
-                    border: `1px solid ${activeWorldId === w.id ? '#1677ff' : '#f0f0f0'}`,
-                    borderRadius: 8,
-                    padding: 12,
-                    background: activeWorldId === w.id ? '#e6f4ff' : undefined,
-                  }}
-                >
+                <S.WorldCard key={w.id} $active={activeWorldId === w.id}>
                   {editId === w.id ? (
-                    <Space direction="vertical" size={8} style={w100}>
+                    <Space orientation="vertical" size={8} style={w100}>
                       <Input
                         size="small"
                         value={editName}
@@ -264,22 +289,18 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                         </Space>
                       </Space>
                       {w.description && (
-                        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+                        <Typography.Text type="secondary" style={S.worldDescription}>
                           {w.description}
                         </Typography.Text>
                       )}
                       {w.imageUrl && (
-                        <div style={{ marginTop: 8, borderRadius: 6, overflow: 'hidden', maxHeight: 80 }}>
-                          <img
-                            src={resolveApiUrl(w.imageUrl)}
-                            alt={w.name}
-                            style={{ width: '100%', maxHeight: 80, objectFit: 'cover', display: 'block' }}
-                          />
+                        <div style={S.worldThumbWrap}>
+                          <img src={resolveApiUrl(w.imageUrl)} alt={w.name} style={S.worldThumbImage} />
                         </div>
                       )}
                     </>
                   )}
-                </div>
+                </S.WorldCard>
               ))}
             </Space>
           )}
@@ -294,7 +315,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
           }
           key="create"
         >
-          <Space direction="vertical" size={10} style={w100}>
+          <Space orientation="vertical" size={10} style={w100}>
             <Form layout="vertical">
               <Form.Item label="Name" required>
                 <Input
@@ -315,7 +336,7 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
             <Button type="primary" loading={creating} onClick={() => void handleCreate()}>
               Create World
             </Button>
-            <Typography.Text type="secondary" style={textSm}>
+            <Typography.Text type="secondary" style={S.worldCreateNote}>
               After creating, go to &quot;Worlds&quot;, click &quot;Map&quot; to upload the map image.
             </Typography.Text>
           </Space>
@@ -349,6 +370,9 @@ export default function MapPage() {
   const [filterDiscover, setFilterDiscover] = React.useState<'all' | 'discovered' | 'undiscovered'>('all');
   const [filterRegion, setFilterRegion] = React.useState<string>('all');
   const [search, setSearch] = React.useState('');
+  const [mobileFilterOpen, setMobileFilterOpen] = React.useState(false);
+  const [mobilePickerOpen, setMobilePickerOpen] = React.useState(false);
+  const [mobilePickerSearch, setMobilePickerSearch] = React.useState('');
 
   // -------- ruler --------
   const [measureMode, setMeasureMode] = React.useState(false);
@@ -375,6 +399,8 @@ export default function MapPage() {
   // -------- open city drawer --------
   const [openCityId, setOpenCityId] = React.useState<number | null>(null);
   const openCity = React.useMemo(() => cities.find((c) => c.id === openCityId) ?? null, [cities, openCityId]);
+  const [mobileDeleteCityTarget, setMobileDeleteCityTarget] = React.useState<City | null>(null);
+  const [mobileClearCoordsTarget, setMobileClearCoordsTarget] = React.useState<City | null>(null);
 
   // -------- open dungeon drawer --------
   const [openDungeonId, setOpenDungeonId] = React.useState<number | null>(null);
@@ -692,45 +718,61 @@ export default function MapPage() {
     return `${pct.toFixed(2)}% of map`;
   }
 
+  async function clearCityCoords(city: City) {
+    try {
+      await updateCityCoords(city.id, null, null);
+      setCities((prev) => prev.map((c) => (c.id === city.id ? { ...c, coordinates: null } : c)));
+      setPickingCityId((prev) => (prev === city.id ? null : prev));
+      setMobileClearCoordsTarget(null);
+      message.success(`Coordinates removed from "${city.name}".`);
+    } catch (e) {
+      console.error(e);
+      message.error(apiErrorMessage(e, 'Failed to remove coordinates.'));
+    }
+  }
+
+  async function removeCity(city: City) {
+    try {
+      await deleteCity(city.id);
+      setCities((prev) => prev.filter((c) => c.id !== city.id));
+      setOpenCityId(null);
+      setMobileDeleteCityTarget(null);
+      message.success(`"${city.name}" deleted.`);
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete city.'));
+    }
+  }
+
   function confirmClearCoords(city: City) {
     if (!city) return;
+    if (mobileOnly) {
+      setMobileClearCoordsTarget(city);
+      return;
+    }
+
     Modal.confirm({
       title: 'Remove coordinates?',
       content: `"${city.name}" will be removed from the map. You can reposition it later.`,
       okText: 'Remove',
       cancelText: 'Cancel',
       okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await updateCityCoords(city.id, null, null);
-          setCities((prev) => prev.map((c) => (c.id === city.id ? { ...c, coordinates: null } : c)));
-          setPickingCityId((prev) => (prev === city.id ? null : prev));
-          message.success(`Coordinates removed from "${city.name}".`);
-        } catch (e) {
-          console.error(e);
-          message.error(apiErrorMessage(e, 'Failed to remove coordinates.'));
-        }
-      },
+      onOk: async () => clearCityCoords(city),
     });
   }
 
   function confirmDeleteCity(city: City) {
+    if (mobileOnly) {
+      setMobileDeleteCityTarget(city);
+      return;
+    }
+
     Modal.confirm({
       title: `Delete city "${city.name}"?`,
       content: 'This action is irreversible.',
       okText: 'Delete',
       cancelText: 'Cancel',
       okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await deleteCity(city.id);
-          setCities((prev) => prev.filter((c) => c.id !== city.id));
-          setOpenCityId(null);
-          message.success(`"${city.name}" deleted.`);
-        } catch (e) {
-          message.error(apiErrorMessage(e, 'Failed to delete city.'));
-        }
-      },
+      onOk: async () => removeCity(city),
     });
   }
 
@@ -781,13 +823,72 @@ export default function MapPage() {
     },
   };
 
+  const positionedDungeons = React.useMemo(() => {
+    return dungeons.filter((d) => (isGM || d.visible) && Boolean(parseCoordinates(d.coordinates)));
+  }, [dungeons, isGM]);
+
+  const mobilePickerCities = React.useMemo(() => {
+    const query = mobilePickerSearch.trim().toLowerCase();
+    return cities
+      .slice()
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+      .filter((c) => !query || c.name.toLowerCase().includes(query) || (c.region ?? '').toLowerCase().includes(query));
+  }, [cities, mobilePickerSearch]);
+
+  const mobilePickerDungeons = React.useMemo(() => {
+    const query = mobilePickerSearch.trim().toLowerCase();
+    return dungeons
+      .slice()
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+      .filter((d) => !query || d.name.toLowerCase().includes(query) || (d.region ?? '').toLowerCase().includes(query));
+  }, [dungeons, mobilePickerSearch]);
+
   // -------- conditional renders --------
-  if (loading) return <Spin style={{ display: 'block', margin: '64px auto' }} />;
+  if (loading) return <Spin style={S.loadingSpinner} />;
 
   if (!world || !worldImg) {
+    if (mobileOnly) {
+      return (
+        <>
+          <MobilePageScaffold
+            subtitle="Create a world and upload a map image before using touch navigation."
+            title={<IconLabel icon="world">Map</IconLabel>}
+          >
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                No world with image defined.
+                {isGM ? ' Open GM Worlds to upload the first map.' : ''}
+              </S.MobileEmptyState>
+              {isGM && (
+                <AdmMobileButton block color="primary" onClick={() => setWorldAdminOpen(true)}>
+                  <SetOutline /> Manage Worlds
+                </AdmMobileButton>
+              )}
+            </MobileCard>
+          </MobilePageScaffold>
+          <WorldAdminDrawer
+            open={worldAdminOpen}
+            worlds={worlds}
+            activeWorldId={world?.id ?? null}
+            onClose={() => setWorldAdminOpen(false)}
+            onWorldsChanged={(ws) => {
+              setWorlds(ws);
+              const w = ws.find((x) => x.imageUrl) ?? ws[0] ?? null;
+              setWorld(w ?? null);
+              setWorldImg(resolveWorldImage(w?.imageUrl ?? undefined));
+            }}
+            onActivate={(w) => {
+              setWorld(w);
+              setWorldImg(resolveWorldImage(w.imageUrl ?? undefined));
+            }}
+          />
+        </>
+      );
+    }
+
     return (
-      <div style={{ padding: 24 }}>
-        <Space direction="vertical" size={12}>
+      <div style={S.emptyStateWrap}>
+        <Space orientation="vertical" size={12}>
           <Typography.Title level={4}>Map</Typography.Title>
           <Typography.Text type="secondary">No world with image defined.</Typography.Text>
           {isGM && (
@@ -816,9 +917,710 @@ export default function MapPage() {
     );
   }
 
+  if (mobileOnly) {
+    const pickingLabel = pickingCity?.name ?? pickingDungeon?.name;
+
+    return (
+      <>
+        <PageTitle>Map</PageTitle>
+
+        <MobilePageScaffold
+          filters={
+            <>
+              <MobileSearchBar inset={false} onChange={setSearch} placeholder="Search city marker..." value={search} />
+              <S.MobileControlGrid>
+                <AdmMobileButton fill="outline" onClick={() => setMobileFilterOpen(true)}>
+                  <FilterOutline /> Filters
+                </AdmMobileButton>
+                <AdmMobileButton color="primary" fill="outline" onClick={() => void enterPresentMode()}>
+                  <ArrowsAltOutline /> Present
+                </AdmMobileButton>
+                <AdmMobileButton
+                  color={measureMode ? 'primary' : 'default'}
+                  fill="outline"
+                  onClick={() => {
+                    setMeasureMode((v) => !v);
+                    setMeasureA(null);
+                    setMeasureB(null);
+                  }}
+                >
+                  <CompassOutline /> Ruler {measureMode ? 'ON' : 'OFF'}
+                </AdmMobileButton>
+                {isGM ? (
+                  <AdmMobileButton color="primary" onClick={() => setMobilePickerOpen(true)}>
+                    <LocationFill /> Position
+                  </AdmMobileButton>
+                ) : (
+                  <AdmMobileButton fill="outline" disabled>
+                    <LocationFill /> Player view
+                  </AdmMobileButton>
+                )}
+              </S.MobileControlGrid>
+            </>
+          }
+          meta={
+            <S.MobileMetaRow>
+              <AdmMobileTag color="primary" fill="outline" round>
+                {markers.length} city markers
+              </AdmMobileTag>
+              <AdmMobileTag color="warning" fill="outline" round>
+                {positionedDungeons.length} dungeons
+              </AdmMobileTag>
+              {isGM && (
+                <AdmMobileTag color="danger" fill="outline" round>
+                  GM
+                </AdmMobileTag>
+              )}
+            </S.MobileMetaRow>
+          }
+          subtitle="Pan the map with touch, tap markers for details, and use sheets for filters or GM positioning."
+          title={<IconLabel icon="world">{world.name}</IconLabel>}
+        >
+          <S.MobileMapStack>
+            <MobileCard compact>
+              <S.MobileWorldTitle>{world.name}</S.MobileWorldTitle>
+              {world.description && <S.MobileWorldDescription>{world.description}</S.MobileWorldDescription>}
+            </MobileCard>
+
+            {pickingLabel && (
+              <S.MobileInstruction>
+                Tap the map to position <strong>{pickingLabel}</strong>. Ruler mode is disabled while placing markers.
+              </S.MobileInstruction>
+            )}
+
+            <S.MobileMapViewport>
+              <div
+                ref={mapRef}
+                onClick={onMapClick}
+                style={S.mobileMapCanvas(
+                  presentMode,
+                  isFullscreen,
+                  measureMode || (isGM && Boolean(pickingCity || pickingDungeon)),
+                )}
+              >
+                {presentMode && (
+                  <div style={S.presentToolbar}>
+                    <AdmMobileButton size="mini" onClick={() => void exitPresentMode()}>
+                      Exit
+                    </AdmMobileButton>
+                    <AdmMobileButton
+                      color={measureMode ? 'primary' : 'default'}
+                      fill="outline"
+                      size="mini"
+                      onClick={() => {
+                        setMeasureMode((v) => !v);
+                        setMeasureA(null);
+                        setMeasureB(null);
+                      }}
+                    >
+                      Ruler
+                    </AdmMobileButton>
+                    <AdmMobileTag color={isFullscreen ? 'success' : 'warning'} fill="solid" round>
+                      {isFullscreen ? 'Fullscreen' : 'Overlay'}
+                    </AdmMobileTag>
+                  </div>
+                )}
+
+                <img
+                  ref={imgRef}
+                  onLoad={() => recalcStage()}
+                  src={resolveApiUrl(worldImg)}
+                  alt={world.name}
+                  style={S.mapImage(presentMode)}
+                  draggable={false}
+                />
+
+                {markers.map((m) => {
+                  const leftCss = stage ? `${stage.offsetX + m.u * stage.width}px` : `${m.u * 100}%`;
+                  const topCss = stage ? `${stage.offsetY + m.v * stage.height}px` : `${m.v * 100}%`;
+                  const bg =
+                    isGM && m.visible === false
+                      ? 'rgba(255, 70, 70, 0.95)'
+                      : m.discovered
+                        ? 'rgba(255,255,255,0.95)'
+                        : 'rgba(180,180,180,0.95)';
+
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenCityId(m.id);
+                      }}
+                      title={m.label}
+                      style={S.mobileCityMarker(leftCss, topCss, bg, openCityId === m.id)}
+                    />
+                  );
+                })}
+
+                {positionedDungeons.map((d) => {
+                  const p = parseCoordinates(d.coordinates);
+                  if (!p) return null;
+                  const leftCss = stage ? `${stage.offsetX + p.u * stage.width}px` : `${p.u * 100}%`;
+                  const topCss = stage ? `${stage.offsetY + p.v * stage.height}px` : `${p.v * 100}%`;
+
+                  return (
+                    <div
+                      key={`mobile-dungeon-${d.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDungeonId(d.id);
+                      }}
+                      title={d.name}
+                      style={S.mobileDungeonMarker(
+                        leftCss,
+                        topCss,
+                        isGM && !d.visible
+                          ? 'rgba(255,70,70,0.95)'
+                          : d.discovered
+                            ? 'rgba(180,100,255,0.95)'
+                            : 'rgba(120,60,180,0.8)',
+                        openDungeonId === d.id,
+                      )}
+                    />
+                  );
+                })}
+
+                {measureA && measureB && stage && (
+                  <svg
+                    style={S.rulerSvg}
+                    viewBox={`0 0 ${stage.containerWidth} ${stage.containerHeight}`}
+                    preserveAspectRatio="none"
+                  >
+                    {(() => {
+                      const ax = stage.offsetX + measureA.u * stage.width;
+                      const ay = stage.offsetY + measureA.v * stage.height;
+                      const bx = stage.offsetX + measureB.u * stage.width;
+                      const by = stage.offsetY + measureB.v * stage.height;
+                      const mx = (ax + bx) / 2;
+                      const my = (ay + by) / 2;
+                      return (
+                        <>
+                          <line x1={ax} y1={ay} x2={bx} y2={by} stroke="white" strokeWidth={4} opacity={0.85} />
+                          <circle cx={ax} cy={ay} r={6} fill="white" opacity={0.95} />
+                          <circle cx={bx} cy={by} r={6} fill="white" opacity={0.95} />
+                          <rect x={mx - 90} y={my - 22} width={180} height={28} fill="rgba(0,0,0,0.6)" rx={6} />
+                          <text x={mx} y={my - 2} fontSize="16" textAnchor="middle" fill="white">
+                            {distanceText(measureA, measureB)}
+                          </text>
+                        </>
+                      );
+                    })()}
+                  </svg>
+                )}
+              </div>
+            </S.MobileMapViewport>
+
+            {isGM && (
+              <MobileCard compact>
+                <S.MobileControlGrid>
+                  <AdmMobileButton fill="outline" onClick={() => setWorldAdminOpen(true)}>
+                    <SetOutline /> GM Worlds
+                  </AdmMobileButton>
+                  <AdmMobileButton
+                    fill="outline"
+                    onClick={() => {
+                      setPickingCityId(null);
+                      setPickingDungeonId(null);
+                      setMeasureMode(false);
+                    }}
+                  >
+                    Clear target
+                  </AdmMobileButton>
+                </S.MobileControlGrid>
+              </MobileCard>
+            )}
+          </S.MobileMapStack>
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Trim the map to the markers you need right now."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => setMobileFilterOpen(false)}>
+                  Apply
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setFilterRegion('all');
+                    setFilterDiscover('all');
+                    setFilterVisible('all');
+                    setSearch('');
+                  }}
+                >
+                  Reset
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setMobileFilterOpen(false)}
+          title="Map filters"
+          visible={mobileFilterOpen}
+        >
+          <S.MobileSheetStack>
+            <MobileSelector<string>
+              columns={1}
+              inset={false}
+              onChange={(values) => setFilterRegion(values[0] ?? 'all')}
+              options={regionOptions}
+              value={[filterRegion]}
+            />
+            <MobileSelector<string>
+              columns={1}
+              inset={false}
+              onChange={(values) => setFilterDiscover((values[0] ?? 'all') as typeof filterDiscover)}
+              options={[
+                { value: 'all', label: 'All discovery states' },
+                { value: 'discovered', label: 'Discovered' },
+                { value: 'undiscovered', label: 'Undiscovered' },
+              ]}
+              value={[filterDiscover]}
+            />
+            {isGM && (
+              <MobileSelector<string>
+                columns={1}
+                inset={false}
+                onChange={(values) => setFilterVisible((values[0] ?? 'all') as typeof filterVisible)}
+                options={[
+                  { value: 'all', label: 'All visibility states' },
+                  { value: 'visible', label: 'Visible' },
+                  { value: 'hidden', label: 'Hidden' },
+                ]}
+                value={[filterVisible]}
+              />
+            )}
+          </S.MobileSheetStack>
+        </MobileFilterSheet>
+
+        <MobileFilterSheet
+          description="Search and pick what the next map tap should position."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => setMobilePickerOpen(false)}>
+                  Done
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setPickingCityId(null);
+                    setPickingDungeonId(null);
+                    setMobilePickerSearch('');
+                  }}
+                >
+                  Clear
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setMobilePickerOpen(false)}
+          title="Position marker"
+          visible={mobilePickerOpen}
+        >
+          <S.MobileSheetStack>
+            <AdmMobileSearchBar
+              placeholder="Search city or dungeon..."
+              value={mobilePickerSearch}
+              onChange={setMobilePickerSearch}
+            />
+            <S.MobilePickerList>
+              <S.MobileWorldDescription>Cities</S.MobileWorldDescription>
+              {mobilePickerCities.slice(0, 40).map((city) => (
+                <S.MobilePickerButton
+                  key={city.id}
+                  $active={pickingCityId === city.id}
+                  onClick={() => {
+                    setPickingCityId(city.id);
+                    setPickingDungeonId(null);
+                    setMeasureMode(false);
+                    setMobilePickerOpen(false);
+                    message.info(`Tap the map to position "${city.name}".`);
+                  }}
+                  type="button"
+                >
+                  <S.MobilePickerTitle>{city.name}</S.MobilePickerTitle>
+                  <S.MobilePickerMeta>
+                    {city.region || 'No region'} | {city.coordinates ? 'positioned' : 'not positioned'}
+                  </S.MobilePickerMeta>
+                </S.MobilePickerButton>
+              ))}
+              <S.MobileWorldDescription>Dungeons</S.MobileWorldDescription>
+              {mobilePickerDungeons.slice(0, 40).map((dungeon) => (
+                <S.MobilePickerButton
+                  key={`pick-dungeon-${dungeon.id}`}
+                  $active={pickingDungeonId === dungeon.id}
+                  onClick={() => {
+                    setPickingDungeonId(dungeon.id);
+                    setPickingCityId(null);
+                    setMeasureMode(false);
+                    setMobilePickerOpen(false);
+                    message.info(`Tap the map to position "${dungeon.name}".`);
+                  }}
+                  type="button"
+                >
+                  <S.MobilePickerTitle>{dungeon.name}</S.MobilePickerTitle>
+                  <S.MobilePickerMeta>
+                    {dungeon.region || dungeon.type || 'No region'} |{' '}
+                    {dungeon.coordinates ? 'positioned' : 'not positioned'}
+                  </S.MobilePickerMeta>
+                </S.MobilePickerButton>
+              ))}
+            </S.MobilePickerList>
+          </S.MobileSheetStack>
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          description={
+            openCity
+              ? isGM || openCity.discovered
+                ? openCity.region || 'Region not specified'
+                : 'Information unavailable until discovery.'
+              : undefined
+          }
+          onClose={() => setOpenCityId(null)}
+          title={openCity?.name ?? 'City'}
+          visible={!!openCity}
+        >
+          {openCity && (
+            <MobileTabs defaultActiveKey="details">
+              <MobileTabs.Tab key="details" title="Details">
+                <S.MobileSheetStack>
+                  <S.MobileMetaRow>
+                    {openCity.region && <AdmMobileTag fill="outline">{openCity.region}</AdmMobileTag>}
+                    {openCity.visible === false && isGM && (
+                      <AdmMobileTag color="danger" fill="outline">
+                        Hidden
+                      </AdmMobileTag>
+                    )}
+                    <AdmMobileTag color={openCity.discovered ? 'warning' : 'default'} fill="outline">
+                      {openCity.discovered ? 'Discovered' : 'Not discovered'}
+                    </AdmMobileTag>
+                  </S.MobileMetaRow>
+                  {openCity.imageUrl && (isGM || openCity.discovered) && (
+                    <div style={S.drawerImageWrap(220)}>
+                      <img
+                        src={resolveApiUrl(openCity.imageUrl)}
+                        alt={openCity.imageAlt ?? openCity.name}
+                        style={S.drawerImage(220)}
+                      />
+                    </div>
+                  )}
+                  <S.MobileWorldDescription>
+                    {isGM || openCity.discovered
+                      ? openCity.description || 'No description.'
+                      : 'Information unavailable.'}
+                  </S.MobileWorldDescription>
+                  <S.MobileWorldDescription>
+                    Created: {formatDate(openCity.createdAt)}
+                    {openCity.updatedAt ? ` | Updated: ${formatDate(openCity.updatedAt)}` : ''}
+                  </S.MobileWorldDescription>
+                </S.MobileSheetStack>
+              </MobileTabs.Tab>
+
+              <MobileTabs.Tab key="links" title="Links">
+                <S.MobileSheetStack>
+                  {!isGM && !openCity.discovered ? (
+                    <S.MobileEmptyState>Content unavailable until the city is discovered.</S.MobileEmptyState>
+                  ) : linksLoading ? (
+                    <Spin />
+                  ) : (
+                    <>
+                      <S.MobileWorldDescription>Lores ({cityLores.length})</S.MobileWorldDescription>
+                      <S.MobileLinkedList>
+                        {cityLores.length === 0 ? (
+                          <S.MobileEmptyState>No lores linked.</S.MobileEmptyState>
+                        ) : (
+                          cityLores.map((l) => (
+                            <S.MobileLinkedCard key={l.id}>
+                              <S.MobileLinkedTitle>{l.title}</S.MobileLinkedTitle>
+                              <S.MobileLinkedText>{l.content?.trim() || '-'}</S.MobileLinkedText>
+                            </S.MobileLinkedCard>
+                          ))
+                        )}
+                      </S.MobileLinkedList>
+                      <S.MobileWorldDescription>Quests ({cityQuests.length})</S.MobileWorldDescription>
+                      <S.MobileLinkedList>
+                        {cityQuests.length === 0 ? (
+                          <S.MobileEmptyState>No quests linked.</S.MobileEmptyState>
+                        ) : (
+                          cityQuests.map((q) => (
+                            <S.MobileLinkedCard key={q.id}>
+                              <S.MobileLinkedTitle>{q.title}</S.MobileLinkedTitle>
+                              <S.MobileLinkedText>{q.description?.trim() || '-'}</S.MobileLinkedText>
+                            </S.MobileLinkedCard>
+                          ))
+                        )}
+                      </S.MobileLinkedList>
+                    </>
+                  )}
+                </S.MobileSheetStack>
+              </MobileTabs.Tab>
+
+              {isGM && (
+                <MobileTabs.Tab key="gm" title="GM">
+                  <S.MobileSheetStack>
+                    <MobileForm>
+                      <MobileForm.Item label="Name">
+                        <AdmMobileInput value={editCityName} onChange={setEditCityName} />
+                      </MobileForm.Item>
+                      <MobileForm.Item label="Region">
+                        <AdmMobileInput value={editCityRegion} onChange={setEditCityRegion} />
+                      </MobileForm.Item>
+                      <MobileForm.Item label="Description">
+                        <AdmMobileTextArea
+                          autoSize={{ minRows: 4, maxRows: 8 }}
+                          value={editCityDesc}
+                          onChange={setEditCityDesc}
+                        />
+                      </MobileForm.Item>
+                    </MobileForm>
+                    <MobileActionBar
+                      primary={
+                        <AdmMobileButton block color="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
+                          Save
+                        </AdmMobileButton>
+                      }
+                      secondary={
+                        <AdmMobileButton
+                          block
+                          color="danger"
+                          fill="outline"
+                          onClick={() => confirmDeleteCity(openCity)}
+                        >
+                          Delete
+                        </AdmMobileButton>
+                      }
+                      sticky={false}
+                    />
+                    <MobileCard compact>
+                      <S.MobileSheetStack>
+                        <MobileForm>
+                          <S.MobileControlGrid>
+                            <MobileForm.Item label="Visible to players">
+                              <AdmMobileSwitch
+                                checked={isCityVisible(openCity)}
+                                checkedText={<EyeOutline />}
+                                uncheckedText={<EyeInvisibleOutline />}
+                                onChange={async (value) => {
+                                  await setCityVisible(openCity.id, value);
+                                  setCities((prev) =>
+                                    prev.map((c) => (c.id === openCity.id ? { ...c, visible: value } : c)),
+                                  );
+                                }}
+                              />
+                            </MobileForm.Item>
+                            <MobileForm.Item label="Discovered">
+                              <AdmMobileSwitch
+                                checked={openCity.discovered === true}
+                                onChange={async (value) => {
+                                  await setCityDiscovered(openCity.id, value);
+                                  setCities((prev) =>
+                                    prev.map((c) => (c.id === openCity.id ? { ...c, discovered: value } : c)),
+                                  );
+                                }}
+                              />
+                            </MobileForm.Item>
+                          </S.MobileControlGrid>
+                        </MobileForm>
+                        <AdmMobileButton
+                          block
+                          color="primary"
+                          fill="outline"
+                          onClick={() => {
+                            setPickingCityId(openCity.id);
+                            setPickingDungeonId(null);
+                            setOpenCityId(null);
+                            setMeasureMode(false);
+                            message.info('Tap on the map to position this city.');
+                          }}
+                        >
+                          <LocationFill /> Reposition on map
+                        </AdmMobileButton>
+                        {openCity.coordinates && (
+                          <AdmMobileButton
+                            block
+                            color="danger"
+                            fill="outline"
+                            onClick={() => confirmClearCoords(openCity)}
+                          >
+                            Remove from map
+                          </AdmMobileButton>
+                        )}
+                      </S.MobileSheetStack>
+                    </MobileCard>
+                    <MobileCard compact>
+                      <S.MobileSheetStack>
+                        {openCity.imageUrl ? (
+                          <div style={S.drawerImageWrap(220)}>
+                            <img
+                              src={resolveApiUrl(openCity.imageUrl)}
+                              alt={openCity.imageAlt ?? openCity.name}
+                              style={S.drawerImage(220)}
+                            />
+                          </div>
+                        ) : (
+                          <S.MobileWorldDescription>No image.</S.MobileWorldDescription>
+                        )}
+                        <MobileForm>
+                          <MobileForm.Item label="Alt text">
+                            <AdmMobileInput value={editCityImgAlt} onChange={setEditCityImgAlt} />
+                          </MobileForm.Item>
+                        </MobileForm>
+                        <Upload {...cityImageUploadProps}>
+                          <AdmMobileButton block fill="outline">
+                            <PictureOutline /> {openCity.imageUrl ? 'Change image' : 'Upload image'}
+                          </AdmMobileButton>
+                        </Upload>
+                      </S.MobileSheetStack>
+                    </MobileCard>
+                  </S.MobileSheetStack>
+                </MobileTabs.Tab>
+              )}
+            </MobileTabs>
+          )}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description={openDungeon?.region || openDungeon?.type || 'Dungeon marker'}
+          onClose={() => setOpenDungeonId(null)}
+          title={openDungeon?.name ?? 'Dungeon'}
+          visible={!!openDungeon}
+        >
+          {openDungeon && (
+            <S.MobileSheetStack>
+              <S.MobileMetaRow>
+                {openDungeon.type && <AdmMobileTag color="primary">{openDungeon.type}</AdmMobileTag>}
+                {openDungeon.discovered && <AdmMobileTag color="success">Discovered</AdmMobileTag>}
+                {isGM && !openDungeon.visible && <AdmMobileTag color="danger">Hidden</AdmMobileTag>}
+              </S.MobileMetaRow>
+              <S.MobileWorldDescription>{openDungeon.description || 'No description.'}</S.MobileWorldDescription>
+              <S.MobileWorldDescription>
+                {openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}
+              </S.MobileWorldDescription>
+              {isGM && (
+                <MobileActionBar
+                  primary={
+                    <AdmMobileButton
+                      block
+                      color="primary"
+                      onClick={() => {
+                        setPickingDungeonId(openDungeon.id);
+                        setPickingCityId(null);
+                        setOpenDungeonId(null);
+                        setMeasureMode(false);
+                        message.info('Tap on the map to position this dungeon.');
+                      }}
+                    >
+                      Reposition
+                    </AdmMobileButton>
+                  }
+                  secondary={
+                    openDungeon.coordinates ? (
+                      <AdmMobileButton
+                        block
+                        color="danger"
+                        fill="outline"
+                        onClick={async () => {
+                          await updateDungeon(openDungeon.id, { coordinates: null });
+                          setDungeons((prev) =>
+                            prev.map((d) => (d.id === openDungeon.id ? { ...d, coordinates: null } : d)),
+                          );
+                          setOpenDungeonId(null);
+                          message.success('Removed from map.');
+                        }}
+                      >
+                        Remove
+                      </AdmMobileButton>
+                    ) : undefined
+                  }
+                  sticky={false}
+                />
+              )}
+            </S.MobileSheetStack>
+          )}
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            [
+              { key: 'cancel', text: 'Cancel', onClick: () => setMobileClearCoordsTarget(null) },
+              {
+                key: 'remove',
+                text: 'Remove',
+                danger: true,
+                bold: true,
+                onClick: () => {
+                  if (mobileClearCoordsTarget) void clearCityCoords(mobileClearCoordsTarget);
+                },
+              },
+            ],
+          ]}
+          closeOnAction
+          content={
+            mobileClearCoordsTarget
+              ? `"${mobileClearCoordsTarget.name}" will be removed from the map. You can reposition it later.`
+              : undefined
+          }
+          onClose={() => setMobileClearCoordsTarget(null)}
+          title="Remove coordinates?"
+          visible={!!mobileClearCoordsTarget}
+        />
+
+        <MobileDialog
+          actions={[
+            [
+              { key: 'cancel', text: 'Cancel', onClick: () => setMobileDeleteCityTarget(null) },
+              {
+                key: 'delete',
+                text: 'Delete',
+                danger: true,
+                bold: true,
+                onClick: () => {
+                  if (mobileDeleteCityTarget) void removeCity(mobileDeleteCityTarget);
+                },
+              },
+            ],
+          ]}
+          closeOnAction
+          content="This action is irreversible."
+          onClose={() => setMobileDeleteCityTarget(null)}
+          title={mobileDeleteCityTarget ? `Delete city "${mobileDeleteCityTarget.name}"?` : 'Delete city?'}
+          visible={!!mobileDeleteCityTarget}
+        />
+
+        <WorldAdminDrawer
+          open={worldAdminOpen}
+          worlds={worlds}
+          activeWorldId={world?.id ?? null}
+          onClose={() => setWorldAdminOpen(false)}
+          onWorldsChanged={(ws) => {
+            setWorlds(ws);
+            const w = ws.find((x) => x.imageUrl) ?? ws[0] ?? null;
+            setWorld(w ?? null);
+            setWorldImg(resolveWorldImage(w?.imageUrl ?? undefined));
+          }}
+          onActivate={(w) => {
+            setWorld(w);
+            setWorldImg(resolveWorldImage(w.imageUrl ?? undefined));
+          }}
+        />
+      </>
+    );
+  }
+
   return (
-    <div style={{ padding: 16 }}>
-      <Space direction="vertical" style={w100} size={12}>
+    <div style={S.pageWrap}>
+      <Space orientation="vertical" style={w100} size={12}>
         {!presentMode && (
           <Typography.Title level={3} style={m0}>
             Map — {world.name}
@@ -845,14 +1647,14 @@ export default function MapPage() {
                 placeholder="Search city..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: 220 }}
+                style={S.searchInput}
               />
 
               <Space size={8}>
                 <span>Region:</span>
                 <Select
                   size="small"
-                  style={{ width: 180 }}
+                  style={S.regionSelect}
                   value={filterRegion}
                   onChange={(v) => setFilterRegion(v)}
                   options={regionOptions}
@@ -863,7 +1665,7 @@ export default function MapPage() {
                 <span>Discovery:</span>
                 <Select
                   size="small"
-                  style={{ width: 160 }}
+                  style={S.statusSelect}
                   value={filterDiscover}
                   onChange={(v) => setFilterDiscover(v)}
                   options={[
@@ -879,7 +1681,7 @@ export default function MapPage() {
                   <span>Visibility:</span>
                   <Select
                     size="small"
-                    style={{ width: 160 }}
+                    style={S.statusSelect}
                     value={filterVisible}
                     onChange={(v) => setFilterVisible(v)}
                     options={[
@@ -904,7 +1706,7 @@ export default function MapPage() {
                       showSearch
                       allowClear
                       size="small"
-                      style={{ width: 260 }}
+                      style={S.gmPickerSelect}
                       placeholder="Select city to position..."
                       value={pickingCityId ?? undefined}
                       onChange={(v) => setPickingCityId(v ?? null)}
@@ -928,14 +1730,14 @@ export default function MapPage() {
                       showSearch
                       allowClear
                       size="small"
-                      style={{ width: 260 }}
+                      style={S.gmPickerSelect}
                       placeholder="Select dungeon to position..."
                       value={pickingDungeonId ?? undefined}
                       onChange={(v) => {
                         setPickingDungeonId(v ?? null);
                         if (v) setPickingCityId(null);
                       }}
-                      options={dungeons.map((d) => ({ value: d.id, label: `⚔️ ${d.name}` }))}
+                      options={dungeons.map((d) => ({ value: d.id, label: d.name }))}
                       filterOption={(input, opt) => (opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                     />
 
@@ -963,37 +1765,14 @@ export default function MapPage() {
         <div
           ref={mapRef}
           onClick={onMapClick}
-          style={{
-            position: presentMode && !isFullscreen ? 'fixed' : 'relative',
-            inset: presentMode && !isFullscreen ? 0 : undefined,
-            zIndex: presentMode && !isFullscreen ? 9999 : undefined,
-            width: '100%',
-            height: presentMode ? '100vh' : undefined,
-            margin: presentMode && !isFullscreen ? 0 : '0 auto',
-            borderRadius: presentMode ? 0 : 8,
-            overflow: 'hidden',
-            background: 'black',
-            boxShadow: presentMode ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
-            cursor: measureMode || (isGM && pickingCity) ? 'crosshair' : 'default',
-          }}
+          style={S.mapCanvas(
+            presentMode,
+            isFullscreen,
+            measureMode || (isGM && Boolean(pickingCity || pickingDungeon)),
+          )}
         >
           {presentMode && (
-            <div
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: 12,
-                zIndex: 10000,
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                background: 'rgba(0,0,0,0.55)',
-                padding: '8px 10px',
-                borderRadius: 10,
-                color: '#fff',
-                backdropFilter: 'blur(2px)',
-              }}
-            >
+            <div style={S.presentToolbar}>
               <Button size="small" onClick={exitPresentMode}>
                 Exit
               </Button>
@@ -1025,14 +1804,7 @@ export default function MapPage() {
             onLoad={() => recalcStage()}
             src={resolveApiUrl(worldImg)}
             alt={world.name}
-            style={{
-              display: 'block',
-              width: '100%',
-              height: presentMode ? '100%' : 'auto',
-              objectFit: presentMode ? 'contain' : undefined,
-              userSelect: 'none',
-              background: 'black',
-            }}
+            style={S.mapImage(presentMode)}
             draggable={false}
           />
 
@@ -1045,28 +1817,13 @@ export default function MapPage() {
               isGM && m.visible === false
                 ? 'rgba(255, 70, 70, 0.95)'
                 : m.discovered
-                ? 'rgba(255,255,255,0.95)'
-                : 'rgba(180,180,180,0.95)';
+                  ? 'rgba(255,255,255,0.95)'
+                  : 'rgba(180,180,180,0.95)';
 
             return (
               <React.Fragment key={m.id}>
                 {hoverMarkerId === m.id && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: leftCss,
-                      top: topCss,
-                      transform: 'translate(-50%, calc(-100% - 10px))',
-                      background: 'rgba(0,0,0,0.75)',
-                      color: '#fff',
-                      padding: '4px 8px',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      whiteSpace: 'nowrap',
-                      pointerEvents: 'none',
-                      zIndex: 20,
-                    }}
-                  >
+                  <div style={S.markerTooltip(leftCss, topCss)}>
                     {m.label}
                     {m.region ? ` · ${m.region}` : ''}
                   </div>
@@ -1079,22 +1836,7 @@ export default function MapPage() {
                     setOpenCityId(m.id);
                   }}
                   title={m.label}
-                  style={{
-                    position: 'absolute',
-                    left: leftCss,
-                    top: topCss,
-                    transform: 'translate(-50%, -50%)',
-                    width: 18,
-                    height: 18,
-                    borderRadius: '50%',
-                    background: bg,
-                    border: '2px solid rgba(0,0,0,0.85)',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
-                    cursor: 'pointer',
-                    zIndex: 10,
-                    outline: openCityId === m.id ? '3px solid rgba(255,255,0,0.8)' : 'none',
-                    outlineOffset: 2,
-                  }}
+                  style={S.cityMarker(leftCss, topCss, bg, openCityId === m.id)}
                 />
               </React.Fragment>
             );
@@ -1111,23 +1853,10 @@ export default function MapPage() {
               return (
                 <React.Fragment key={`dungeon-${d.id}`}>
                   {hoverMarkerId === -d.id && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: leftCss,
-                        top: topCss,
-                        transform: 'translate(-50%, calc(-100% - 10px))',
-                        background: 'rgba(0,0,0,0.75)',
-                        color: '#fff',
-                        padding: '4px 8px',
-                        borderRadius: 6,
-                        fontSize: 12,
-                        whiteSpace: 'nowrap',
-                        pointerEvents: 'none',
-                        zIndex: 20,
-                      }}
-                    >
-                      ⚔️ {d.name}
+                    <div style={S.markerTooltip(leftCss, topCss)}>
+                      <IconLabel icon="dungeon" gap={6}>
+                        {d.name}
+                      </IconLabel>
                       {d.type ? ` · ${d.type}` : ''}
                     </div>
                   )}
@@ -1139,26 +1868,16 @@ export default function MapPage() {
                       setOpenDungeonId(d.id);
                     }}
                     title={d.name}
-                    style={{
-                      position: 'absolute',
-                      left: leftCss,
-                      top: topCss,
-                      transform: 'translate(-50%, -50%) rotate(45deg)',
-                      width: 14,
-                      height: 14,
-                      background:
-                        isGM && !d.visible
-                          ? 'rgba(255,70,70,0.95)'
-                          : d.discovered
+                    style={S.dungeonMarker(
+                      leftCss,
+                      topCss,
+                      isGM && !d.visible
+                        ? 'rgba(255,70,70,0.95)'
+                        : d.discovered
                           ? 'rgba(180,100,255,0.95)'
                           : 'rgba(120,60,180,0.8)',
-                      border: '2px solid rgba(0,0,0,0.85)',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
-                      cursor: 'pointer',
-                      zIndex: 10,
-                      outline: openDungeonId === d.id ? '3px solid rgba(255,255,0,0.8)' : 'none',
-                      outlineOffset: 2,
-                    }}
+                      openDungeonId === d.id,
+                    )}
                   />
                 </React.Fragment>
               );
@@ -1167,7 +1886,7 @@ export default function MapPage() {
           {/* Ruler */}
           {measureA && measureB && stage && (
             <svg
-              style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+              style={S.rulerSvg}
               viewBox={`0 0 ${stage.containerWidth} ${stage.containerHeight}`}
               preserveAspectRatio="none"
             >
@@ -1197,13 +1916,13 @@ export default function MapPage() {
         {/* ── City Drawer ── */}
         <Drawer
           zIndex={drawerZIndex}
-          visible={!!openCity}
+          open={!!openCity}
           onClose={() => setOpenCityId(null)}
-          width={mobileOnly ? '100%' : 580}
+          size={mobileOnly ? '100%' : 580}
           title={
             openCity ? (
               <Space wrap size={8}>
-                <span style={bold800}>{openCity.name}</span>
+                <span style={S.drawerTitleText}>{openCity.name}</span>
                 {openCity.region ? <Tag>{openCity.region}</Tag> : null}
                 {openCity.visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
                 {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
@@ -1217,18 +1936,18 @@ export default function MapPage() {
             <Tabs defaultActiveKey="details">
               {/* ── Details ── */}
               <Tabs.TabPane tab="Details" key="details">
-                <Space direction="vertical" size="small" style={w100}>
+                <Space orientation="vertical" size="small" style={w100}>
                   <Typography.Text type="secondary">{openCity.region || 'Region not specified'}</Typography.Text>
                   {openCity.imageUrl && (isGM || openCity.discovered) && (
-                    <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 180, marginBottom: 8 }}>
+                    <div style={S.drawerImageWrap(180, 8)}>
                       <img
                         src={resolveApiUrl(openCity.imageUrl)}
                         alt={openCity.imageAlt ?? openCity.name}
-                        style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }}
+                        style={S.drawerImage(180)}
                       />
                     </div>
                   )}
-                  <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>
+                  <Typography.Paragraph style={S.drawerParagraph}>
                     {isGM || openCity.discovered
                       ? openCity.description || 'No description.'
                       : 'Information unavailable.'}
@@ -1242,7 +1961,7 @@ export default function MapPage() {
 
               {/* ── Admin (GM only) ── */}
               {isGM && (
-                <Tabs.TabPane tab="✏️ Admin" key="admin">
+                <Tabs.TabPane tab={<IconLabel icon="edit">Admin</IconLabel>} key="admin">
                   <Form layout="vertical">
                     <Form.Item label="Name" required>
                       <Input value={editCityName} onChange={(e) => setEditCityName(e.target.value)} />
@@ -1276,20 +1995,20 @@ export default function MapPage() {
 
               {/* ── Image (GM only) ── */}
               {isGM && (
-                <Tabs.TabPane tab="🖼️ Image" key="image">
-                  <Space direction="vertical" size={12} style={w100}>
+                <Tabs.TabPane tab={<IconLabel icon="image">Image</IconLabel>} key="image">
+                  <Space orientation="vertical" size={12} style={w100}>
                     {openCity.imageUrl ? (
-                      <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 220 }}>
+                      <div style={S.drawerImageWrap(220)}>
                         <img
                           src={resolveApiUrl(openCity.imageUrl)}
                           alt={openCity.imageAlt ?? openCity.name}
-                          style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                          style={S.drawerImage(220)}
                         />
                       </div>
                     ) : (
                       <Typography.Text type="secondary">No image.</Typography.Text>
                     )}
-                    <Form.Item label="Alt text" style={{ marginBottom: 8 }}>
+                    <Form.Item label="Alt text" style={S.imageAltFormItem}>
                       <Input
                         value={editCityImgAlt}
                         onChange={(e) => setEditCityImgAlt(e.target.value)}
@@ -1305,8 +2024,8 @@ export default function MapPage() {
 
               {/* ── Controls (GM only) ── */}
               {isGM && (
-                <Tabs.TabPane tab="⚙️ Controls" key="controls">
-                  <Space direction="vertical" size={16} style={w100}>
+                <Tabs.TabPane tab={<IconLabel icon="controls">Controls</IconLabel>} key="controls">
+                  <Space orientation="vertical" size={16} style={w100}>
                     {/* Visible */}
                     <Space style={spaceBetween}>
                       <div>
@@ -1381,19 +2100,19 @@ export default function MapPage() {
                 ) : !cityLores.length ? (
                   <Empty description="No lores linked." />
                 ) : (
-                  <div style={{ display: 'grid', gap: 10 }}>
+                  <S.LinkedGrid>
                     {cityLores.map((l) => (
-                      <div key={l.id} style={{ border: '1px solid #f0f0f0', borderRadius: 10, padding: 12 }}>
+                      <S.LinkedCard key={l.id}>
                         <Space wrap size={8}>
                           <Typography.Text strong>{l.title}</Typography.Text>
                           {l.category ? <Tag>{l.category}</Tag> : <Tag>(no category)</Tag>}
                         </Space>
-                        <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                        <Typography.Paragraph style={S.linkedParagraph}>
                           {l.content?.trim() || '—'}
                         </Typography.Paragraph>
-                      </div>
+                      </S.LinkedCard>
                     ))}
-                  </div>
+                  </S.LinkedGrid>
                 )}
               </Tabs.TabPane>
 
@@ -1406,9 +2125,9 @@ export default function MapPage() {
                 ) : !cityQuests.length ? (
                   <Empty description="No quests linked." />
                 ) : (
-                  <div style={{ display: 'grid', gap: 10 }}>
+                  <S.LinkedGrid>
                     {cityQuests.map((q) => (
-                      <div key={q.id} style={{ border: '1px solid #f0f0f0', borderRadius: 10, padding: 12 }}>
+                      <S.LinkedCard key={q.id}>
                         <Space wrap size={8}>
                           <Typography.Text strong>{q.title}</Typography.Text>
                           {q.status && (
@@ -1418,13 +2137,13 @@ export default function MapPage() {
                           )}
                           {q.reward && <Tag color="gold">Reward</Tag>}
                         </Space>
-                        <Typography.Paragraph style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+                        <Typography.Paragraph style={S.linkedParagraph}>
                           {q.description?.trim() || '—'}
                         </Typography.Paragraph>
                         {q.reward && <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>}
-                      </div>
+                      </S.LinkedCard>
                     ))}
-                  </div>
+                  </S.LinkedGrid>
                 )}
               </Tabs.TabPane>
             </Tabs>
@@ -1434,13 +2153,15 @@ export default function MapPage() {
         {/* ── Dungeon Drawer ── */}
         <Drawer
           zIndex={drawerZIndex}
-          visible={!!openDungeon}
+          open={!!openDungeon}
           onClose={() => setOpenDungeonId(null)}
-          width={mobileOnly ? '100%' : 480}
+          size={mobileOnly ? '100%' : 480}
           title={
             openDungeon ? (
               <Space wrap size={8}>
-                <span style={bold800}>⚔️ {openDungeon.name}</span>
+                <span style={S.drawerTitleText}>
+                  <IconLabel icon="dungeon">{openDungeon.name}</IconLabel>
+                </span>
                 {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
                 {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
                 {isGM && !openDungeon.visible && <Tag color="red">Hidden</Tag>}
@@ -1451,12 +2172,10 @@ export default function MapPage() {
           }
         >
           {openDungeon && (
-            <Space direction="vertical" size={12} style={w100}>
+            <Space orientation="vertical" size={12} style={w100}>
               {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
               {openDungeon.description ? (
-                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
-                  {openDungeon.description}
-                </Typography.Paragraph>
+                <Typography.Paragraph style={S.drawerCompactParagraph}>{openDungeon.description}</Typography.Paragraph>
               ) : (
                 <Typography.Text type="secondary">No description.</Typography.Text>
               )}

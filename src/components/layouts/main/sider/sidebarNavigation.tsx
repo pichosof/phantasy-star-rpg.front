@@ -21,6 +21,7 @@ import {
   TagOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
+import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
 import { ROUTES } from '@app/constants/routes';
 
 export interface SidebarNavigationItem {
@@ -33,15 +34,13 @@ export interface SidebarNavigationItem {
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
-function isGMMode() {
+export function isGMMode() {
   // SSR safe (se um dia você renderizar fora do browser)
   if (typeof window === 'undefined') return false;
   return Boolean(window.localStorage.getItem(GM_KEY_STORAGE));
 }
 
-export const sidebarNavigation: SidebarNavigationItem[] = (() => {
-  const isGM = isGMMode();
-
+export const getSidebarNavigation = (isGM = isGMMode()): SidebarNavigationItem[] => {
   // ✅ Base (PC / Players)
   const nav: SidebarNavigationItem[] = [
     {
@@ -63,7 +62,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       key: 'world',
       icon: <GlobalOutlined />,
       children: [
-        { title: 'Worlds', key: 'worlds', url: ROUTES.WORLDS },
+        { title: 'Worlds', key: 'worlds', url: ROUTES.WORLDS, icon: <AppIcon name="world" /> },
         { title: 'Dungeons', key: 'dungeons', url: ROUTES.DUNGEONS, icon: <ThunderboltOutlined /> },
         { title: 'Map Markers', key: 'map-markers', url: ROUTES.MAP_MARKERS, icon: <AimOutlined /> },
       ],
@@ -98,14 +97,6 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       // se você tiver rota separada de cities admin, coloca aqui também
       // { title: 'Cities (GM)', key: 'cities-gm', url: ROUTES.CITIES_ADMIN, icon: <EnvironmentOutlined /> },
     );
-
-    // World -> GM tools
-    const world = nav.find((x) => x.key === 'world');
-    world?.children?.push(
-      { title: 'Lores (GM)', key: 'lores-gm', url: ROUTES.LORES, icon: <BookOutlined /> },
-      // se tiver rota separada:
-      // { title: 'Lores (GM)', key: 'lores-gm', url: ROUTES.LORES_GM, icon: <BookOutlined /> },
-    );
   }
 
   if (isGM) {
@@ -114,6 +105,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
       key: 'gm-area',
       icon: <LockOutlined />,
       children: [
+        { title: 'Lores (GM)', key: 'lores-gm', url: ROUTES.LORES, icon: <BookOutlined /> },
         { title: 'Notes', key: 'gm-notes', url: ROUTES.GM_NOTES, icon: <FileTextOutlined /> },
         { title: 'Images', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
         { title: 'Sheets', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
@@ -122,4 +114,4 @@ export const sidebarNavigation: SidebarNavigationItem[] = (() => {
   }
 
   return nav;
-})();
+};

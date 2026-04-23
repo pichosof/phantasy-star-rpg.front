@@ -24,7 +24,8 @@ export const TimeRangePicker: React.FC<TimePickerProps> = ({ timeRange, setTimeR
 
   return (
     <DayjsDatePicker.RangePicker
-      value={[timeRangePrepared[0], timeRangePrepared[1]]}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      value={[timeRangePrepared[0], timeRangePrepared[1]] as any}
       picker="time"
       format="HH:mm"
       onChange={onChange}

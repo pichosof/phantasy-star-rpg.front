@@ -1,59 +1,78 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import type { MenuProps } from 'antd';
 import * as S from './SiderMenu.styles';
-import { sidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
-import { Menu } from 'antd';
+import { getSidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
+import { useGMMode } from '@app/hooks/useGMMode';
 
 interface SiderContentProps {
   setCollapsed: (isCollapsed: boolean) => void;
 }
 
-const sidebarNavFlat = sidebarNavigation.reduce(
-  (result: SidebarNavigationItem[], current) =>
-    result.concat(current.children && current.children.length > 0 ? current.children : current),
-  [],
-);
-
 const SiderMenu: React.FC<SiderContentProps> = ({ setCollapsed }) => {
+  const isGM = useGMMode();
   const location = useLocation();
+  const sidebarNavigation = React.useMemo(() => getSidebarNavigation(isGM), [isGM]);
+  const sidebarNavFlat = React.useMemo(
+    () =>
+      sidebarNavigation.reduce(
+        (result: SidebarNavigationItem[], current) =>
+          result.concat(current.children && current.children.length > 0 ? current.children : current),
+        [],
+      ),
+    [sidebarNavigation],
+  );
 
   const currentMenuItem = sidebarNavFlat.find(({ url }) => url === location.pathname);
-  const defaultSelectedKeys = currentMenuItem ? [currentMenuItem.key] : [];
+  const selectedKeys = currentMenuItem ? [currentMenuItem.key] : [];
 
   const openedSubmenu = sidebarNavigation.find(({ children }) =>
     children?.some(({ url }) => url === location.pathname),
   );
-  const defaultOpenKeys = openedSubmenu ? [openedSubmenu.key] : [];
+  const derivedOpenKeys = React.useMemo(() => (openedSubmenu ? [openedSubmenu.key] : []), [openedSubmenu]);
+  const openKeysSignature = derivedOpenKeys.join('|');
+  const [openKeys, setOpenKeys] = React.useState<string[]>(derivedOpenKeys);
+
+  React.useEffect(() => {
+    setOpenKeys(derivedOpenKeys);
+  }, [derivedOpenKeys, openKeysSignature]);
+
+  const menuItems: MenuProps['items'] = sidebarNavigation.map((nav) =>
+    nav.children && nav.children.length > 0
+      ? {
+          key: nav.key,
+          label: nav.title,
+          icon: nav.icon,
+          popupClassName: 'd-none',
+          children: nav.children.map((childNav) => ({
+            key: childNav.key,
+            icon: childNav.icon,
+            label: <Link to={childNav.url || ''}>{childNav.title}</Link>,
+            title: '',
+          })),
+        }
+      : {
+          key: nav.key,
+          icon: nav.icon,
+          label: <Link to={nav.url || ''}>{nav.title}</Link>,
+          title: '',
+        },
+  );
 
   return (
     <S.Menu
       mode="inline"
-      defaultSelectedKeys={defaultSelectedKeys}
-      defaultOpenKeys={defaultOpenKeys}
+      selectedKeys={selectedKeys}
+      openKeys={openKeys}
       onClick={() => setCollapsed(true)}
-    >
-      {sidebarNavigation.map((nav) =>
-        nav.children && nav.children.length > 0 ? (
-          <Menu.SubMenu
-            key={nav.key}
-            title={nav.title}
-            icon={nav.icon}
-            onTitleClick={() => setCollapsed(false)}
-            popupClassName="d-none"
-          >
-            {nav.children.map((childNav) => (
-              <Menu.Item key={childNav.key} title="">
-                <Link to={childNav.url || ''}>{childNav.title}</Link>
-              </Menu.Item>
-            ))}
-          </Menu.SubMenu>
-        ) : (
-          <Menu.Item key={nav.key} title="" icon={nav.icon}>
-            <Link to={nav.url || ''}>{nav.title}</Link>
-          </Menu.Item>
-        ),
-      )}
-    </S.Menu>
+      items={menuItems}
+      onOpenChange={(openKeys) => {
+        setOpenKeys(openKeys as string[]);
+        if (openKeys.length > 0) {
+          setCollapsed(false);
+        }
+      }}
+    />
   );
 };
 

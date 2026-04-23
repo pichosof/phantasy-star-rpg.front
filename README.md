@@ -1,4 +1,20 @@
 # phantasy-star-rpg.front
+
+## Current Branch Notes
+
+- Migration progress and PR breakdown live in `MIGRATION_PLAN.md`.
+- The frontend can be reached on `localhost` and on the local network for
+  mobile QA. Current example: `http://192.168.10.198:3000`.
+- Mobile shell work is in progress with `antd-mobile` for screens below
+  `768px`, including header, menu, settings, PWA and GM flows.
+- GM-only routes now redirect to `/403` when there is no active GM key:
+  `/lores`, `/gm/notes`, `/gm/images` and `/gm/sheets`.
+- Useful commands:
+  - `yarn start`
+  - `yarn type-check`
+  - `yarn lint`
+  - `yarn build`
+
 ```
 phantasy-star-rpg.front
 ├─ .eslintrc.js
