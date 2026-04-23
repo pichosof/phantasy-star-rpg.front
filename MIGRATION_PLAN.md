@@ -35,7 +35,8 @@ Branch de trabalho: `update-version`
 - PR5.10 concluido com GmNotes e GmImages
 - PR5.11 concluido com Wiki e Library
 - PR5.12 concluido com GmSheets, GurpsSheetForm e StarfinderSheetForm
-- PR5.13 em revisao com Map e DiceRoller
+- PR5.13 concluido com Map e DiceRoller
+- PR5.14 em revisao para hardening final mobile
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -78,6 +79,7 @@ Branch de trabalho: `update-version`
 | `89dc30e` | feat: add mobile-first dungeons page |
 | `fe92418` | feat: add mobile-first gm notes and images |
 | `6926a61` | feat: add mobile-first wiki and library |
+| `36c6f3a` | feat: add mobile-first gm sheet forms |
 
 ---
 
@@ -369,12 +371,30 @@ Fica para as proximas fatias:
     equipamentos, linguas e XP
   - calculos principais expostos como stat cards touch-friendly
 
-### PR5.13 - Map e DiceRoller (em revisao)
+### PR5.13 - Map e DiceRoller (concluido)
 
-- Map
-- DiceRoller
+- `Map` convertido para fluxo mobile-first dedicado
+- Entregue:
+  - busca mobile e filtros por regiao, descoberta e visibilidade em sheet
+  - canvas mobile com pan horizontal/touch e marcadores maiores
+  - acoes de presentation, ruler e filtros em controles touch-friendly
+  - detalhe mobile de cidade em `MobileEntitySheet`
+  - tabs mobile de detalhes, links e GM
+  - controles GM mobile para editar cidade, visibilidade, descoberta, imagem e
+    reposicionamento no mapa
+  - picker mobile pesquisavel para posicionar cidades e dungeons
+  - detalhe mobile de dungeon com reposicionamento/remocao para GM
+  - preservacao do fluxo desktop/tablet existente
+- `DiceRoller` convertido para fluxo mobile-first dedicado
+- Entregue:
+  - seletor de dados com botoes grandes e stepper por dado
+  - formula selecionada visivel antes da rolagem
+  - action dock sticky para rolar/resetar com alcance de polegar
+  - resultado mobile em card de alto contraste com dados renderizados
+  - historico mobile com replay, limpeza e leitura compacta
+  - preservacao do fluxo desktop/tablet existente
 
-### PR5.14 - Hardening
+### PR5.14 - Hardening (em revisao)
 
 - QA cross-device
 - Ajustes touch

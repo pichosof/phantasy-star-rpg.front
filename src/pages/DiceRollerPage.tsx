@@ -1,10 +1,13 @@
 import React from 'react';
 import { Badge, Button, Divider, Space, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, RollbackOutlined } from '@ant-design/icons';
+import { Button as AdmMobileButton, Tag as AdmMobileTag } from 'antd-mobile';
+import { DeleteOutline, LoopOutline } from 'antd-mobile-icons';
 
 import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
+import { MobileCard, MobilePageScaffold } from '@app/components/common/mobile';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 import { m0, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
@@ -349,10 +352,204 @@ export const DiceRollerPage: React.FC = () => {
     setLastEntry(null);
   }
 
+  const selectedGroups = React.useMemo(
+    () => ALL_DICE.filter((d) => selection[d] > 0).map((d) => ({ type: d, count: selection[d] })),
+    [selection],
+  );
   const historySum = React.useMemo(() => history.reduce((a, e) => a + e.total, 0), [history]);
 
   const totalLabelColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)';
   const totalValueColor = isDark ? '#fff' : 'rgba(0,0,0,0.88)';
+  const selectedLabel = selectedGroups.length ? buildLabel(selectedGroups) : 'Choose dice to begin';
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>Dice Roller</PageTitle>
+
+        <MobilePageScaffold
+          meta={
+            <S.MobileMetaRow>
+              <AdmMobileTag color="primary" fill="outline" round>
+                {totalDice} selected
+              </AdmMobileTag>
+              <AdmMobileTag fill="outline" round>
+                {history.length} rolls
+              </AdmMobileTag>
+              {history.length > 0 && (
+                <AdmMobileTag color="warning" fill="outline" round>
+                  Total sum {historySum}
+                </AdmMobileTag>
+              )}
+            </S.MobileMetaRow>
+          }
+          subtitle="Pick dice with thumb-friendly controls and keep the roll action pinned within reach."
+          title={<IconLabel icon="dice">Dice Roller</IconLabel>}
+        >
+          <S.MobileDiceStack>
+            <MobileCard compact>
+              <S.MobileHero>
+                <S.MobileHeroTitle>Roll fast. Read faster.</S.MobileHeroTitle>
+                <S.MobileHeroText>
+                  Tap plus or minus under each die. The sticky roll bar stays close to your thumb while the table is
+                  melting down.
+                </S.MobileHeroText>
+                <S.MobileFormula>{selectedLabel}</S.MobileFormula>
+              </S.MobileHero>
+            </MobileCard>
+
+            <MobileCard compact>
+              <S.MobileDiceGrid>
+                {ALL_DICE.map((d) => {
+                  const count = selection[d];
+                  const active = count > 0;
+                  const color = DIE_COLORS[d];
+
+                  return (
+                    <S.MobileDieCard key={d} $active={active} $color={color} $isDark={isDark}>
+                      <S.MobileDieShape $active={active} $color={color} $shape={DIE_SHAPES[d]}>
+                        d{d}
+                      </S.MobileDieShape>
+                      <S.MobileDieStepper>
+                        <S.MobileAdjustButton
+                          $disabled={count === 0}
+                          disabled={count === 0}
+                          onClick={() => changeCount(d, -1)}
+                        >
+                          -
+                        </S.MobileAdjustButton>
+                        <S.MobileDieCount $active={active} $color={color}>
+                          {count}
+                        </S.MobileDieCount>
+                        <S.MobileAdjustButton onClick={() => changeCount(d, 1)}>+</S.MobileAdjustButton>
+                      </S.MobileDieStepper>
+                    </S.MobileDieCard>
+                  );
+                })}
+              </S.MobileDiceGrid>
+            </MobileCard>
+
+            {lastEntry && (
+              <MobileCard compact>
+                <S.MobileResultHeader>
+                  <div>
+                    <S.MobileResultLabel>Last result</S.MobileResultLabel>
+                    <S.MobileFormula>{lastEntry.label}</S.MobileFormula>
+                  </div>
+                  <S.MobileResultTotal>{lastEntry.total}</S.MobileResultTotal>
+                </S.MobileResultHeader>
+                <S.MobileDiceCloud>
+                  {lastEntry.rolls.flatMap((r) =>
+                    r.values.map((v, i) => (
+                      <DiceFaceDisplay
+                        key={`mobile-last-${r.type}-${i}`}
+                        type={r.type}
+                        value={v}
+                        size={44}
+                        isDark={isDark}
+                      />
+                    )),
+                  )}
+                </S.MobileDiceCloud>
+
+                {(() => {
+                  const allValues = lastEntry.rolls.flatMap((r) => r.values);
+                  const numericOnly = allValues.filter((v): v is number => v !== 'edge');
+                  const edgeCount = allValues.length - numericOnly.length;
+                  const allEdged = allValues.length > 0 && edgeCount === allValues.length;
+                  const allMax =
+                    numericOnly.length > 0 &&
+                    edgeCount === 0 &&
+                    lastEntry.rolls.every((r) => r.values.every((v) => v === r.type));
+                  const allMin =
+                    numericOnly.length > 0 &&
+                    edgeCount === 0 &&
+                    lastEntry.rolls.every((r) => r.values.every((v) => v === 1));
+
+                  if (allEdged)
+                    return (
+                      <div style={S.resultBanner('rgba(250,173,20,0.15)', 'rgba(250,173,20,0.5)')}>
+                        <Typography.Text style={S.resultBannerText('#faad14', 700)}>
+                          <IconLabel icon="alert">TOTAL EDGE. Useless, historic, beautiful.</IconLabel>
+                        </Typography.Text>
+                      </div>
+                    );
+                  if (allMax)
+                    return (
+                      <div style={S.resultBanner('rgba(255,197,61,0.12)', 'rgba(255,197,61,0.3)')}>
+                        <Typography.Text style={S.resultBannerText('#ffc53d', 700)}>
+                          <IconLabel icon="star">All dice at maximum!</IconLabel>
+                        </Typography.Text>
+                      </div>
+                    );
+                  if (allMin)
+                    return (
+                      <div style={S.resultBanner('rgba(255,77,79,0.12)', 'rgba(255,77,79,0.3)')}>
+                        <Typography.Text style={S.resultBannerText('#ff4d4f', 700)}>
+                          <IconLabel icon="alert">Total fumble - all dice at minimum!</IconLabel>
+                        </Typography.Text>
+                      </div>
+                    );
+                  if (edgeCount > 0)
+                    return (
+                      <div style={S.resultBanner('rgba(250,173,20,0.08)', 'rgba(250,173,20,0.25)')}>
+                        <Typography.Text style={S.resultBannerText('#faad14', 600)}>
+                          <IconLabel icon="alert">
+                            {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count.
+                          </IconLabel>
+                        </Typography.Text>
+                      </div>
+                    );
+                  return null;
+                })()}
+              </MobileCard>
+            )}
+
+            <MobileCard compact>
+              <S.MobileResultHeader>
+                <div>
+                  <S.MobileResultLabel>History</S.MobileResultLabel>
+                  <S.MobileFormula>{history.length ? `${history.length} rolls saved` : 'No rolls yet'}</S.MobileFormula>
+                </div>
+                {history.length > 0 && (
+                  <AdmMobileButton color="danger" fill="outline" size="small" onClick={clearHistory}>
+                    <DeleteOutline /> Clear
+                  </AdmMobileButton>
+                )}
+              </S.MobileResultHeader>
+
+              {history.length === 0 ? (
+                <S.MobileEmptyState>Your rolls will appear here after the first throw.</S.MobileEmptyState>
+              ) : (
+                <S.MobileHistoryList>
+                  {history.slice(0, 20).map((e) => (
+                    <HistoryRow
+                      key={e.id}
+                      entry={e}
+                      isDark={isDark}
+                      onReplay={(entry) => {
+                        const groups: DiceGroup[] = entry.rolls.map((r) => ({ type: r.type, count: r.values.length }));
+                        doRoll(groups);
+                      }}
+                    />
+                  ))}
+                </S.MobileHistoryList>
+              )}
+            </MobileCard>
+          </S.MobileDiceStack>
+        </MobilePageScaffold>
+
+        <S.MobileRollDock>
+          <AdmMobileButton block color="primary" disabled={totalDice === 0} loading={rolling} onClick={() => doRoll()}>
+            <IconLabel icon="dice">Roll{totalDice > 0 ? ` (${totalDice})` : ''}</IconLabel>
+          </AdmMobileButton>
+          <AdmMobileButton disabled={totalDice === 0} fill="outline" onClick={clearSelection}>
+            <LoopOutline /> Reset
+          </AdmMobileButton>
+        </S.MobileRollDock>
+      </>
+    );
+  }
 
   return (
     <>

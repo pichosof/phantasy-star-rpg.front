@@ -214,3 +214,154 @@ export const linkedParagraph: CSSProperties = {
   marginTop: 8,
   whiteSpace: 'pre-wrap',
 };
+
+export const MobileMapStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileWorldTitle = styled.h1`
+  margin: 0;
+  color: var(--text-main-color);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+`;
+
+export const MobileWorldDescription = styled.p`
+  margin: 6px 0 0;
+  color: var(--text-secondary-color);
+  font-size: 0.86rem;
+  line-height: 1.45;
+`;
+
+export const MobileMetaRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const MobileControlGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+`;
+
+export const MobileMapViewport = styled.div`
+  width: 100%;
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background: #050609;
+  -webkit-overflow-scrolling: touch;
+`;
+
+export function mobileMapCanvas(presentMode: boolean, isFullscreen: boolean, cursorActive: boolean): CSSProperties {
+  return {
+    ...mapCanvas(presentMode, isFullscreen, cursorActive),
+    minWidth: presentMode ? '100%' : 680,
+    borderRadius: presentMode ? 0 : 18,
+    boxShadow: presentMode ? 'none' : '0 18px 48px rgba(0,0,0,0.24)',
+    touchAction: cursorActive ? 'manipulation' : 'pan-x pan-y',
+  };
+}
+
+export function mobileCityMarker(left: string, top: string, bg: string, selected: boolean): CSSProperties {
+  return {
+    ...cityMarker(left, top, bg, selected),
+    width: 28,
+    height: 28,
+    borderWidth: 3,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.34)',
+  };
+}
+
+export function mobileDungeonMarker(left: string, top: string, bg: string, selected: boolean): CSSProperties {
+  return {
+    ...dungeonMarker(left, top, bg, selected),
+    width: 24,
+    height: 24,
+    borderWidth: 3,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.38)',
+  };
+}
+
+export const MobileInstruction = styled.div`
+  border: 1px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--text-main-color);
+  font-size: 0.86rem;
+  line-height: 1.4;
+`;
+
+export const MobileSheetStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileLinkedList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileLinkedCard = styled.div`
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--psr-mobile-elevated-bg);
+`;
+
+export const MobileLinkedTitle = styled.div`
+  color: var(--text-main-color);
+  font-weight: 800;
+`;
+
+export const MobileLinkedText = styled.p`
+  margin: 8px 0 0;
+  color: var(--text-secondary-color);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+export const MobilePickerList = styled.div`
+  display: grid;
+  gap: 8px;
+`;
+
+export const MobilePickerButton = styled.button<{ $active?: boolean }>`
+  width: 100%;
+  border: 1px solid ${(p) => (p.$active ? 'var(--primary-color)' : 'var(--border-color)')};
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: ${(p) =>
+    p.$active ? 'color-mix(in srgb, var(--primary-color) 12%, transparent)' : 'var(--psr-mobile-elevated-bg)'};
+  color: var(--text-main-color);
+  text-align: left;
+  display: grid;
+  gap: 4px;
+`;
+
+export const MobilePickerTitle = styled.span`
+  font-weight: 800;
+`;
+
+export const MobilePickerMeta = styled.span`
+  color: var(--text-secondary-color);
+  font-size: 0.78rem;
+`;
+
+export const MobileEmptyState = styled.div`
+  min-height: 116px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--text-secondary-color);
+  line-height: 1.45;
+`;

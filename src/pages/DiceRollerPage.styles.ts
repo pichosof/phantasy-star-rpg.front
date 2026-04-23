@@ -327,3 +327,172 @@ export const HistoryList = styled.div`
   overflow-y: auto;
   padding-right: 4px;
 `;
+
+export const MobileDiceStack = styled.div`
+  display: grid;
+  gap: 12px;
+  padding-bottom: 86px;
+`;
+
+export const MobileHero = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileHeroTitle = styled.h1`
+  margin: 0;
+  color: var(--text-main-color);
+  font-size: 1.55rem;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+`;
+
+export const MobileHeroText = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.88rem;
+  line-height: 1.45;
+`;
+
+export const MobileMetaRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const MobileDiceGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+`;
+
+export const MobileDieCard = styled.div<{ $active: boolean; $color: string; $isDark: boolean }>`
+  min-height: 106px;
+  border: 1px solid ${(p) => (p.$active ? `${p.$color}88` : p.$isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
+  border-radius: 18px;
+  padding: 10px 8px;
+  background: ${(p) => (p.$active ? `${p.$color}20` : 'var(--psr-mobile-elevated-bg)')};
+  color: var(--text-main-color);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  box-shadow: ${(p) => (p.$active ? `0 12px 26px ${p.$color}22` : 'none')};
+  touch-action: manipulation;
+`;
+
+export const MobileDieShape = styled.span<{ $active: boolean; $color: string; $shape: string }>`
+  width: 46px;
+  height: 46px;
+  clip-path: ${(p) => p.$shape};
+  background: ${(p) => (p.$active ? p.$color : `${p.$color}55`)};
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+`;
+
+export const MobileDieCount = styled.span<{ $active: boolean; $color: string }>`
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: ${(p) => (p.$active ? '#fff' : 'var(--text-secondary-color)')};
+  background: ${(p) => (p.$active ? p.$color : 'transparent')};
+  font-size: 1rem;
+  font-weight: 900;
+`;
+
+export const MobileDieStepper = styled.div`
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+`;
+
+export const MobileAdjustButton = styled.button<{ $disabled?: boolean }>`
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--additional-background-color);
+  color: ${(p) => (p.$disabled ? 'var(--disabled-color)' : 'var(--text-main-color)')};
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1;
+  touch-action: manipulation;
+`;
+
+export const MobileFormula = styled.div`
+  color: var(--text-secondary-color);
+  font-family: monospace;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+`;
+
+export const MobileResultHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+`;
+
+export const MobileResultTotal = styled.div`
+  color: var(--text-main-color);
+  font-size: clamp(3.4rem, 18vw, 5.5rem);
+  font-weight: 950;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+`;
+
+export const MobileResultLabel = styled.div`
+  color: var(--text-secondary-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+`;
+
+export const MobileDiceCloud = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+export const MobileHistoryList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileEmptyState = styled.div`
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--text-secondary-color);
+  line-height: 1.45;
+`;
+
+export const MobileRollDock = styled.div`
+  position: fixed;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: 12px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--additional-background-color) 88%, transparent);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(16px);
+`;
