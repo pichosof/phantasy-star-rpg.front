@@ -192,9 +192,20 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos extraidos para `SessionsPage.styles.ts`
 
-### PR5.5 - Quests
+### PR5.5 - Quests (em revisao)
 
-- Quests
+- `Quests` convertido para fluxo mobile-first
+- Entregue:
+  - board mobile com busca e filtros em sheet
+  - alternancia mobile entre `Quests` e `GM`
+  - cards mobile com status, recompensa, cidades vinculadas e visibilidade
+  - detalhe da quest em `MobileEntitySheet`
+  - tabs mobile de `Overview`, `Cities` e `GM`
+  - criacao mobile de quest
+  - edicao, tags, visibilidade e exclusao em fluxo mobile GM
+  - preservacao do fluxo desktop/tablet com grid, tabela e drawer
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos consolidados em `QuestsPage.styles.ts`
 
 ### PR5.6 - Demais CRUDs e paginas de campanha
 
