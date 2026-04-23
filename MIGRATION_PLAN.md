@@ -29,7 +29,8 @@ Branch de trabalho: `update-version`
 - PR6 (PWA) concluido e integrado ao fluxo atual
 - PR5.1 a PR5.6 concluidos com shell mobile, kit compartilhado e primeiras
   paginas mobile-first estabilizadas
-- PR5.7 em revisao com Tags e LoresAdmin
+- PR5.7 concluido com Tags e LoresAdmin
+- PR5.8 em revisao com Bestiary e NPCs
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -67,6 +68,7 @@ Branch de trabalho: `update-version`
 | `9922441` | feat: add mobile-first sessions page |
 | `2c90ab5` | feat: add mobile-first quests page |
 | `22bcee9` | feat: add mobile-first timeline page |
+| `22577f2` | feat: add mobile-first tags and lores admin |
 
 ---
 
@@ -229,7 +231,7 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos consolidados em `TimelinePage.styles.ts`
 
-### PR5.7 - Tags e LoresAdmin (em revisao)
+### PR5.7 - Tags e LoresAdmin (concluido)
 
 - `Tags` convertido para fluxo mobile-first
 - Entregue:
@@ -250,20 +252,44 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos consolidados em `LoresAdminPage.styles.ts`
 
-### PR5.8 - Demais CRUDs e paginas de campanha
+### PR5.8 - Bestiary e NPCs (em revisao)
 
-- Bestiary
-- NPCs
+- `Bestiary` convertido para fluxo mobile-first
+- Entregue:
+  - cards mobile com imagem, descoberta e visibilidade
+  - busca mobile e filtros em sheet
+  - alternancia mobile entre `Bestiary` e `GM`
+  - detalhe da criatura em `MobileEntitySheet`
+  - tabs mobile de `Overview` e `GM`
+  - criacao mobile de criatura
+  - edicao, upload de imagem, tags, descoberta, visibilidade e exclusao em fluxo mobile GM
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos mobile consolidados em `BestiaryPage.styles.ts`
+- `NPCs` convertido para fluxo mobile-first
+- Entregue:
+  - cards mobile com portrait, role, location e visibilidade
+  - busca mobile e filtros em sheet por role, location e visibilidade
+  - alternancia mobile entre `View` e `GM`
+  - detalhe do NPC em `MobileEntitySheet`
+  - tabs mobile de `Profile`, `Sheet` e `GM`
+  - viewer PDF existente preservado tambem no mobile
+  - criacao mobile de NPC
+  - edicao, upload de portrait/PDF, tags, visibilidade e exclusao em fluxo mobile GM
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos mobile consolidados em `NPCsPage.styles.ts`
+
+### PR5.9 - Demais CRUDs e paginas de campanha
+
 - Dungeons
 
-### PR5.9 - Conteudo e GM area
+### PR5.10 - Conteudo e GM area
 
 - Wiki
 - Library
 - GmNotes
 - GmImages
 
-### PR5.10 - Fluxos complexos
+### PR5.11 - Fluxos complexos
 
 - Map
 - GmSheets
@@ -271,7 +297,7 @@ Fica para as proximas fatias:
 - StarfinderSheetForm
 - DiceRoller
 
-### PR5.11 - Hardening
+### PR5.12 - Hardening
 
 - QA cross-device
 - Ajustes touch

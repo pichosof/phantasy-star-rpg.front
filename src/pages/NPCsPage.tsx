@@ -18,6 +18,14 @@ import {
   message,
 } from 'antd';
 import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  SpinLoading,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import {
   DeleteOutlined,
   EditOutlined,
   EnvironmentOutlined,
@@ -26,6 +34,15 @@ import {
   PictureOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import {
+  AddOutline,
+  DeleteOutline,
+  FileOutline,
+  FilterOutline,
+  PictureOutline,
+  SetOutline,
+  UserOutline,
+} from 'antd-mobile-icons';
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
@@ -36,6 +53,19 @@ import { Card } from '@app/components/common/Card/Card';
 import { Table } from '@app/components/common/Table/Table';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+  MobileTabs,
+} from '@app/components/common/mobile';
+import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -51,7 +81,9 @@ import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textSm, textMd, bold700, spaceBetween, dividerSm, tableWrap } from '@app/styles/styleUtils';
 import * as S from './NPCsPage.styles';
 
-const GM_KEY = 'gm_api_key';
+type NpcViewMode = 'public' | 'admin';
+type VisibilityFilter = 'all' | 'visible' | 'hidden';
+type NpcSheetTab = 'profile' | 'sheet' | 'gm';
 
 // ── Role enum ─────────────────────────────────────────────────────────────────
 
@@ -105,6 +137,15 @@ function getRoleMeta(role?: string | null): { color: string; hex: string } {
     if (key.includes(k)) return v;
   }
   return { color: 'default', hex: '#8c8c8c' };
+}
+
+function mobileRoleColor(role?: string | null): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
+  const color = getRoleMeta(role).color;
+  if (color === 'red' || color === 'volcano') return 'danger';
+  if (color === 'green') return 'success';
+  if (color === 'gold' || color === 'orange') return 'warning';
+  if (color === 'default') return 'default';
+  return 'primary';
 }
 
 function initials(name: string) {
@@ -697,17 +738,22 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
 
 export const NPCsPage: React.FC = () => {
   const { mobileOnly, isTablet } = useResponsive();
+  const isGM = useGMMode();
+  const initialViewModeSyncedRef = React.useRef(false);
+  const imageInputRef = React.useRef<HTMLInputElement | null>(null);
+  const sheetInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [npcs, setNpcs] = React.useState<Npc[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [isGM, setIsGM] = React.useState(() => Boolean(localStorage.getItem(GM_KEY)));
 
-  const [viewMode, setViewMode] = React.useState<'public' | 'admin'>('public');
+  const [viewMode, setViewMode] = React.useState<NpcViewMode>('public');
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [npcSheetTab, setNpcSheetTab] = React.useState<NpcSheetTab>('profile');
 
   const [search, setSearch] = React.useState('');
   const [filterRole, setFilterRole] = React.useState<string | null>(null);
   const [filterLoc, setFilterLoc] = React.useState<string | null>(null);
-  const [filterVis, setFilterVis] = React.useState<'all' | 'visible' | 'hidden'>('all');
+  const [filterVis, setFilterVis] = React.useState<VisibilityFilter>('all');
 
   const [openId, setOpenId] = React.useState<number | null>(null);
   const [adminId, setAdminId] = React.useState<number | null>(null);
@@ -718,14 +764,30 @@ export const NPCsPage: React.FC = () => {
   const [newRole, setNewRole] = React.useState('');
   const [newLoc, setNewLoc] = React.useState('');
   const [newDesc, setNewDesc] = React.useState('');
+  const [creatingNpc, setCreatingNpc] = React.useState(false);
+
+  const [mobileName, setMobileName] = React.useState('');
+  const [mobileRole, setMobileRole] = React.useState('');
+  const [mobileLocation, setMobileLocation] = React.useState('');
+  const [mobileDesc, setMobileDesc] = React.useState('');
+  const [mobileImgAlt, setMobileImgAlt] = React.useState('');
+  const [mobileSaving, setMobileSaving] = React.useState(false);
+  const [mobileUploadingImage, setMobileUploadingImage] = React.useState(false);
+  const [mobileUploadingSheet, setMobileUploadingSheet] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === GM_KEY) setIsGM(Boolean(e.newValue));
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+    if (!initialViewModeSyncedRef.current) {
+      initialViewModeSyncedRef.current = true;
+      if (isGM) setViewMode('admin');
+    }
+
+    if (!isGM) {
+      setViewMode('public');
+      setFilterVis('all');
+      setNpcSheetTab('profile');
+    }
+  }, [isGM]);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -764,9 +826,9 @@ export const NPCsPage: React.FC = () => {
   const filtered = React.useMemo(
     () =>
       npcs.filter((n) => {
-        if (!isGM && !isVisible(n)) return false;
-        if (isGM && filterVis === 'visible' && !isVisible(n)) return false;
-        if (isGM && filterVis === 'hidden' && isVisible(n)) return false;
+        if (viewMode === 'public' && !isVisible(n)) return false;
+        if (isGM && viewMode === 'admin' && filterVis === 'visible' && !isVisible(n)) return false;
+        if (isGM && viewMode === 'admin' && filterVis === 'hidden' && isVisible(n)) return false;
         if (filterRole && n.role !== filterRole) return false;
         if (filterLoc && n.location !== filterLoc) return false;
         if (q)
@@ -778,7 +840,7 @@ export const NPCsPage: React.FC = () => {
           );
         return true;
       }),
-    [npcs, isGM, filterVis, filterRole, filterLoc, q],
+    [npcs, isGM, viewMode, filterVis, filterRole, filterLoc, q],
   );
 
   const stats = React.useMemo(
@@ -805,16 +867,29 @@ export const NPCsPage: React.FC = () => {
     try {
       await NpcApi.remove(id);
       setNpcs((prev) => prev.filter((x) => x.id !== id));
+      if (openId === id) setOpenId(null);
+      if (adminId === id) {
+        setAdminId(null);
+        setAdminOpen(false);
+      }
+      setDeleteDialogOpen(false);
       message.success('NPC deleted');
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to delete NPC'));
     }
   }
 
-  async function onCreate(e: React.FormEvent) {
-    e.preventDefault();
+  function resetCreateForm() {
+    setNewName('');
+    setNewRole('');
+    setNewLoc('');
+    setNewDesc('');
+  }
+
+  async function createNpc() {
     const n = newName.trim();
     if (!n) return message.warning('Name is required');
+    setCreatingNpc(true);
     try {
       await NpcApi.create({
         name: n,
@@ -823,20 +898,661 @@ export const NPCsPage: React.FC = () => {
         description: newDesc.trim() || null,
       } as CreateNpcDTO);
       setCreating(false);
-      setNewName('');
-      setNewRole('');
-      setNewLoc('');
-      setNewDesc('');
+      resetCreateForm();
       await load();
       message.success('NPC created');
     } catch (e) {
       message.error(apiErrorMessage(e, 'Failed to create NPC'));
+    } finally {
+      setCreatingNpc(false);
     }
+  }
+
+  async function onCreate(e: React.FormEvent) {
+    e.preventDefault();
+    await createNpc();
   }
 
   const detailNpc = npcs.find((x) => x.id === openId) ?? null;
   const adminNpc = npcs.find((x) => x.id === adminId) ?? null;
   const cols = mobileOnly ? 1 : isTablet ? 2 : 3;
+
+  React.useEffect(() => {
+    if (!detailNpc) return;
+    setMobileName(detailNpc.name ?? '');
+    setMobileRole(detailNpc.role ?? '');
+    setMobileLocation(detailNpc.location ?? '');
+    setMobileDesc(detailNpc.description ?? '');
+    setMobileImgAlt(detailNpc.imageAlt ?? '');
+  }, [detailNpc]);
+
+  function resetMobileDraft() {
+    if (!detailNpc) return;
+    setMobileName(detailNpc.name ?? '');
+    setMobileRole(detailNpc.role ?? '');
+    setMobileLocation(detailNpc.location ?? '');
+    setMobileDesc(detailNpc.description ?? '');
+    setMobileImgAlt(detailNpc.imageAlt ?? '');
+  }
+
+  async function saveMobileNpc() {
+    if (!detailNpc) return;
+    const n = mobileName.trim();
+    if (!n) {
+      message.warning('Name is required');
+      return;
+    }
+
+    setMobileSaving(true);
+    try {
+      await NpcApi.update(detailNpc.id, {
+        name: n,
+        role: mobileRole.trim() || null,
+        location: mobileLocation.trim() || null,
+        description: mobileDesc.trim() || null,
+      });
+      await load();
+      message.success('NPC updated');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to save NPC'));
+    } finally {
+      setMobileSaving(false);
+    }
+  }
+
+  async function uploadMobileNpcImage(file: File) {
+    if (!detailNpc) return;
+    setMobileUploadingImage(true);
+    try {
+      await NpcApi.uploadImage(detailNpc.id, file, mobileImgAlt || undefined);
+      await load();
+      message.success('Portrait uploaded');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Upload failed'));
+    } finally {
+      setMobileUploadingImage(false);
+    }
+  }
+
+  async function uploadMobileNpcSheet(file: File) {
+    if (!detailNpc) return;
+    setMobileUploadingSheet(true);
+    try {
+      await NpcApi.uploadSheet(detailNpc.id, file);
+      await load();
+      message.success('Sheet uploaded');
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Upload failed'));
+    } finally {
+      setMobileUploadingSheet(false);
+    }
+  }
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {stats.total} characters
+      </AdmMobileTag>
+      {isGM ? (
+        <>
+          <AdmMobileTag color="success" fill="outline" round>
+            {stats.visible} visible
+          </AdmMobileTag>
+          {stats.hidden > 0 ? (
+            <AdmMobileTag color="warning" fill="outline" round>
+              {stats.hidden} hidden
+            </AdmMobileTag>
+          ) : null}
+        </>
+      ) : null}
+    </S.MobileMetaTags>
+  );
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar inset={false} onChange={setSearch} placeholder="Search characters..." value={search} />
+      <S.MobileFilterRow>
+        <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+          <FilterOutline fontSize={16} /> Filters
+        </AdmMobileButton>
+        {isGM ? (
+          <AdmMobileButton color="primary" onClick={() => setCreating(true)} size="small">
+            <AddOutline fontSize={16} /> New NPC
+          </AdmMobileButton>
+        ) : null}
+      </S.MobileFilterRow>
+    </>
+  );
+
+  const mobileNpcProfile = detailNpc ? (
+    <S.MobileSectionStack>
+      <MobileCard compact>
+        <S.MobileNpcHero $accent={getRoleMeta(detailNpc.role).hex}>
+          {detailNpc.imageUrl ? (
+            <S.MobileNpcHeroImage alt={detailNpc.imageAlt ?? detailNpc.name} src={resolveApiUrl(detailNpc.imageUrl)} />
+          ) : (
+            <S.MobileNpcFallback $accent={getRoleMeta(detailNpc.role).hex}>
+              <span>{initials(detailNpc.name)}</span>
+            </S.MobileNpcFallback>
+          )}
+        </S.MobileNpcHero>
+        <S.MobileNpcHeroInfo>
+          <S.MobileNpcTitle>{detailNpc.name}</S.MobileNpcTitle>
+          <S.MobileMetaTags>
+            {detailNpc.role ? (
+              <AdmMobileTag color={mobileRoleColor(detailNpc.role)} fill="outline" round>
+                {detailNpc.role}
+              </AdmMobileTag>
+            ) : null}
+            {detailNpc.location ? (
+              <AdmMobileTag fill="outline" round>
+                {detailNpc.location}
+              </AdmMobileTag>
+            ) : null}
+            {isGM ? (
+              <AdmMobileTag color={isVisible(detailNpc) ? 'success' : 'danger'} fill="outline" round>
+                {isVisible(detailNpc) ? 'Visible' : 'Hidden'}
+              </AdmMobileTag>
+            ) : null}
+          </S.MobileMetaTags>
+        </S.MobileNpcHeroInfo>
+      </MobileCard>
+
+      <MobileCard compact title="Profile">
+        <S.MobileBodyText>{detailNpc.description?.trim() || 'No information available.'}</S.MobileBodyText>
+      </MobileCard>
+
+      <MobileCard compact title="Details">
+        <S.MobileDetailGrid>
+          <S.MobileDetailItem>
+            <S.MobileDetailLabel>Role</S.MobileDetailLabel>
+            <S.MobileDetailValue>{detailNpc.role || 'Unknown'}</S.MobileDetailValue>
+          </S.MobileDetailItem>
+          <S.MobileDetailItem>
+            <S.MobileDetailLabel>Location</S.MobileDetailLabel>
+            <S.MobileDetailValue>{detailNpc.location || 'Unknown'}</S.MobileDetailValue>
+          </S.MobileDetailItem>
+          {isGM ? (
+            <S.MobileDetailItem>
+              <S.MobileDetailLabel>Sheet</S.MobileDetailLabel>
+              <S.MobileDetailValue>{detailNpc.sheetUrl ? 'Available' : 'Not attached yet'}</S.MobileDetailValue>
+            </S.MobileDetailItem>
+          ) : null}
+        </S.MobileDetailGrid>
+      </MobileCard>
+    </S.MobileSectionStack>
+  ) : null;
+
+  const mobileNpcSheet = detailNpc ? (
+    <S.MobileSectionStack>
+      {detailNpc.sheetUrl ? (
+        <MobileCard compact title="Character Sheet">
+          <NpcSheetViewer sheetUrl={detailNpc.sheetUrl} />
+        </MobileCard>
+      ) : (
+        <MobileCard compact title="Character Sheet">
+          <S.MobileEmptyState>No sheet attached yet.</S.MobileEmptyState>
+        </MobileCard>
+      )}
+      <AdmMobileButton
+        block
+        fill="outline"
+        loading={mobileUploadingSheet}
+        onClick={() => sheetInputRef.current?.click()}
+      >
+        <FileOutline fontSize={17} /> {detailNpc.sheetUrl ? 'Replace PDF sheet' : 'Upload PDF sheet'}
+      </AdmMobileButton>
+    </S.MobileSectionStack>
+  ) : null;
+
+  const mobileNpcGM = detailNpc ? (
+    <S.MobileSectionStack>
+      <MobileCard compact title="Profile">
+        <MobileForm>
+          <MobileForm.Item label="Name">
+            <AdmMobileInput clearable onChange={setMobileName} placeholder="NPC name" value={mobileName} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Role">
+            <MobileSelector<string>
+              columns={2}
+              inset={false}
+              onChange={(values) => setMobileRole((values[0] as string | undefined) ?? '')}
+              options={NPC_ROLES.map((role) => ({ label: role, value: role }))}
+              value={mobileRole ? [mobileRole] : []}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="Location">
+            <AdmMobileInput
+              clearable
+              onChange={setMobileLocation}
+              placeholder="Aiedo, Piata..."
+              value={mobileLocation}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="Description / Background">
+            <AdmMobileTextArea
+              autoSize={{ minRows: 4, maxRows: 8 }}
+              onChange={setMobileDesc}
+              placeholder="History, motivations, behavior..."
+              value={mobileDesc}
+            />
+          </MobileForm.Item>
+        </MobileForm>
+      </MobileCard>
+
+      <MobileCard compact title="Visibility">
+        <S.MobileVisibilityRow>
+          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
+          <AdmMobileSwitch checked={isVisible(detailNpc)} onChange={() => void toggleVisible(detailNpc)} />
+        </S.MobileVisibilityRow>
+      </MobileCard>
+
+      <MobileCard compact title="Media">
+        <S.MobileUploadStack>
+          <S.MobileFieldLabel htmlFor={`npc-image-alt-${detailNpc.id}`}>Portrait alt text</S.MobileFieldLabel>
+          <AdmMobileInput
+            clearable
+            id={`npc-image-alt-${detailNpc.id}`}
+            onChange={setMobileImgAlt}
+            placeholder="Describe the portrait"
+            value={mobileImgAlt}
+          />
+          <S.MobileActionGrid>
+            <AdmMobileButton
+              block
+              fill="outline"
+              loading={mobileUploadingImage}
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <PictureOutline fontSize={17} /> Upload portrait
+            </AdmMobileButton>
+            <AdmMobileButton
+              block
+              fill="outline"
+              loading={mobileUploadingSheet}
+              onClick={() => sheetInputRef.current?.click()}
+            >
+              <FileOutline fontSize={17} /> Upload PDF
+            </AdmMobileButton>
+          </S.MobileActionGrid>
+        </S.MobileUploadStack>
+      </MobileCard>
+
+      <MobileCard compact title="Tags">
+        <TagSelect entityId={detailNpc.id} entityType="npc" />
+      </MobileCard>
+
+      <MobileCard compact title="Danger Zone">
+        <S.MobileDangerZone>
+          <S.MobileBodyText>Deleting an NPC removes the profile, portrait and attached sheet.</S.MobileBodyText>
+          <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteDialogOpen(true)}>
+            <DeleteOutline fontSize={17} /> Delete NPC
+          </AdmMobileButton>
+        </S.MobileDangerZone>
+      </MobileCard>
+    </S.MobileSectionStack>
+  ) : null;
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>Codex - NPCs</PageTitle>
+
+        <MobilePageScaffold
+          actions={
+            isGM ? (
+              <S.MobileFilterRow>
+                <AdmMobileButton
+                  fill={viewMode === 'public' ? 'solid' : 'outline'}
+                  onClick={() => setViewMode('public')}
+                  size="small"
+                >
+                  <UserOutline fontSize={16} /> View
+                </AdmMobileButton>
+                <AdmMobileButton
+                  color="primary"
+                  fill={viewMode === 'admin' ? 'solid' : 'outline'}
+                  onClick={() => setViewMode('admin')}
+                  size="small"
+                >
+                  <SetOutline fontSize={16} /> GM
+                </AdmMobileButton>
+              </S.MobileFilterRow>
+            ) : null
+          }
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle={
+            isGM
+              ? 'Profiles, portraits, sheets and GM controls optimized for mobile.'
+              : 'Characters known to the adventurers in the Algol system.'
+          }
+          title={<IconLabel icon="npc">Character Codex</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                <SpinLoading color="primary" />
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : !filtered.length ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>No NPCs found.</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileNpcsGrid>
+              {filtered.map((npc) => {
+                const meta = getRoleMeta(npc.role);
+                const gmPanel = isGM && viewMode === 'admin';
+
+                return (
+                  <MobileCard compact key={npc.id}>
+                    <S.MobileNpcCardBody>
+                      <S.MobileNpcCardMedia $accent={meta.hex}>
+                        {npc.imageUrl ? (
+                          <S.MobileNpcCardImage alt={npc.imageAlt ?? npc.name} src={resolveApiUrl(npc.imageUrl)} />
+                        ) : (
+                          <S.MobileNpcFallback $accent={meta.hex}>
+                            <span>{initials(npc.name)}</span>
+                          </S.MobileNpcFallback>
+                        )}
+                      </S.MobileNpcCardMedia>
+
+                      <S.MobileNpcTitle>{npc.name}</S.MobileNpcTitle>
+                      <S.MobileMetaTags>
+                        {npc.role ? (
+                          <AdmMobileTag color={mobileRoleColor(npc.role)} fill="outline" round>
+                            {npc.role}
+                          </AdmMobileTag>
+                        ) : null}
+                        {npc.location ? (
+                          <AdmMobileTag fill="outline" round>
+                            {npc.location}
+                          </AdmMobileTag>
+                        ) : null}
+                        {gmPanel ? (
+                          <AdmMobileTag color={isVisible(npc) ? 'success' : 'danger'} fill="outline" round>
+                            {isVisible(npc) ? 'Visible' : 'Hidden'}
+                          </AdmMobileTag>
+                        ) : null}
+                      </S.MobileMetaTags>
+
+                      <S.MobileNpcPreview>{npc.description?.trim() || 'No information available.'}</S.MobileNpcPreview>
+
+                      <S.MobileActionGrid>
+                        <AdmMobileButton
+                          block
+                          color="primary"
+                          onClick={() => {
+                            setNpcSheetTab('profile');
+                            setOpenId(npc.id);
+                          }}
+                        >
+                          Open profile
+                        </AdmMobileButton>
+                        {gmPanel ? (
+                          <AdmMobileButton
+                            block
+                            fill="outline"
+                            onClick={() => {
+                              setNpcSheetTab('gm');
+                              setOpenId(npc.id);
+                            }}
+                          >
+                            <SetOutline fontSize={17} /> GM controls
+                          </AdmMobileButton>
+                        ) : null}
+                      </S.MobileActionGrid>
+                    </S.MobileNpcCardBody>
+                  </MobileCard>
+                );
+              })}
+            </S.MobileNpcsGrid>
+          )}
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Tune the character codex for mobile reading or GM work."
+          footer={
+            <MobileActionBar sticky={false}>
+              <AdmMobileButton block color="primary" onClick={() => setFilterSheetOpen(false)}>
+                Done
+              </AdmMobileButton>
+            </MobileActionBar>
+          }
+          onClose={() => setFilterSheetOpen(false)}
+          title="NPC filters"
+          visible={filterSheetOpen}
+        >
+          <S.MobileSectionStack>
+            {isGM ? (
+              <S.MobileCreateField>
+                <S.MobileFieldLabel>Panel</S.MobileFieldLabel>
+                <MobileSelector<NpcViewMode>
+                  columns={2}
+                  inset={false}
+                  onChange={(values) => setViewMode((values[0] as NpcViewMode | undefined) ?? 'public')}
+                  options={[
+                    { label: 'Public view', value: 'public' },
+                    { label: 'GM panel', value: 'admin' },
+                  ]}
+                  value={[viewMode]}
+                />
+              </S.MobileCreateField>
+            ) : null}
+
+            <S.MobileCreateField>
+              <S.MobileFieldLabel>Role</S.MobileFieldLabel>
+              <MobileSelector<string>
+                columns={2}
+                inset={false}
+                onChange={(values) => {
+                  const value = (values[0] as string | undefined) ?? 'all';
+                  setFilterRole(value === 'all' ? null : value);
+                }}
+                options={[
+                  { label: 'All roles', value: 'all' },
+                  ...allRoles.map((role) => ({ label: role, value: role })),
+                ]}
+                value={[filterRole ?? 'all']}
+              />
+            </S.MobileCreateField>
+
+            {allLocations.length ? (
+              <S.MobileCreateField>
+                <S.MobileFieldLabel>Location</S.MobileFieldLabel>
+                <MobileSelector<string>
+                  columns={1}
+                  inset={false}
+                  onChange={(values) => {
+                    const value = (values[0] as string | undefined) ?? 'all';
+                    setFilterLoc(value === 'all' ? null : value);
+                  }}
+                  options={[
+                    { label: 'All locations', value: 'all' },
+                    ...allLocations.map((location) => ({ label: location, value: location })),
+                  ]}
+                  value={[filterLoc ?? 'all']}
+                />
+              </S.MobileCreateField>
+            ) : null}
+
+            {isGM && viewMode === 'admin' ? (
+              <S.MobileCreateField>
+                <S.MobileFieldLabel>Visibility</S.MobileFieldLabel>
+                <MobileSelector<VisibilityFilter>
+                  columns={3}
+                  inset={false}
+                  onChange={(values) => setFilterVis((values[0] as VisibilityFilter | undefined) ?? 'all')}
+                  options={[
+                    { label: 'All', value: 'all' },
+                    { label: 'Visible', value: 'visible' },
+                    { label: 'Hidden', value: 'hidden' },
+                  ]}
+                  value={[filterVis]}
+                />
+              </S.MobileCreateField>
+            ) : null}
+          </S.MobileSectionStack>
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          description={detailNpc ? 'Profile, sheet and GM controls for this NPC.' : undefined}
+          footer={
+            detailNpc && isGM && npcSheetTab === 'gm' ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveMobileNpc()}>
+                    Save changes
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
+                    Reset
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={() => {
+            setOpenId(null);
+            setNpcSheetTab('profile');
+          }}
+          subtitle={detailNpc?.role ?? detailNpc?.location ?? undefined}
+          title={detailNpc?.name ?? 'NPC'}
+          visible={Boolean(detailNpc)}
+        >
+          {detailNpc && isGM ? (
+            <MobileTabs
+              activeKey={npcSheetTab}
+              items={[
+                { key: 'profile', title: 'Profile', children: mobileNpcProfile },
+                { key: 'sheet', title: 'Sheet', children: mobileNpcSheet },
+                { key: 'gm', title: 'GM', children: mobileNpcGM },
+              ]}
+              onChange={(key) => setNpcSheetTab(key as NpcSheetTab)}
+            />
+          ) : (
+            mobileNpcProfile
+          )}
+
+          <input
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                void uploadMobileNpcImage(file);
+                event.currentTarget.value = '';
+              }
+            }}
+            ref={imageInputRef}
+            type="file"
+          />
+          <input
+            accept="application/pdf"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                void uploadMobileNpcSheet(file);
+                event.currentTarget.value = '';
+              }
+            }}
+            ref={sheetInputRef}
+            type="file"
+          />
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Create the NPC now, then add portrait, PDF and tags from GM controls."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" loading={creatingNpc} onClick={() => void createNpc()}>
+                  Create NPC
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setCreating(false);
+                    resetCreateForm();
+                  }}
+                >
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => {
+            setCreating(false);
+            resetCreateForm();
+          }}
+          subtitle="GM only"
+          title="New NPC"
+          visible={creating && isGM}
+        >
+          <MobileCard compact title="NPC details">
+            <MobileForm>
+              <MobileForm.Item label="Name">
+                <AdmMobileInput clearable onChange={setNewName} placeholder="NPC name" value={newName} />
+              </MobileForm.Item>
+              <MobileForm.Item label="Role">
+                <MobileSelector<string>
+                  columns={2}
+                  inset={false}
+                  onChange={(values) => setNewRole((values[0] as string | undefined) ?? '')}
+                  options={NPC_ROLES.map((role) => ({ label: role, value: role }))}
+                  value={newRole ? [newRole] : []}
+                />
+              </MobileForm.Item>
+              <MobileForm.Item label="Location">
+                <AdmMobileInput clearable onChange={setNewLoc} placeholder="Aiedo, Piata..." value={newLoc} />
+              </MobileForm.Item>
+              <MobileForm.Item label="Description">
+                <AdmMobileTextArea
+                  autoSize={{ minRows: 4, maxRows: 8 }}
+                  onChange={setNewDesc}
+                  placeholder="History, motivations, behavior..."
+                  value={newDesc}
+                />
+              </MobileForm.Item>
+            </MobileForm>
+          </MobileCard>
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteDialogOpen(false),
+            },
+            {
+              key: 'delete',
+              text: 'Delete NPC',
+              danger: true,
+              bold: true,
+              onClick: () => {
+                if (detailNpc) {
+                  return deleteNpc(detailNpc.id);
+                }
+              },
+            },
+          ]}
+          content={detailNpc ? `Delete "${detailNpc.name}" permanently?` : ''}
+          onClose={() => setDeleteDialogOpen(false)}
+          title="Delete NPC?"
+          visible={deleteDialogOpen}
+        />
+      </>
+    );
+  }
 
   const AdminTable = (
     <Card density="dense" title="Manage NPCs">
