@@ -177,11 +177,27 @@ Fica para as proximas fatias:
   - criacao mobile de cidade
   - GM controls mobile com acesso ao editor completo quando necessario
 
-### PR5.4 - CRUDs e paginas de campanha
+### PR5.4 - Sessions (concluido)
 
-- Cities
+- `Sessions` convertido para fluxo mobile-first
+- Entregue:
+  - diario mobile com busca e filtros em sheet
+  - alternancia mobile entre `Diary` e `GM`
+  - cards mobile de sessoes com cover tematico
+  - detalhe da sessao em `MobileEntitySheet`
+  - tabs mobile de `Overview` e `GM`
+  - criacao mobile de sessao
+  - edicao, visibilidade e exclusao em fluxo mobile GM
+  - preservacao do fluxo desktop/tablet com grid, tabela e drawer
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos extraidos para `SessionsPage.styles.ts`
+
+### PR5.5 - Quests
+
 - Quests
-- Sessions
+
+### PR5.6 - Demais CRUDs e paginas de campanha
+
 - Timeline
 - Lores
 - Bestiary
@@ -189,14 +205,14 @@ Fica para as proximas fatias:
 - Dungeons
 - Tags
 
-### PR5.5 - Conteudo e GM area
+### PR5.7 - Conteudo e GM area
 
 - Wiki
 - Library
 - GmNotes
 - GmImages
 
-### PR5.6 - Fluxos complexos
+### PR5.8 - Fluxos complexos
 
 - Map
 - GmSheets
@@ -204,7 +220,7 @@ Fica para as proximas fatias:
 - StarfinderSheetForm
 - DiceRoller
 
-### PR5.7 - Hardening
+### PR5.9 - Hardening
 
 - QA cross-device
 - Ajustes touch
