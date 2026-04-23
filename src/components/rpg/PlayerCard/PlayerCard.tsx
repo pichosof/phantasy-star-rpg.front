@@ -1,10 +1,7 @@
 import React from 'react';
 import { EyeOutlined, IdcardOutlined } from '@ant-design/icons';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { Button } from '@app/components/common/buttons/Button/Button';
+import { PdfDocumentViewer } from '@app/components/common/pdf/PdfDocumentViewer/PdfDocumentViewer';
 import { Switch } from '@app/components/common/Switch/Switch';
 import { Modal } from '@app/components/common/Modal/Modal';
 import { Spin } from 'antd';
@@ -12,20 +9,6 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import type { Player } from '@app/types/rpg';
 import * as S from './PlayerCard.styles';
-
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-
-const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
-  const layoutPlugin = defaultLayoutPlugin();
-
-  return (
-    <Worker workerUrl={PDF_WORKER_URL}>
-      <S.PdfViewerShell>
-        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
-      </S.PdfViewerShell>
-    </Worker>
-  );
-};
 
 type PlayerCardProps = {
   player: Player;
@@ -71,7 +54,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
 
   const previewBackground =
     player.background && player.background.length > 120
-      ? `${player.background.slice(0, 120).trimEnd()}â€¦`
+      ? `${player.background.slice(0, 120).trimEnd()}`
       : player.background || '';
 
   return (
@@ -179,7 +162,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
               <Spin size="large" />
             </S.LoadingShell>
           ) : sheetBlobUrl ? (
-            <PdfViewer url={sheetBlobUrl} />
+            <PdfDocumentViewer url={sheetBlobUrl} />
           ) : (
             <S.EmptySheet>No sheet attached.</S.EmptySheet>
           )}

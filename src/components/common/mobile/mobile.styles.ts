@@ -4,6 +4,7 @@ import {
   Card as AdmCard,
   Form as AdmForm,
   List as AdmList,
+  NavBar as AdmNavBar,
   SearchBar as AdmSearchBar,
   Tabs as AdmTabs,
 } from 'antd-mobile';
@@ -72,22 +73,29 @@ export const getMobilePopupBodyStyle = (
   fullscreen: boolean,
   bodyStyle?: CSSProperties,
 ): CSSProperties => {
+  const viewportWidth = 'min(100%, 100dvw)';
+  const viewportHeight = '100dvh';
+
   const base: CSSProperties = {
     background: 'var(--psr-mobile-surface-bg)',
     color: 'var(--text-main-color)',
+    boxSizing: 'border-box',
+    maxWidth: viewportWidth,
+    overflowX: 'hidden',
   };
 
   const sheet = fullscreen
     ? {
-        width: position === 'left' || position === 'right' ? '100vw' : '100%',
-        height: '100vh',
-        maxHeight: '100vh',
+        width: position === 'left' || position === 'right' ? viewportWidth : '100%',
+        height: viewportHeight,
+        maxHeight: viewportHeight,
       }
     : position === 'left' || position === 'right'
       ? {
-          width: '90vw',
+          width: 'min(90vw, 480px)',
           maxWidth: 480,
-          height: '100vh',
+          height: viewportHeight,
+          maxHeight: viewportHeight,
         }
       : {
           width: '100%',
@@ -304,19 +312,70 @@ export const MobileSheetHandle = styled.div`
 `;
 
 export const MobileSheetFrame = styled.div`
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: 100%;
+  overflow-x: hidden;
 `;
 
 export const MobileSheetHeader = styled.header`
+  min-width: 0;
   display: grid;
   gap: 10px;
   padding: 10px ${MOBILE_PAGE_GUTTER}px 0;
 `;
 
+export const MobileSheetNavBarShell = styled.div`
+  position: relative;
+  width: 100%;
+  min-width: 0;
+
+  .adm-nav-bar {
+    min-height: ${MOBILE_TOUCH_TARGET}px;
+    padding: 0;
+  }
+
+  .adm-nav-bar-title {
+    min-width: 0;
+    justify-content: center;
+    padding-inline: calc(${MOBILE_TOUCH_TARGET}px + 12px);
+    text-align: center;
+  }
+
+  .adm-nav-bar-title > * {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .adm-nav-bar-right {
+    min-width: ${MOBILE_TOUCH_TARGET}px;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 1;
+  }
+`;
+
+export const MobileSheetNavBar = styled(AdmNavBar)`
+  width: 100%;
+`;
+
+export const MobileSheetDismissSlot = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+`;
+
 export const MobileSheetLead = styled.div`
+  min-width: 0;
   display: grid;
   gap: 4px;
   padding: 0 4px 8px;
@@ -335,6 +394,8 @@ export const MobileSheetSubtitle = styled.div`
 `;
 
 export const MobileSheetBody = styled.div`
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   overflow: auto;
   display: grid;
@@ -343,6 +404,8 @@ export const MobileSheetBody = styled.div`
 `;
 
 export const MobileSheetFooter = styled.footer`
+  width: 100%;
+  min-width: 0;
   padding: 0 ${MOBILE_PAGE_GUTTER}px ${MOBILE_PAGE_GUTTER}px;
 `;
 

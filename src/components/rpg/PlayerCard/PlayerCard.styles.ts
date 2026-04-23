@@ -107,11 +107,6 @@ export const PdfFrameWrapper = styled.div`
   max-height: 80vh;
 `;
 
-export const PdfViewerShell = styled.div`
-  height: 100%;
-  overflow: auto;
-`;
-
 export const BackgroundParagraphs = styled.div`
   display: grid;
   gap: 12px;

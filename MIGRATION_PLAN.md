@@ -139,6 +139,11 @@ Entregue:
 - Tokens e classes globais de suporte adicionados em `styleUtils` e
   `GlobalStyle`
 - Inicio do cleanup estrutural de estilos em `*.styles.ts`
+- Fase 1 concluida com `Players` como pagina piloto mobile-first:
+  - lista mobile com busca e filtros em sheet
+  - entity sheet com `Overview`, `Notes` e `GM`
+  - criacao/edicao mobile de personagem
+  - preview de PDF unificado com `react-pdf-viewer` em mobile, tablet e desktop
 
 Ja adiantado dentro da mesma rodada:
 
@@ -152,15 +157,26 @@ Fica para as proximas fatias:
 - Conversao page-by-page dos fluxos restantes, com `Players` como primeira tela
 - Hardening visual, touch e QA cross-device
 
-### PR5.2 - Primitivas compartilhadas
+### PR5.2 - Players (concluido)
 
-- Aplicar e consolidar a Fase 0 nas primeiras paginas reais
-- Refinar os wrappers compartilhados a partir do uso em `Players`
-- Introduzir variantes adicionais somente quando o uso concreto exigir
+- `Players` convertido para fluxo mobile-first usando o kit da Fase 0
+- Wrappers compartilhados refinados a partir do uso real em:
+  - `MobileEntitySheet`
+  - `MobileSearchBar`
+  - shell de popup/drawer mobile
+- Viewer de PDF consolidado em componente compartilhado para todos os breakpoints
 
-### PR5.3 - CRUDs e paginas de campanha
+### PR5.3 - Cities (proxima fatia em andamento)
 
-- Players
+- Aplicar o mesmo padrao mobile-first de `Players` em `Cities`
+- Priorizar:
+  - lista e busca mobile
+  - detalhe da cidade em sheet
+  - tabs de descricao, lores e quests
+  - GM controls coerentes no mobile
+
+### PR5.4 - CRUDs e paginas de campanha
+
 - Cities
 - Quests
 - Sessions
@@ -171,14 +187,14 @@ Fica para as proximas fatias:
 - Dungeons
 - Tags
 
-### PR5.4 - Conteudo e GM area
+### PR5.5 - Conteudo e GM area
 
 - Wiki
 - Library
 - GmNotes
 - GmImages
 
-### PR5.5 - Fluxos complexos
+### PR5.6 - Fluxos complexos
 
 - Map
 - GmSheets
@@ -186,7 +202,7 @@ Fica para as proximas fatias:
 - StarfinderSheetForm
 - DiceRoller
 
-### PR5.6 - Hardening
+### PR5.7 - Hardening
 
 - QA cross-device
 - Ajustes touch

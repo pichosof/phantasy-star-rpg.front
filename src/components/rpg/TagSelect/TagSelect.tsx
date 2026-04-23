@@ -78,7 +78,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
       <S.FullWidthSelect
         mode="multiple"
         allowClear
-        placeholder="Add tagsâ€¦"
+        placeholder="Add tags"
         value={entityTagIds}
         onChange={(ids) => void handleChange(ids as number[])}
         loading={saving}
@@ -102,7 +102,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
 
       <S.CreateRow>
         <S.CreateInput
-          placeholder="New tag nameâ€¦"
+          placeholder="New tag name"
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           onKeyDown={(e) => {

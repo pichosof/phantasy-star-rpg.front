@@ -1,6 +1,5 @@
 import React from 'react';
 import { CloseOutline } from 'antd-mobile-icons';
-import { NavBar } from 'antd-mobile';
 import { MobilePopup, MobilePopupProps } from './MobilePopup';
 import * as S from './mobile.styles';
 
@@ -32,9 +31,18 @@ export const MobileEntitySheet: React.FC<MobileEntitySheetProps> = ({
     <MobilePopup {...props} position={position} fullscreen={fullscreen}>
       <S.MobileSheetFrame>
         <S.MobileSheetHeader>
-          <NavBar back={null} backIcon={<CloseOutline fontSize={20} />} onBack={onClose} right={extra}>
-            {title}
-          </NavBar>
+          <S.MobileSheetNavBarShell>
+            {onClose && (
+              <S.MobileSheetDismissSlot>
+                <S.MobileDismissButton aria-label="Close panel" onClick={onClose} type="button">
+                  <CloseOutline fontSize={18} />
+                </S.MobileDismissButton>
+              </S.MobileSheetDismissSlot>
+            )}
+            <S.MobileSheetNavBar back={null} backIcon={false} right={extra}>
+              {title}
+            </S.MobileSheetNavBar>
+          </S.MobileSheetNavBarShell>
 
           {(subtitle || description) && (
             <S.MobileSheetLead>
