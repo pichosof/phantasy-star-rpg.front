@@ -365,10 +365,15 @@ export const MobileDiceGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 9px;
+
+  @media (max-width: 510px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 `;
 
 export const MobileDieCard = styled.div<{ $active: boolean; $color: string; $isDark: boolean }>`
   min-height: 106px;
+  min-width: 0;
   border: 1px solid ${(p) => (p.$active ? `${p.$color}88` : p.$isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
   border-radius: 18px;
   padding: 10px 8px;
@@ -380,6 +385,14 @@ export const MobileDieCard = styled.div<{ $active: boolean; $color: string; $isD
   gap: 8px;
   box-shadow: ${(p) => (p.$active ? `0 12px 26px ${p.$color}22` : 'none')};
   touch-action: manipulation;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  @media (max-width: 510px) {
+    min-height: 98px;
+    padding: 10px 10px 9px;
+    gap: 7px;
+  }
 `;
 
 export const MobileDieShape = styled.span<{ $active: boolean; $color: string; $shape: string }>`
@@ -393,6 +406,12 @@ export const MobileDieShape = styled.span<{ $active: boolean; $color: string; $s
   font-size: 0.72rem;
   font-weight: 900;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+
+  @media (max-width: 510px) {
+    width: 42px;
+    height: 42px;
+    font-size: 0.68rem;
+  }
 `;
 
 export const MobileDieCount = styled.span<{ $active: boolean; $color: string }>`
@@ -405,14 +424,20 @@ export const MobileDieCount = styled.span<{ $active: boolean; $color: string }>`
   background: ${(p) => (p.$active ? p.$color : 'transparent')};
   font-size: 1rem;
   font-weight: 900;
+  text-align: center;
 `;
 
 export const MobileDieStepper = styled.div`
   display: grid;
-  grid-template-columns: 34px 1fr 34px;
+  grid-template-columns: minmax(30px, 34px) minmax(0, 1fr) minmax(30px, 34px);
   align-items: center;
   gap: 4px;
   width: 100%;
+  min-width: 0;
+
+  @media (max-width: 510px) {
+    gap: 3px;
+  }
 `;
 
 export const MobileAdjustButton = styled.button<{ $disabled?: boolean }>`
@@ -426,6 +451,14 @@ export const MobileAdjustButton = styled.button<{ $disabled?: boolean }>`
   font-weight: 900;
   line-height: 1;
   touch-action: manipulation;
+  box-sizing: border-box;
+
+  @media (max-width: 510px) {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
 `;
 
 export const MobileFormula = styled.div`
