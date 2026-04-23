@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import styled from 'styled-components';
 
 const fixedWidth = (width: number): CSSProperties => ({ width });
 
@@ -280,3 +281,86 @@ export const backPacksLabel: CSSProperties = {
 export const carryDivider: CSSProperties = {
   margin: '10px 0 6px',
 };
+
+export const MobileStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+`;
+
+export const MobileGridSingle = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileStatGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+`;
+
+export const MobileStatCard = styled.div`
+  min-height: 62px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--psr-mobile-elevated-bg);
+  text-align: center;
+`;
+
+export const MobileStatLabel = styled.div`
+  color: var(--text-secondary-color);
+  font-size: 0.72rem;
+  line-height: 1.2;
+`;
+
+export const MobileStatValue = styled.div`
+  color: var(--text-main-color);
+  font-size: 1rem;
+  font-weight: 800;
+`;
+
+export const MobileList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileListItem = styled.div`
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--psr-mobile-elevated-bg);
+`;
+
+export const MobileListHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-main-color);
+  font-weight: 800;
+`;
+
+export const MobileListMeta = styled.span`
+  color: var(--text-secondary-color);
+  font-size: 0.76rem;
+  font-weight: 600;
+`;
+
+export const MobileListActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+export const MobileHint = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.82rem;
+  line-height: 1.45;
+`;

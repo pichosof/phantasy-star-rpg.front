@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import styled from 'styled-components';
 
 const fixedWidth = (width: number): CSSProperties => ({ width });
 
@@ -127,3 +128,99 @@ export function rangedInputWidth(field: string): CSSProperties {
   if (field === 'notes') return fixedWidth(140);
   return fixedWidth(60);
 }
+
+export const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+export const MobileStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+`;
+
+export const MobileGridSingle = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileStatGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+`;
+
+export const MobileStatCard = styled.div`
+  min-height: 62px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--psr-mobile-elevated-bg);
+  text-align: center;
+`;
+
+export const MobileStatLabel = styled.div`
+  color: var(--text-secondary-color);
+  font-size: 0.72rem;
+  line-height: 1.2;
+`;
+
+export const MobileStatValue = styled.div`
+  color: var(--text-main-color);
+  font-size: 1rem;
+  font-weight: 800;
+`;
+
+export const MobileList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileListItem = styled.div`
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--psr-mobile-elevated-bg);
+`;
+
+export const MobileListActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+export const MobileTableWrap = styled.div`
+  overflow-x: auto;
+`;
+
+export const MobileEncumbranceTable = styled.table`
+  width: 100%;
+  min-width: 430px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th,
+  td {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+  }
+
+  th {
+    color: var(--text-secondary-color);
+    font-size: 0.75rem;
+  }
+`;
+
+export const MobileHint = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.82rem;
+  line-height: 1.45;
+`;

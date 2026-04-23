@@ -34,7 +34,8 @@ Branch de trabalho: `update-version`
 - PR5.9 concluido com Dungeons
 - PR5.10 concluido com GmNotes e GmImages
 - PR5.11 concluido com Wiki e Library
-- PR5.12 em revisao com fluxos complexos
+- PR5.12 concluido com GmSheets, GurpsSheetForm e StarfinderSheetForm
+- PR5.13 em revisao com Map e DiceRoller
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -76,6 +77,7 @@ Branch de trabalho: `update-version`
 | `d8ae0c3` | feat: add mobile-first bestiary and npcs |
 | `89dc30e` | feat: add mobile-first dungeons page |
 | `fe92418` | feat: add mobile-first gm notes and images |
+| `6926a61` | feat: add mobile-first wiki and library |
 
 ---
 
@@ -345,15 +347,34 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos mobile consolidados em `LibraryPage.styles.ts`
 
-### PR5.12 - Fluxos complexos (em revisao)
+### PR5.12 - GmSheets e formularios de ficha (concluido)
+
+- `GmSheets` convertido para fluxo mobile-first
+- Entregue:
+  - lista mobile com busca, filtros por sistema e cards de acoes GM
+  - criacao mobile de ficha com seletor de sistema
+  - edicao mobile em `MobileEntitySheet` com nome da ficha e formulario completo
+  - exclusao mobile com `MobileDialog`
+  - preservacao do fluxo desktop/tablet com drawer e cards existentes
+- `GurpsSheetForm` convertido para edicao mobile por secoes colapsaveis
+- Entregue:
+  - importacao GCA preservada no mobile
+  - identidade, atributos, secundarios, encumbrance e combate em blocos
+  - listas editaveis mobile para linguas, familiaridades, vantagens,
+    desvantagens, skills, armas, posses e notas
+- `StarfinderSheetForm` convertido para edicao mobile por secoes colapsaveis
+- Entregue:
+  - identidade, ability scores, combate, saves, HP e skills em blocos densos
+  - listas editaveis mobile para armas, armadura, habilidades, feats, spells,
+    equipamentos, linguas e XP
+  - calculos principais expostos como stat cards touch-friendly
+
+### PR5.13 - Map e DiceRoller (em revisao)
 
 - Map
-- GmSheets
-- GurpsSheetForm
-- StarfinderSheetForm
 - DiceRoller
 
-### PR5.13 - Hardening
+### PR5.14 - Hardening
 
 - QA cross-device
 - Ajustes touch
