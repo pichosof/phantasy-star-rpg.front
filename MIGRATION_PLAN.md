@@ -166,14 +166,16 @@ Fica para as proximas fatias:
   - shell de popup/drawer mobile
 - Viewer de PDF consolidado em componente compartilhado para todos os breakpoints
 
-### PR5.3 - Cities (proxima fatia em andamento)
+### PR5.3 - Cities (concluido)
 
-- Aplicar o mesmo padrao mobile-first de `Players` em `Cities`
-- Priorizar:
-  - lista e busca mobile
-  - detalhe da cidade em sheet
-  - tabs de descricao, lores e quests
-  - GM controls coerentes no mobile
+- `Cities` convertido para fluxo mobile-first
+- Entregue:
+  - lista mobile com busca e filtros em sheet
+  - cards mobile para modos `players` e `gm`
+  - detalhe da cidade em `MobileEntitySheet`
+  - tabs mobile de `Overview`, `Lores`, `Quests` e `GM`
+  - criacao mobile de cidade
+  - GM controls mobile com acesso ao editor completo quando necessario
 
 ### PR5.4 - CRUDs e paginas de campanha
 
