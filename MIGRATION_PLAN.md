@@ -27,8 +27,9 @@ Branch de trabalho: `update-version`
 
 - PR1 a PR4.5 concluidos
 - PR6 (PWA) concluido e integrado ao fluxo atual
-- PR5.1 em andamento com shell mobile, iconografia semantica, guard de rotas
-  GM e Fase 0 do kit mobile compartilhado ja concluida
+- PR5.1 a PR5.6 concluidos com shell mobile, kit compartilhado e primeiras
+  paginas mobile-first estabilizadas
+- PR5.7 em revisao com Tags e LoresAdmin
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -61,6 +62,11 @@ Branch de trabalho: `update-version`
 | `006047c` | chore: finish antd 6 deprecated cleanup |
 | `cccf74a` | chore: finish pr4.5 cleanup and tooling warnings |
 | `45e9d02` | feat: enable lan mobile access and restore pwa install |
+| `c3dffc0` | feat: finish pr5 phase 1 players mobile experience |
+| `3422171` | feat: add mobile-first cities page |
+| `9922441` | feat: add mobile-first sessions page |
+| `2c90ab5` | feat: add mobile-first quests page |
+| `22bcee9` | feat: add mobile-first timeline page |
 
 ---
 
@@ -115,7 +121,7 @@ Premissas:
 - Desktop/tablet continuam com AntD, mas o visual e o comportamento precisam
   permanecer coerentes entre Motavia e Dezolis
 
-### PR5.1 - Infra + Shell mobile (em andamento)
+### PR5.1 - Infra + Shell mobile (concluido)
 
 Entregue:
 
@@ -192,7 +198,7 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos extraidos para `SessionsPage.styles.ts`
 
-### PR5.5 - Quests (em revisao)
+### PR5.5 - Quests (concluido)
 
 - `Quests` convertido para fluxo mobile-first
 - Entregue:
@@ -207,7 +213,7 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos consolidados em `QuestsPage.styles.ts`
 
-### PR5.6 - Timeline (em revisao)
+### PR5.6 - Timeline (concluido)
 
 - `Timeline` convertido para fluxo mobile-first
 - Entregue:
@@ -223,22 +229,41 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos consolidados em `TimelinePage.styles.ts`
 
-### PR5.7 - Demais CRUDs e paginas de campanha
+### PR5.7 - Tags e LoresAdmin (em revisao)
 
-- Lores
+- `Tags` convertido para fluxo mobile-first
+- Entregue:
+  - lista mobile com busca e cards touch-friendly
+  - detalhe de entidades vinculadas em `MobileEntitySheet`
+  - detalhe de entidade relacionada em sheet dedicado
+  - criacao, edicao e exclusao mobile para GM
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos consolidados em `TagsPage.styles.ts`
+- `LoresAdmin` convertido para fluxo mobile-first
+- Entregue:
+  - alternancia mobile entre arquivo publico e painel GM
+  - busca e filtros em sheet
+  - cards mobile por categoria, visibilidade e tags
+  - detalhe de lore em `MobileEntitySheet`
+  - tabs mobile de `Overview` e `GM`
+  - criacao, edicao, tags, visibilidade e exclusao em fluxo mobile GM
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos consolidados em `LoresAdminPage.styles.ts`
+
+### PR5.8 - Demais CRUDs e paginas de campanha
+
 - Bestiary
 - NPCs
 - Dungeons
-- Tags
 
-### PR5.8 - Conteudo e GM area
+### PR5.9 - Conteudo e GM area
 
 - Wiki
 - Library
 - GmNotes
 - GmImages
 
-### PR5.9 - Fluxos complexos
+### PR5.10 - Fluxos complexos
 
 - Map
 - GmSheets
@@ -246,7 +271,7 @@ Fica para as proximas fatias:
 - StarfinderSheetForm
 - DiceRoller
 
-### PR5.10 - Hardening
+### PR5.11 - Hardening
 
 - QA cross-device
 - Ajustes touch
