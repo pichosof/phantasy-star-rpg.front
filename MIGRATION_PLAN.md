@@ -207,23 +207,38 @@ Fica para as proximas fatias:
   - troca do acesso GM direto por `useGMMode()`
   - estilos consolidados em `QuestsPage.styles.ts`
 
-### PR5.6 - Demais CRUDs e paginas de campanha
+### PR5.6 - Timeline (em revisao)
 
-- Timeline
+- `Timeline` convertido para fluxo mobile-first
+- Entregue:
+  - timeline mobile vertical com rail, dots coloridos e cards touch-friendly
+  - busca mobile e filtros em sheet
+  - alternancia mobile entre `Timeline` e `GM`
+  - detalhe do evento em `MobileEntitySheet`
+  - tabs mobile de `Overview` e `GM`
+  - criacao mobile de evento
+  - edicao, visibilidade e exclusao em fluxo mobile GM
+  - preservacao da timeline visual desktop/tablet
+  - preservacao da tabela admin desktop/tablet
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos consolidados em `TimelinePage.styles.ts`
+
+### PR5.7 - Demais CRUDs e paginas de campanha
+
 - Lores
 - Bestiary
 - NPCs
 - Dungeons
 - Tags
 
-### PR5.7 - Conteudo e GM area
+### PR5.8 - Conteudo e GM area
 
 - Wiki
 - Library
 - GmNotes
 - GmImages
 
-### PR5.8 - Fluxos complexos
+### PR5.9 - Fluxos complexos
 
 - Map
 - GmSheets
@@ -231,7 +246,7 @@ Fica para as proximas fatias:
 - StarfinderSheetForm
 - DiceRoller
 
-### PR5.9 - Hardening
+### PR5.10 - Hardening
 
 - QA cross-device
 - Ajustes touch

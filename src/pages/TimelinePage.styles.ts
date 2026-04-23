@@ -81,6 +81,12 @@ export const createForm = styled.form`
   max-width: 520px;
 `;
 
+export const createInputRow = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
 export const createTitleInput: CSSProperties = {
   minWidth: 240,
 };
@@ -97,6 +103,14 @@ export const editForm = styled.form`
 export const adminTitle: CSSProperties = {
   cursor: 'pointer',
   fontSize: 13,
+};
+
+export const tableMinWidth: CSSProperties = {
+  minWidth: 760,
+};
+
+export const emptyTopSpacing: CSSProperties = {
+  marginTop: 16,
 };
 
 export function timelineWrap(mobileOnly: boolean): CSSProperties {
@@ -190,4 +204,171 @@ export const drawerDescription: CSSProperties = {
   marginBottom: 0,
   fontSize: 14,
   lineHeight: 1.7,
+  whiteSpace: 'pre-wrap',
 };
+
+export const drawerTitleText: CSSProperties = {
+  fontWeight: 800,
+};
+
+export const MobileFilterRow = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const MobileMetaTags = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const MobileTimelineRoot = styled.div`
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 4px 0 4px 28px;
+`;
+
+export const MobileTimelineRail = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 9px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #00c8e8 5%,
+    #7722dd 30%,
+    #ff6b1a 58%,
+    #ff2244 82%,
+    transparent 100%
+  );
+`;
+
+export const MobileTimelineItem = styled.div`
+  position: relative;
+  min-width: 0;
+`;
+
+export const MobileTimelineDot = styled.div<{ $color: string }>`
+  position: absolute;
+  top: 18px;
+  left: -26px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid ${({ $color }) => $color};
+  border-radius: 999px;
+  background: ${({ $color }) => $color};
+  box-shadow:
+    0 0 10px ${({ $color }) => $color},
+    0 0 20px ${({ $color }) => `${$color}55`};
+`;
+
+export const MobileEventBody = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileEventDate = styled.span<{ $color: string }>`
+  justify-self: start;
+  padding: 3px 9px;
+  border: 1px solid ${({ $color }) => `${$color}66`};
+  border-radius: 999px;
+  background: ${({ $color }) => `${$color}22`};
+  color: ${({ $color }) => $color};
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+`;
+
+export const MobileEventTitle = styled.div`
+  color: var(--text-main-color);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.15;
+`;
+
+export const MobileEventPreview = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+`;
+
+export const MobileEventActions = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+`;
+
+export const MobileSectionStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileDetailGrid = styled.dl`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+  margin: 0;
+`;
+
+export const MobileDetailItem = styled.div`
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+`;
+
+export const MobileDetailLabel = styled.dt`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+export const MobileDetailValue = styled.dd`
+  margin: 0;
+  color: var(--text-main-color);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+`;
+
+export const MobileVisibilityRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+export const MobileInlineLabel = styled.span`
+  color: var(--text-secondary-color);
+  font-size: 13px;
+  font-weight: 600;
+`;
+
+export const MobileBodyText = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+`;
+
+export const MobileEmptyState = styled.div`
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+`;
+
+export const MobileDangerZone = styled.div`
+  display: grid;
+  gap: 10px;
+`;
