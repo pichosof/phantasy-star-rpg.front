@@ -273,3 +273,122 @@ export const DocListGrid = styled.div`
   display: grid;
   gap: 10px;
 `;
+
+export const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+export const MobileMetaTags = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const MobileFilterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  > * {
+    flex: 1;
+  }
+`;
+
+export const MobileDocList = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileDocBody = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileDocTitle = styled.h2`
+  margin: 0;
+  color: var(--text-main-color);
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+`;
+
+export const MobileDocDescription = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+export const MobileDocMeta = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+`;
+
+export const MobileDocActions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+`;
+
+export const MobileDocGmRow = styled.div`
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+export const MobileDocGmLabel = styled.span`
+  color: var(--text-main-color);
+  font-size: 0.92rem;
+  font-weight: 600;
+`;
+
+export const MobileEmptyState = styled.div`
+  min-height: 116px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--text-secondary-color);
+`;
+
+export const MobilePanelStack = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+export const MobileUploadProgressList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const MobileUploadProgressItem = styled.div`
+  display: grid;
+  gap: 5px;
+`;
+
+export const MobileUploadName = styled.span`
+  color: var(--text-main-color);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+`;
+
+export const MobileHintText = styled.p`
+  margin: 0;
+  color: var(--text-secondary-color);
+  font-size: 0.82rem;
+  line-height: 1.45;
+`;
+
+export const MobileKeyScreen = styled.div`
+  padding: 0 16px;
+`;

@@ -33,7 +33,8 @@ Branch de trabalho: `update-version`
 - PR5.8 concluido com Bestiary e NPCs
 - PR5.9 concluido com Dungeons
 - PR5.10 concluido com GmNotes e GmImages
-- PR5.11 em revisao com Conteudo e GM area
+- PR5.11 concluido com Wiki e Library
+- PR5.12 em revisao com fluxos complexos
 - Tema Motavia/Dezolis revisado no shell para desktop, tablet e mobile
 - Grande parte das paginas e componentes migrada para `*.styles.ts`, reduzindo
   `inline styles` e estilos misturados com JSX
@@ -74,6 +75,7 @@ Branch de trabalho: `update-version`
 | `22577f2` | feat: add mobile-first tags and lores admin |
 | `d8ae0c3` | feat: add mobile-first bestiary and npcs |
 | `89dc30e` | feat: add mobile-first dungeons page |
+| `fe92418` | feat: add mobile-first gm notes and images |
 
 ---
 
@@ -319,12 +321,31 @@ Fica para as proximas fatias:
   - preservacao do fluxo desktop/tablet
   - estilos mobile consolidados em `GmImagesPage.styles.ts`
 
-### PR5.11 - Conteudo e GM area
+### PR5.11 - Wiki e Library (concluido)
 
-- Wiki
-- Library
+- `Wiki` convertido para fluxo mobile-first
+- Entregue:
+  - busca mobile e filtros por categoria/pinned em sheet
+  - cards mobile com categoria, pinned, visibilidade e preview de markdown
+  - leitura de artigo em `MobileEntitySheet`
+  - editor mobile com detalhes, flags, markdown, preview e upload de imagem
+  - pin/unpin, visibilidade e exclusao em fluxo mobile GM
+  - troca do acesso GM direto por `useGMMode()`
+  - preservacao do fluxo desktop/tablet com sidebar, editor e preview existentes
+  - estilos mobile consolidados em `WikiPage.styles.ts`
+- `Library` convertido para fluxo mobile-first
+- Entregue:
+  - tela mobile de unlock com chave da biblioteca
+  - busca mobile e filtros por categoria em sheet
+  - cards mobile de documentos com abrir, download, editar, visibilidade e exclusao
+  - upload mobile em sheet com metadados, multi-file input e progresso
+  - settings mobile em sheet para chave de acesso dos players
+  - edicao mobile de metadados em `MobileEntitySheet`
+  - viewer de documentos preservado para PDF, TXT/MD, DOC/DOCX, EPUB e MOBI
+  - troca do acesso GM direto por `useGMMode()`
+  - estilos mobile consolidados em `LibraryPage.styles.ts`
 
-### PR5.12 - Fluxos complexos
+### PR5.12 - Fluxos complexos (em revisao)
 
 - Map
 - GmSheets

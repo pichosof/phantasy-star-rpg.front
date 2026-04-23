@@ -22,6 +22,25 @@ import {
   Typography,
   Upload,
 } from 'antd';
+import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  ProgressBar as AdmMobileProgressBar,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import {
+  DeleteOutline,
+  DownlandOutline,
+  EditSOutline,
+  EyeOutline,
+  FilterOutline,
+  KeyOutline,
+  LockOutline,
+  SetOutline,
+  UploadOutline,
+} from 'antd-mobile-icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { apiErrorMessage } from '../utils/api-error';
 import {
@@ -38,7 +57,19 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
 } from '@ant-design/icons';
-import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+} from '@app/components/common/mobile';
+import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import {
   deleteLibraryDocument,
@@ -72,8 +103,6 @@ import {
   wrapAnywhere,
 } from '@app/styles/styleUtils';
 import * as S from './LibraryPage.styles';
-
-const GM_KEY_STORAGE = 'gm_api_key';
 
 const CATEGORIES = ['rulebook', 'supplement', 'reference', 'adventure', 'other'];
 
@@ -459,6 +488,7 @@ function mimeColor(mime: string) {
 // ── Key Entry Screen ───────────────────────────────────────────────────────────
 
 const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
+  const { mobileOnly } = useResponsive();
   const [input, setInput] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
@@ -483,6 +513,41 @@ const KeyEntryScreen: React.FC<{ onAccess: () => void }> = ({ onAccess }) => {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (mobileOnly) {
+    return (
+      <S.MobileKeyScreen>
+        <MobilePageScaffold
+          meta={
+            <S.MobileMetaTags>
+              <AdmMobileTag color="warning" fill="outline" round>
+                Locked
+              </AdmMobileTag>
+            </S.MobileMetaTags>
+          }
+          subtitle="Enter the access key provided by your Game Master."
+          title={<IconLabel icon="read">Library Access</IconLabel>}
+        >
+          <MobileCard compact>
+            <MobileForm>
+              <MobileForm.Item label="Access key">
+                <AdmMobileInput
+                  clearable
+                  onChange={setInput}
+                  placeholder="Library access key..."
+                  type="password"
+                  value={input}
+                />
+              </MobileForm.Item>
+            </MobileForm>
+            <AdmMobileButton block color="primary" loading={loading} onClick={() => void tryKey()}>
+              <LockOutline fontSize={17} /> Unlock Library
+            </AdmMobileButton>
+          </MobileCard>
+        </MobilePageScaffold>
+      </S.MobileKeyScreen>
+    );
   }
 
   return (
@@ -609,6 +674,91 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
 
+const MobileDocCard: React.FC<Omit<DocCardProps, 'isMobile'>> = ({
+  doc,
+  isGM,
+  onEdit,
+  onDelete,
+  onToggleVisible,
+  onView,
+}) => {
+  const [downloading, setDownloading] = React.useState(false);
+  const canView = VIEWABLE_MIME.has(doc.mime);
+
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      await downloadDocument(doc);
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to download.'));
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <MobileCard compact>
+      <S.MobileDocBody>
+        <S.MobileMetaTags>
+          <AdmMobileTag color="primary" fill="outline" round>
+            {mimeLabel(doc.mime)}
+          </AdmMobileTag>
+          {doc.category ? (
+            <AdmMobileTag fill="outline" round>
+              {doc.category}
+            </AdmMobileTag>
+          ) : null}
+          {isGM && !doc.visible ? (
+            <AdmMobileTag color="danger" fill="outline" round>
+              Hidden
+            </AdmMobileTag>
+          ) : null}
+        </S.MobileMetaTags>
+
+        <S.MobileDocTitle>{doc.title}</S.MobileDocTitle>
+        {doc.description ? <S.MobileDocDescription>{doc.description}</S.MobileDocDescription> : null}
+        <S.MobileDocMeta>
+          {formatBytes(doc.size)} - {doc.originalName}
+        </S.MobileDocMeta>
+
+        {isGM ? (
+          <S.MobileDocGmRow>
+            <S.MobileDocGmLabel>Visible to players</S.MobileDocGmLabel>
+            <AdmMobileSwitch checked={doc.visible} onChange={() => onToggleVisible(doc)} />
+          </S.MobileDocGmRow>
+        ) : null}
+
+        <S.MobileDocActions>
+          {canView ? (
+            <AdmMobileButton block color="primary" onClick={() => onView(doc)}>
+              <EyeOutline fontSize={17} /> Open
+            </AdmMobileButton>
+          ) : null}
+          <AdmMobileButton
+            block
+            color={canView ? 'default' : 'primary'}
+            fill={canView ? 'outline' : 'solid'}
+            loading={downloading}
+            onClick={() => void handleDownload()}
+          >
+            <DownlandOutline fontSize={17} /> Download
+          </AdmMobileButton>
+          {isGM ? (
+            <>
+              <AdmMobileButton block fill="outline" onClick={() => onEdit(doc)}>
+                <EditSOutline fontSize={17} /> Edit
+              </AdmMobileButton>
+              <AdmMobileButton block color="danger" fill="outline" onClick={() => onDelete(doc)}>
+                <DeleteOutline fontSize={17} /> Delete
+              </AdmMobileButton>
+            </>
+          ) : null}
+        </S.MobileDocActions>
+      </S.MobileDocBody>
+    </MobileCard>
+  );
+};
+
 interface EditModalProps {
   doc: LibraryDocument | null;
   onClose: () => void;
@@ -616,6 +766,7 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
+  const { mobileOnly } = useResponsive();
   const [title, setTitle] = React.useState(doc?.title ?? '');
   const [description, setDescription] = React.useState(doc?.description ?? '');
   const [category, setCategory] = React.useState(doc?.category ?? '');
@@ -646,6 +797,61 @@ const EditModal: React.FC<EditModalProps> = ({ doc, onClose, onSaved }) => {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (mobileOnly) {
+    return (
+      <MobileEntitySheet
+        description={doc ? `Update metadata for ${doc.originalName}.` : undefined}
+        footer={
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={saving} onClick={() => void save()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={onClose}>
+                Cancel
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        }
+        onClose={onClose}
+        subtitle="GM document editor"
+        title="Edit document"
+        visible={Boolean(doc)}
+      >
+        <MobileCard compact title="Document details">
+          <MobileForm>
+            <MobileForm.Item label="Title">
+              <AdmMobileInput clearable onChange={setTitle} placeholder="Document title *" value={title} />
+            </MobileForm.Item>
+            <MobileForm.Item label="Category">
+              <MobileSelector<string>
+                columns={1}
+                inset={false}
+                onChange={(values) => {
+                  const value = values[0] ?? 'none';
+                  setCategory(value === 'none' ? '' : value);
+                }}
+                options={[{ label: 'No category', value: 'none' }, ...CATEGORIES.map((c) => ({ label: c, value: c }))]}
+                value={[category || 'none']}
+              />
+            </MobileForm.Item>
+            <MobileForm.Item label="Description">
+              <AdmMobileTextArea
+                autoSize={{ minRows: 3, maxRows: 8 }}
+                onChange={setDescription}
+                placeholder="Short description..."
+                value={description}
+              />
+            </MobileForm.Item>
+          </MobileForm>
+        </MobileCard>
+      </MobileEntitySheet>
+    );
   }
 
   return (
@@ -697,6 +903,7 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
+  const { mobileOnly } = useResponsive();
   const [hasKey, setHasKey] = React.useState<boolean | null>(null);
   const [newKey, setNewKey] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -737,6 +944,52 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onReload }) => {
     } finally {
       setClearing(false);
     }
+  }
+
+  if (mobileOnly) {
+    return (
+      <S.MobilePanelStack>
+        <MobileCard compact>
+          <S.MobileHintText>
+            Set the access key players must enter to unlock the library. The key is stored as a secure hash and cannot
+            be read back.
+          </S.MobileHintText>
+        </MobileCard>
+
+        {hasKey !== null ? (
+          <MobileCard compact>
+            <S.MobileMetaTags>
+              <AdmMobileTag color={hasKey ? 'success' : 'danger'} fill="outline" round>
+                {hasKey ? 'Player key set' : 'Library locked'}
+              </AdmMobileTag>
+            </S.MobileMetaTags>
+          </MobileCard>
+        ) : null}
+
+        <MobileCard compact title="Player access key">
+          <MobileForm>
+            <MobileForm.Item label="New key">
+              <AdmMobileInput
+                clearable
+                onChange={setNewKey}
+                placeholder="Min 12 chars..."
+                type="password"
+                value={newKey}
+              />
+            </MobileForm.Item>
+          </MobileForm>
+        </MobileCard>
+
+        <AdmMobileButton block color="primary" loading={saving} onClick={() => void save()}>
+          <KeyOutline fontSize={17} /> {hasKey ? 'Change key' : 'Set key'}
+        </AdmMobileButton>
+        {hasKey ? (
+          <AdmMobileButton block color="danger" fill="outline" loading={clearing} onClick={() => void clearKey()}>
+            Remove key
+          </AdmMobileButton>
+        ) : null}
+      </S.MobilePanelStack>
+    );
   }
 
   return (
@@ -793,6 +1046,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
   const [description, setDescription] = React.useState('');
   const [category, setCategory] = React.useState('');
   const [uploads, setUploads] = React.useState<Map<string, UploadEntry>>(new Map());
+  const mobileFileRef = React.useRef<HTMLInputElement>(null);
 
   const activeCount = React.useMemo(
     () => Array.from(uploads.values()).filter((u) => u.status === 'uploading').length,
@@ -842,6 +1096,104 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
         setEntry(uid, { status: 'error' });
         setTimeout(() => removeEntry(uid), 5000);
       });
+  }
+
+  function handleMobileFiles(files?: FileList | null) {
+    if (!files?.length) return;
+
+    Array.from(files).forEach((file, index) => {
+      const uid = `${Date.now()}-${index}-${file.name}`;
+      setUploads((prev) => new Map(prev).set(uid, { name: file.name, percent: 0, status: 'uploading' }));
+
+      const meta = {
+        title: title.trim() || file.name.replace(/\.[^.]+$/, ''),
+        description: description.trim() || undefined,
+        category: category || undefined,
+      };
+
+      uploadLibraryDocument(file, meta, (pct) => setEntry(uid, { percent: pct }))
+        .then(() => {
+          setEntry(uid, { percent: 100, status: 'done' });
+          onUploaded();
+          setTimeout(() => removeEntry(uid), 2500);
+        })
+        .catch((err: unknown) => {
+          message.error(apiErrorMessage(err, `Upload failed: ${file.name}`));
+          setEntry(uid, { status: 'error' });
+          setTimeout(() => removeEntry(uid), 5000);
+        });
+    });
+  }
+
+  if (isMobile) {
+    return (
+      <S.MobilePanelStack>
+        <MobileCard compact title="Upload metadata">
+          <MobileForm>
+            <MobileForm.Item label="Title">
+              <AdmMobileInput
+                clearable
+                onChange={setTitle}
+                placeholder="Optional - filename is used by default"
+                value={title}
+              />
+            </MobileForm.Item>
+            <MobileForm.Item label="Category">
+              <MobileSelector<string>
+                columns={1}
+                inset={false}
+                onChange={(values) => {
+                  const value = values[0] ?? 'none';
+                  setCategory(value === 'none' ? '' : value);
+                }}
+                options={[{ label: 'No category', value: 'none' }, ...CATEGORIES.map((c) => ({ label: c, value: c }))]}
+                value={[category || 'none']}
+              />
+            </MobileForm.Item>
+            <MobileForm.Item label="Description">
+              <AdmMobileTextArea
+                autoSize={{ minRows: 3, maxRows: 7 }}
+                onChange={setDescription}
+                placeholder="Optional - applied to all selected files"
+                value={description}
+              />
+            </MobileForm.Item>
+          </MobileForm>
+        </MobileCard>
+
+        <AdmMobileButton block color="primary" loading={activeCount > 0} onClick={() => mobileFileRef.current?.click()}>
+          <UploadOutline fontSize={17} />{' '}
+          {activeCount > 0 ? `Uploading ${activeCount} file${activeCount !== 1 ? 's' : ''}` : 'Choose files'}
+        </AdmMobileButton>
+        <S.HiddenFileInput
+          accept={ACCEPTED}
+          multiple
+          onChange={(event) => {
+            handleMobileFiles(event.target.files);
+            event.target.value = '';
+          }}
+          ref={mobileFileRef}
+          type="file"
+        />
+
+        {uploads.size > 0 ? (
+          <MobileCard compact title="Upload progress">
+            <S.MobileUploadProgressList>
+              {Array.from(uploads.entries()).map(([uid, entry]) => (
+                <S.MobileUploadProgressItem key={uid}>
+                  <S.MobileUploadName>{entry.name}</S.MobileUploadName>
+                  <AdmMobileProgressBar percent={entry.percent} />
+                </S.MobileUploadProgressItem>
+              ))}
+            </S.MobileUploadProgressList>
+          </MobileCard>
+        ) : null}
+
+        <S.MobileHintText>
+          PDF, TXT, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, EPUB. Max {UPLOAD_MAX_MB} MB per file.
+        </S.MobileHintText>
+      </S.MobilePanelStack>
+    );
   }
 
   return (
@@ -916,7 +1268,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ isMobile, onUploaded }) => {
 const LibraryPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
 
-  const isGM = React.useMemo(() => Boolean(localStorage.getItem(GM_KEY_STORAGE)), []);
+  const isGM = useGMMode();
 
   const [hasAccess, setHasAccess] = React.useState<boolean>(() => {
     if (isGM) return true;
@@ -930,6 +1282,9 @@ const LibraryPage: React.FC = () => {
   const [editDoc, setEditDoc] = React.useState<LibraryDocument | null>(null);
   const [viewDoc, setViewDoc] = React.useState<LibraryDocument | null>(null);
   const [showSettings, setShowSettings] = React.useState(false);
+  const [showUpload, setShowUpload] = React.useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<LibraryDocument | null>(null);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -952,6 +1307,12 @@ const LibraryPage: React.FC = () => {
     if (hasAccess) void load();
   }, [hasAccess, load]);
 
+  React.useEffect(() => {
+    if (isGM) {
+      setHasAccess(true);
+    }
+  }, [isGM]);
+
   // Filter
   const filtered = React.useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -967,7 +1328,23 @@ const LibraryPage: React.FC = () => {
     return Array.from(set).sort();
   }, [docs]);
 
+  async function deleteDocument(doc: LibraryDocument) {
+    try {
+      await deleteLibraryDocument(doc.id);
+      setDeleteTarget(null);
+      message.success('Document deleted.');
+      await load();
+    } catch (e) {
+      message.error(apiErrorMessage(e, 'Failed to delete.'));
+    }
+  }
+
   async function handleDelete(doc: LibraryDocument) {
+    if (mobileOnly) {
+      setDeleteTarget(doc);
+      return;
+    }
+
     Modal.confirm({
       title: 'Delete document',
       content: `Delete "${doc.title}"? This cannot be undone.`,
@@ -975,13 +1352,7 @@ const LibraryPage: React.FC = () => {
       okButtonProps: { danger: true },
       cancelText: 'Cancel',
       onOk: async () => {
-        try {
-          await deleteLibraryDocument(doc.id);
-          message.success('Document deleted.');
-          await load();
-        } catch (e) {
-          message.error(apiErrorMessage(e, 'Failed to delete.'));
-        }
+        await deleteDocument(doc);
       },
     });
   }
@@ -1006,6 +1377,196 @@ const LibraryPage: React.FC = () => {
       <>
         <PageTitle>Library</PageTitle>
         <KeyEntryScreen onAccess={() => setHasAccess(true)} />
+      </>
+    );
+  }
+
+  const mobileCategoryOptions = [
+    { label: 'All categories', value: 'all' },
+    ...categories.map((category) => ({ label: category, value: category })),
+  ];
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {filtered.length} documents
+      </AdmMobileTag>
+      <AdmMobileTag fill="outline" round>
+        {formatBytes(docs.reduce((sum, doc) => sum + doc.size, 0))}
+      </AdmMobileTag>
+      {filterCat ? (
+        <AdmMobileTag color="primary" fill="outline" round>
+          {filterCat}
+        </AdmMobileTag>
+      ) : null}
+      {isGM ? (
+        <AdmMobileTag color="warning" fill="outline" round>
+          GM
+        </AdmMobileTag>
+      ) : null}
+    </S.MobileMetaTags>
+  );
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar inset={false} onChange={setSearch} placeholder="Search documents..." value={search} />
+      <S.MobileFilterRow>
+        <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+          <FilterOutline fontSize={16} /> Category
+        </AdmMobileButton>
+        {isGM ? (
+          <AdmMobileButton color="primary" onClick={() => setShowUpload(true)} size="small">
+            <UploadOutline fontSize={16} /> Upload
+          </AdmMobileButton>
+        ) : (
+          <AdmMobileButton fill="outline" onClick={handleClearKey} size="small">
+            <KeyOutline fontSize={16} /> Change key
+          </AdmMobileButton>
+        )}
+      </S.MobileFilterRow>
+    </>
+  );
+
+  if (mobileOnly) {
+    return (
+      <>
+        <PageTitle>Library</PageTitle>
+
+        <MobilePageScaffold
+          actions={
+            isGM ? (
+              <AdmMobileButton fill="outline" onClick={() => setShowSettings(true)} size="small">
+                <SetOutline fontSize={16} /> Settings
+              </AdmMobileButton>
+            ) : null
+          }
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle="Campaign documents, rulebooks and references optimized for reading on mobile."
+          title={<IconLabel icon="read">Library</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>Loading...</S.MobileEmptyState>
+            </MobileCard>
+          ) : filtered.length === 0 ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                {docs.length === 0 ? 'No documents in the library yet.' : 'No documents match your search.'}
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileDocList>
+              {filtered.map((doc) => (
+                <MobileDocCard
+                  key={doc.id}
+                  doc={doc}
+                  isGM={isGM}
+                  onEdit={setEditDoc}
+                  onDelete={() => void handleDelete(doc)}
+                  onToggleVisible={() => void handleToggleVisible(doc)}
+                  onView={setViewDoc}
+                />
+              ))}
+            </S.MobileDocList>
+          )}
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Filter by document category."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => setFilterSheetOpen(false)}>
+                  Apply
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setFilterCat('');
+                    setFilterSheetOpen(false);
+                  }}
+                >
+                  Reset
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setFilterSheetOpen(false)}
+          title="Library filters"
+          visible={filterSheetOpen}
+        >
+          <MobileSelector<string>
+            columns={1}
+            inset={false}
+            onChange={(values) => {
+              const value = values[0] ?? 'all';
+              setFilterCat(value === 'all' ? '' : value);
+            }}
+            options={mobileCategoryOptions}
+            value={[filterCat || 'all']}
+          />
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          description="Upload PDFs, ebooks and reference documents for the campaign."
+          onClose={() => setShowUpload(false)}
+          subtitle="GM only"
+          title="Upload documents"
+          visible={showUpload && isGM}
+        >
+          <UploadForm isMobile onUploaded={load} />
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Manage the player access key for the library."
+          onClose={() => setShowSettings(false)}
+          subtitle="GM only"
+          title="Library settings"
+          visible={showSettings && isGM}
+        >
+          <SettingsPanel onClose={() => setShowSettings(false)} onReload={load} />
+        </MobileEntitySheet>
+
+        <EditModal
+          doc={editDoc}
+          onClose={() => setEditDoc(null)}
+          onSaved={() => {
+            setEditDoc(null);
+            void load();
+          }}
+        />
+
+        <DocumentViewerModal doc={viewDoc} onClose={() => setViewDoc(null)} />
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteTarget(null),
+            },
+            {
+              key: 'delete',
+              text: 'Delete document',
+              bold: true,
+              danger: true,
+              onClick: () => {
+                if (deleteTarget) {
+                  return deleteDocument(deleteTarget);
+                }
+              },
+            },
+          ]}
+          content={deleteTarget ? `Delete "${deleteTarget.title}"? This cannot be undone.` : ''}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete document?"
+          visible={Boolean(deleteTarget)}
+        />
       </>
     );
   }

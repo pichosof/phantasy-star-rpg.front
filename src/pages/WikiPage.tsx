@@ -3,6 +3,22 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Badge, Divider, Empty, Input, Popconfirm, Space, Switch, Tag, Tooltip, Typography, message } from 'antd';
 import {
+  Button as AdmMobileButton,
+  Input as AdmMobileInput,
+  Switch as AdmMobileSwitch,
+  Tag as AdmMobileTag,
+  TextArea as AdmMobileTextArea,
+} from 'antd-mobile';
+import {
+  AddOutline,
+  DeleteOutline,
+  EditSOutline,
+  FilterOutline,
+  PictureOutline,
+  StarFill,
+  StarOutline,
+} from 'antd-mobile-icons';
+import {
   BookOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -16,9 +32,23 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
+import {
+  MobileActionBar,
+  MobileCard,
+  MobileDialog,
+  MobileEntitySheet,
+  MobileFilterSheet,
+  MobileForm,
+  MobilePageScaffold,
+  MobileSearchBar,
+  MobileSelector,
+  MobileTabs,
+} from '@app/components/common/mobile';
+import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl } from '@app/api/http.api';
 import {
@@ -31,10 +61,8 @@ import {
 } from '@app/api/wiki.api';
 import type { WikiPage as WikiPageType } from '@app/api/wiki.api';
 import { apiErrorMessage } from '../utils/api-error';
-import { w100, spaceBetween, hiddenInput } from '@app/styles/styleUtils';
+import { w100, spaceBetween } from '@app/styles/styleUtils';
 import * as S from './WikiPage.styles';
-
-const GM_KEY = 'gm_api_key';
 
 // ── Styled components ────────────────────────────────────────────────────────
 
@@ -61,11 +89,20 @@ function groupByCategory(pages: WikiPageType[]) {
   return { pinned, byCategory: map };
 }
 
+function wikiExcerpt(page: WikiPageType, length = 120) {
+  const text = (page.content ?? '')
+    .replace(/[#*`>\n]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return 'No content yet.';
+  return text.length > length ? `${text.slice(0, length).trim()}...` : text;
+}
+
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export const WikiPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
-  const isGM = Boolean(localStorage.getItem(GM_KEY));
+  const isGM = useGMMode();
 
   const [pages, setPages] = React.useState<WikiPageType[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -74,6 +111,8 @@ export const WikiPage: React.FC = () => {
   // navegação
   const [activeCat, setActiveCat] = React.useState<string | null>(null); // null = todas
   const [openId, setOpenId] = React.useState<number | null>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<WikiPageType | null>(null);
 
   // editor
   const [editing, setEditing] = React.useState(false);
@@ -210,6 +249,7 @@ export const WikiPage: React.FC = () => {
     try {
       await deleteWikiPage(id);
       if (openId === id) setOpenId(null);
+      setDeleteTarget(null);
       await load();
       message.success('Article removed');
     } catch (e) {
@@ -577,11 +617,10 @@ export const WikiPage: React.FC = () => {
               </S.ToolbarBtn>
             </S.EditorToolbar>
 
-            <input
+            <S.HiddenFileInput
               ref={imgInputRef}
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
-              style={hiddenInput}
               onChange={(e) => void handleImageUpload(e)}
             />
 
@@ -621,12 +660,371 @@ export const WikiPage: React.FC = () => {
   // ── Render ────────────────────────────────────────────────────────────────
   const mainContent = editing ? Editor : openPage ? ArticleView : ArticleList;
 
+  const mobileCategoryValue = activeCat ?? '__all';
+  const mobileCategoryOptions = [
+    { label: 'All articles', value: '__all' },
+    ...(pinned.length > 0 ? [{ label: 'Pinned articles', value: '__pinned' }] : []),
+    ...categories.map((cat) => ({ label: cat, value: cat })),
+  ];
+
+  const mobileActiveFilterLabel = activeCat === '__pinned' ? 'Pinned' : activeCat ? activeCat : 'All articles';
+
+  const mobileMeta = (
+    <S.MobileMetaTags>
+      <AdmMobileTag fill="outline" round>
+        {visible.length} shown
+      </AdmMobileTag>
+      <AdmMobileTag fill="outline" round>
+        {categories.length} categories
+      </AdmMobileTag>
+      {isGM ? (
+        <AdmMobileTag color="warning" fill="outline" round>
+          GM
+        </AdmMobileTag>
+      ) : null}
+      <AdmMobileTag color="primary" fill="outline" round>
+        {mobileActiveFilterLabel}
+      </AdmMobileTag>
+    </S.MobileMetaTags>
+  );
+
+  const mobileFilters = (
+    <>
+      <MobileSearchBar
+        inset={false}
+        onChange={(value) => {
+          setSearch(value);
+          setOpenId(null);
+        }}
+        placeholder="Search wiki..."
+        value={search}
+      />
+      <S.MobileFilterRow>
+        <AdmMobileButton fill="outline" onClick={() => setFilterSheetOpen(true)} size="small">
+          <FilterOutline fontSize={16} /> Categories
+        </AdmMobileButton>
+        {isGM ? (
+          <AdmMobileButton color="primary" onClick={startNew} size="small">
+            <AddOutline fontSize={16} /> New article
+          </AdmMobileButton>
+        ) : null}
+      </S.MobileFilterRow>
+    </>
+  );
+
+  const mobileReader = openPage ? (
+    <S.MobileSectionStack>
+      <MobileCard compact>
+        <S.MobileMetaTags>
+          {openPage.pinned ? (
+            <AdmMobileTag color="warning" fill="outline" round>
+              <StarFill fontSize={13} /> Pinned
+            </AdmMobileTag>
+          ) : null}
+          {openPage.category ? (
+            <AdmMobileTag fill="outline" round>
+              {openPage.category}
+            </AdmMobileTag>
+          ) : null}
+          {isGM ? (
+            <AdmMobileTag color={openPage.visible ? 'success' : 'danger'} fill="outline" round>
+              {openPage.visible ? 'Visible' : 'Hidden'}
+            </AdmMobileTag>
+          ) : null}
+        </S.MobileMetaTags>
+      </MobileCard>
+
+      <MobileCard compact title="Article">
+        {openPage.content ? (
+          <S.MobileArticleReader>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+              {openPage.content}
+            </ReactMarkdown>
+          </S.MobileArticleReader>
+        ) : (
+          <S.MobileEmptyState>Article has no content.</S.MobileEmptyState>
+        )}
+      </MobileCard>
+
+      {isGM ? (
+        <MobileCard compact title="GM Controls">
+          <S.MobileInlineControls>
+            <S.MobileSwitchRow>
+              <S.MobileSwitchLabel>Pinned article</S.MobileSwitchLabel>
+              <AdmMobileSwitch checked={Boolean(openPage.pinned)} onChange={() => void handleTogglePin(openPage)} />
+            </S.MobileSwitchRow>
+            <S.MobileSwitchRow>
+              <S.MobileSwitchLabel>Visible to players</S.MobileSwitchLabel>
+              <AdmMobileSwitch
+                checked={Boolean(openPage.visible)}
+                onChange={() => void handleToggleVisible(openPage)}
+              />
+            </S.MobileSwitchRow>
+            <AdmMobileButton block color="danger" fill="outline" onClick={() => setDeleteTarget(openPage)}>
+              <DeleteOutline fontSize={17} /> Delete article
+            </AdmMobileButton>
+          </S.MobileInlineControls>
+        </MobileCard>
+      ) : null}
+    </S.MobileSectionStack>
+  ) : null;
+
+  const mobileEditorTitle = isNew ? 'New article' : `Edit ${openPage?.title ?? 'article'}`;
+  const mobileEditor = (
+    <S.MobileSectionStack>
+      <MobileCard compact title="Article details">
+        <MobileForm>
+          <MobileForm.Item label="Title">
+            <AdmMobileInput clearable onChange={setFTitle} placeholder="Article title *" value={fTitle} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Category">
+            <AdmMobileInput clearable onChange={setFCategory} placeholder="Worlds, rules, lore..." value={fCategory} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Flags">
+            <S.MobileInlineControls>
+              <S.MobileSwitchRow>
+                <S.MobileSwitchLabel>Pinned</S.MobileSwitchLabel>
+                <AdmMobileSwitch checked={fPinned} onChange={setFPinned} />
+              </S.MobileSwitchRow>
+              <S.MobileSwitchRow>
+                <S.MobileSwitchLabel>Visible</S.MobileSwitchLabel>
+                <AdmMobileSwitch checked={fVisible} onChange={setFVisible} />
+              </S.MobileSwitchRow>
+            </S.MobileInlineControls>
+          </MobileForm.Item>
+        </MobileForm>
+      </MobileCard>
+
+      <MobileCard compact title="Markdown">
+        <S.MobileEditorToolbar>
+          <S.MobileMarkdownButton onClick={() => insertMarkdown('**', '**')} type="button">
+            Bold
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertMarkdown('*', '*')} type="button">
+            Italic
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertAtCursor('\n## ')} type="button">
+            H2
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => insertAtCursor('\n- ')} type="button">
+            List
+          </S.MobileMarkdownButton>
+          <S.MobileMarkdownButton onClick={() => imgInputRef.current?.click()} type="button">
+            <PictureOutline fontSize={15} /> {uploading ? 'Uploading' : 'Image'}
+          </S.MobileMarkdownButton>
+        </S.MobileEditorToolbar>
+        <S.HiddenFileInput
+          ref={imgInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          onChange={(event) => void handleImageUpload(event)}
+        />
+      </MobileCard>
+
+      <MobileTabs activeKey={preview ? 'preview' : 'write'} onChange={(key) => setPreview(key === 'preview')}>
+        <MobileTabs.Tab key="write" title="Write">
+          <AdmMobileTextArea
+            autoSize={{ minRows: 12, maxRows: 22 }}
+            onChange={setFContent}
+            placeholder={'# Title\n\nWrite in Markdown...'}
+            value={fContent}
+          />
+        </MobileTabs.Tab>
+        <MobileTabs.Tab key="preview" title="Preview">
+          <S.MobilePreviewPane>
+            {fContent.trim() ? (
+              <S.MobileArticleReader>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+                  {fContent}
+                </ReactMarkdown>
+              </S.MobileArticleReader>
+            ) : (
+              <S.MobileEmptyState>Start typing to see the preview.</S.MobileEmptyState>
+            )}
+          </S.MobilePreviewPane>
+        </MobileTabs.Tab>
+      </MobileTabs>
+    </S.MobileSectionStack>
+  );
+
   if (mobileOnly) {
     return (
       <>
         <PageTitle>Wiki</PageTitle>
-        {SidebarContent}
-        <div style={S.mobileContent}>{loading ? <Spinner /> : mainContent}</div>
+
+        <MobilePageScaffold
+          filters={mobileFilters}
+          meta={mobileMeta}
+          subtitle="Read campaign knowledge, pinned references and GM-managed markdown notes."
+          title={<IconLabel icon="lore">Wiki</IconLabel>}
+        >
+          {loading ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>
+                <Spinner />
+              </S.MobileEmptyState>
+            </MobileCard>
+          ) : visible.length === 0 ? (
+            <MobileCard compact>
+              <S.MobileEmptyState>{q ? 'No articles found.' : 'No articles in this category.'}</S.MobileEmptyState>
+            </MobileCard>
+          ) : (
+            <S.MobileArticleList>
+              {visible.map((page) => (
+                <MobileCard compact key={page.id} onClick={() => setOpenId(page.id)}>
+                  <S.MobileArticleBody>
+                    <S.MobileMetaTags>
+                      {page.pinned ? (
+                        <AdmMobileTag color="warning" fill="outline" round>
+                          <StarFill fontSize={13} /> Pinned
+                        </AdmMobileTag>
+                      ) : null}
+                      {page.category ? (
+                        <AdmMobileTag fill="outline" round>
+                          {page.category}
+                        </AdmMobileTag>
+                      ) : null}
+                      {isGM && !page.visible ? (
+                        <AdmMobileTag color="danger" fill="outline" round>
+                          Hidden
+                        </AdmMobileTag>
+                      ) : null}
+                    </S.MobileMetaTags>
+                    <S.MobileArticleTitle>{page.title}</S.MobileArticleTitle>
+                    <S.MobileArticleExcerpt>{wikiExcerpt(page)}</S.MobileArticleExcerpt>
+                  </S.MobileArticleBody>
+                </MobileCard>
+              ))}
+            </S.MobileArticleList>
+          )}
+        </MobilePageScaffold>
+
+        <MobileFilterSheet
+          description="Choose one wiki category or show pinned articles."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => setFilterSheetOpen(false)}>
+                  Apply
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton
+                  block
+                  fill="outline"
+                  onClick={() => {
+                    setActiveCat(null);
+                    setFilterSheetOpen(false);
+                  }}
+                >
+                  Reset
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={() => setFilterSheetOpen(false)}
+          title="Wiki filters"
+          visible={filterSheetOpen}
+        >
+          <MobileSelector<string>
+            columns={1}
+            inset={false}
+            onChange={(values) => {
+              const value = values[0] ?? '__all';
+              setActiveCat(value === '__all' ? null : value);
+              setOpenId(null);
+              setEditing(false);
+            }}
+            options={mobileCategoryOptions}
+            value={[mobileCategoryValue]}
+          />
+        </MobileFilterSheet>
+
+        <MobileEntitySheet
+          footer={
+            openPage && isGM ? (
+              <MobileActionBar
+                primary={
+                  <AdmMobileButton
+                    block
+                    color="primary"
+                    onClick={() => {
+                      setIsNew(false);
+                      setEditing(true);
+                      setPreview(false);
+                    }}
+                  >
+                    <EditSOutline fontSize={17} /> Edit
+                  </AdmMobileButton>
+                }
+                secondary={
+                  <AdmMobileButton block fill="outline" onClick={() => void handleTogglePin(openPage)}>
+                    {openPage.pinned ? <StarFill fontSize={17} /> : <StarOutline fontSize={17} />}
+                    {openPage.pinned ? ' Unpin' : ' Pin'}
+                  </AdmMobileButton>
+                }
+                sticky={false}
+              />
+            ) : undefined
+          }
+          onClose={() => setOpenId(null)}
+          subtitle={openPage?.category ?? 'Wiki article'}
+          title={openPage?.title ?? 'Article'}
+          visible={Boolean(openPage) && !editing}
+        >
+          {mobileReader}
+        </MobileEntitySheet>
+
+        <MobileEntitySheet
+          description="Write markdown, preview it and insert uploaded images."
+          footer={
+            <MobileActionBar
+              primary={
+                <AdmMobileButton block color="primary" onClick={() => void handleSave()}>
+                  Save article
+                </AdmMobileButton>
+              }
+              secondary={
+                <AdmMobileButton block fill="outline" onClick={cancelEdit}>
+                  Cancel
+                </AdmMobileButton>
+              }
+              sticky={false}
+            />
+          }
+          onClose={cancelEdit}
+          subtitle="GM editor"
+          title={mobileEditorTitle}
+          visible={editing}
+        >
+          {mobileEditor}
+        </MobileEntitySheet>
+
+        <MobileDialog
+          actions={[
+            {
+              key: 'cancel',
+              text: 'Cancel',
+              onClick: () => setDeleteTarget(null),
+            },
+            {
+              key: 'delete',
+              text: 'Delete article',
+              bold: true,
+              danger: true,
+              onClick: () => {
+                if (deleteTarget) {
+                  return handleDelete(deleteTarget.id);
+                }
+              },
+            },
+          ]}
+          content={deleteTarget ? `Delete "${deleteTarget.title}" permanently?` : ''}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete article?"
+          visible={Boolean(deleteTarget)}
+        />
       </>
     );
   }
