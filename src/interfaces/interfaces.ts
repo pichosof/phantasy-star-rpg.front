@@ -6,8 +6,6 @@ export type ChartData = number[];
 
 export type xData = number[] | string[];
 
-export type LanguageType = 'de' | 'en';
-
 export type ThemeType = 'light' | 'dark';
 
 export interface ChartSeries {
@@ -23,9 +21,3 @@ export interface ChartSeries {
 export type ChartSeriesData = ChartSeries[];
 
 export type Severity = 'success' | 'error' | 'info' | 'warning';
-
-export type TwoFactorAuthOption = 'email' | 'phone';
-
-export type CurrencyType = 'USD' | 'ETH' | 'BTC';
-
-export type ActivityStatusType = 'sold' | 'booked' | 'added';

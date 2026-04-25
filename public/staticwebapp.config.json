@@ -1,0 +1,25 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/themes/*",
+      "/*.css",
+      "/*.js",
+      "/*.png",
+      "/*.jpg",
+      "/*.jpeg",
+      "/*.gif",
+      "/*.svg",
+      "/*.ico",
+      "/*.webp",
+      "/manifest.webmanifest",
+      "/robots.txt"
+    ]
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html"
+    }
+  }
+}

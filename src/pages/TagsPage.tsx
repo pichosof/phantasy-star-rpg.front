@@ -110,7 +110,7 @@ const EntityDetailModal: React.FC<{
       }
       width={480}
     >
-      <Space direction="vertical" size={12} style={w100}>
+      <Space orientation="vertical" size={12} style={w100}>
         {item.imageUrl ? (
           <img alt={item.imageAlt ?? title} src={resolveApiUrl(item.imageUrl)} style={S.detailAvatar} />
         ) : null}
@@ -645,7 +645,7 @@ export const TagsPage: React.FC = () => {
       <div style={S.layoutGrid(mobileOnly)}>
         <div style={S.sidebarColumn}>
           <Card density="dense">
-            <Space direction="vertical" size={10} style={w100}>
+            <Space orientation="vertical" size={10} style={w100}>
               <Typography.Title level={4} style={m0}>
                 <IconLabel icon="tags">Tags</IconLabel>
               </Typography.Title>
@@ -669,7 +669,7 @@ export const TagsPage: React.FC = () => {
                   void handleCreate();
                 }}
               >
-                <Space direction="vertical" size={8} style={w100}>
+                <Space orientation="vertical" size={8} style={w100}>
                   <Input
                     onChange={(event) => setNewName(event.target.value)}
                     placeholder="Tag name *"
@@ -700,7 +700,7 @@ export const TagsPage: React.FC = () => {
             ) : filtered.length === 0 ? (
               <Empty description="No tags yet." />
             ) : (
-              <Space direction="vertical" size={4} style={w100}>
+              <Space orientation="vertical" size={4} style={w100}>
                 {filtered.map((tag) => (
                   <div
                     key={tag.id}
@@ -780,7 +780,7 @@ export const TagsPage: React.FC = () => {
               <div style={S.emptySelectionText}>Select a tag to see its entities</div>
             </div>
           ) : (
-            <Space direction="vertical" size={16} style={w100}>
+            <Space orientation="vertical" size={16} style={w100}>
               <Space size={8} style={spaceBetween} wrap>
                 <Space size={8}>
                   <Tag color={selectedTag.color} style={S.selectedTagPill}>
@@ -805,7 +805,7 @@ export const TagsPage: React.FC = () => {
               ) : totalEntities === 0 ? (
                 <Empty description="No entities have this tag yet." />
               ) : (
-                <Space direction="vertical" size={16} style={w100}>
+                <Space orientation="vertical" size={16} style={w100}>
                   {Object.entries(ENTITY_META).map(([key, meta]) => {
                     const items = (tagEntities as any)[key] as any[];
                     return (

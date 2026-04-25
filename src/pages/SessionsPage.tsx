@@ -398,7 +398,7 @@ export const SessionsPage: React.FC = () => {
 
   const desktopHeader = (
     <Card className="rpg-page-header-card" density="dense">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space size={8} style={spaceBetween}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -739,7 +739,7 @@ export const SessionsPage: React.FC = () => {
                 children: (
                   <S.DrawerSectionStack>
                     <Card density="dense" title="Session Data">
-                      <Space direction="vertical" size={10} style={w100}>
+                      <Space orientation="vertical" size={10} style={w100}>
                         <div>
                           <Typography.Text style={S.fieldLabelTextSm} type="secondary">
                             Title
@@ -777,7 +777,7 @@ export const SessionsPage: React.FC = () => {
                     </Card>
 
                     <Card density="dense" title="Cover Image">
-                      <Space direction="vertical" size={8} style={w100}>
+                      <Space orientation="vertical" size={8} style={w100}>
                         <div>
                           <Typography.Text style={S.fieldLabelTextSm} type="secondary">
                             Image URL

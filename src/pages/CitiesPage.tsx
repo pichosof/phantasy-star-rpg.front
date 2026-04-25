@@ -426,7 +426,7 @@ export const CitiesPage: React.FC = () => {
 
   const desktopHeader = (
     <Card className="rpg-page-header-card" density="dense">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space size={8} style={spaceBetween}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -677,7 +677,7 @@ export const CitiesPage: React.FC = () => {
               key: 'name',
               ellipsis: true,
               render: (_: any, city: City) => (
-                <Space direction="vertical" size={2} style={w100}>
+                <Space orientation="vertical" size={2} style={w100}>
                   <Space size={6} wrap>
                     <Typography.Text strong>{city.name}</Typography.Text>
                     {!isCityVisible(city) ? <Tag color="red">Hidden</Tag> : <Tag color="green">Visible</Tag>}
@@ -816,7 +816,7 @@ export const CitiesPage: React.FC = () => {
                 label: 'GM Actions',
                 children: (
                   <Card density="dense" title="Controls">
-                    <Space direction="vertical" size={12} style={w100}>
+                    <Space orientation="vertical" size={12} style={w100}>
                       <Space style={spaceBetween}>
                         <div>
                           <Typography.Text>Visible to players</Typography.Text>

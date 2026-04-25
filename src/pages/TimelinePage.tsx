@@ -378,7 +378,7 @@ export const TimelinePage: React.FC = () => {
 
   const desktopHeader = (
     <Card className="rpg-page-header-card" density="dense">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space size={8} style={spaceBetween}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -612,7 +612,7 @@ export const TimelinePage: React.FC = () => {
           key: 'view',
           label: <IconLabel icon="timeline">View</IconLabel>,
           children: (
-            <Space direction="vertical" size={14} style={w100}>
+            <Space orientation="vertical" size={14} style={w100}>
               <div>
                 <Typography.Text style={S.drawerSectionLabel}>Date</Typography.Text>
                 <div>
@@ -669,7 +669,7 @@ export const TimelinePage: React.FC = () => {
                 key: 'edit',
                 label: <IconLabel icon="edit">Edit</IconLabel>,
                 children: (
-                  <Space direction="vertical" size={12} style={w100}>
+                  <Space orientation="vertical" size={12} style={w100}>
                     <Space style={spaceBetween}>
                       <Typography.Text style={textMd}>Visible to players</Typography.Text>
                       <Switch

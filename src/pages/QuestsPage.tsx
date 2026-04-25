@@ -418,7 +418,7 @@ export const QuestsPage: React.FC = () => {
 
   const desktopHeader = (
     <Card className="rpg-page-header-card" density="dense">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space size={8} style={spaceBetween}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -792,7 +792,7 @@ export const QuestsPage: React.FC = () => {
                 children: (
                   <S.DrawerSectionStack>
                     <Card density="dense" title="Quest Data">
-                      <Space direction="vertical" size={10} style={w100}>
+                      <Space orientation="vertical" size={10} style={w100}>
                         <div>
                           <Typography.Text style={S.fieldLabelTextSm} type="secondary">
                             Title

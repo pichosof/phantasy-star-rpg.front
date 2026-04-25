@@ -464,7 +464,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, playe
         open={modalOpen}
         title={editing ? 'Edit note' : 'New note'}
       >
-        <Space direction="vertical" size={12} style={w100}>
+        <Space orientation="vertical" size={12} style={w100}>
           <div>
             <Typography.Text style={S.fieldLabelTextSm} type="secondary">
               Title *
@@ -986,7 +986,7 @@ export const PlayersPage: React.FC = () => {
 
   const desktopHeader = (
     <Card className="rpg-page-header-card" density="dense">
-      <Space direction="vertical" size={10} style={w100}>
+      <Space orientation="vertical" size={10} style={w100}>
         <Space size={8} style={spaceBetween}>
           <div>
             <Typography.Title level={4} style={m0}>
@@ -1709,7 +1709,7 @@ export const PlayersPage: React.FC = () => {
         <Spinner />
       ) : displayItems.length === 0 ? (
         <Card density="comfy">
-          <Space direction="vertical" size={8} style={S.emptyCardState}>
+          <Space orientation="vertical" size={8} style={S.emptyCardState}>
             <Typography.Text type="secondary">No characters found.</Typography.Text>
           </Space>
         </Card>
@@ -1736,7 +1736,7 @@ export const PlayersPage: React.FC = () => {
                     }
                     key={`gm-${player.id}`}
                   >
-                    <Space direction="vertical" size={10} style={w100}>
+                    <Space orientation="vertical" size={10} style={w100}>
                       <Space style={spaceBetween}>
                         <Typography.Text style={textMd}>Visible to players</Typography.Text>
                         <Switch
@@ -1750,7 +1750,7 @@ export const PlayersPage: React.FC = () => {
                       <Divider style={dividerSm} />
 
                       {editingSet[player.id] ? (
-                        <Space direction="vertical" size={8} style={w100}>
+                        <Space orientation="vertical" size={8} style={w100}>
                           <Space size={8} wrap>
                             <Input
                               onChange={(event) =>
