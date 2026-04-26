@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image } from 'antd';
-import notFoundImg from 'assets/images/nothing-found.webp';
+import notFoundImg from '@app/assets/images/nothing-found.webp';
 import * as S from './NotFound.styles';
 
 export const NotFound: React.FC = () => {

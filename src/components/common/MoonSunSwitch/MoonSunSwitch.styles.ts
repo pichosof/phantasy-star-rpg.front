@@ -1,5 +1,5 @@
 import { BORDER_RADIUS } from '@app/styles/themes/constants';
-import { Button } from 'components/common/buttons/Button/Button';
+import { Button } from '@app/components/common/buttons/Button/Button';
 import styled, { css } from 'styled-components';
 
 interface BtnProps {

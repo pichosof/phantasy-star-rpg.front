@@ -1,6 +1,6 @@
 import { Space } from 'antd';
 import React from 'react';
-import { TimeRangePicker } from 'components/common/pickers/TimeRangePicker';
+import { TimeRangePicker } from '@app/components/common/pickers/TimeRangePicker';
 import * as S from './NightTimePicker.styles';
 
 interface NightTimePickerProps {

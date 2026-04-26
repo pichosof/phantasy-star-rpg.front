@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Popup } from 'antd-mobile';
-import { useResponsive } from 'hooks/useResponsive';
+import { useResponsive } from '@app/hooks/useResponsive';
 import * as S from './MainSider.styles';
 import { SiderLogo } from '../SiderLogo';
 import SiderMenu from '../SiderMenu/SiderMenu';

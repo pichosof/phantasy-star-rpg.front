@@ -1,9 +1,9 @@
 import React from 'react';
 import * as S from './MainSider/MainSider.styles';
 import { RightOutlined } from '@ant-design/icons';
-import { useResponsive } from 'hooks/useResponsive';
-import logoMarkDark from 'assets/logo-mark-dark.png';
-import logoMarkLight from 'assets/logo-mark-light.png';
+import { useResponsive } from '@app/hooks/useResponsive';
+import logoMarkDark from '@app/assets/logo-mark-dark.png';
+import logoMarkLight from '@app/assets/logo-mark-light.png';
 import { useAppSelector } from '@app/hooks/reduxHooks';
 
 interface SiderLogoProps {
