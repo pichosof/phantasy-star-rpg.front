@@ -7,7 +7,7 @@ interface PieChartCustomLegend {
   name: string;
   // eslint-disable-next-line
   chartData: any[];
-  // eslint-disable-next-line
+
   legendData: LegendItem[];
   height?: string;
   width?: string;
