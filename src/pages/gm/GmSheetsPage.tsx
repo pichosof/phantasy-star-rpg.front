@@ -56,7 +56,7 @@ function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen:
       }
     >
       <Typography.Text type="secondary">
-        Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : 'â€”'}
+        Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '-'}
       </Typography.Text>
     </S.TitleCard>
   );

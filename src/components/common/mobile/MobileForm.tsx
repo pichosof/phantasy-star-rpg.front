@@ -2,7 +2,7 @@ import React from 'react';
 import { Form as AdmForm, FormProps as AdmFormProps } from 'antd-mobile';
 import * as S from './mobile.styles';
 
-export interface MobileFormProps extends AdmFormProps {}
+export type MobileFormProps = AdmFormProps;
 
 type MobileFormRef = React.ElementRef<typeof AdmForm>;
 

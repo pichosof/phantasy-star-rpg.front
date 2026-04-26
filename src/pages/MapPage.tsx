@@ -597,7 +597,7 @@ export default function MapPage() {
     return () => {
       alive = false;
     };
-  }, [openCity?.id, (openCity as any)?.discovered, isGM]); // eslint-disable-line react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any
+  }, [openCity?.id, (openCity as any)?.discovered, isGM]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -------- region options --------
   const regionOptions = React.useMemo(() => {

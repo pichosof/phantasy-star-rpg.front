@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog as AdmDialog, DialogProps as AdmDialogProps } from 'antd-mobile';
 import { mobileDialogBodyStyle, MOBILE_DIALOG_BODY_CLASS } from './mobile.styles';
 
-export interface MobileDialogProps extends AdmDialogProps {}
+export type MobileDialogProps = AdmDialogProps;
 
 export const MobileDialog: React.FC<MobileDialogProps> = ({
   bodyClassName,

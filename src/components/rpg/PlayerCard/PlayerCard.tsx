@@ -101,7 +101,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         width={mobileOnly ? '96vw' : '760px'}
         styles={{ body: { padding: 0 } }}
         destroyOnHidden
-        title={`Profile â€” ${player.name}`}
+        title={`Profile - ${player.name}`}
       >
         <S.ProfileContent>
           <S.ProfileHero $height={mobileOnly ? 220 : 260}>
@@ -149,7 +149,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
 
       <Modal
         open={openPdf}
-        title={`Sheet â€” ${player.name}`}
+        title={`Sheet - ${player.name}`}
         onCancel={() => setOpenPdf(false)}
         footer={null}
         width={mobileOnly ? '96vw' : '82vw'}

@@ -23,8 +23,8 @@ export const useAutoNightMode = (): void => {
   const nightTime = nightModeState.nightTime;
 
   useEffect(() => {
-    timeoutNightStarts && clearTimeout(timeoutNightStarts);
-    timeoutNightEnds && clearTimeout(timeoutNightEnds);
+    if (timeoutNightStarts) clearTimeout(timeoutNightStarts);
+    if (timeoutNightEnds) clearTimeout(timeoutNightEnds);
 
     if (isNightMode) {
       const runTimeoutStart = () => {
@@ -47,8 +47,8 @@ export const useAutoNightMode = (): void => {
     }
 
     return () => {
-      timeoutNightStarts && clearTimeout(timeoutNightStarts);
-      timeoutNightEnds && clearTimeout(timeoutNightEnds);
+      if (timeoutNightStarts) clearTimeout(timeoutNightStarts);
+      if (timeoutNightEnds) clearTimeout(timeoutNightEnds);
     };
   }, [dispatch, isNightMode, nightTime]);
 };

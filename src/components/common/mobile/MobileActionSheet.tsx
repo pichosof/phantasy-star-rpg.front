@@ -2,7 +2,7 @@ import React from 'react';
 import { ActionSheet as AdmActionSheet, ActionSheetProps as AdmActionSheetProps } from 'antd-mobile';
 import { getMobileActionSheetStyles, MOBILE_ACTION_SHEET_CLASS } from './mobile.styles';
 
-export interface MobileActionSheetProps extends AdmActionSheetProps {}
+export type MobileActionSheetProps = AdmActionSheetProps;
 
 export const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
   popupClassName,

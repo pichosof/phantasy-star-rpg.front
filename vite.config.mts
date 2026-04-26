@@ -69,8 +69,7 @@ export default defineConfig({
           },
           {
             // Remote images/assets (S3 bucket, CDN) — stale-while-revalidate
-            urlPattern: ({ url }) =>
-              url.hostname.includes('amazonaws.com') || url.hostname.includes('cloudfront.net'),
+            urlPattern: ({ url }) => url.hostname.includes('amazonaws.com') || url.hostname.includes('cloudfront.net'),
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'remote-assets',

@@ -6,7 +6,7 @@ export interface MobileListProps extends AdmListProps {
   inset?: boolean;
 }
 
-export interface MobileListItemProps extends AdmListItemProps {}
+export type MobileListItemProps = AdmListItemProps;
 
 type MobileListComponent = React.FC<MobileListProps> & {
   Item: React.FC<MobileListItemProps>;

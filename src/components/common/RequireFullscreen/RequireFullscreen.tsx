@@ -10,7 +10,11 @@ export const RequireFullscreen: React.FC<RequireFullscreenProps> = ({ component,
 
   const handleFullScreen = () => {
     if (component?.current) {
-      isFullscreen ? document.exitFullscreen() : component.current.requestFullscreen();
+      if (isFullscreen) {
+        document.exitFullscreen();
+      } else {
+        component.current.requestFullscreen();
+      }
     }
   };
 

@@ -6,22 +6,22 @@ Branch de trabalho: `update-version`
 
 ## Estado atual
 
-| Pacote | Antes | Depois |
-|--------|-------|--------|
-| Bundler | CRA 4 + Craco | Vite 5.4 |
-| React | 17.0.2 | 19.0.0 |
-| react-dom | 17.0.2 | 19.0.0 |
-| react-redux | 7.2 | 9.2 |
-| @reduxjs/toolkit | 1.7 | 2.3 |
-| styled-components | 5.3 | 6.1 |
-| react-router-dom | 6.0 | 6.28 |
-| axios | 0.24 | 1.7 |
-| TypeScript | 4.1 | 5.8 |
-| ESLint | 7.28 | 8.57 |
-| Prettier | 2.3 | 3.8 |
-| @typescript-eslint | 5.x | 7.18 |
-| AntD | 4.22 | 6.3 |
-| Node | 16.x | >=20.0.0 |
+| Pacote             | Antes         | Depois   |
+| ------------------ | ------------- | -------- |
+| Bundler            | CRA 4 + Craco | Vite 5.4 |
+| React              | 17.0.2        | 19.0.0   |
+| react-dom          | 17.0.2        | 19.0.0   |
+| react-redux        | 7.2           | 9.2      |
+| @reduxjs/toolkit   | 1.7           | 2.3      |
+| styled-components  | 5.3           | 6.1      |
+| react-router-dom   | 6.0           | 6.28     |
+| axios              | 0.24          | 1.7      |
+| TypeScript         | 4.1           | 5.8      |
+| ESLint             | 7.28          | 8.57     |
+| Prettier           | 2.3           | 3.8      |
+| @typescript-eslint | 5.x           | 7.18     |
+| AntD               | 4.22          | 6.3      |
+| Node               | 16.x          | >=20.0.0 |
 
 ### Snapshot atual da branch
 
@@ -61,25 +61,25 @@ Branch de trabalho: `update-version`
 
 ## Commits relevantes
 
-| Hash | Descricao |
-|------|-----------|
-| `7373bb1` | PR1+PR2: CRA -> Vite 5, React 17 -> 19 |
+| Hash      | Descricao                                              |
+| --------- | ------------------------------------------------------ |
+| `7373bb1` | PR1+PR2: CRA -> Vite 5, React 17 -> 19                 |
 | `3ac3ddd` | PR3: TypeScript 4 -> 5, ESLint 7 -> 8, Prettier 2 -> 3 |
-| `f78e4c6` | PR4: Ant Design 4 -> 6 + @ant-design/icons 4 -> 6 |
-| `006047c` | chore: finish antd 6 deprecated cleanup |
-| `cccf74a` | chore: finish pr4.5 cleanup and tooling warnings |
+| `f78e4c6` | PR4: Ant Design 4 -> 6 + @ant-design/icons 4 -> 6      |
+| `006047c` | chore: finish antd 6 deprecated cleanup                |
+| `cccf74a` | chore: finish pr4.5 cleanup and tooling warnings       |
 | `45e9d02` | feat: enable lan mobile access and restore pwa install |
-| `c3dffc0` | feat: finish pr5 phase 1 players mobile experience |
-| `3422171` | feat: add mobile-first cities page |
-| `9922441` | feat: add mobile-first sessions page |
-| `2c90ab5` | feat: add mobile-first quests page |
-| `22bcee9` | feat: add mobile-first timeline page |
-| `22577f2` | feat: add mobile-first tags and lores admin |
-| `d8ae0c3` | feat: add mobile-first bestiary and npcs |
-| `89dc30e` | feat: add mobile-first dungeons page |
-| `fe92418` | feat: add mobile-first gm notes and images |
-| `6926a61` | feat: add mobile-first wiki and library |
-| `36c6f3a` | feat: add mobile-first gm sheet forms |
+| `c3dffc0` | feat: finish pr5 phase 1 players mobile experience     |
+| `3422171` | feat: add mobile-first cities page                     |
+| `9922441` | feat: add mobile-first sessions page                   |
+| `2c90ab5` | feat: add mobile-first quests page                     |
+| `22bcee9` | feat: add mobile-first timeline page                   |
+| `22577f2` | feat: add mobile-first tags and lores admin            |
+| `d8ae0c3` | feat: add mobile-first bestiary and npcs               |
+| `89dc30e` | feat: add mobile-first dungeons page                   |
+| `fe92418` | feat: add mobile-first gm notes and images             |
+| `6926a61` | feat: add mobile-first wiki and library                |
+| `36c6f3a` | feat: add mobile-first gm sheet forms                  |
 
 ---
 

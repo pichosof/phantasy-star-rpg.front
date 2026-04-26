@@ -83,7 +83,7 @@ function groupByCategory(pages: WikiPageType[]) {
   for (const p of unpinned) {
     const key = p.category?.trim() || 'General';
     if (!map.has(key)) map.set(key, []);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     map.get(key)!.push(p);
   }
   return { pinned, byCategory: map };
