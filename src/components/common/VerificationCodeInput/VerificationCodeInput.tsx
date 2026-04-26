@@ -5,7 +5,7 @@ interface VerificationCodeInputProps {
   autoFocus?: boolean;
   validChars?: string;
   length?: number;
-  inputProps?: HTMLInputElement;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
   onChange?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -14,7 +14,6 @@ interface VerificationCodeInputProps {
 export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = (props) => {
   return (
     <S.CodeInput
-      removeDefaultStyles
       classNames={{
         container: 'container',
         character: 'character',
