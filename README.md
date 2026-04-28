@@ -1,900 +1,210 @@
-# phantasy-star-rpg.front
+# Picho-RPG · Front-end
 
-## Current Branch Notes
+> Tabletop RPG companion for managing players, sessions, maps, lore, bestiary, timelines, quests, and GM tools — all in one place.
 
-- Migration progress and PR breakdown live in `MIGRATION_PLAN.md`.
-- The frontend can be reached on `localhost` and on the local network for
-  mobile QA. Current example: `http://192.168.10.198:3000`.
-- Mobile shell work is in progress with `antd-mobile` for screens below
-  `768px`, including header, menu, settings, PWA and GM flows.
-- GM-only routes now redirect to `/403` when there is no active GM key:
-  `/lores`, `/gm/notes`, `/gm/images` and `/gm/sheets`.
-- Useful commands:
-  - `yarn start`
-  - `yarn type-check`
-  - `yarn lint`
-  - `yarn build`
+<p>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
+  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white" />
+  <img alt="Ant Design" src="https://img.shields.io/badge/Ant_Design-6-0170FE?logo=antdesign&logoColor=white" />
+  <img alt="Status" src="https://img.shields.io/badge/status-active-success" />
+</p>
+
+This repository hosts the **web client** of [Picho-RPG](https://picho.org). It pairs with [`picho-rpg-backend`](../phantasy-star-rpg) (Fastify + Drizzle + SQLite). The web app is a **PWA** that works on desktop, tablet and mobile, with a dedicated mobile-first shell built on top of `antd-mobile`.
+
+---
+
+## Why Picho-RPG?
+
+Running a tabletop campaign means juggling spreadsheets, PDF rulebooks, NPC notes, hand-drawn maps and Discord screenshots. Picho-RPG centralizes everything:
+
+- **For players**: campaign timeline, quests, NPC roster, world map, character sheets, session log and a shared library of rulebooks.
+- **For the GM**: every player view plus a private layer with notes, hidden NPCs, dungeons, image gallery, character sheet manager (GURPS, Starfinder), and gated lore.
+
+Themes are based on the **Phantasy Star** universe — *Motavia* (light) and *Dezolis* (dark) — but the platform is system-agnostic and works for any TTRPG.
+
+---
+
+## Features
+
+- **GM Mode** — gated panels for the Game Master, unlocked with a GM key against the backend.
+- **Library** — upload and read rulebooks/handouts in PDF, DOCX, EPUB, MOBI (auto-converted to EPUB on the backend), TXT/MD, XLS/XLSX, CSV, PPT/PPTX. Each viewer has its own toolbar (search, zoom, theme, table of contents).
+- **Players & Sheets** — manage players and their character sheets with rule-system-aware forms (GURPS GCA import, Starfinder).
+- **World, Cities, Dungeons, NPCs, Bestiary** — entity management with images, tags, visibility flags and cross-links.
+- **Quests, Sessions, Timeline** — campaign progression tracking.
+- **Wiki & Lore** — markdown-driven wiki and per-city lore archive.
+- **Map** — pannable world map with markers for cities and dungeons, GM placement controls, presentation mode and ruler.
+- **Dice Roller** — visual dice picker with formula preview, roll history and replay.
+- **PWA** — installable, offline-aware (Workbox 7 service worker), background updates.
+- **Themes** — Motavia / Dezolis with persistent preference and optional auto night-mode.
+
+---
+
+## Stack
+
+| Layer            | Tech                                                                |
+| ---------------- | ------------------------------------------------------------------- |
+| Build & dev      | Vite 8 + `vite-plugin-pwa` + `vite-tsconfig-paths`                  |
+| Language         | TypeScript 6 (`moduleResolution: bundler`)                          |
+| UI library       | React 19 + `react-dom` 19                                           |
+| Component kits   | Ant Design 6 (desktop/tablet) + `antd-mobile` 5 (mobile)            |
+| Styling          | `styled-components` 6 + Less themes                                 |
+| State            | Redux Toolkit 2 + `react-redux` 9                                   |
+| Routing          | React Router 7                                                      |
+| Data fetching    | Axios 1                                                             |
+| File rendering   | `pdfjs-dist` + `@react-pdf-viewer`, `mammoth` (DOCX), `xlsx`, `react-reader` (EPUB), `@kandiforge/pptx-renderer` (PPTX) |
+| Charts           | ECharts 6 + `echarts-for-react`                                     |
+| Maps             | Leaflet + `react-leaflet`                                           |
+| Lint / format    | ESLint 9 (flat config) + Prettier 3 + Stylelint                     |
+| Package manager  | Yarn 3 (`packageManager` field, `nodeLinker: node-modules`)         |
+
+---
+
+## Quick start
+
+### Requirements
+
+- Node.js **>= 20**
+- Yarn 3 (handled automatically by `corepack`)
+- The backend running locally on `http://localhost:3010` (see [`picho-rpg-backend`](../phantasy-star-rpg))
+
+### Install & run
+
+```bash
+corepack enable
+yarn install
+cp .env.example .env       # then edit values
+yarn start                 # http://localhost:3000
+```
+
+The dev server binds to `0.0.0.0`, so you can also reach it from another device on the same Wi-Fi (e.g. `http://192.168.1.10:3000`) for mobile QA.
+
+### Available scripts
+
+| Script             | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `yarn start`       | Build the Less themes and start Vite dev server (port 3000). |
+| `yarn build`       | Production build into `build/`.                          |
+| `yarn preview`     | Serve the production build locally.                      |
+| `yarn type-check`  | Run `tsc --noEmit` against the project.                  |
+| `yarn lint`        | ESLint with auto-fix.                                    |
+| `yarn lint:styles` | Stylelint over JS/TS files (styled-components).          |
+| `yarn format`      | Prettier on the whole repo.                              |
+| `yarn buildThemes` | Compile `src/styles/themes/main.less` → `public/themes/main.css`. |
+
+### Environment variables
+
+All exposed to the client must be prefixed with `VITE_`. Defined in [`.env.example`](.env.example):
+
+| Variable                | Purpose                                                                |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`     | Backend URL. In dev, usually `http://localhost:3010`.                  |
+| `VITE_BASE_URL`         | Public base path of the SPA (empty for root).                          |
+| `VITE_ASSETS_BUCKET`    | Optional CDN/bucket for remote assets.                                 |
+| `VITE_UPLOAD_MAX_MB`    | Max upload size; must match `MAX_UPLOAD_MB` on the backend.            |
+| `VITE_CLIENT_SECRET`    | Shared secret with the backend; must match `CLIENT_SECRET`.            |
+| `VITE_SIMULATE_PROD`    | When `true`, dev behaves like prod (e.g. auto-logout on 401).          |
+
+> ⚠️ Anything in `.env` is shipped to the browser. Never put server-only secrets here.
+
+---
+
+## Project layout
 
 ```
 phantasy-star-rpg.front
-├─ .eslintrc.js
-├─ .husky
-│  ├─ pre-commit
-│  └─ _
-│     └─ husky.sh
-├─ .prettierrc.js
-├─ .stylelintrc
-├─ .yarnrc.yml
-├─ CODE_OF_CONDUCT.md
-├─ CONTRIBUTING.md
-├─ craco.config.js
-├─ LICENSE
-├─ package.json
-├─ patches
-│  └─ react-trello+2.2.11.patch
-├─ public
-│  ├─ favicon.ico
-│  ├─ index.html
-│  ├─ Lightence-screenshot.png
-│  ├─ logo192.png
-│  ├─ logo512.png
-│  ├─ manifest.json
-│  ├─ robots.txt
-│  ├─ spinners
-│  │  └─ spinner.svg
-│  └─ themes
-│     └─ main.css
-├─ README.md
-├─ SECURITY.md
-├─ src
-│  ├─ @types
-│  │  ├─ beforeinstallpromptevent.d.ts
-│  │  ├─ credit-cards.d.ts
-│  │  ├─ react-app-env.d.ts
-│  │  └─ trello.d.ts
-│  ├─ api
-│  │  ├─ activity.api.ts
-│  │  ├─ ApiError.ts
-│  │  ├─ auth.api.ts
-│  │  ├─ calendar.api.ts
-│  │  ├─ covid.api.ts
-│  │  ├─ doctors.api.ts
-│  │  ├─ earnings.api.ts
-│  │  ├─ http.api.ts
-│  │  ├─ mocks
-│  │  │  ├─ auth.api.mock.ts
-│  │  │  └─ http.api.mock.ts
-│  │  ├─ news.api.ts
-│  │  ├─ nftDashboard.api.ts
-│  │  ├─ notifications.api.ts
-│  │  ├─ paymentHistory.api.ts
-│  │  ├─ screenings.api.ts
-│  │  ├─ statistics.api.ts
-│  │  ├─ table.api.ts
-│  │  └─ trendingCreators.ts
-│  ├─ App.tsx
-│  ├─ assets
-│  │  ├─ icons
-│  │  │  ├─ arrow-down.svg
-│  │  │  ├─ bones.svg
-│  │  │  ├─ btc.svg
-│  │  │  ├─ eth.svg
-│  │  │  ├─ facebook.svg
-│  │  │  ├─ fat.svg
-│  │  │  ├─ google.svg
-│  │  │  ├─ map-background.svg
-│  │  │  ├─ marker-doctor.svg
-│  │  │  ├─ marker-polyclinic.svg
-│  │  │  ├─ nft-icon.svg
-│  │  │  ├─ pigeon.svg
-│  │  │  ├─ protein.svg
-│  │  │  └─ water.svg
-│  │  ├─ images
-│  │  │  ├─ error404.svg
-│  │  │  ├─ login-bg.webp
-│  │  │  ├─ new-lane.webp
-│  │  │  ├─ nothing-found.webp
-│  │  │  ├─ server-error.svg
-│  │  │  ├─ stub-avatar.webp
-│  │  │  └─ verify-email.webp
-│  │  ├─ logo-dark.png
-│  │  ├─ logo.png
-│  │  └─ map-data
-│  │     └─ countries.geo.json
-│  ├─ components
-│  │  ├─ apps
-│  │  │  ├─ kanban
-│  │  │  │  ├─ AddCardLink
-│  │  │  │  │  ├─ AddCardLink.styles.ts
-│  │  │  │  │  └─ AddCardLink.tsx
-│  │  │  │  ├─ Card
-│  │  │  │  │  ├─ Card.styles.ts
-│  │  │  │  │  └─ Card.tsx
-│  │  │  │  ├─ interfaces.ts
-│  │  │  │  ├─ Kanban
-│  │  │  │  │  ├─ Kanban.styles.ts
-│  │  │  │  │  └─ Kanban.tsx
-│  │  │  │  ├─ LaneHeader
-│  │  │  │  │  ├─ LaneHeader.styles.ts
-│  │  │  │  │  └─ LaneHeader.tsx
-│  │  │  │  ├─ newCardForm
-│  │  │  │  │  ├─ NewCardForm
-│  │  │  │  │  │  ├─ NewCardForm.styles.ts
-│  │  │  │  │  │  └─ NewCardForm.tsx
-│  │  │  │  │  ├─ ParticipantsDropdown
-│  │  │  │  │  │  ├─ ParticipantsDropdown.styles.ts
-│  │  │  │  │  │  └─ ParticipantsDropdown.tsx
-│  │  │  │  │  └─ TagDropdown
-│  │  │  │  │     ├─ TagDropdown.styles.ts
-│  │  │  │  │     └─ TagDropdown.tsx
-│  │  │  │  ├─ NewLaneForm
-│  │  │  │  │  ├─ NewLaneForm.styles.ts
-│  │  │  │  │  └─ NewLaneForm.tsx
-│  │  │  │  └─ NewLaneSection
-│  │  │  │     ├─ NewLaneSection.styles.ts
-│  │  │  │     └─ NewLaneSection.tsx
-│  │  │  └─ newsFeed
-│  │  │     ├─ NewsFeed.tsx
-│  │  │     ├─ NewsFilter
-│  │  │     │  ├─ NewsFilter.styles.ts
-│  │  │     │  └─ NewsFilter.tsx
-│  │  │     └─ Validator.ts
-│  │  ├─ auth
-│  │  │  ├─ ForgotPasswordForm
-│  │  │  │  ├─ ForgotPasswordForm.styles.ts
-│  │  │  │  └─ ForgotPasswordForm.tsx
-│  │  │  ├─ LockForm
-│  │  │  │  ├─ LockForm.styles.ts
-│  │  │  │  └─ LockForm.tsx
-│  │  │  ├─ LoginForm
-│  │  │  │  ├─ LoginForm.styles.ts
-│  │  │  │  └─ LoginForm.tsx
-│  │  │  ├─ NewPasswordForm
-│  │  │  │  ├─ NewPasswordForm.styles.ts
-│  │  │  │  └─ NewPasswordForm.tsx
-│  │  │  ├─ SecurityCodeForm
-│  │  │  │  ├─ SecurityCodeForm.styles.ts
-│  │  │  │  └─ SecurityCodeForm.tsx
-│  │  │  └─ SignUpForm
-│  │  │     ├─ SignUpForm.styles.tsx
-│  │  │     └─ SignUpForm.tsx
-│  │  ├─ charts
-│  │  │  ├─ BarAnimationDelayChart
-│  │  │  │  └─ BarAnimationDelayChart.tsx
-│  │  │  ├─ GradientStackedAreaChart
-│  │  │  │  └─ GradientStackedAreaChart.tsx
-│  │  │  ├─ LineRaceChart
-│  │  │  │  ├─ data.json
-│  │  │  │  └─ LineRaceChart.tsx
-│  │  │  ├─ ScatterChart
-│  │  │  │  └─ ScatterChart.tsx
-│  │  │  └─ VisitorsPieChart.tsx
-│  │  ├─ common
-│  │  │  ├─ Alert
-│  │  │  │  ├─ Alert.styles.ts
-│  │  │  │  └─ Alert.tsx
-│  │  │  ├─ ArticleCard
-│  │  │  │  ├─ ArticleCard.styles.ts
-│  │  │  │  └─ ArticleCard.tsx
-│  │  │  ├─ AutoComplete
-│  │  │  │  ├─ AutoComplete.styles.ts
-│  │  │  │  └─ AutoComplete.tsx
-│  │  │  ├─ Avatar
-│  │  │  │  ├─ Avatar.styles.ts
-│  │  │  │  └─ Avatar.tsx
-│  │  │  ├─ Badge
-│  │  │  │  ├─ Badge.styles.ts
-│  │  │  │  └─ Badge.tsx
-│  │  │  ├─ Breadcrumb
-│  │  │  │  ├─ Breadcrumb.styles.ts
-│  │  │  │  └─ Breadcrumb.tsx
-│  │  │  ├─ Burger
-│  │  │  │  └─ BurgerIcon.tsx
-│  │  │  ├─ buttons
-│  │  │  │  └─ Button
-│  │  │  │     ├─ Button.styles.ts
-│  │  │  │     └─ Button.tsx
-│  │  │  ├─ CalendarSwitch
-│  │  │  │  ├─ CalendarSwitch.styles.ts
-│  │  │  │  └─ CalendarSwitch.tsx
-│  │  │  ├─ Card
-│  │  │  │  ├─ Card.styles.ts
-│  │  │  │  └─ Card.tsx
-│  │  │  ├─ Carousel
-│  │  │  │  └─ Carousel.tsx
-│  │  │  ├─ CarouselArrow
-│  │  │  │  ├─ CarouselArrow.styles.ts
-│  │  │  │  └─ CarouselArrow.tsx
-│  │  │  ├─ charts
-│  │  │  │  ├─ BaseChart.tsx
-│  │  │  │  ├─ Legend
-│  │  │  │  │  ├─ Legend.styles.ts
-│  │  │  │  │  └─ Legend.tsx
-│  │  │  │  ├─ PieChart.tsx
-│  │  │  │  └─ PieChartCustomLegend.tsx
-│  │  │  ├─ Checkbox
-│  │  │  │  ├─ Checkbox.styles.ts
-│  │  │  │  └─ Checkbox.tsx
-│  │  │  ├─ Collapse
-│  │  │  │  ├─ Collapse.styles.ts
-│  │  │  │  └─ Collapse.tsx
-│  │  │  ├─ CountryMap
-│  │  │  │  ├─ CountryMap.styles.ts
-│  │  │  │  └─ CountryMap.tsx
-│  │  │  ├─ DoctorProfile
-│  │  │  │  ├─ DoctorProfile.styles.ts
-│  │  │  │  └─ DoctorProfile.tsx
-│  │  │  ├─ Dropdown
-│  │  │  │  ├─ Dropdown.styles.ts
-│  │  │  │  └─ Dropdown.tsx
-│  │  │  ├─ Feed
-│  │  │  │  ├─ Feed.styles.ts
-│  │  │  │  └─ Feed.tsx
-│  │  │  ├─ forms
-│  │  │  │  ├─ BaseButtonsForm
-│  │  │  │  │  └─ BaseButtonsForm.tsx
-│  │  │  │  ├─ BaseForm
-│  │  │  │  │  └─ BaseForm.tsx
-│  │  │  │  └─ components
-│  │  │  │     ├─ BaseButtonsGroup
-│  │  │  │     │  ├─ BaseButtonsGroup.styles.ts
-│  │  │  │     │  └─ BaseButtonsGroup.tsx
-│  │  │  │     ├─ BaseFormItem
-│  │  │  │     │  └─ BaseFormItem.ts
-│  │  │  │     ├─ BaseFormList
-│  │  │  │     │  └─ BaseFormList.ts
-│  │  │  │     └─ BaseFormTitle
-│  │  │  │        └─ BaseFormTitle.ts
-│  │  │  ├─ GlobalSpinner.tsx
-│  │  │  ├─ icons
-│  │  │  │  ├─ FacebookIcon.tsx
-│  │  │  │  ├─ FilterIcon.tsx
-│  │  │  │  ├─ LinkedinIcon.tsx
-│  │  │  │  ├─ MoonIcon.tsx
-│  │  │  │  └─ SunIcon.tsx
-│  │  │  ├─ inputs
-│  │  │  │  ├─ ClipboardInput
-│  │  │  │  │  └─ ClipboardInput.tsx
-│  │  │  │  ├─ Input
-│  │  │  │  │  ├─ Input.styles.ts
-│  │  │  │  │  └─ Input.tsx
-│  │  │  │  ├─ InputNumber
-│  │  │  │  │  ├─ InputNumber.styles.ts
-│  │  │  │  │  └─ InputNumber.tsx
-│  │  │  │  ├─ InputPassword
-│  │  │  │  │  ├─ InputPassword.styles.ts
-│  │  │  │  │  └─ InputPassword.tsx
-│  │  │  │  ├─ OpenURLInput
-│  │  │  │  │  └─ OpenURLInput.tsx
-│  │  │  │  ├─ SearchInput
-│  │  │  │  │  ├─ SearchInput.styles.ts
-│  │  │  │  │  └─ SearchInput.tsx
-│  │  │  │  └─ SuffixInput
-│  │  │  │     ├─ SuffixInput.styles.ts
-│  │  │  │     └─ SuffixInput.tsx
-│  │  │  ├─ Loading.tsx
-│  │  │  ├─ Menu
-│  │  │  │  ├─ Menu.styles.ts
-│  │  │  │  └─ Menu.tsx
-│  │  │  ├─ Modal
-│  │  │  │  ├─ Modal.styles.ts
-│  │  │  │  └─ Modal.tsx
-│  │  │  ├─ MoonSunSwitch
-│  │  │  │  ├─ MoonSunSwitch.styles.ts
-│  │  │  │  └─ MoonSunSwitch.tsx
-│  │  │  ├─ NotFound
-│  │  │  │  ├─ NotFound.styles.ts
-│  │  │  │  └─ NotFound.tsx
-│  │  │  ├─ Notification
-│  │  │  │  ├─ Notification.styles.ts
-│  │  │  │  └─ Notification.tsx
-│  │  │  ├─ Overlay.tsx
-│  │  │  ├─ PageTitle
-│  │  │  │  └─ PageTitle.tsx
-│  │  │  ├─ Pagination
-│  │  │  │  ├─ Pagination.styles.ts
-│  │  │  │  └─ Pagination.tsx
-│  │  │  ├─ pickers
-│  │  │  │  ├─ DatePicker.tsx
-│  │  │  │  ├─ DayjsDatePicker.tsx
-│  │  │  │  └─ TimeRangePicker.tsx
-│  │  │  ├─ Popconfirm
-│  │  │  │  ├─ Popconfirm.styles.ts
-│  │  │  │  └─ Popconfirm.tsx
-│  │  │  ├─ Popover
-│  │  │  │  ├─ Popover.styles.ts
-│  │  │  │  └─ Popover.tsx
-│  │  │  ├─ Progress
-│  │  │  │  ├─ Progress.styles.ts
-│  │  │  │  └─ Progress.tsx
-│  │  │  ├─ Radio
-│  │  │  │  ├─ Radio.styles.ts
-│  │  │  │  └─ Radio.tsx
-│  │  │  ├─ Rate
-│  │  │  │  ├─ Rate.styles.ts
-│  │  │  │  └─ Rate.tsx
-│  │  │  ├─ References
-│  │  │  │  ├─ References.styles.ts
-│  │  │  │  └─ References.tsx
-│  │  │  ├─ RequireFullscreen
-│  │  │  │  └─ RequireFullscreen.tsx
-│  │  │  ├─ Result
-│  │  │  │  ├─ Result.styles.ts
-│  │  │  │  └─ Result.tsx
-│  │  │  ├─ selects
-│  │  │  │  ├─ MonthSelect
-│  │  │  │  │  └─ MonthSelect.tsx
-│  │  │  │  ├─ Select
-│  │  │  │  │  ├─ Select.styles.ts
-│  │  │  │  │  └─ Select.tsx
-│  │  │  │  └─ StatisticsSelect
-│  │  │  │     └─ StatisticsSelect.tsx
-│  │  │  ├─ Skeleton
-│  │  │  │  ├─ Skeleton.styles.ts
-│  │  │  │  └─ Skeleton.tsx
-│  │  │  ├─ Slider
-│  │  │  │  ├─ Slider.styles.ts
-│  │  │  │  └─ Slider.tsx
-│  │  │  ├─ Spinner
-│  │  │  │  ├─ Spinner.styles.ts
-│  │  │  │  └─ Spinner.tsx
-│  │  │  ├─ Steps
-│  │  │  │  ├─ Steps.styles.ts
-│  │  │  │  └─ Steps.tsx
-│  │  │  ├─ Switch
-│  │  │  │  ├─ Switch.styles.ts
-│  │  │  │  └─ Switch.tsx
-│  │  │  ├─ Table
-│  │  │  │  ├─ Table.less
-│  │  │  │  ├─ Table.styles.ts
-│  │  │  │  └─ Table.tsx
-│  │  │  ├─ Tabs
-│  │  │  │  ├─ Tabs.styles.ts
-│  │  │  │  └─ Tabs.tsx
-│  │  │  ├─ Tag
-│  │  │  │  ├─ Tag.styles.ts
-│  │  │  │  └─ Tag.tsx
-│  │  │  ├─ typography
-│  │  │  │  ├─ H1
-│  │  │  │  │  ├─ H1.styles.ts
-│  │  │  │  │  └─ H1.tsx
-│  │  │  │  ├─ H2
-│  │  │  │  │  ├─ H2.styles.ts
-│  │  │  │  │  └─ H2.tsx
-│  │  │  │  ├─ H3
-│  │  │  │  │  ├─ H3.styles.ts
-│  │  │  │  │  └─ H3.tsx
-│  │  │  │  ├─ H4
-│  │  │  │  │  ├─ H4.styles.ts
-│  │  │  │  │  └─ H4.tsx
-│  │  │  │  ├─ H5
-│  │  │  │  │  ├─ H5.styles.ts
-│  │  │  │  │  └─ H5.tsx
-│  │  │  │  ├─ H6
-│  │  │  │  │  ├─ H6.styles.ts
-│  │  │  │  │  └─ H6.tsx
-│  │  │  │  ├─ interfaces.ts
-│  │  │  │  ├─ P1
-│  │  │  │  │  ├─ P1.styles.ts
-│  │  │  │  │  └─ P1.tsx
-│  │  │  │  └─ P2
-│  │  │  │     ├─ P2.styles.ts
-│  │  │  │     └─ P2.tsx
-│  │  │  ├─ Upload
-│  │  │  │  ├─ Upload.styles.ts
-│  │  │  │  └─ Upload.tsx
-│  │  │  └─ VerificationCodeInput
-│  │  │     ├─ VerificationCodeInput.styles.ts
-│  │  │     └─ VerificationCodeInput.tsx
-│  │  ├─ Error
-│  │  │  ├─ Error.styles.ts
-│  │  │  └─ Error.tsx
-│  │  ├─ forms
-│  │  │  ├─ ControlForm
-│  │  │  │  ├─ AddUserFormModal.tsx
-│  │  │  │  ├─ ControlForm.styles.ts
-│  │  │  │  ├─ ControlForm.tsx
-│  │  │  │  └─ useResetFormOnCloseModal.ts
-│  │  │  ├─ DynamicForm
-│  │  │  │  ├─ DynamicForm.styles.ts
-│  │  │  │  └─ DynamicForm.tsx
-│  │  │  ├─ InputCode
-│  │  │  │  └─ InputCode.tsx
-│  │  │  ├─ StepForm
-│  │  │  │  ├─ StepForm.styles.ts
-│  │  │  │  ├─ StepForm.tsx
-│  │  │  │  └─ Steps
-│  │  │  │     ├─ Step1.tsx
-│  │  │  │     ├─ Step2.tsx
-│  │  │  │     ├─ Step3.tsx
-│  │  │  │     └─ Step4.tsx
-│  │  │  └─ ValidationForm
-│  │  │     └─ ValidationForm.tsx
-│  │  ├─ header
-│  │  │  ├─ components
-│  │  │  │  ├─ GithubButton
-│  │  │  │  │  └─ GitHubButton.tsx
-│  │  │  │  ├─ HeaderFullscreen
-│  │  │  │  │  └─ HeaderFullscreen.tsx
-│  │  │  │  ├─ HeaderSearch
-│  │  │  │  │  ├─ HeaderSearch.styles.ts
-│  │  │  │  │  └─ HeaderSearch.tsx
-│  │  │  │  ├─ notificationsDropdown
-│  │  │  │  │  ├─ NotificationsDropdown.tsx
-│  │  │  │  │  └─ NotificationsOverlay
-│  │  │  │  │     ├─ NotificationsOverlay.styles.ts
-│  │  │  │  │     └─ NotificationsOverlay.tsx
-│  │  │  │  ├─ profileDropdown
-│  │  │  │  │  ├─ ProfileDropdown
-│  │  │  │  │  │  ├─ ProfileDropdown.styles.ts
-│  │  │  │  │  │  └─ ProfileDropdown.tsx
-│  │  │  │  │  └─ ProfileOverlay
-│  │  │  │  │     ├─ ProfileOverlay.styles.ts
-│  │  │  │  │     └─ ProfileOverlay.tsx
-│  │  │  │  ├─ searchDropdown
-│  │  │  │  │  ├─ SearchDropdown.tsx
-│  │  │  │  │  └─ searchOverlay
-│  │  │  │  │     ├─ SearchFilter
-│  │  │  │  │     │  ├─ SearchFilter.styles.ts
-│  │  │  │  │     │  └─ SearchFilter.tsx
-│  │  │  │  │     ├─ SearchOverlay
-│  │  │  │  │     │  ├─ SearchOverlay.styles.ts
-│  │  │  │  │     │  └─ SearchOverlay.tsx
-│  │  │  │  │     └─ SearchResults
-│  │  │  │  │        ├─ SearchResults.styles.ts
-│  │  │  │  │        └─ SearchResults.tsx
-│  │  │  │  └─ settingsDropdown
-│  │  │  │     ├─ SettingsDropdown.tsx
-│  │  │  │     └─ settingsOverlay
-│  │  │  │        ├─ LanguagePicker
-│  │  │  │        │  └─ LanguagePicker.tsx
-│  │  │  │        ├─ nightModeSettings
-│  │  │  │        │  ├─ NightModeSettings.tsx
-│  │  │  │        │  └─ NightTimePicker
-│  │  │  │        │     ├─ NightTimePicker.styles.ts
-│  │  │  │        │     └─ NightTimePicker.tsx
-│  │  │  │        ├─ SettingsOverlay
-│  │  │  │        │  ├─ SettingsOverlay.styles.ts
-│  │  │  │        │  └─ SettingsOverlay.tsx
-│  │  │  │        └─ ThemePicker
-│  │  │  │           └─ ThemePicker.tsx
-│  │  │  ├─ Header.styles.ts
-│  │  │  └─ Header.tsx
-│  │  ├─ medical-dashboard
-│  │  │  ├─ activityCard
-│  │  │  │  ├─ ActivityCard.tsx
-│  │  │  │  └─ ActivityChart.tsx
-│  │  │  ├─ bloodScreeningCard
-│  │  │  │  ├─ BloodScreeningCard
-│  │  │  │  │  ├─ BloodScreeningCard.styles.ts
-│  │  │  │  │  └─ BloodScreeningCard.tsx
-│  │  │  │  ├─ BloodScreeningChart
-│  │  │  │  │  └─ BloodScreeningChart.tsx
-│  │  │  │  └─ BloodScreeningTable
-│  │  │  │     ├─ BloodScreeningTable.styles.ts
-│  │  │  │     └─ BloodScreeningTable.tsx
-│  │  │  ├─ covidCard
-│  │  │  │  ├─ CovidCard.tsx
-│  │  │  │  └─ CovidChart.tsx
-│  │  │  ├─ DashboardCard
-│  │  │  │  └─ DashboardCard.tsx
-│  │  │  ├─ favoriteDoctors
-│  │  │  │  ├─ DoctorCard
-│  │  │  │  │  ├─ DoctorCard.styles.ts
-│  │  │  │  │  └─ DoctorCard.tsx
-│  │  │  │  └─ FavoriteDoctorsCard
-│  │  │  │     ├─ FavoritesDoctorsCard.styles.ts
-│  │  │  │     └─ FavoritesDoctorsCard.tsx
-│  │  │  ├─ HealthCard
-│  │  │  │  └─ HealthCard.tsx
-│  │  │  ├─ mapCard
-│  │  │  │  ├─ DoctorsMap
-│  │  │  │  │  ├─ DoctorsMap.styles.ts
-│  │  │  │  │  └─ DoctorsMap.tsx
-│  │  │  │  └─ MapCard.tsx
-│  │  │  ├─ NewsCard
-│  │  │  │  ├─ NewsCard.styles.ts
-│  │  │  │  └─ NewsCard.tsx
-│  │  │  ├─ PatientResultsCard
-│  │  │  │  ├─ PatientResultsCard.styles.ts
-│  │  │  │  └─ PatientResultsCard.tsx
-│  │  │  ├─ screeningsCard
-│  │  │  │  ├─ ScreeningsCard
-│  │  │  │  │  ├─ ScreeningsCard.styles.ts
-│  │  │  │  │  └─ ScreeningsCard.tsx
-│  │  │  │  ├─ ScreeningsChart
-│  │  │  │  │  └─ ScreeningsChart.tsx
-│  │  │  │  ├─ screeningsFriends
-│  │  │  │  │  ├─ DesktopScreenings
-│  │  │  │  │  │  ├─ DesktopScreenings.styles.ts
-│  │  │  │  │  │  └─ DesktopScreenings.tsx
-│  │  │  │  │  ├─ interfaces.ts
-│  │  │  │  │  ├─ MobileScreenings
-│  │  │  │  │  │  ├─ MobileScreenings.styles.ts
-│  │  │  │  │  │  └─ MobileScreenings.tsx
-│  │  │  │  │  ├─ ScreeningsFriend
-│  │  │  │  │  │  ├─ ScreeningsFriend.styles.ts
-│  │  │  │  │  │  └─ ScreeningsFriend.tsx
-│  │  │  │  │  └─ ScreeningsFriends
-│  │  │  │  │     ├─ ScreeningsFriends.styles.ts
-│  │  │  │  │     └─ ScreeningsFriends.tsx
-│  │  │  │  └─ ScreeningsHeader
-│  │  │  │     └─ ScreeningsHeader.tsx
-│  │  │  ├─ statisticsCards
-│  │  │  │  ├─ statisticsCard
-│  │  │  │  │  ├─ StatisticsCard
-│  │  │  │  │  │  ├─ StatisticsCard.styles.ts
-│  │  │  │  │  │  └─ StatisticsCard.tsx
-│  │  │  │  │  ├─ StatisticsInfo
-│  │  │  │  │  │  ├─ StatisticsInfo.styles.ts
-│  │  │  │  │  │  └─ StatisticsInfo.tsx
-│  │  │  │  │  └─ StatisticsProgress
-│  │  │  │  │     ├─ StatisticsProgress.styles.ts
-│  │  │  │  │     └─ StatisticsProgress.tsx
-│  │  │  │  └─ StatisticsCards.tsx
-│  │  │  └─ treatmentCard
-│  │  │     ├─ TreatmentCalendar
-│  │  │     │  ├─ TreatmentCalendar.styles.ts
-│  │  │     │  └─ TreatmentCalendar.tsx
-│  │  │     ├─ TreatmentCard.tsx
-│  │  │     ├─ TreatmentDoctor
-│  │  │     │  ├─ TreatmentDoctor.styles.ts
-│  │  │     │  └─ TreatmentDoctor.tsx
-│  │  │     ├─ TreatmentNotFound
-│  │  │     │  ├─ TreatmentNotFound.styles.ts
-│  │  │     │  └─ TreatmentNotFound.tsx
-│  │  │     └─ TreatmentPanel.tsx
-│  │  ├─ nft-dashboard
-│  │  │  ├─ activityStory
-│  │  │  │  ├─ ActivityStory.styles.ts
-│  │  │  │  ├─ ActivityStory.tsx
-│  │  │  │  └─ ActivityStoryItem
-│  │  │  │     ├─ ActivityStoryItem.styles.ts
-│  │  │  │     └─ ActivityStoryItem.tsx
-│  │  │  ├─ Balance
-│  │  │  │  ├─ Balance.styles.ts
-│  │  │  │  └─ Balance.tsx
-│  │  │  ├─ common
-│  │  │  │  ├─ NFTCard
-│  │  │  │  │  ├─ NFTCard.styles.ts
-│  │  │  │  │  └─ NFTCard.tsx
-│  │  │  │  ├─ NFTCardHeader
-│  │  │  │  │  ├─ NFTCardHeader.styles.ts
-│  │  │  │  │  └─ NFTCardHeader.tsx
-│  │  │  │  └─ ViewAll
-│  │  │  │     ├─ ViewAll.styles.ts
-│  │  │  │     └─ ViewAll.tsx
-│  │  │  ├─ recentActivity
-│  │  │  │  ├─ RecentActivity.styles.ts
-│  │  │  │  ├─ RecentActivity.tsx
-│  │  │  │  ├─ recentActivityFeed
-│  │  │  │  │  ├─ RecentActivityFeed.styles.ts
-│  │  │  │  │  ├─ RecentActivityFeed.tsx
-│  │  │  │  │  └─ RecentActivityItem
-│  │  │  │  │     ├─ RecentActivityItem.styles.ts
-│  │  │  │  │     └─ RecentActivityItem.tsx
-│  │  │  │  ├─ recentActivityFilters
-│  │  │  │  │  ├─ RecentActivityFilter.styles.ts
-│  │  │  │  │  ├─ RecentActivityFilter.tsx
-│  │  │  │  │  └─ RecentActivityStatusFilter
-│  │  │  │  │     ├─ RecentActivityStatusFilter.styles.ts
-│  │  │  │  │     └─ RecentActivityStatusFilter.tsx
-│  │  │  │  └─ RecentActivityHeader
-│  │  │  │     └─ RecentActivityHeader.tsx
-│  │  │  ├─ recently-added
-│  │  │  │  ├─ nft-card
-│  │  │  │  │  ├─ NftCard.styles.ts
-│  │  │  │  │  └─ NftCard.tsx
-│  │  │  │  ├─ RecentlyAddedNft.styles.ts
-│  │  │  │  └─ RecentlyAddedNft.tsx
-│  │  │  ├─ totalEarning
-│  │  │  │  ├─ TotalEarning.styles.ts
-│  │  │  │  ├─ TotalEarning.tsx
-│  │  │  │  └─ TotalEarningChart
-│  │  │  │     └─ TotalEarningChart.tsx
-│  │  │  ├─ trending-collections
-│  │  │  │  ├─ collection
-│  │  │  │  │  ├─ TrendingCollection.styles.ts
-│  │  │  │  │  └─ TrendingCollection.tsx
-│  │  │  │  ├─ TrendingCollections.styles.ts
-│  │  │  │  └─ TrendingCollections.tsx
-│  │  │  └─ trending-creators
-│  │  │     ├─ story
-│  │  │     │  ├─ TrendingCreatorsStory.styles.ts
-│  │  │     │  └─ TrendingCreatorsStory.tsx
-│  │  │     ├─ TrendingCreators.styles.ts
-│  │  │     └─ TrendingCreators.tsx
-│  │  ├─ profile
-│  │  │  └─ profileCard
-│  │  │     ├─ profileFormNav
-│  │  │     │  ├─ nav
-│  │  │     │  │  ├─ notifications
-│  │  │     │  │  │  ├─ CheckboxColumn
-│  │  │     │  │  │  │  ├─ CheckboxColumn.styles.ts
-│  │  │     │  │  │  │  └─ CheckboxColumn.tsx
-│  │  │     │  │  │  ├─ interfaces.ts
-│  │  │     │  │  │  ├─ Notifications
-│  │  │     │  │  │  │  ├─ Notifications.styles.ts
-│  │  │     │  │  │  │  └─ Notifications.tsx
-│  │  │     │  │  │  └─ NotificationsTypes
-│  │  │     │  │  │     ├─ NotificationsTypes.styles.ts
-│  │  │     │  │  │     └─ NotificationsTypes.tsx
-│  │  │     │  │  ├─ payments
-│  │  │     │  │  │  ├─ paymentHistory
-│  │  │     │  │  │  │  ├─ Payment
-│  │  │     │  │  │  │  │  ├─ Payment.styles.ts
-│  │  │     │  │  │  │  │  └─ Payment.tsx
-│  │  │     │  │  │  │  ├─ PaymentHistory
-│  │  │     │  │  │  │  │  ├─ PaymentHistory.styles.ts
-│  │  │     │  │  │  │  │  └─ PaymentHistory.tsx
-│  │  │     │  │  │  │  ├─ PaymentsTable
-│  │  │     │  │  │  │  │  ├─ PaymentsTable.styles.ts
-│  │  │     │  │  │  │  │  └─ PaymentsTable.tsx
-│  │  │     │  │  │  │  └─ Status
-│  │  │     │  │  │  │     ├─ Status.styles.ts
-│  │  │     │  │  │  │     └─ Status.tsx
-│  │  │     │  │  │  ├─ paymentMethod
-│  │  │     │  │  │  │  ├─ ActionButtons
-│  │  │     │  │  │  │  │  ├─ ActionButtons.styles.ts
-│  │  │     │  │  │  │  │  └─ ActionButtons.tsx
-│  │  │     │  │  │  │  ├─ addNewCard
-│  │  │     │  │  │  │  │  ├─ AddNewCardButton
-│  │  │     │  │  │  │  │  │  ├─ AddNewCardButton.styles.ts
-│  │  │     │  │  │  │  │  │  └─ AddNewCardButton.tsx
-│  │  │     │  │  │  │  │  └─ AddNewCardModal.tsx
-│  │  │     │  │  │  │  ├─ PaymentCard
-│  │  │     │  │  │  │  │  ├─ PaymentCard.styles.ts
-│  │  │     │  │  │  │  │  └─ PaymentCard.tsx
-│  │  │     │  │  │  │  ├─ PaymentCardsWidget.tsx
-│  │  │     │  │  │  │  ├─ paymentForm
-│  │  │     │  │  │  │  │  ├─ CardholderItem
-│  │  │     │  │  │  │  │  │  └─ CardholderItem.tsx
-│  │  │     │  │  │  │  │  ├─ CardNumberItem
-│  │  │     │  │  │  │  │  │  └─ CardNumberItem.tsx
-│  │  │     │  │  │  │  │  ├─ CardThemeItem
-│  │  │     │  │  │  │  │  │  ├─ CardThemeItem.styles.ts
-│  │  │     │  │  │  │  │  │  └─ CardThemeItem.tsx
-│  │  │     │  │  │  │  │  ├─ CVVItem
-│  │  │     │  │  │  │  │  │  └─ CVVItem.tsx
-│  │  │     │  │  │  │  │  ├─ ExpDateItem
-│  │  │     │  │  │  │  │  │  └─ ExpDateItem.tsx
-│  │  │     │  │  │  │  │  ├─ interfaces.ts
-│  │  │     │  │  │  │  │  └─ PaymentForm
-│  │  │     │  │  │  │  │     ├─ PaymentForm.styles.ts
-│  │  │     │  │  │  │  │     └─ PaymentForm.tsx
-│  │  │     │  │  │  │  └─ PaymentMethod.tsx
-│  │  │     │  │  │  └─ Payments.tsx
-│  │  │     │  │  ├─ PersonalInfo
-│  │  │     │  │  │  ├─ AddressItem
-│  │  │     │  │  │  │  └─ AddressItem.tsx
-│  │  │     │  │  │  ├─ BirthdayItem
-│  │  │     │  │  │  │  ├─ BirthdayItem.styles.ts
-│  │  │     │  │  │  │  └─ BirthdayItem.tsx
-│  │  │     │  │  │  ├─ CitiesItem
-│  │  │     │  │  │  │  └─ CitiesItem.tsx
-│  │  │     │  │  │  ├─ CountriesItem
-│  │  │     │  │  │  │  ├─ CountriesItem.styles.ts
-│  │  │     │  │  │  │  └─ CountriesItem.tsx
-│  │  │     │  │  │  ├─ EmailItem
-│  │  │     │  │  │  │  └─ EmailItem.tsx
-│  │  │     │  │  │  ├─ FirstNameItem
-│  │  │     │  │  │  │  └─ FirstNameItem.tsx
-│  │  │     │  │  │  ├─ LanguageItem
-│  │  │     │  │  │  │  └─ LanguageItem.tsx
-│  │  │     │  │  │  ├─ LastNameItem
-│  │  │     │  │  │  │  └─ LastNameItem.tsx
-│  │  │     │  │  │  ├─ NicknameItem
-│  │  │     │  │  │  │  └─ NicknameItem.tsx
-│  │  │     │  │  │  ├─ PersonalInfo.tsx
-│  │  │     │  │  │  ├─ PhoneItem
-│  │  │     │  │  │  │  ├─ PhoneItem.styles.ts
-│  │  │     │  │  │  │  └─ PhoneItem.tsx
-│  │  │     │  │  │  ├─ SexItem
-│  │  │     │  │  │  │  └─ SexItem.tsx
-│  │  │     │  │  │  ├─ SocialLinksItem
-│  │  │     │  │  │  │  └─ SocialLinksItem.tsx
-│  │  │     │  │  │  ├─ WebsiteItem
-│  │  │     │  │  │  │  └─ WebsiteItem.tsx
-│  │  │     │  │  │  └─ ZipcodeItem
-│  │  │     │  │  │     └─ ZipcodeItem.tsx
-│  │  │     │  │  └─ SecuritySettings
-│  │  │     │  │     ├─ passwordForm
-│  │  │     │  │     │  ├─ ConfirmPasswordItem
-│  │  │     │  │     │  │  └─ ConfirmPasswordItem.tsx
-│  │  │     │  │     │  ├─ CurrentPasswordItem
-│  │  │     │  │     │  │  └─ CurrentPasswordItem.tsx
-│  │  │     │  │     │  ├─ NewPasswordItem
-│  │  │     │  │     │  │  └─ NewPasswordItem.tsx
-│  │  │     │  │     │  └─ PasswordForm
-│  │  │     │  │     │     ├─ PasswordForm.styles.ts
-│  │  │     │  │     │     └─ PasswordForm.tsx
-│  │  │     │  │     ├─ SecuritySettings.tsx
-│  │  │     │  │     └─ twoFactorAuth
-│  │  │     │  │        ├─ TwoFactorAuth.styles.ts
-│  │  │     │  │        ├─ TwoFactorAuth.tsx
-│  │  │     │  │        ├─ TwoFactorOptions
-│  │  │     │  │        │  ├─ TwoFactorOptions.styles.ts
-│  │  │     │  │        │  └─ TwoFactorOptions.tsx
-│  │  │     │  │        └─ TwoFactorSwitch
-│  │  │     │  │           └─ TwoFactorSwitch.tsx
-│  │  │     │  └─ ProfileFormNav.tsx
-│  │  │     ├─ ProfileInfo
-│  │  │     │  ├─ ProfileInfo.styles.ts
-│  │  │     │  └─ ProfileInfo.tsx
-│  │  │     └─ ProfileNav
-│  │  │        ├─ ProfileNav.styles.ts
-│  │  │        └─ ProfileNav.tsx
-│  │  └─ tables
-│  │     ├─ BasicTable
-│  │     │  └─ BasicTable.tsx
-│  │     ├─ editableTable
-│  │     │  ├─ EditableCell.tsx
-│  │     │  └─ EditableTable.tsx
-│  │     ├─ Tables
-│  │     │  ├─ Tables.styles.ts
-│  │     │  └─ Tables.tsx
-│  │     └─ TreeTable
-│  │        └─ TreeTable.tsx
-│  ├─ config
-│  │  └─ config.ts
-│  ├─ constants
-│  │  ├─ bloodTestResults.ts
-│  │  ├─ cards.ts
-│  │  ├─ cardThemes.ts
-│  │  ├─ categoriesList.ts
-│  │  ├─ config
-│  │  │  ├─ activityStatuses.tsx
-│  │  │  ├─ components.ts
-│  │  │  └─ statistics.ts
-│  │  ├─ dashboardNews.ts
-│  │  ├─ Dates.ts
-│  │  ├─ defaultPaddings.ts
-│  │  ├─ enums
-│  │  │  └─ priorities.ts
-│  │  ├─ healthChartData.ts
-│  │  ├─ kanbanData.ts
-│  │  ├─ kanbanPeople.ts
-│  │  ├─ kanbanTags.ts
-│  │  ├─ languages.ts
-│  │  ├─ maxNews.ts
-│  │  ├─ modalSizes.ts
-│  │  ├─ newsTags.ts
-│  │  ├─ notificationsSeverities.ts
-│  │  ├─ patientResultsData.tsx
-│  │  ├─ patientResultStatus.ts
-│  │  ├─ patterns.ts
-│  │  ├─ paymentStatuses.ts
-│  │  ├─ polyclinicsData.ts
-│  │  ├─ profileNavData.tsx
-│  │  └─ specifities.ts
-│  ├─ controllers
-│  │  └─ notificationController.tsx
-│  ├─ domain
-│  │  └─ UserModel.ts
-│  ├─ hocs
-│  │  └─ withLoading.hoc.tsx
-│  ├─ hooks
-│  │  ├─ reduxHooks.ts
-│  │  ├─ useAutoNightMode.ts
-│  │  ├─ useDebounce.ts
-│  │  ├─ useDimensions.ts
-│  │  ├─ useLanguage.ts
-│  │  ├─ useMounted.ts
-│  │  ├─ useOnClickOutside.ts
-│  │  ├─ usePWA.ts
-│  │  ├─ useResponsive.ts
-│  │  └─ useThemeWatcher.ts
-│  ├─ i18n.ts
-│  ├─ index.tsx
-│  ├─ interfaces
-│  │  └─ interfaces.ts
-│  ├─ locales
-│  │  ├─ de
-│  │  │  └─ translation.json
-│  │  └─ en
-│  │     └─ translation.json
-│  ├─ pages
-│  │  ├─ AdvancedFormsPage.tsx
-│  │  ├─ ChartsPage.tsx
-│  │  ├─ DashboardPages
-│  │  │  ├─ DashboardPage.styles.ts
-│  │  │  ├─ MedicalDashboardPage.tsx
-│  │  │  └─ NftDashboardPage.tsx
-│  │  ├─ DataTablesPage.tsx
-│  │  ├─ Error404Page.tsx
-│  │  ├─ ForgotPasswordPage.tsx
-│  │  ├─ KanbanPage.tsx
-│  │  ├─ LockPage.tsx
-│  │  ├─ LoginPage.tsx
-│  │  ├─ maps
-│  │  │  ├─ GoogleMapsPage
-│  │  │  │  └─ GoogleMapsPage.tsx
-│  │  │  ├─ LeafletMapsPage
-│  │  │  │  └─ LeafletMapsPage.tsx
-│  │  │  ├─ maps.styles.ts
-│  │  │  ├─ PigeonsMapsPage
-│  │  │  │  └─ PigeonsMapsPage.tsx
-│  │  │  └─ ReactSimpleMapsPage
-│  │  │     └─ ReactSimpleMapsPage.tsx
-│  │  ├─ NewPasswordPage.tsx
-│  │  ├─ NewsFeedPage.tsx
-│  │  ├─ NotificationsPage.tsx
-│  │  ├─ PaymentsPage.tsx
-│  │  ├─ PersonalInfoPage.tsx
-│  │  ├─ SecurityCodePage.tsx
-│  │  ├─ SecuritySettingsPage.tsx
-│  │  ├─ ServerErrorPage.tsx
-│  │  ├─ SignUpPage.tsx
-│  │  └─ uiComponentsPages
-│  │     ├─ ButtonsPage.tsx
-│  │     ├─ dataDisplay
-│  │     │  ├─ AvatarsPage.tsx
-│  │     │  ├─ BadgesPage.tsx
-│  │     │  ├─ CollapsePage.tsx
-│  │     │  └─ PaginationPage.tsx
-│  │     ├─ DropdownsPage.tsx
-│  │     ├─ feedback
-│  │     │  ├─ AlertsPage.tsx
-│  │     │  ├─ NotificationsPage.tsx
-│  │     │  ├─ ProgressPage.tsx
-│  │     │  ├─ ResultsPage.tsx
-│  │     │  └─ SkeletonsPage.tsx
-│  │     ├─ forms
-│  │     │  ├─ AutoCompletesPage.tsx
-│  │     │  ├─ CheckboxesPage.tsx
-│  │     │  ├─ DateTimePickersPage.tsx
-│  │     │  ├─ InputsPage.tsx
-│  │     │  ├─ RadiosPage.tsx
-│  │     │  ├─ RatesPage.tsx
-│  │     │  ├─ SelectsPage.tsx
-│  │     │  ├─ StepsPage.tsx
-│  │     │  ├─ SwitchesPage.tsx
-│  │     │  └─ UploadsPage.tsx
-│  │     ├─ modals
-│  │     │  ├─ ModalsPage.tsx
-│  │     │  ├─ PopconfirmsPage.tsx
-│  │     │  └─ PopoversPage.tsx
-│  │     ├─ navigation
-│  │     │  ├─ BreadcrumbsPage.tsx
-│  │     │  └─ TabsPage.tsx
-│  │     ├─ SpinnersPage.tsx
-│  │     └─ UIComponentsPage.styles.ts
-│  ├─ react-app-env.d.ts
-│  ├─ reportWebVitals.ts
-│  ├─ service-worker.ts
-│  ├─ services
-│  │  └─ localStorage.service.ts
-│  ├─ serviceWorkerRegistration.ts
-│  ├─ store
-│  │  ├─ middlewares
-│  │  │  └─ errorLogging.middleware.ts
-│  │  ├─ slices
-│  │  │  ├─ authSlice.ts
-│  │  │  ├─ index.ts
-│  │  │  ├─ nightModeSlice.ts
-│  │  │  ├─ pwaSlice.ts
-│  │  │  ├─ themeSlice.ts
-│  │  │  └─ userSlice.ts
-│  │  └─ store.ts
-│  ├─ styles
-│  │  ├─ GlobalStyle.ts
-│  │  ├─ resetCss.ts
-│  │  ├─ themes
-│  │  │  ├─ constants.ts
-│  │  │  ├─ dark
-│  │  │  │  └─ darkTheme.ts
-│  │  │  ├─ light
-│  │  │  │  └─ lightTheme.ts
-│  │  │  ├─ main.less
-│  │  │  ├─ themeVariables.ts
-│  │  │  └─ types.ts
-│  │  └─ _override_variables.less
-│  ├─ types
-│  │  └─ generalTypes.ts
-│  └─ utils
-│     └─ utils.tsx
-├─ tsconfig.json
-├─ tsconfig.paths.json
-└─ yarn.lock
-
+├── public/                Static assets (favicons, themes, robots.txt)
+├── src/
+│   ├── api/               Axios clients per domain (library, players, world…)
+│   ├── assets/            Images and SVGs bundled with the app
+│   ├── components/
+│   │   ├── common/        Reusable UI (mobile/, AppIcon, pickers, etc.)
+│   │   ├── header/        Top navigation, search, settings, profile dropdowns
+│   │   ├── layouts/       Main / Profile / Auth layouts
+│   │   └── rpg/           Domain widgets (PlayerCard, CityAdminDrawer, …)
+│   ├── config/            Runtime config + env mapping
+│   ├── constants/         Static maps and enums
+│   ├── controllers/       Notifications & cross-cutting controllers
+│   ├── hocs/              Higher-order components (e.g. lazy loading)
+│   ├── hooks/             Custom hooks (useGMMode, useResponsive, …)
+│   ├── pages/             Route-level components (one folder/file per route)
+│   │   └── gm/            GM-only routes (sheets, notes, images)
+│   ├── store/             Redux Toolkit slices, store, middlewares
+│   ├── styles/            GlobalStyle, theme constants, Less variables
+│   └── utils/             Pure helpers (no React)
+├── eslint.config.cjs      Flat ESLint config
+├── tsconfig.json          + tsconfig.paths.json (alias `@app/*` → `src/*`)
+├── vite.config.mts        Vite + PWA + tsconfig-paths
+└── index.html             SPA entry point
 ```
+
+Path alias: `@app/*` resolves to `src/*`. Always prefer `@app/...` over relative `../../...` for cross-folder imports.
+
+---
+
+## 🔑 GM key
+
+Picho-RPG has no user accounts. Players see the public view by default; the **Game Master** unlocks an extra editing layer with a single shared **GM key** managed by the backend.
+
+### How a GM unlocks the panel
+
+1. Open the **settings dropdown** (gear icon in the header).
+2. Click **GM mode** → paste the key handed to you by whoever set up the deployment.
+3. The client calls `POST /api/auth/login` with the key, receives a short-lived JWT (default 8h), and stores it.
+4. From that moment on the GM-only navigation entries appear (`Lores admin`, `GM Notes`, `GM Images`, `GM Sheets`) and every entity drawer exposes its admin tab.
+5. To "log out", clear the GM mode from the same settings dropdown — the JWT is dropped and the UI reverts to the player view.
+
+### What's gated by the GM key
+
+- All `*Admin*` UIs (uploads, edits, hidden flags, deletions).
+- The `/lores`, `/gm/notes`, `/gm/images`, `/gm/sheets` routes (others redirect to `/403` without it).
+- The "GM" tabs inside entity drawers (Cities, Quests, Sessions, NPCs, Bestiary, Dungeons, Library settings, etc.).
+
+### Where the key actually lives
+
+- The raw key is **only in the backend env** (`GM_API_KEY`).
+- The browser only ever holds a JWT signed by the backend (`JWT_SECRET`), never the raw key.
+- See the [backend's GM key section](https://github.com/picho-org/picho-rpg-backend#gm-key) for how to generate, set, and rotate it. The backend enforces minimum strength (≥ 24 chars, 3 character classes) and throttles failed attempts per IP.
+
+> ⚠️ Do not put the GM key in `.env` of the front-end. The front-end only needs `VITE_API_BASE_URL` and `VITE_CLIENT_SECRET` (which is a soft sanity check, not the GM key).
+
+---
+
+## Architecture highlights
+
+- **Mobile-first shell** for screens `< 768px`. Components in `src/components/common/mobile/` wrap `antd-mobile` primitives (`MobilePageScaffold`, `MobileEntitySheet`, `MobileFilterSheet`, `MobileActionBar`, `MobileForm`, `MobileList`, `MobileSelector`, `MobileDialog`, `MobileSearchBar`, `MobileActionSheet`). Pages keep one tree for desktop/tablet and one for mobile, picked via `useResponsive()`.
+- **GM mode** is a client-side gate (`useGMMode()`) plus a route guard. Routes like `LORES`, `GM_NOTES`, `GM_IMAGES`, `GM_SHEETS` redirect to `/403` without an active GM key.
+- **PWA** via `vite-plugin-pwa` with `registerType: 'autoUpdate'`, manifest generated at build time, runtime caching for fonts, `/api/*` (network-first) and remote assets (stale-while-revalidate).
+- **Theming** uses styled-components plus a precompiled Less theme dropped into `public/themes/main.css` (Motavia/Dezolis variables).
+- **Data layer** is per-domain Axios modules under `src/api/`. They throw a typed `ApiError` consumed by `apiErrorMessage()` for user-facing messages.
+
+For deeper guidance — folder conventions, when to add a new page, how viewers are wired, where styles belong — see [`AGENTS.md`](AGENTS.md).
+
+---
+
+## Deployment
+
+The frontend builds to a static SPA, so any static host works (Azure Static Web Apps, Netlify, Vercel, S3/CloudFront, Caddy, Nginx).
+
+```bash
+yarn build         # outputs ./build
+```
+
+This repo currently targets **Azure Static Web Apps**; configuration lives in [`public/staticwebapp.config.json`](public/staticwebapp.config.json). The PWA service worker is generated at build time, so it's enough to upload `build/` as-is.
+
+Make sure the production build sees `VITE_API_BASE_URL` pointing at your backend deployment and `VITE_CLIENT_SECRET` matching the backend's `CLIENT_SECRET`.
+
+---
+
+## Contributing
+
+PRs are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening one. By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+To report a security issue, **don't open a GitHub issue** — see [`SECURITY.md`](SECURITY.md).
+
+---
+
+## License
+
+[MIT](LICENSE) © Jonathan Mendonça — picho.org

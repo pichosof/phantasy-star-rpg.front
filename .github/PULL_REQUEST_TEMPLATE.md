@@ -1,28 +1,38 @@
-# Description
+<!--
+Thanks for opening a PR! Please fill the sections below so reviewers have the
+context they need. Sections marked optional can be removed if not applicable.
+-->
 
-Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
+## Summary
 
-Fixes # (issue)
+<!-- Two or three sentences. What does this change do, and why? -->
 
 ## Type of change
 
-Please delete options that are not relevant.
-
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+- [ ] Breaking change (fix or feature that affects existing behaviour)
+- [ ] Refactor / chore (no behaviour change)
+- [ ] Documentation only
 
-# How Has This Been Tested?
+Closes #<!-- issue id, or remove the section if not applicable -->
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
+## Screenshots / recording (optional)
 
-# Checklist:
+<!-- Before/after for visual changes. Include both desktop and mobile if the change affects layout. -->
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+## Test plan
+
+<!-- How did you verify this works? -->
+
+- [ ] `yarn type-check` passes
+- [ ] `yarn lint` passes
+- [ ] `yarn build` succeeds
+- [ ] Manually verified on Chrome desktop
+- [ ] Manually verified on a mobile viewport (DevTools or real device)
+- [ ] Verified both themes (Motavia / Dezolis) when relevant
+- [ ] Verified GM mode on/off when GM-only flows are touched
+
+## Notes for reviewers (optional)
+
+<!-- Anything you'd like the reviewer to focus on, follow-ups, known limitations, etc. -->
