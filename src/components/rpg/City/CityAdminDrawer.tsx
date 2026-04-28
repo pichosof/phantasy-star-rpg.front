@@ -560,12 +560,12 @@ export const CityAdminDrawer: React.FC<Props> = ({ open, city, isGM, onClose, on
             <Space orientation={mobileOnly ? 'vertical' : 'horizontal'} wrap style={S.fullWidth}>
               <span>World:</span>
 
-              <Select
+              <Select<number | ''>
                 style={S.worldSelect(mobileOnly)}
-                value={city.worldId ?? null}
-                onChange={(v) => void setCityWorld(v)}
+                value={city.worldId ?? ''}
+                onChange={(v) => void setCityWorld(v === '' ? null : v)}
                 options={[
-                  { label: '(No world)', value: null },
+                  { label: '(No world)', value: '' },
                   ...worlds.map((w) => ({ label: `#${w.id} — ${w.name}`, value: w.id })),
                 ]}
               />

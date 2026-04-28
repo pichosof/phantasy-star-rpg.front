@@ -6,6 +6,7 @@ import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import * as S from './PdfDocumentViewer.styles';
 
 export const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+export const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
 
 interface PdfDocumentViewerProps {
   url: string;
@@ -17,7 +18,15 @@ export const PdfDocumentViewer: React.FC<PdfDocumentViewerProps> = ({ url }) => 
   return (
     <Worker workerUrl={PDF_WORKER_URL}>
       <S.Root>
-        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+        <Viewer
+          fileUrl={url}
+          plugins={[layoutPlugin]}
+          transformGetDocumentParams={(options) => ({
+            ...options,
+            standardFontDataUrl: PDF_STANDARD_FONTS_URL,
+            verbosity: 0,
+          })}
+        />
       </S.Root>
     </Worker>
   );

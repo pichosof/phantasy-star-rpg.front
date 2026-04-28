@@ -120,15 +120,23 @@ const ACCEPTED = [
   'application/x-mobipocket-ebook',
   'application/mobi',
   'text/markdown',
+  'text/csv',
   '.mobi',
+  '.csv',
 ].join(',');
 
 const VIEWABLE_MIME = new Set([
   'application/pdf',
   'text/plain',
   'text/markdown',
+  'text/csv',
+  'application/csv',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/epub+zip',
   'application/x-mobipocket-ebook',
   'application/mobi',
@@ -136,24 +144,59 @@ const VIEWABLE_MIME = new Set([
 
 const MOBI_MIMES = new Set(['application/x-mobipocket-ebook', 'application/mobi']);
 
+const SPREADSHEET_MIMES = new Set([
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'application/csv',
+]);
+
+const PPT_MIMES = new Set([
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+
 // ── Per-format viewers ─────────────────────────────────────────────────────────
 
 const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
 
 const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
   const layoutPlugin = defaultLayoutPlugin();
   return (
     <Worker workerUrl={PDF_WORKER_URL}>
       <div style={S.pdfViewer}>
-        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+        <Viewer
+          fileUrl={url}
+          plugins={[layoutPlugin]}
+          transformGetDocumentParams={(options) => ({
+            ...options,
+            standardFontDataUrl: PDF_STANDARD_FONTS_URL,
+          })}
+        />
       </div>
     </Worker>
   );
 };
 
+interface DocxHeading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
   const [html, setHtml] = React.useState<string | null>(null);
   const [err, setErr] = React.useState<string | null>(null);
+  const [headings, setHeadings] = React.useState<DocxHeading[]>([]);
+  const [zoom, setZoom] = React.useState(100);
+  const [search, setSearch] = React.useState('');
+  const [showOutline, setShowOutline] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -161,7 +204,21 @@ const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobil
       .then((r) => r.arrayBuffer())
       .then((buf) => import('mammoth').then((m) => m.convertToHtml({ arrayBuffer: buf })))
       .then(({ value }) => {
-        if (!cancelled) setHtml(value);
+        if (cancelled) return;
+        // Parse the rendered HTML to inject IDs on headings, used by the outline panel.
+        const dom = new DOMParser().parseFromString(value, 'text/html');
+        const collected: DocxHeading[] = [];
+        dom.body.querySelectorAll('h1, h2, h3, h4').forEach((h, i) => {
+          const id = `docx-h-${i}`;
+          h.id = id;
+          collected.push({
+            id,
+            text: (h.textContent ?? '').trim(),
+            level: parseInt(h.tagName.substring(1), 10),
+          });
+        });
+        setHeadings(collected.filter((h) => h.text.length > 0));
+        setHtml(dom.body.innerHTML);
       })
       .catch(() => {
         if (!cancelled) setErr('Failed to render document.');
@@ -171,6 +228,47 @@ const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobil
     };
   }, [url]);
 
+  // Highlight matches inside the rendered HTML by walking text nodes.
+  React.useEffect(() => {
+    const root = contentRef.current;
+    if (!root || !html) return;
+
+    // Strip previous highlights, restoring the original text nodes.
+    root.querySelectorAll('mark[data-search]').forEach((mark) => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    });
+
+    const term = search.trim();
+    if (term.length < 2) return;
+
+    const re = new RegExp(escapeRegex(term), 'gi');
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const matches: Text[] = [];
+    let n: Node | null = walker.nextNode();
+    while (n) {
+      const t = n as Text;
+      if (t.parentElement?.closest('mark[data-search]') == null && re.test(t.data)) {
+        matches.push(t);
+      }
+      n = walker.nextNode();
+    }
+
+    matches.forEach((t) => {
+      const span = document.createElement('span');
+      span.innerHTML = t.data.replace(re, (m) => `<mark data-search>${m}</mark>`);
+      t.parentNode?.replaceChild(span, t);
+    });
+  }, [search, html]);
+
+  function scrollToHeading(id: string) {
+    contentRef.current?.querySelector(`#${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isMobile) setShowOutline(false);
+  }
+
   if (err) return <div style={S.viewerError}>{err}</div>;
   if (!html)
     return (
@@ -178,7 +276,63 @@ const DocxViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobil
         <Spin />
       </div>
     );
-  return <div style={S.docxViewer(isMobile)} dangerouslySetInnerHTML={{ __html: html }} />;
+
+  return (
+    <S.DocxRoot>
+      <S.DocxToolbar $mobile={isMobile}>
+        <Button
+          size="small"
+          type={showOutline ? 'primary' : 'default'}
+          onClick={() => setShowOutline((v) => !v)}
+          disabled={headings.length === 0}
+        >
+          {isMobile ? '≡' : 'Outline'}
+        </Button>
+
+        <Input.Search
+          size="small"
+          placeholder="Search…"
+          allowClear
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ flex: 1, maxWidth: isMobile ? 200 : 320, minWidth: 120 }}
+        />
+
+        <S.DocxToolbarSpacer />
+
+        <Space size={2}>
+          <Button size="small" onClick={() => setZoom((z) => Math.max(70, z - 10))}>
+            A−
+          </Button>
+          {!isMobile && <span style={S.docxFontSize()}>{zoom}%</span>}
+          <Button size="small" onClick={() => setZoom((z) => Math.min(200, z + 10))}>
+            A+
+          </Button>
+        </Space>
+      </S.DocxToolbar>
+
+      <S.DocxBody>
+        {showOutline && isMobile && <div style={S.docxBackdrop} onClick={() => setShowOutline(false)} />}
+        {showOutline && (
+          <S.DocxOutlinePanel $mobile={isMobile}>
+            {headings.map((h) => (
+              <S.DocxOutlineItem
+                key={h.id}
+                $level={h.level}
+                $mobile={isMobile}
+                onClick={() => scrollToHeading(h.id)}
+                title={h.text}
+              >
+                {h.text}
+              </S.DocxOutlineItem>
+            ))}
+          </S.DocxOutlinePanel>
+        )}
+
+        <S.DocxContent ref={contentRef} $mobile={isMobile} $zoom={zoom} dangerouslySetInnerHTML={{ __html: html }} />
+      </S.DocxBody>
+    </S.DocxRoot>
+  );
 };
 
 const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
@@ -203,6 +357,418 @@ const TxtViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile
       </div>
     );
   return <pre style={S.txtViewer(isMobile)}>{text}</pre>;
+};
+
+// ── Spreadsheet Viewer (XLS/XLSX/CSV) ─────────────────────────────────────────
+
+interface SheetData {
+  name: string;
+  rows: string[][];
+}
+
+const SpreadsheetViewer: React.FC<{ url: string; isMobile: boolean }> = ({ url, isMobile }) => {
+  const [sheets, setSheets] = React.useState<SheetData[] | null>(null);
+  const [err, setErr] = React.useState<string | null>(null);
+  const [activeIdx, setActiveIdx] = React.useState(0);
+  const [search, setSearch] = React.useState('');
+  const [zoom, setZoom] = React.useState(100);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(url)
+      .then((r) => r.arrayBuffer())
+      .then((buf) => import('xlsx').then((XLSX) => ({ XLSX, buf })))
+      .then(({ XLSX, buf }) => {
+        if (cancelled) return;
+        const wb = XLSX.read(buf, { type: 'array' });
+        const parsed: SheetData[] = wb.SheetNames.map((name) => ({
+          name,
+          rows: XLSX.utils.sheet_to_json<string[]>(wb.Sheets[name], {
+            header: 1,
+            raw: false,
+            defval: '',
+          }) as string[][],
+        }));
+        setSheets(parsed);
+      })
+      .catch(() => {
+        if (!cancelled) setErr('Failed to render spreadsheet.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (err) return <div style={S.viewerError}>{err}</div>;
+  if (!sheets)
+    return (
+      <div style={flexCenterFull}>
+        <Spin />
+      </div>
+    );
+
+  const active = sheets[activeIdx] ?? sheets[0];
+  const term = search.trim().toLowerCase();
+  const allRows = active?.rows ?? [];
+  const headerRow = allRows[0] ?? [];
+  const dataRows = allRows.slice(1);
+
+  const filteredRows =
+    term.length > 0
+      ? dataRows.filter((row) =>
+          row.some((cell) =>
+            String(cell ?? '')
+              .toLowerCase()
+              .includes(term),
+          ),
+        )
+      : dataRows;
+
+  function highlightCell(value: string): React.ReactNode {
+    if (term.length < 2) return value;
+    const re = new RegExp(`(${escapeRegex(term)})`, 'gi');
+    const parts = value.split(re);
+    return parts.map((part, i) =>
+      re.test(part) ? (
+        <mark key={i} data-search>
+          {part}
+        </mark>
+      ) : (
+        <React.Fragment key={i}>{part}</React.Fragment>
+      ),
+    );
+  }
+
+  return (
+    <S.DocxRoot>
+      <S.DocxToolbar $mobile={isMobile}>
+        {sheets.length > 1 && (
+          <Select
+            size="small"
+            value={activeIdx}
+            onChange={(v) => {
+              setActiveIdx(v);
+              setSearch('');
+            }}
+            options={sheets.map((s, i) => ({ label: s.name, value: i }))}
+            style={{ minWidth: isMobile ? 120 : 160 }}
+          />
+        )}
+
+        <Input.Search
+          size="small"
+          placeholder="Search rows…"
+          allowClear
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ flex: 1, maxWidth: isMobile ? 200 : 320, minWidth: 120 }}
+        />
+
+        <S.DocxToolbarSpacer />
+
+        <Space size={2}>
+          <Button size="small" onClick={() => setZoom((z) => Math.max(70, z - 10))}>
+            A−
+          </Button>
+          {!isMobile && <span style={S.docxFontSize()}>{zoom}%</span>}
+          <Button size="small" onClick={() => setZoom((z) => Math.min(200, z + 10))}>
+            A+
+          </Button>
+        </Space>
+      </S.DocxToolbar>
+
+      {allRows.length === 0 ? (
+        <div style={S.sheetEmpty}>This sheet is empty.</div>
+      ) : (
+        <S.SheetBody $mobile={isMobile} $zoom={zoom}>
+          <table>
+            <thead>
+              <tr>
+                {headerRow.map((cell, i) => (
+                  <th key={i}>{cell}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.length === 0 ? (
+                <tr>
+                  <td colSpan={Math.max(headerRow.length, 1)} style={S.sheetEmpty}>
+                    No rows match &quot;{search}&quot;.
+                  </td>
+                </tr>
+              ) : (
+                filteredRows.map((row, ri) => (
+                  <tr key={ri}>
+                    {row.map((cell, ci) => (
+                      <td key={ci}>{highlightCell(String(cell ?? ''))}</td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </S.SheetBody>
+      )}
+    </S.DocxRoot>
+  );
+};
+
+// ── PPT/PPTX Viewer ────────────────────────────────────────────────────────────
+// We deep-import the parser/renderer from @kandiforge/pptx-renderer to avoid the
+// library's React components, which transitively pull in MUI (an undeclared peer
+// dep). The lib's `dist/lib/*` modules are MUI-free, expose `parsePPTX` and
+// `SlideRenderer`, and let us render slides to our own canvas with antd controls.
+
+interface PptxParsed {
+  slides: unknown[];
+  size: { width: number; height: number };
+}
+
+type PptFailure = 'legacy-ppt' | 'render-error';
+
+/**
+ * The pptx parser emits embedded images as `data:application/octet-stream;…`,
+ * which browsers refuse to decode as images. We sniff the real format from the
+ * magic bytes and rewrite the data URL so `<img>` accepts it.
+ */
+function sniffImageDataUrl(dataUrl: string): string | null {
+  if (!dataUrl.startsWith('data:application/octet-stream')) return null;
+  const comma = dataUrl.indexOf(',');
+  if (comma === -1) return null;
+  const payload = dataUrl.slice(comma + 1);
+  let head: string;
+  try {
+    head = atob(payload.slice(0, 16));
+  } catch {
+    return null;
+  }
+  const b = (i: number) => head.charCodeAt(i);
+  // JPEG: FF D8 FF
+  if (b(0) === 0xff && b(1) === 0xd8 && b(2) === 0xff) return `data:image/jpeg;base64,${payload}`;
+  // PNG: 89 50 4E 47
+  if (b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4e && b(3) === 0x47) return `data:image/png;base64,${payload}`;
+  // GIF: 47 49 46 38
+  if (b(0) === 0x47 && b(1) === 0x49 && b(2) === 0x46 && b(3) === 0x38) return `data:image/gif;base64,${payload}`;
+  // BMP: 42 4D
+  if (b(0) === 0x42 && b(1) === 0x4d) return `data:image/bmp;base64,${payload}`;
+  // WebP: 52 49 46 46 (RIFF — checking offset 8 for 'WEBP' would be more precise)
+  if (b(0) === 0x52 && b(1) === 0x49 && b(2) === 0x46 && b(3) === 0x46) return `data:image/webp;base64,${payload}`;
+  // EMF: 01 00 00 00 — leave for the renderer's placeholder path
+  return null;
+}
+
+/** Walks every shape array on a slide (incl. nested groups) and fixes image mimes in-place. */
+function fixSlideImageMimes(slide: {
+  shapes?: unknown;
+  masterShapes?: unknown;
+  layoutShapes?: unknown;
+  slideShapes?: unknown;
+}) {
+  const visit = (arr: unknown) => {
+    if (!Array.isArray(arr)) return;
+    for (const sh of arr as Array<Record<string, unknown>>) {
+      if (sh.type === 'image' && typeof sh.imageUrl === 'string') {
+        const fixed = sniffImageDataUrl(sh.imageUrl);
+        if (fixed) sh.imageUrl = fixed;
+      }
+      if (sh.type === 'group' && Array.isArray((sh as { shapes?: unknown }).shapes)) {
+        visit((sh as { shapes: unknown[] }).shapes);
+      }
+    }
+  };
+  visit(slide.shapes);
+  visit(slide.masterShapes);
+  visit(slide.layoutShapes);
+  visit(slide.slideShapes);
+}
+
+/**
+ * Inspects the first bytes of an Office file to distinguish OOXML (zip-based
+ * .pptx, signature `PK\x03\x04`) from legacy CFB/OLE2 binary `.ppt`
+ * (signature `\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1`). The parser only handles
+ * the former; flagging the latter early gives a clearer error message.
+ */
+function detectOfficeFormat(buf: ArrayBuffer): 'ooxml' | 'legacy-binary' | 'unknown' {
+  if (buf.byteLength < 8) return 'unknown';
+  const head = new Uint8Array(buf, 0, 8);
+  if (head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04) return 'ooxml';
+  if (
+    head[0] === 0xd0 &&
+    head[1] === 0xcf &&
+    head[2] === 0x11 &&
+    head[3] === 0xe0 &&
+    head[4] === 0xa1 &&
+    head[5] === 0xb1 &&
+    head[6] === 0x1a &&
+    head[7] === 0xe1
+  )
+    return 'legacy-binary';
+  return 'unknown';
+}
+
+const PptxViewer: React.FC<{ url: string; isMobile: boolean; onDownload: () => void }> = ({
+  url,
+  isMobile,
+  onDownload,
+}) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [data, setData] = React.useState<PptxParsed | null>(null);
+  const [active, setActive] = React.useState(0);
+  const [containerSize, setContainerSize] = React.useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [failure, setFailure] = React.useState<PptFailure | null>(null);
+
+  // Measure the slide container so we can scale the canvas to fit. We re-run
+  // when `data` flips from null to set: the container is only mounted after
+  // parsing finishes (we render a Spin until then), so a `[]`-deps effect
+  // would always observe a null ref and never wire up the resize observer.
+  React.useLayoutEffect(() => {
+    if (!data) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      setContainerSize({ w: Math.floor(r.width), h: Math.floor(r.height) });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [data]);
+
+  // Fetch the PPTX bytes and parse to slide data.
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch(url)
+      .then((r) => r.arrayBuffer())
+      .then(async (buf) => {
+        if (detectOfficeFormat(buf) === 'legacy-binary') {
+          throw new Error('legacy-ppt');
+        }
+        const { parsePPTX } = await import('@kandiforge/pptx-renderer/dist/lib/parser.js');
+        return parsePPTX(buf);
+      })
+      .then((parsed) => {
+        if (cancelled) return;
+        // Patch every slide's images: the parser tags them as octet-stream,
+        // which browsers won't decode. We sniff magic bytes and rewrite mime.
+        const data = parsed as PptxParsed;
+        for (const slide of data.slides) {
+          fixSlideImageMimes(slide as Parameters<typeof fixSlideImageMimes>[0]);
+        }
+        setData(data);
+      })
+      .catch((e: Error) => {
+        if (cancelled) return;
+        setFailure(e.message === 'legacy-ppt' ? 'legacy-ppt' : 'render-error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  // Render the current slide whenever it (or container size) changes.
+  React.useEffect(() => {
+    if (!data || !canvasRef.current || containerSize.w === 0) return;
+    const canvas = canvasRef.current;
+    const slide = data.slides[active];
+    if (!slide) return;
+
+    const aspect = data.size.width / data.size.height;
+    const availW = containerSize.w - (isMobile ? 16 : 32);
+    const availH = containerSize.h - (isMobile ? 16 : 32);
+    let w = availW;
+    let h = w / aspect;
+    if (h > availH) {
+      h = availH;
+      w = h * aspect;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    // Note: we let SlideRenderer set canvas.width/height itself via options.width/height.
+    // It computes ptScale = options.width / slideWidth — without passing width, ptScale
+    // defaults to 1 and shapes render at raw EMU coordinates (off-canvas → blank slide).
+    canvas.style.width = `${Math.floor(w)}px`;
+    canvas.style.height = `${Math.floor(h)}px`;
+
+    let cancelled = false;
+    import('@kandiforge/pptx-renderer/dist/lib/renderer.js')
+      .then(({ SlideRenderer }) => {
+        if (cancelled) return;
+        const renderer = new SlideRenderer(canvas, {
+          width: w,
+          height: h,
+          slideWidth: data.size.width,
+          slideHeight: data.size.height,
+          scale: dpr,
+        });
+        return renderer.renderSlide(slide as never);
+      })
+      .catch(() => {
+        if (!cancelled) setFailure('render-error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [data, active, containerSize, isMobile]);
+
+  if (failure) {
+    const message =
+      failure === 'legacy-ppt'
+        ? 'This is a legacy PowerPoint (.ppt) file from PowerPoint 97–2003. The browser cannot render this binary format — only the modern .pptx format. Open it with PowerPoint, Keynote, or LibreOffice Impress, or re-save it as .pptx and re-upload.'
+        : 'Could not render this PowerPoint file in the browser. Download to open it with PowerPoint, Keynote, LibreOffice Impress, etc.';
+    return (
+      <div style={S.mobiFallback}>
+        <Typography.Text type="secondary" style={S.mobiFallbackText}>
+          {message}
+        </Typography.Text>
+        <Button type="primary" icon={<DownloadOutlined />} onClick={onDownload}>
+          Download to view
+        </Button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div style={S.pptxLoading}>
+        <Spin size="large" description="Loading slides…" />
+      </div>
+    );
+  }
+
+  const totalSlides = data.slides.length;
+
+  return (
+    <S.DocxRoot>
+      <S.DocxToolbar $mobile={isMobile}>
+        <Space size={4}>
+          <Button size="small" disabled={active === 0} onClick={() => setActive((i) => Math.max(0, i - 1))}>
+            ← Prev
+          </Button>
+          <span style={S.docxFontSize()}>
+            {active + 1} / {totalSlides}
+          </span>
+          <Button
+            size="small"
+            disabled={active >= totalSlides - 1}
+            onClick={() => setActive((i) => Math.min(totalSlides - 1, i + 1))}
+          >
+            Next →
+          </Button>
+        </Space>
+
+        <S.DocxToolbarSpacer />
+
+        <Button size="small" icon={<DownloadOutlined />} onClick={onDownload}>
+          {isMobile ? '' : 'Download'}
+        </Button>
+      </S.DocxToolbar>
+
+      <div ref={containerRef} style={S.pptxContainer}>
+        <canvas ref={canvasRef} style={S.pptxCanvas} />
+      </div>
+    </S.DocxRoot>
+  );
 };
 
 // ── MOBI Viewer ────────────────────────────────────────────────────────────────
@@ -470,6 +1036,18 @@ const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ doc, onClose 
             mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
           )
             return <DocxViewer url={content as string} isMobile={mobileOnly} />;
+          if (SPREADSHEET_MIMES.has(mime)) return <SpreadsheetViewer url={content as string} isMobile={mobileOnly} />;
+          if (PPT_MIMES.has(mime))
+            return (
+              <PptxViewer
+                url={content as string}
+                isMobile={mobileOnly}
+                onDownload={() => {
+                  void downloadDocument(doc);
+                  onClose();
+                }}
+              />
+            );
           return <TxtViewer url={content as string} isMobile={mobileOnly} />;
         })()}
     </Modal>
@@ -480,6 +1058,7 @@ function mimeColor(mime: string) {
   if (mime === 'application/pdf') return 'red';
   if (mime.includes('word')) return 'blue';
   if (mime.includes('excel') || mime.includes('spreadsheet')) return 'green';
+  if (mime === 'text/csv' || mime === 'application/csv') return 'cyan';
   if (mime.includes('powerpoint') || mime.includes('presentation')) return 'orange';
   if (mime === 'text/plain' || mime === 'text/markdown') return 'default';
   return 'purple';

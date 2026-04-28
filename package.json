@@ -1,17 +1,19 @@
 {
-  "name": "picho-rpg",
+  "name": "picho-rpg-front",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "Picho-RPG",
+  "description": "Picho-RPG — tabletop RPG companion for managing players, sessions, maps, lore, bestiary, timelines, quests, and GM tools",
+  "homepage": "https://rpg.picho.org",
   "repository": {
     "type": "git",
-    "url": "git+github.com:phantasy-star-rpg.front.git"
+    "url": "git+https://github.com/picho-org/picho-rpg-front.git"
   },
   "bugs": {
-    "url": "https://github.com/phantasy-star-rpg.front/issues"
+    "url": "https://github.com/picho-org/picho-rpg-front/issues"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.1",
+    "@kandiforge/pptx-renderer": "^3.3.0",
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@reduxjs/toolkit": "^2.11.2",
@@ -45,7 +47,8 @@
     "typeface-lato": "^1.1.13",
     "typeface-montserrat": "^1.1.13",
     "typescript": "^6.0.3",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "yarn buildThemes && vite",
@@ -107,10 +110,13 @@
   },
   "packageManager": "yarn@3.1.1",
   "keywords": [
-    "lightence",
-    "admin",
-    "admin-dashboard",
-    "ant-design",
-    "react"
+    "picho-rpg",
+    "rpg",
+    "ttrpg",
+    "tabletop",
+    "gm-tools",
+    "react",
+    "vite",
+    "ant-design"
   ]
 }

@@ -163,13 +163,21 @@ function isVisible(n: Npc) {
 // ── PDF Viewer ────────────────────────────────────────────────────────────────
 
 const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
 
 const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
   const layoutPlugin = defaultLayoutPlugin();
   return (
     <Worker workerUrl={PDF_WORKER_URL}>
       <div style={{ height: '100%', overflow: 'auto' }}>
-        <Viewer fileUrl={url} plugins={[layoutPlugin]} />
+        <Viewer
+          fileUrl={url}
+          plugins={[layoutPlugin]}
+          transformGetDocumentParams={(options) => ({
+            ...options,
+            standardFontDataUrl: PDF_STANDARD_FONTS_URL,
+          })}
+        />
       </div>
     </Worker>
   );

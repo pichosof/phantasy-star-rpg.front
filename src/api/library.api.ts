@@ -143,6 +143,8 @@ export function mimeLabel(mime: string): string {
     'application/x-mobipocket-ebook': 'MOBI',
     'application/mobi': 'MOBI',
     'text/markdown': 'MD',
+    'text/csv': 'CSV',
+    'application/csv': 'CSV',
   };
   return map[mime] ?? mime.split('/')[1]?.toUpperCase() ?? '—';
 }

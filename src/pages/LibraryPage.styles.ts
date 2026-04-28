@@ -23,16 +23,216 @@ export const viewerError: CSSProperties = {
   color: 'var(--error-color)',
 };
 
-export function docxViewer(isMobile: boolean): CSSProperties {
+export const DocxRoot = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+`;
+
+export const DocxToolbar = styled.div<{ $mobile: boolean }>`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: ${(p) => (p.$mobile ? '4px' : '8px')};
+  padding: ${(p) => (p.$mobile ? '5px 8px' : '6px 12px')};
+  border-bottom: 1px solid #e8e8e8;
+  background: #fafafa;
+`;
+
+export const DocxToolbarSpacer = styled.div`
+  flex: 1;
+`;
+
+export function docxFontSize(): CSSProperties {
   return {
-    height: '100%',
-    overflowY: 'auto',
-    background: '#fff',
-    lineHeight: 1.7,
-    padding: isMobile ? '16px' : '24px 40px',
-    fontSize: isMobile ? 15 : 16,
+    fontSize: 12,
+    minWidth: 34,
+    textAlign: 'center',
+    color: '#555',
   };
 }
+
+export const DocxBody = styled.div`
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+`;
+
+export const DocxOutlinePanel = styled.div<{ $mobile: boolean }>`
+  position: ${(p) => (p.$mobile ? 'absolute' : 'relative')};
+  top: ${(p) => (p.$mobile ? '0' : 'auto')};
+  left: ${(p) => (p.$mobile ? '0' : 'auto')};
+  bottom: ${(p) => (p.$mobile ? '0' : 'auto')};
+  z-index: ${(p) => (p.$mobile ? 10 : 'auto')};
+  box-shadow: ${(p) => (p.$mobile ? '2px 0 12px rgba(0,0,0,0.18)' : 'none')};
+  border-right: ${(p) => (p.$mobile ? 'none' : '1px solid #e8e8e8')};
+  width: ${(p) => (p.$mobile ? '80vw' : '240px')};
+  max-width: 320px;
+  overflow-y: auto;
+  padding: 8px 0;
+  background: #fafafa;
+`;
+
+export const DocxOutlineItem = styled.div<{ $level: number; $mobile: boolean }>`
+  padding: ${(p) => (p.$mobile ? '8px 16px' : '5px 14px')};
+  padding-left: ${(p) => `${(p.$mobile ? 16 : 14) + (p.$level - 1) * 12}px`};
+  cursor: pointer;
+  font-size: ${(p) => (p.$mobile ? '14px' : '13px')};
+  color: #333;
+  transition: background 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+`;
+
+export const docxBackdrop: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  background: 'rgba(0,0,0,0.35)',
+  zIndex: 9,
+};
+
+export const DocxContent = styled.div<{ $mobile: boolean; $zoom: number }>`
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #000000;
+  line-height: 1.7;
+  padding: ${(p) => (p.$mobile ? '16px' : '24px 40px')};
+  font-size: ${(p) => `${(p.$mobile ? 15 : 16) * (p.$zoom / 100)}px`};
+
+  /* Force black text inside the rendered docx content, ignoring app theme vars */
+  *,
+  *::before,
+  *::after {
+    color: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  td,
+  th,
+  span,
+  div {
+    color: #000000;
+  }
+
+  a {
+    color: #0958d9;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  table,
+  th,
+  td {
+    border: 1px solid #d9d9d9;
+    padding: 4px 8px;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  mark[data-search] {
+    background: #ffd54f;
+    color: #000000;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+`;
+
+export const SheetBody = styled.div<{ $mobile: boolean; $zoom: number }>`
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  background: #ffffff;
+  color: #000000;
+  padding: ${(p) => (p.$mobile ? '8px' : '12px')};
+
+  table {
+    border-collapse: collapse;
+    font-size: ${(p) => `${(p.$mobile ? 12 : 13) * (p.$zoom / 100)}px`};
+    background: #ffffff;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #f5f5f5;
+    color: #000000;
+    font-weight: 600;
+    text-align: left;
+    border: 1px solid #d9d9d9;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    border: 1px solid #e8e8e8;
+    padding: 4px 10px;
+    color: #000000;
+    vertical-align: top;
+    white-space: pre-wrap;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: #fafafa;
+  }
+
+  mark[data-search] {
+    background: #ffd54f;
+    color: #000000;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+`;
+
+export const sheetEmpty: CSSProperties = {
+  padding: 24,
+  color: '#666',
+  textAlign: 'center',
+};
+
+export const pptxContainer: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  background: '#1a1a1a',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+};
+
+export const pptxCanvas: CSSProperties = {
+  display: 'block',
+  background: '#ffffff',
+  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+};
+
+export const pptxLoading: CSSProperties = {
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+};
 
 export function txtViewer(isMobile: boolean): CSSProperties {
   return {

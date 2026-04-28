@@ -1700,7 +1700,7 @@ export default function MapPage() {
 
               {isGM && (
                 <>
-                  <Divider type="vertical" />
+                  <Divider orientation="vertical" />
                   <Space wrap align="center" size={8}>
                     <Select
                       showSearch
