@@ -45,6 +45,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Type-check
+        run: yarn type-check
+
+      - name: Lint
+        run: node ./node_modules/eslint/bin/eslint.js "*/**/*.{js,ts,tsx}"
+
       - name: Build demo
         env:
           # Drives the public base path used by Vite for asset URLs.

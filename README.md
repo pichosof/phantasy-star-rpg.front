@@ -22,7 +22,7 @@ Running a tabletop campaign means juggling spreadsheets, PDF rulebooks, NPC note
 - **For players**: campaign timeline, quests, NPC roster, world map, character sheets, session log and a shared library of rulebooks.
 - **For the GM**: every player view plus a private layer with notes, hidden NPCs, dungeons, image gallery, character sheet manager (GURPS, Starfinder), and gated lore.
 
-Themes are based on the **Phantasy Star** universe — *Motavia* (light) and *Dezolis* (dark) — but the platform is system-agnostic and works for any TTRPG.
+Themes are based on the **Phantasy Star** universe — _Motavia_ (light) and _Dezolis_ (dark) — but the platform is system-agnostic and works for any TTRPG.
 
 ---
 
@@ -43,21 +43,21 @@ Themes are based on the **Phantasy Star** universe — *Motavia* (light) and *De
 
 ## Stack
 
-| Layer            | Tech                                                                |
-| ---------------- | ------------------------------------------------------------------- |
-| Build & dev      | Vite 8 + `vite-plugin-pwa` + `vite-tsconfig-paths`                  |
-| Language         | TypeScript 6 (`moduleResolution: bundler`)                          |
-| UI library       | React 19 + `react-dom` 19                                           |
-| Component kits   | Ant Design 6 (desktop/tablet) + `antd-mobile` 5 (mobile)            |
-| Styling          | `styled-components` 6 + Less themes                                 |
-| State            | Redux Toolkit 2 + `react-redux` 9                                   |
-| Routing          | React Router 7                                                      |
-| Data fetching    | Axios 1                                                             |
-| File rendering   | `pdfjs-dist` + `@react-pdf-viewer`, `mammoth` (DOCX), `xlsx`, `react-reader` (EPUB), `@kandiforge/pptx-renderer` (PPTX) |
-| Charts           | ECharts 6 + `echarts-for-react`                                     |
-| Maps             | Leaflet + `react-leaflet`                                           |
-| Lint / format    | ESLint 9 (flat config) + Prettier 3 + Stylelint                     |
-| Package manager  | Yarn 3 (`packageManager` field, `nodeLinker: node-modules`)         |
+| Layer           | Tech                                                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Build & dev     | Vite 8 + `vite-plugin-pwa` + `vite-tsconfig-paths`                                                                      |
+| Language        | TypeScript 6 (`moduleResolution: bundler`)                                                                              |
+| UI library      | React 19 + `react-dom` 19                                                                                               |
+| Component kits  | Ant Design 6 (desktop/tablet) + `antd-mobile` 5 (mobile)                                                                |
+| Styling         | `styled-components` 6 + Less themes                                                                                     |
+| State           | Redux Toolkit 2 + `react-redux` 9                                                                                       |
+| Routing         | React Router 7                                                                                                          |
+| Data fetching   | Axios 1                                                                                                                 |
+| File rendering  | `pdfjs-dist` + `@react-pdf-viewer`, `mammoth` (DOCX), `xlsx`, `react-reader` (EPUB), `@kandiforge/pptx-renderer` (PPTX) |
+| Charts          | ECharts 6 + `echarts-for-react`                                                                                         |
+| Maps            | Leaflet + `react-leaflet`                                                                                               |
+| Lint / format   | ESLint 9 (flat config) + Prettier 3 + Stylelint                                                                         |
+| Package manager | Yarn 3 (`packageManager` field, `nodeLinker: node-modules`)                                                             |
 
 ---
 
@@ -82,29 +82,29 @@ The dev server binds to `0.0.0.0`, so you can also reach it from another device 
 
 ### Available scripts
 
-| Script             | Description                                              |
-| ------------------ | -------------------------------------------------------- |
-| `yarn start`       | Build the Less themes and start Vite dev server (port 3000). |
-| `yarn build`       | Production build into `build/`.                          |
-| `yarn preview`     | Serve the production build locally.                      |
-| `yarn type-check`  | Run `tsc --noEmit` against the project.                  |
-| `yarn lint`        | ESLint with auto-fix.                                    |
-| `yarn lint:styles` | Stylelint over JS/TS files (styled-components).          |
-| `yarn format`      | Prettier on the whole repo.                              |
+| Script             | Description                                                       |
+| ------------------ | ----------------------------------------------------------------- |
+| `yarn start`       | Build the Less themes and start Vite dev server (port 3000).      |
+| `yarn build`       | Production build into `build/`.                                   |
+| `yarn preview`     | Serve the production build locally.                               |
+| `yarn type-check`  | Run `tsc --noEmit` against the project.                           |
+| `yarn lint`        | ESLint with auto-fix.                                             |
+| `yarn lint:styles` | Stylelint over JS/TS files (styled-components).                   |
+| `yarn format`      | Prettier on the whole repo.                                       |
 | `yarn buildThemes` | Compile `src/styles/themes/main.less` → `public/themes/main.css`. |
 
 ### Environment variables
 
 All exposed to the client must be prefixed with `VITE_`. Defined in [`.env.example`](.env.example):
 
-| Variable                | Purpose                                                                |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `VITE_API_BASE_URL`     | Backend URL. In dev, usually `http://localhost:3010`.                  |
-| `VITE_BASE_URL`         | Public base path of the SPA (empty for root).                          |
-| `VITE_ASSETS_BUCKET`    | Optional CDN/bucket for remote assets.                                 |
-| `VITE_UPLOAD_MAX_MB`    | Max upload size; must match `MAX_UPLOAD_MB` on the backend.            |
-| `VITE_CLIENT_SECRET`    | Shared secret with the backend; must match `CLIENT_SECRET`.            |
-| `VITE_SIMULATE_PROD`    | When `true`, dev behaves like prod (e.g. auto-logout on 401).          |
+| Variable             | Purpose                                                       |
+| -------------------- | ------------------------------------------------------------- |
+| `VITE_API_BASE_URL`  | Backend URL. In dev, usually `http://localhost:3010`.         |
+| `VITE_BASE_URL`      | Public base path of the SPA (empty for root).                 |
+| `VITE_ASSETS_BUCKET` | Optional CDN/bucket for remote assets.                        |
+| `VITE_UPLOAD_MAX_MB` | Max upload size; must match `MAX_UPLOAD_MB` on the backend.   |
+| `VITE_CLIENT_SECRET` | Shared secret with the backend; must match `CLIENT_SECRET`.   |
+| `VITE_SIMULATE_PROD` | When `true`, dev behaves like prod (e.g. auto-logout on 401). |
 
 > ⚠️ Anything in `.env` is shipped to the browser. Never put server-only secrets here.
 
@@ -191,9 +191,30 @@ The frontend builds to a static SPA, so any static host works (Azure Static Web 
 yarn build         # outputs ./build
 ```
 
-This repo currently targets **Azure Static Web Apps**; configuration lives in [`public/staticwebapp.config.json`](public/staticwebapp.config.json). The PWA service worker is generated at build time, so it's enough to upload `build/` as-is.
+This repo currently has two CD tracks:
 
-Make sure the production build sees `VITE_API_BASE_URL` pointing at your backend deployment and `VITE_CLIENT_SECRET` matching the backend's `CLIENT_SECRET`.
+- **Production:** [`deploy-production.yml`](.github/workflows/deploy-production.yml) builds `main` and deploys `build/` to Azure Static Web Apps.
+- **Public demo:** [`deploy-demo.yml`](.github/workflows/deploy-demo.yml) builds the read-only mocked demo and publishes it to GitHub Pages.
+
+The production workflow logs in to Azure through GitHub OIDC, reads the Static Web Apps deployment token at runtime, and reads the API client secret from the Azure Container App. No production value is stored in the repository; all deployment-specific values are supplied through GitHub Actions secrets and Azure resource secrets.
+
+Required GitHub Actions secrets:
+
+| Secret name              | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `AZURE_CLIENT_ID`        | OIDC-enabled Azure identity client ID.                   |
+| `AZURE_TENANT_ID`        | Azure tenant ID.                                         |
+| `AZURE_SUBSCRIPTION_ID`  | Azure subscription ID.                                   |
+| `AZURE_RESOURCE_GROUP`   | Resource group that owns the Static Web App and API.     |
+| `STATIC_WEB_APP_NAME`    | Azure Static Web Apps resource name.                     |
+| `API_CONTAINER_APP_NAME` | Azure Container Apps API resource name.                  |
+| `CLIENT_SECRET_NAME`     | Container App secret name that stores the client secret. |
+| `VITE_API_BASE_URL`      | Production API base URL used at build time.              |
+| `VITE_BASE_URL`          | SPA public base path used at build time.                 |
+| `VITE_SIMULATE_PROD`     | Production-like frontend behavior flag.                  |
+| `VITE_UPLOAD_MAX_MB`     | Browser upload cap; must match backend `MAX_UPLOAD_MB`.  |
+
+Azure Static Web Apps routing config lives in [`public/staticwebapp.config.json`](public/staticwebapp.config.json). The PWA service worker is generated at build time, so deploying `build/` is enough.
 
 ---
 
