@@ -1,0 +1,77 @@
+name: Deploy demo to GitHub Pages
+
+# Builds the read-only Picho-RPG demo and publishes it to GitHub Pages.
+# The site is served from the repo's `gh-pages` branch (managed by the
+# actions/deploy-pages action). The demo runs entirely in the browser:
+# axios-mock-adapter intercepts every API call and replays canned fixtures,
+# so there's no backend required.
+#
+# To enable in a fresh fork:
+#   1. Settings → Pages → Source: GitHub Actions.
+#   2. Push to `main`, or fire the workflow manually from the Actions tab.
+#   3. The site will be available at
+#      https://<owner>.github.io/<repo>/
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Single concurrent deploy; cancels superseded runs.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable corepack (Yarn 3)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build demo
+        env:
+          # Drives the public base path used by Vite for asset URLs.
+          # Must match `https://<owner>.github.io/<repo>/`.
+          VITE_DEMO_BASE: /${{ github.event.repository.name }}/
+        run: yarn build:demo
+
+      - name: Add SPA fallback (404 → index)
+        # GitHub Pages serves 404.html on unknown paths. Copying index.html
+        # there makes client-side routes (e.g. /cities) survive a hard refresh.
+        run: cp demo-build/index.html demo-build/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo-build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

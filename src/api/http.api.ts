@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import { API_BASE_URL } from '../config/config';
+import { IS_DEMO } from '@app/demo/demoMode';
 
 const KEY_STORAGE = 'gm_api_key';
 export const GM_MODE_CHANGE_EVENT = 'gm-mode-changed';
@@ -15,6 +16,16 @@ export const http = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: false,
 });
+
+// In demo mode, intercept every request with a fixture-backed mock adapter.
+// `bootstrapDemoMocks()` is awaited from `src/index.tsx` before React mounts,
+// guaranteeing every API call is intercepted from the very first render.
+// In a non-demo build this resolves immediately and no mock code is shipped.
+export async function bootstrapDemoMocks(): Promise<void> {
+  if (!IS_DEMO) return;
+  const { installDemoMocks } = await import('@app/demo/mockApi');
+  installDemoMocks(http);
+}
 
 /** Decodes JWT payload (no signature check — just to read claims client-side). */
 function decodeJwtPayload(token: string): Record<string, unknown> | null {

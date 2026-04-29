@@ -5,6 +5,7 @@ import * as S from '../Header.styles';
 import { Popover } from '@app/components/common/Popover/Popover';
 import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { Button } from '@app/components/common/buttons/Button/Button';
+import { IS_DEMO } from '@app/demo/demoMode';
 
 interface DesktopHeaderProps {
   isTwoColumnsLayout: boolean;
@@ -33,11 +34,13 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout
               <Col>
                 <SettingsDropdown />
               </Col>
-              <Col>
-                <Popover placement="bottomRight" trigger="click" content={<GMSwitchPanel />}>
-                  <Button size="small">GM</Button>
-                </Popover>
-              </Col>
+              {!IS_DEMO && (
+                <Col>
+                  <Popover placement="bottomRight" trigger="click" content={<GMSwitchPanel />}>
+                    <Button size="small">GM</Button>
+                  </Popover>
+                </Col>
+              )}
             </Row>
           </Col>
         </Row>

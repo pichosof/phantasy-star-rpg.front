@@ -4,6 +4,7 @@ import { CloseOutline, SetOutline, UnorderedListOutline, UserCircleOutline } fro
 import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { SettingsOverlay } from '../components/settingsDropdown/settingsOverlay/SettingsOverlay/SettingsOverlay';
 import { useGMMode } from '@app/hooks/useGMMode';
+import { IS_DEMO } from '@app/demo/demoMode';
 import * as S from './MobileHeader.styles';
 
 interface MobileHeaderProps {
@@ -31,14 +32,16 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ toggleSider, isSider
               >
                 <SetOutline />
               </S.MobileIconButton>
-              <S.MobileIconButton
-                fill="none"
-                onClick={() => setGMOpen(true)}
-                aria-label="Open GM mode"
-                $isActive={gmOpen || isGM}
-              >
-                <UserCircleOutline />
-              </S.MobileIconButton>
+              {!IS_DEMO && (
+                <S.MobileIconButton
+                  fill="none"
+                  onClick={() => setGMOpen(true)}
+                  aria-label="Open GM mode"
+                  $isActive={gmOpen || isGM}
+                >
+                  <UserCircleOutline />
+                </S.MobileIconButton>
+              )}
               <S.MobileIconButton
                 fill="none"
                 onClick={toggleSider}

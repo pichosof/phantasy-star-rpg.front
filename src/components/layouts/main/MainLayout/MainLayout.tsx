@@ -6,6 +6,7 @@ import MainContent from '../MainContent/MainContent';
 import { MainHeader } from '../MainHeader/MainHeader';
 import * as S from './MainLayout.styles';
 import { Outlet } from 'react-router-dom';
+import { DemoBanner } from '@app/demo/DemoBanner';
 
 const MainLayout: React.FC = () => {
   const [siderCollapsed, setSiderCollapsed] = useState(true);
@@ -19,6 +20,7 @@ const MainLayout: React.FC = () => {
     <S.LayoutMaster>
       <MainSider isCollapsed={siderCollapsed} setCollapsed={setSiderCollapsed} />
       <S.LayoutMain>
+        <DemoBanner />
         <MainHeader isTwoColumnsLayout={isTwoColumnsLayout}>
           <Header toggleSider={toggleSider} isSiderOpened={!siderCollapsed} isTwoColumnsLayout={isTwoColumnsLayout} />
         </MainHeader>
