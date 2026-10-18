@@ -25,6 +25,8 @@ export const motavia: ThemeDefinition = {
       colorTextBase: tokens.textMain,
       colorBgBase: tokens.background,
       colorBorder: tokens.border,
+      // text on solid primary/success/warning/error (buttons, tags, badges)
+      colorTextLightSolid: tokens.textOnColor,
     },
   },
 };

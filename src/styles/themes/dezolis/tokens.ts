@@ -62,7 +62,8 @@ export const dezolisTokens: ThemeTokens = {
   textMain: '#C8E4FF', // Branco gélido azulado
   textLight: '#6A88A8',
   textSuperLight: '#5F7EAC',
-  textOnColor: '#ffffff',
+  // Dezolis brand/state colors are bright (ice, mint, amber): dark text reads 5–11:1, white only 1.6–3.8
+  textOnColor: '#04131C',
   textMuted: '#8AA4C2', // ~7.5:1 on the void, below textMain to keep hierarchy
   textDark: '#AACCEE',
   textNftLight: '#637FA2',

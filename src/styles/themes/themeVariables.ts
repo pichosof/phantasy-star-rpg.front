@@ -123,6 +123,7 @@ const themeColorVariables = (def: ThemeDefinition) => {
     --adm-color-danger: var(--error-color);
     --adm-color-text: var(--text-main-color);
     --adm-color-text-secondary: var(--text-muted-color);
+    --adm-color-text-light-solid: var(--text-on-color);
     --adm-color-weak: var(--text-light-color);
     --adm-color-light: var(--text-superLight-color);
     --adm-color-border: var(--border-color);
