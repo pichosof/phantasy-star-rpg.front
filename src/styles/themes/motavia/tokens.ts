@@ -56,7 +56,8 @@ export const motaviaTokens: ThemeTokens = {
   // UI misc
   spinnerBase: '#D45A08',
   scroll: '#C0A070',
-  border: '#DDD0A8',
+  border: '#C4B08A',
+  borderStrong: '#8E7A55',
   borderNft: '#9A8055',
 
   // Tipografia

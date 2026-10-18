@@ -35,6 +35,7 @@ const themeColorVariables = (def: ThemeDefinition) => {
     --sider-background-color: ${t.siderBackground};
     --shadow-color: ${t.shadow};
     --border-color: ${t.border};
+    --border-strong-color: ${t.borderStrong};
     --border-nft-color: ${t.borderNft};
     --scroll-color: ${t.scroll};
 

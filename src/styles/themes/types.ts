@@ -16,7 +16,10 @@ export interface ITheme {
   siderBackground: string;
   collapseBackground: string;
   scroll: string;
+  /** Subtle dividers: card edges, table rules, section separators (~1.9:1). */
   border: string;
+  /** Component edges that must be found: inputs, selects, buttons (≥3:1, WCAG 1.4.11). */
+  borderStrong: string;
   borderNft: string;
   textMain: string;
   textLight: string;

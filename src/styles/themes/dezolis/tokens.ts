@@ -47,7 +47,7 @@ export const dezolisTokens: ThemeTokens = {
   background: '#040A16',
   secondaryBackground: '#07102A',
   secondaryBackgroundSelected: shadeColor('#07102A', -5),
-  additionalBackground: '#060D20',
+  additionalBackground: '#0A1530', // cards lifted off the void
   collapseBackground: '#040A16',
   timelineBackground: '#070E1E',
   siderBackground: '#040A16',
@@ -55,13 +55,14 @@ export const dezolisTokens: ThemeTokens = {
   // UI misc
   spinnerBase: '#00C8E8',
   scroll: '#203050',
-  border: '#142038',
+  border: '#2B4578',
+  borderStrong: '#3D62AB',
   borderNft: '#2A3E60',
 
   // Tipografia
   textMain: '#C8E4FF', // Branco gélido azulado
   textLight: '#6A88A8',
-  textSuperLight: '#5F7EAC',
+  textSuperLight: '#6582B0',
   // Dezolis brand/state colors are bright (ice, mint, amber): dark text reads 5–11:1, white only 1.6–3.8
   textOnColor: '#04131C',
   textMuted: '#8AA4C2', // ~7.5:1 on the void, below textMain to keep hierarchy
@@ -73,7 +74,7 @@ export const dezolisTokens: ThemeTokens = {
 
   // Sombras
   shadow: 'rgba(0, 0, 0, 0.70)',
-  boxShadow: 'none',
+  boxShadow: '0 0 0 1px rgba(0, 200, 232, 0.06), 0 6px 18px rgba(0, 0, 0, 0.45)',
   boxShadowHover: '0 0 0 1px rgba(0, 200, 232, 0.15)',
   boxShadowNft: '0px 16px 24px rgba(0, 0, 0, 0.50), 0px 2px 6px rgba(0, 0, 0, 0.30), 0px 0px 1px rgba(0, 0, 0, 0.20)',
   boxShadowNftSecondary:
@@ -93,7 +94,7 @@ export const dezolisTokens: ThemeTokens = {
   // Layout
   heading: '#ffffff',
   borderBase: '#142038',
-  disable: '#426297',
+  disable: '#45659B',
   disabledBg: '#07102A',
   layoutBodyBg: '#040A16',
   layoutHeaderBg: '#040A16',
@@ -103,7 +104,7 @@ export const dezolisTokens: ThemeTokens = {
 
   // Inputs/itens
   inputPlaceholder: 'rgba(200, 228, 255, 0.55)',
-  itemHoverBg: '#0A1530',
+  itemHoverBg: '#0E1C3E',
   backgroundColorBase: '#07102A',
   avatarBg: '#102240',
 

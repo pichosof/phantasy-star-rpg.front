@@ -24,7 +24,9 @@ export const dezolis: ThemeDefinition = {
       colorError: tokens.error,
       colorTextBase: tokens.textMain,
       colorBgBase: tokens.background,
-      colorBorder: tokens.border,
+      // inputs/selects/buttons need a findable edge; cards and tables use the subtle one
+      colorBorder: tokens.borderStrong,
+      colorBorderSecondary: tokens.border,
       // text on solid primary/success/warning/error (buttons, tags, badges)
       colorTextLightSolid: tokens.textOnColor,
     },

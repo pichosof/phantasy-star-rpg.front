@@ -44,7 +44,7 @@ export const SearchInput = styled(Search)`
     }
     width: 100%;
     background-color: var(--ink-faint);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-strong-color);
     color: var(--primary-color);
   }
 `;
