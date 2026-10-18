@@ -26,21 +26,10 @@ import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   ProgressBar as AdmMobileProgressBar,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
-import {
-  DeleteOutline,
-  DownlandOutline,
-  EditSOutline,
-  EyeOutline,
-  FilterOutline,
-  KeyOutline,
-  LockOutline,
-  SetOutline,
-  UploadOutline,
-} from 'antd-mobile-icons';
+import { FilterOutline, KeyOutline, LockOutline, SetOutline, UploadOutline } from 'antd-mobile-icons';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { apiErrorMessage } from '../utils/api-error';
 import {
@@ -89,20 +78,9 @@ import {
 } from '@app/api/library.api';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { UPLOAD_MAX_MB } from '@app/config/config';
-import {
-  dividerMd,
-  flex1Min0,
-  flexCenterFull,
-  flexShrink0,
-  m0,
-  spaceBetween,
-  textMd,
-  textSm,
-  textXs,
-  w100,
-  wrapAnywhere,
-} from '@app/styles/styleUtils';
+import { dividerMd, flexCenterFull, m0, spaceBetween, textMd, textSm, textXs, w100 } from '@app/styles/styleUtils';
 import * as S from './LibraryPage.styles';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 const CATEGORIES = ['rulebook', 'supplement', 'reference', 'adventure', 'other'];
 
@@ -1185,158 +1163,52 @@ const DocCard: React.FC<DocCardProps> = ({ doc, isGM, isMobile, onEdit, onDelete
   }
 
   return (
-    <Card size="small" style={S.docCard(!doc.visible && isGM)}>
-      {/* Header row — stacks on mobile so long titles don't crush the action buttons */}
-      <div style={S.docHeaderRow(isMobile)}>
-        {/* Title + badges */}
-        <Space size={6} wrap style={flex1Min0}>
-          <FileOutlined style={flexShrink0} />
-          <Typography.Text strong style={wrapAnywhere}>
-            {doc.title}
-          </Typography.Text>
-          <Tag color={mimeColor(doc.mime)} style={m0}>
-            {mimeLabel(doc.mime)}
-          </Tag>
-          {doc.category && <Tag style={m0}>{doc.category}</Tag>}
-          {isGM && !doc.visible && (
-            <Tag color="red" style={m0}>
-              Hidden
-            </Tag>
-          )}
-        </Space>
-
-        {/* Action buttons */}
-        <Space size={6} wrap style={S.docActions(isMobile)}>
+    <EntityCard
+      actions={
+        <>
           {isGM && (
             <>
               <Switch
-                size="small"
                 checked={doc.visible}
-                onChange={() => onToggleVisible(doc)}
                 checkedChildren={<EyeOutlined />}
+                onChange={() => onToggleVisible(doc)}
+                size="small"
                 unCheckedChildren={<EyeInvisibleOutlined />}
               />
-              <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(doc)} />
-              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(doc)} />
+              <Button icon={<EditOutlined />} onClick={() => onEdit(doc)} size="small" />
+              <Button danger icon={<DeleteOutlined />} onClick={() => onDelete(doc)} size="small" />
             </>
           )}
           {canView && (
-            <Button size="small" type="primary" icon={<EyeOutlined />} onClick={() => onView(doc)}>
-              {!isMobile && 'Open'}
-            </Button>
+            <Button
+              icon={<DownloadOutlined />}
+              loading={downloading}
+              onClick={() => void handleDownload()}
+              size="small"
+              title="Download"
+            />
           )}
-          <Button
-            size="small"
-            type={canView ? 'default' : 'primary'}
-            icon={<DownloadOutlined />}
-            loading={downloading}
-            onClick={() => void handleDownload()}
-          >
-            {!isMobile && (canView ? 'Download' : 'Open')}
-          </Button>
-        </Space>
-      </div>
-
-      {doc.description && (
-        <Typography.Text type="secondary" style={textMd}>
-          {doc.description}
-        </Typography.Text>
-      )}
-      <div style={S.docMetaWrap(Boolean(doc.description))}>
-        <Typography.Text type="secondary" style={S.docMetaText}>
-          {formatBytes(doc.size)} · {doc.originalName}
-        </Typography.Text>
-      </div>
-    </Card>
+        </>
+      }
+      chips={doc.category ? <Tag style={m0}>{doc.category}</Tag> : null}
+      footer={`${formatBytes(doc.size)} · ${doc.originalName}`}
+      label={
+        <Tag color={mimeColor(doc.mime)} icon={<FileOutlined />} style={m0}>
+          {mimeLabel(doc.mime)}
+        </Tag>
+      }
+      noCover
+      onClick={() => (canView ? onView(doc) : void handleDownload())}
+      openText={canView ? (isMobile ? 'Open' : 'Open document') : 'Download'}
+      status={isGM ? { visible: doc.visible } : undefined}
+      summary={doc.description}
+      summaryFallback="No description."
+      title={doc.title}
+    />
   );
 };
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
-
-const MobileDocCard: React.FC<Omit<DocCardProps, 'isMobile'>> = ({
-  doc,
-  isGM,
-  onEdit,
-  onDelete,
-  onToggleVisible,
-  onView,
-}) => {
-  const [downloading, setDownloading] = React.useState(false);
-  const canView = VIEWABLE_MIME.has(doc.mime);
-
-  async function handleDownload() {
-    setDownloading(true);
-    try {
-      await downloadDocument(doc);
-    } catch (e) {
-      message.error(apiErrorMessage(e, 'Failed to download.'));
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  return (
-    <MobileCard compact>
-      <S.MobileDocBody>
-        <S.MobileMetaTags>
-          <AdmMobileTag color="primary" fill="outline" round>
-            {mimeLabel(doc.mime)}
-          </AdmMobileTag>
-          {doc.category ? (
-            <AdmMobileTag fill="outline" round>
-              {doc.category}
-            </AdmMobileTag>
-          ) : null}
-          {isGM && !doc.visible ? (
-            <AdmMobileTag color="danger" fill="outline" round>
-              Hidden
-            </AdmMobileTag>
-          ) : null}
-        </S.MobileMetaTags>
-
-        <S.MobileDocTitle>{doc.title}</S.MobileDocTitle>
-        {doc.description ? <S.MobileDocDescription>{doc.description}</S.MobileDocDescription> : null}
-        <S.MobileDocMeta>
-          {formatBytes(doc.size)} - {doc.originalName}
-        </S.MobileDocMeta>
-
-        {isGM ? (
-          <S.MobileDocGmRow>
-            <S.MobileDocGmLabel>Visible to players</S.MobileDocGmLabel>
-            <AdmMobileSwitch checked={doc.visible} onChange={() => onToggleVisible(doc)} />
-          </S.MobileDocGmRow>
-        ) : null}
-
-        <S.MobileDocActions>
-          {canView ? (
-            <AdmMobileButton block color="primary" onClick={() => onView(doc)}>
-              <EyeOutline fontSize={17} /> Open
-            </AdmMobileButton>
-          ) : null}
-          <AdmMobileButton
-            block
-            color={canView ? 'default' : 'primary'}
-            fill={canView ? 'outline' : 'solid'}
-            loading={downloading}
-            onClick={() => void handleDownload()}
-          >
-            <DownlandOutline fontSize={17} /> Download
-          </AdmMobileButton>
-          {isGM ? (
-            <>
-              <AdmMobileButton block fill="outline" onClick={() => onEdit(doc)}>
-                <EditSOutline fontSize={17} /> Edit
-              </AdmMobileButton>
-              <AdmMobileButton block color="danger" fill="outline" onClick={() => onDelete(doc)}>
-                <DeleteOutline fontSize={17} /> Delete
-              </AdmMobileButton>
-            </>
-          ) : null}
-        </S.MobileDocActions>
-      </S.MobileDocBody>
-    </MobileCard>
-  );
-};
 
 interface EditModalProps {
   doc: LibraryDocument | null;
@@ -2035,19 +1907,20 @@ const LibraryPage: React.FC = () => {
               </S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileDocList>
+            <EntityCardGrid>
               {filtered.map((doc) => (
-                <MobileDocCard
-                  key={doc.id}
+                <DocCard
                   doc={doc}
                   isGM={isGM}
-                  onEdit={setEditDoc}
+                  isMobile
+                  key={doc.id}
                   onDelete={() => void handleDelete(doc)}
+                  onEdit={setEditDoc}
                   onToggleVisible={() => void handleToggleVisible(doc)}
                   onView={setViewDoc}
                 />
               ))}
-            </S.MobileDocList>
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -2225,7 +2098,7 @@ const LibraryPage: React.FC = () => {
             />
           </Card>
         ) : (
-          <S.DocListGrid>
+          <EntityCardGrid>
             {filtered.map((doc) => (
               <DocCard
                 key={doc.id}
@@ -2238,7 +2111,7 @@ const LibraryPage: React.FC = () => {
                 onView={setViewDoc}
               />
             ))}
-          </S.DocListGrid>
+          </EntityCardGrid>
         )}
       </Space>
 

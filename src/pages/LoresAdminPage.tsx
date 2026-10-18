@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -26,30 +25,25 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Table } from '@app/components/common/Table/Table';
-import { Tabs } from '@app/components/common/Tabs/Tabs';
+
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
-import {
-  dividerMd,
-  dividerSm,
-  m0,
-  mutedSm,
-  spaceBetween,
-  tableWrap,
-  textMd,
-  textSm,
-  w100,
-} from '@app/styles/styleUtils';
+import { dividerSm, m0, spaceBetween, tableWrap, textMd, textSm, w100 } from '@app/styles/styleUtils';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './LoresAdminPage.styles';
+import { stripMarkdown } from '@app/components/common/RichText/RichText';
+import EntityDrawer, {
+  useEditableDrawerTab,
+  visibilityControl,
+} from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -79,14 +73,6 @@ const CATEGORY_STRIP: Record<LoreCategory, string> = {
   tech: '#13c2c2',
   biology: '#52c41a',
   myth: '#faad14',
-};
-
-const MOBILE_CATEGORY_COLOR: Record<LoreCategory, 'warning' | 'primary' | 'success'> = {
-  history: 'warning',
-  culture: 'primary',
-  tech: 'primary',
-  biology: 'success',
-  myth: 'warning',
 };
 
 const categoryOptions: { value: LoreCategory | 'null'; label: string }[] = [
@@ -134,7 +120,7 @@ function formatDateTime(value?: string | null) {
 }
 
 function getLorePreview(lore: Lore) {
-  const content = lore.content?.trim();
+  const content = stripMarkdown(lore.content);
   if (!content) return 'No lore content recorded yet.';
   return content.length > 170 ? `${content.slice(0, 167)}...` : content;
 }
@@ -144,7 +130,7 @@ function categoryLabel(category?: LoreCategory | null) {
 }
 
 export const LoresAdminPage: React.FC = () => {
-  const { mobileOnly, isTablet } = useResponsive();
+  const { mobileOnly } = useResponsive();
   const isGM = useGMMode();
 
   const [items, setItems] = React.useState<Lore[]>([]);
@@ -525,6 +511,33 @@ export const LoresAdminPage: React.FC = () => {
 
   const desktopDisplayItems = viewMode === 'admin' && isGM ? adminItems : publicItems;
 
+  const renderLoreCard = (lore: Lore, onOpen: () => void) => {
+    const visible = isLoreVisible(lore);
+    const category = lore.category ?? null;
+    const gmPanel = isGM && viewMode === 'admin';
+
+    return (
+      <EntityCard
+        accent={category ? CATEGORY_STRIP[category] : '#d9d9d9'}
+        actions={gmPanel ? <Switch checked={visible} onChange={() => void toggleVisible(lore)} size="small" /> : null}
+        footer={formatDate(lore.createdAt)}
+        key={lore.id}
+        label={
+          <Tag color={category ? CATEGORY_COLOR[category] : 'default'} style={m0}>
+            {categoryLabel(category)}
+          </Tag>
+        }
+        noCover
+        onClick={onOpen}
+        openText="Open lore"
+        status={gmPanel ? { visible } : undefined}
+        summary={lore.content}
+        summaryFallback="No lore content recorded yet."
+        title={lore.title}
+      />
+    );
+  };
+
   const publicView = loading ? (
     <Spinner />
   ) : desktopDisplayItems.length === 0 ? (
@@ -532,45 +545,9 @@ export const LoresAdminPage: React.FC = () => {
       <Empty description="No lores found." />
     </Card>
   ) : (
-    <S.PublicGrid $tablet={isTablet}>
-      {desktopDisplayItems.map((lore) => {
-        const visible = isLoreVisible(lore);
-        const category = lore.category ?? null;
-
-        return (
-          <S.PublicCard key={lore.id} onClick={() => openForView(lore.id)}>
-            <S.CategoryStrip $color={category ? CATEGORY_STRIP[category] : '#d9d9d9'} />
-            <S.PublicCardBody>
-              <Space size={6} style={spaceBetween}>
-                <Tag color={category ? CATEGORY_COLOR[category] : 'default'} style={m0}>
-                  {categoryLabel(category)}
-                </Tag>
-                {isGM && viewMode === 'admin' ? (
-                  <Tag color={visible ? 'green' : 'red'} style={m0}>
-                    {visible ? 'Visible' : 'Hidden'}
-                  </Tag>
-                ) : null}
-              </Space>
-
-              <S.PublicCardTitle>{lore.title}</S.PublicCardTitle>
-              <S.PublicCardExcerpt>{getLorePreview(lore)}</S.PublicCardExcerpt>
-              <S.PublicCardSpacer />
-              <Divider style={dividerMd} />
-
-              <S.PublicCardFooter>
-                <S.PublicCardDate>{formatDate(lore.createdAt)}</S.PublicCardDate>
-                <Space onClick={(event) => event.stopPropagation()} size={6}>
-                  {isGM && viewMode === 'admin' ? (
-                    <Switch checked={visible} onChange={() => void toggleVisible(lore)} size="small" />
-                  ) : null}
-                  <S.PublicCardOpenText>Open lore</S.PublicCardOpenText>
-                </Space>
-              </S.PublicCardFooter>
-            </S.PublicCardBody>
-          </S.PublicCard>
-        );
-      })}
-    </S.PublicGrid>
+    <EntityCardGrid>
+      {desktopDisplayItems.map((lore) => renderLoreCard(lore, () => openForView(lore.id)))}
+    </EntityCardGrid>
   );
 
   const adminDesktopTable = (
@@ -664,165 +641,7 @@ export const LoresAdminPage: React.FC = () => {
     </Card>
   );
 
-  const desktopDrawerItems = openLore
-    ? [
-        {
-          key: 'view',
-          label: <IconLabel icon="lore">Lore</IconLabel>,
-          children: (
-            <S.DrawerSectionStack>
-              <Space size={8} wrap>
-                {openLore.category ? (
-                  <Tag color={CATEGORY_COLOR[openLore.category]}>{categoryLabel(openLore.category)}</Tag>
-                ) : null}
-                {isGM ? (
-                  <Space size={6}>
-                    <span style={mutedSm}>Publish:</span>
-                    <Switch
-                      checked={isLoreVisible(openLore)}
-                      onChange={() => void toggleVisible(openLore)}
-                      size="small"
-                    />
-                  </Space>
-                ) : null}
-              </Space>
-
-              <Divider style={dividerSm} />
-
-              <Card density="dense" title="Content">
-                <Typography.Paragraph style={S.drawerContentParagraph}>
-                  {openLore.content?.trim() || 'No content recorded.'}
-                </Typography.Paragraph>
-              </Card>
-
-              <Typography.Text style={S.drawerTimestamp} type="secondary">
-                Created: {formatDateTime(openLore.createdAt)}
-                {'  ·  '}
-                Updated: {formatDateTime(openLore.updatedAt)}
-              </Typography.Text>
-            </S.DrawerSectionStack>
-          ),
-        },
-        ...(isGM
-          ? [
-              {
-                key: 'edit',
-                label: <IconLabel icon="edit">Edit</IconLabel>,
-                children: (
-                  <S.DrawerSectionStack>
-                    <Card density="dense" title="Lore Data">
-                      <Space orientation="vertical" size={10} style={w100}>
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Title
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditTitle(event.target.value)}
-                            placeholder="Lore title"
-                            value={editTitle}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Category
-                          </Typography.Text>
-                          <Select
-                            onChange={(value) => setEditCategory(value === 'null' ? null : (value as LoreCategory))}
-                            options={categoryOptions}
-                            style={w100}
-                            value={(editCategory ?? 'null') as any}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Content
-                          </Typography.Text>
-                          <TextArea
-                            onChange={(event) => setEditContent(event.target.value)}
-                            placeholder="Lore content (free text or markdown)"
-                            rows={12}
-                            value={editContent}
-                          />
-                        </div>
-                      </Space>
-                    </Card>
-
-                    <Card density="dense" title="Visibility">
-                      <Space style={spaceBetween}>
-                        <div>
-                          <Typography.Text>Visible to players</Typography.Text>
-                          <br />
-                          <Typography.Text style={textSm} type="secondary">
-                            Hidden lores only appear to the GM.
-                          </Typography.Text>
-                        </div>
-                        <Switch
-                          checked={isLoreVisible(openLore)}
-                          checkedChildren={<EyeOutlined />}
-                          onChange={() => void toggleVisible(openLore)}
-                          unCheckedChildren={<EyeInvisibleOutlined />}
-                        />
-                      </Space>
-                    </Card>
-
-                    <TagSelect entityId={openLore.id} entityType="lore" />
-
-                    <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
-                      Save Changes
-                    </Button>
-                  </S.DrawerSectionStack>
-                ),
-              },
-            ]
-          : []),
-      ]
-    : [];
-
-  const detailDrawer =
-    openLore && !mobileOnly ? (
-      <Drawer
-        extra={
-          isGM ? (
-            <Space>
-              <Popconfirm
-                cancelText="Cancel"
-                okText="Remove"
-                onConfirm={() => void removeCurrentLore()}
-                title="Remove this lore permanently?"
-              >
-                <Button danger icon={<DeleteOutlined />} size="small">
-                  Remove
-                </Button>
-              </Popconfirm>
-              {drawerTab === 'edit' && (
-                <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
-                  Save
-                </Button>
-              )}
-            </Space>
-          ) : null
-        }
-        onClose={closeLorePanels}
-        open
-        size={640}
-        title={
-          <Space size={8} wrap>
-            <span style={S.drawerTitleText}>{openLore.title}</span>
-            {openLore.category ? (
-              <Tag color={CATEGORY_COLOR[openLore.category]}>{categoryLabel(openLore.category)}</Tag>
-            ) : null}
-            <Tag color={isLoreVisible(openLore) ? 'green' : 'red'}>
-              {isLoreVisible(openLore) ? 'Visible' : 'Hidden'}
-            </Tag>
-            <Badge count={`#${openLore.id}`} style={S.drawerBadge} />
-          </Space>
-        }
-      >
-        <Tabs activeKey={drawerTab} items={desktopDrawerItems} onChange={(key) => setDrawerTab(key as DrawerTab)} />
-      </Drawer>
-    ) : null;
+  const drawerTabs = useEditableDrawerTab(drawerTab, setDrawerTab, { view: 'view', edit: 'edit' }, openLore?.id);
 
   const mobileMeta = (
     <S.MobileMetaTags>
@@ -858,48 +677,8 @@ export const LoresAdminPage: React.FC = () => {
     </>
   );
 
-  const mobileOverview = openLore ? (
-    <S.MobileSectionStack>
-      <MobileCard compact title="Content">
-        <S.MobileBodyText>{openLore.content?.trim() || 'No content recorded yet.'}</S.MobileBodyText>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Category</S.MobileDetailLabel>
-            <S.MobileDetailValue>{categoryLabel(openLore.category)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Visibility</S.MobileDetailLabel>
-            <S.MobileDetailValue>{isLoreVisible(openLore) ? 'Visible' : 'Hidden'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Lore ID</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{openLore.id}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Created</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openLore.createdAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Updated</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openLore.updatedAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileGM = openLore ? (
     <S.MobileSectionStack>
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isLoreVisible(openLore)} onChange={() => void toggleVisible(openLore)} />
-        </S.MobileVisibilityRow>
-      </MobileCard>
-
       <MobileCard compact title="Lore data">
         <MobileForm>
           <MobileForm.Item label="Title">
@@ -941,6 +720,142 @@ export const LoresAdminPage: React.FC = () => {
         </S.MobileDangerZone>
       </MobileCard>
     </S.MobileSectionStack>
+  ) : null;
+
+  const detailDrawer = openLore ? (
+    <EntityDrawer
+      activeKey={drawerTabs.activeKey}
+      controls={[visibilityControl(isLoreVisible(openLore), () => void toggleVisible(openLore), 'lores')]}
+      createdAt={openLore.createdAt}
+      extra={
+        isGM ? (
+          <Space>
+            <Popconfirm
+              cancelText="Cancel"
+              okText="Remove"
+              onConfirm={() => void removeCurrentLore()}
+              title="Remove this lore permanently?"
+            >
+              <Button danger icon={<DeleteOutlined />} size="small">
+                Remove
+              </Button>
+            </Popconfirm>
+            {drawerTab === 'edit' && (
+              <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
+                Save
+              </Button>
+            )}
+          </Space>
+        ) : null
+      }
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          mobileChildren: mobileGM,
+          children: (
+            <S.DrawerSectionStack>
+              <Card density="dense" title="Lore Data">
+                <Space orientation="vertical" size={10} style={w100}>
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Title
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      placeholder="Lore title"
+                      value={editTitle}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Category
+                    </Typography.Text>
+                    <Select
+                      onChange={(value) => setEditCategory(value === 'null' ? null : (value as LoreCategory))}
+                      options={categoryOptions}
+                      style={w100}
+                      value={(editCategory ?? 'null') as any}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Content
+                    </Typography.Text>
+                    <TextArea
+                      onChange={(event) => setEditContent(event.target.value)}
+                      placeholder="Lore content (free text or markdown)"
+                      rows={12}
+                      value={editContent}
+                    />
+                  </div>
+                </Space>
+              </Card>
+
+              <Card density="dense" title="Visibility">
+                <Space style={spaceBetween}>
+                  <div>
+                    <Typography.Text>Visible to players</Typography.Text>
+                    <br />
+                    <Typography.Text style={textSm} type="secondary">
+                      Hidden lores only appear to the GM.
+                    </Typography.Text>
+                  </div>
+                  <Switch
+                    checked={isLoreVisible(openLore)}
+                    checkedChildren={<EyeOutlined />}
+                    onChange={() => void toggleVisible(openLore)}
+                    unCheckedChildren={<EyeInvisibleOutlined />}
+                  />
+                </Space>
+              </Card>
+
+              <TagSelect entityId={openLore.id} entityType="lore" />
+
+              <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
+                Save Changes
+              </Button>
+            </S.DrawerSectionStack>
+          ),
+        },
+      ]}
+      gmView={isGM}
+      onClose={closeLorePanels}
+      onTabChange={drawerTabs.onTabChange}
+      open
+      overview={{
+        key: drawerTabs.overviewKey,
+        meta: openLore.category ? (
+          <Tag color={CATEGORY_COLOR[openLore.category]}>{categoryLabel(openLore.category)}</Tag>
+        ) : null,
+        sections: [{ title: 'Content', text: openLore.content, fallback: 'No content recorded.' }],
+      }}
+      status={{ visible: isLoreVisible(openLore) }}
+      title={openLore.title}
+      updatedAt={openLore.updatedAt}
+      mobileActiveKey={mobileSheetTab}
+      mobileFooter={
+        openLore && isGM && mobileSheetTab === 'gm' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={resetEditForm}>
+                Reset
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onMobileTabChange={(key) => setMobileSheetTab(key as LoreSheetTab)}
+      subtitle={openLore ? categoryLabel(openLore.category) : undefined}
+    />
   ) : null;
 
   if (mobileOnly) {
@@ -998,54 +913,9 @@ export const LoresAdminPage: React.FC = () => {
               <S.MobileEmptyState>No lores found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileLoresGrid>
-              {displayItems.map((lore) => {
-                const category = lore.category ?? null;
-
-                return (
-                  <MobileCard compact key={lore.id}>
-                    <S.MobileLoreBody>
-                      <S.MobileLoreHeader>
-                        <S.MobileLoreIdentity>
-                          <S.MobileLoreTitle>{lore.title}</S.MobileLoreTitle>
-                          <S.MobileMetaTags>
-                            <AdmMobileTag
-                              color={category ? MOBILE_CATEGORY_COLOR[category] : 'primary'}
-                              fill="outline"
-                              round
-                            >
-                              {categoryLabel(category)}
-                            </AdmMobileTag>
-                            {isGM && viewMode === 'admin' ? (
-                              <AdmMobileTag color={isLoreVisible(lore) ? 'success' : 'warning'} fill="outline" round>
-                                {isLoreVisible(lore) ? 'Visible' : 'Hidden'}
-                              </AdmMobileTag>
-                            ) : null}
-                          </S.MobileMetaTags>
-                        </S.MobileLoreIdentity>
-                      </S.MobileLoreHeader>
-
-                      <S.MobileLorePreview>{getLorePreview(lore)}</S.MobileLorePreview>
-
-                      <S.MobileLoreActions>
-                        <AdmMobileButton block color="primary" onClick={() => openLoreSheet(lore, 'overview')}>
-                          Open lore
-                        </AdmMobileButton>
-                        {isGM && viewMode === 'admin' ? (
-                          <AdmMobileButton block fill="outline" onClick={() => openLoreSheet(lore, 'gm')}>
-                            <SetOutline fontSize={17} /> GM controls
-                          </AdmMobileButton>
-                        ) : (
-                          <AdmMobileButton block fill="outline" onClick={() => openLoreSheet(lore, 'overview')}>
-                            Read
-                          </AdmMobileButton>
-                        )}
-                      </S.MobileLoreActions>
-                    </S.MobileLoreBody>
-                  </MobileCard>
-                );
-              })}
-            </S.MobileLoresGrid>
+            <EntityCardGrid>
+              {displayItems.map((lore) => renderLoreCard(lore, () => openLoreSheet(lore, 'overview')))}
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -1109,49 +979,7 @@ export const LoresAdminPage: React.FC = () => {
           </S.MobileCreateFields>
         </MobileFilterSheet>
 
-        <MobileEntitySheet
-          description={
-            openLore
-              ? isGM
-                ? 'Lore content and GM controls for this archive entry.'
-                : 'Lore content from the campaign archive.'
-              : undefined
-          }
-          footer={
-            openLore && isGM && mobileSheetTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetEditForm}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={closeLorePanels}
-          subtitle={openLore ? categoryLabel(openLore.category) : undefined}
-          title={openLore?.title ?? 'Lore'}
-          visible={Boolean(openLore)}
-        >
-          {openLore && isGM ? (
-            <MobileTabs
-              activeKey={mobileSheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileOverview },
-                { key: 'gm', title: 'GM', children: mobileGM },
-              ]}
-              onChange={(key) => setMobileSheetTab(key as LoreSheetTab)}
-            />
-          ) : (
-            mobileOverview
-          )}
-        </MobileEntitySheet>
+        {detailDrawer}
 
         <MobileDialog
           actions={[

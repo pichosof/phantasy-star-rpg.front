@@ -185,15 +185,6 @@ export function drawerImage(maxHeight: number): CSSProperties {
   };
 }
 
-export const drawerParagraph: CSSProperties = {
-  whiteSpace: 'pre-wrap',
-  marginTop: 8,
-};
-
-export const drawerCompactParagraph: CSSProperties = {
-  whiteSpace: 'pre-wrap',
-};
-
 export const imageAltFormItem: CSSProperties = {
   marginBottom: 8,
 };
@@ -300,34 +291,6 @@ export const MobileInstruction = styled.div`
 export const MobileSheetStack = styled.div`
   display: grid;
   gap: 12px;
-`;
-
-export const MobileLinkedList = styled.div`
-  display: grid;
-  gap: 10px;
-`;
-
-export const MobileLinkedCard = styled.div`
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 10px;
-  background: var(--psr-mobile-elevated-bg);
-`;
-
-export const MobileLinkedTitle = styled.div`
-  color: var(--text-main-color);
-  font-weight: 800;
-`;
-
-export const MobileLinkedText = styled.p`
-  margin: 8px 0 0;
-  color: var(--text-secondary-color);
-  font-size: 0.84rem;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 `;
 
 export const MobilePickerList = styled.div`

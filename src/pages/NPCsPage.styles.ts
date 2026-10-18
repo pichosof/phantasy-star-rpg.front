@@ -5,29 +5,6 @@ export const adminDrawerBody: CSSProperties = {
   background: 'var(--additional-background-color)',
 };
 
-export const detailDrawerBody: CSSProperties = {
-  padding: 0,
-  background: 'var(--additional-background-color)',
-};
-
-export const detailHeroShell: CSSProperties = {
-  position: 'relative',
-  background: 'var(--additional-background-color)',
-};
-
-export const detailHeroImageWrap: CSSProperties = {
-  height: 260,
-  overflow: 'hidden',
-  background: 'var(--secondary-background-color)',
-};
-
-export const detailHeroImage: CSSProperties = {
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  display: 'block',
-};
-
 export function detailHeroFallback(metaHex: string): CSSProperties {
   return {
     height: 180,
@@ -47,35 +24,6 @@ export function detailHeroAvatar(metaHex: string): CSSProperties {
   };
 }
 
-export const detailCloseButton: CSSProperties = {
-  position: 'absolute',
-  top: 10,
-  right: 10,
-  background: 'rgba(0, 0, 0, 0.58)',
-  border: 'none',
-  color: '#fff',
-  backdropFilter: 'blur(6px)',
-};
-
-export const detailHeroFade: CSSProperties = {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  height: 72,
-  background: 'linear-gradient(180deg, transparent 0%, var(--additional-background-color) 100%)',
-};
-
-export const detailContent: CSSProperties = {
-  padding: '0 20px 24px',
-  background: 'var(--additional-background-color)',
-};
-
-export const detailHeaderStack: CSSProperties = {
-  width: '100%',
-  marginBottom: 12,
-};
-
 export function detailRoleTag(metaHex: string): CSSProperties {
   return {
     fontSize: 12,
@@ -87,11 +35,6 @@ export function detailRoleTag(metaHex: string): CSSProperties {
   };
 }
 
-export const detailLocationMeta: CSSProperties = {
-  color: 'var(--text-light-color)',
-  fontSize: 13,
-};
-
 export function detailAccent(metaHex: string): CSSProperties {
   return {
     height: 3,
@@ -99,13 +42,6 @@ export function detailAccent(metaHex: string): CSSProperties {
     background: `linear-gradient(90deg, ${metaHex}, ${metaHex}20)`,
   };
 }
-
-export const detailParagraph: CSSProperties = {
-  whiteSpace: 'pre-wrap',
-  lineHeight: 1.7,
-  color: 'var(--text-main-color)',
-  marginBottom: 0,
-};
 
 export const MobileFilterRow = styled.div`
   display: flex;
@@ -123,96 +59,6 @@ export const MobileMetaTags = styled.div`
 export const MobileSectionStack = styled.div`
   display: grid;
   gap: 12px;
-`;
-
-export const MobileNpcsGrid = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileNpcCardBody = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileNpcCardMedia = styled.div<{ $accent: string }>`
-  height: 190px;
-  overflow: hidden;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at 20% 18%, ${({ $accent }) => `${$accent}33`}, transparent 36%),
-    linear-gradient(135deg, ${({ $accent }) => `${$accent}22`}, var(--secondary-background-color));
-`;
-
-export const MobileNpcCardImage = styled.img`
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-`;
-
-export const MobileNpcHero = styled.div<{ $accent: string }>`
-  min-height: 230px;
-  overflow: hidden;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 20% 18%, ${({ $accent }) => `${$accent}33`}, transparent 36%),
-    linear-gradient(135deg, ${({ $accent }) => `${$accent}22`}, var(--secondary-background-color));
-`;
-
-export const MobileNpcHeroImage = styled.img`
-  width: 100%;
-  height: 230px;
-  display: block;
-  object-fit: cover;
-`;
-
-export const MobileNpcFallback = styled.div<{ $accent: string }>`
-  width: 100%;
-  height: 100%;
-  min-height: 190px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-
-  span {
-    width: 86px;
-    height: 86px;
-    display: grid;
-    place-items: center;
-    border-radius: 999px;
-    background: ${({ $accent }) => $accent};
-    box-shadow: 0 14px 34px ${({ $accent }) => `${$accent}66`};
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-  }
-`;
-
-export const MobileNpcHeroInfo = styled.div`
-  display: grid;
-  gap: 10px;
-  padding-top: 12px;
-`;
-
-export const MobileNpcTitle = styled.h2`
-  margin: 0;
-  color: var(--text-main-color);
-  font-size: 20px;
-  line-height: 1.12;
-  font-weight: 800;
-`;
-
-export const MobileNpcPreview = styled.p`
-  display: -webkit-box;
-  margin: 0;
-  color: var(--text-secondary-color);
-  font-size: 14px;
-  line-height: 1.5;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
 `;
 
 export const MobileBodyText = styled.p`

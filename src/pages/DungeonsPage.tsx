@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Modal, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Modal, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -28,7 +27,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
-import { Tabs } from '@app/components/common/Tabs/Tabs';
+
 import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import {
   MobileActionBar,
@@ -40,7 +39,6 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
@@ -65,13 +63,10 @@ import {
   textSm,
   textXs,
   textMd,
-  mutedSm,
-  bold800,
   spaceBetween,
   dividerSm,
   hiddenInput,
   blackBg,
-  dungeon404,
   carouselLeft,
   carouselRight,
   carouselLeftLg,
@@ -79,11 +74,15 @@ import {
   carouselCounter,
   carouselTopRight,
   tableWrap,
-  imgCoverH,
   imgContainH,
-  lineHeight175,
 } from '@app/styles/styleUtils';
 import * as S from './DungeonsPage.styles';
+import EntityDrawer, {
+  discoveredControl,
+  useEditableDrawerTab,
+  visibilityControl,
+} from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type CityOption = { id: number; name: string };
 
@@ -104,14 +103,6 @@ type DungeonSheetTab = 'view' | 'edit';
 
 function isDungeonVisible(dungeon: Dungeon) {
   return (dungeon.visible ?? true) === true;
-}
-
-function mobileDungeonTypeColor(type?: string | null): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
-  const color = type ? TYPE_COLOR[type] : 'default';
-  if (color === 'red' || color === 'volcano') return 'danger';
-  if (color === 'gold' || color === 'orange') return 'warning';
-  if (color === 'cyan' || color === 'geekblue' || color === 'purple') return 'primary';
-  return 'default';
 }
 
 const CITY_PICKER_EMPTY_LIMIT = 12;
@@ -338,6 +329,12 @@ export const DungeonsPage: React.FC = () => {
   const [openId, setOpenId] = React.useState<number | null>(null);
   const [drawerTab, setDrawerTab] = React.useState<DungeonSheetTab>('view');
   const openDungeon = React.useMemo(() => items.find((x) => x.id === openId) ?? null, [items, openId]);
+  const dungeonDrawerTab = useEditableDrawerTab(
+    drawerTab,
+    setDrawerTab,
+    { view: 'view', edit: 'edit' },
+    openDungeon?.id,
+  );
 
   const [creating, setCreating] = React.useState(false);
   const [newName, setNewName] = React.useState('');
@@ -565,8 +562,6 @@ export const DungeonsPage: React.FC = () => {
   );
 
   const mobileItems = viewMode === 'admin' && isGM ? filtered : publicFiltered;
-  const openCityName = openDungeon ? cityName(openDungeon.cityId) : null;
-  const openThumb = openDungeon?.images?.[0] ?? null;
 
   const mobileMeta = (
     <S.MobileMetaTags>
@@ -601,78 +596,6 @@ export const DungeonsPage: React.FC = () => {
       ) : null}
     </>
   );
-
-  const mobileDungeonOverview = openDungeon ? (
-    <S.MobileSectionStack>
-      <MobileCard compact>
-        <S.MobileDungeonHero>
-          {openThumb ? (
-            <S.MobileDungeonHeroImage alt={openThumb.alt ?? openDungeon.name} src={resolveApiUrl(openThumb.url)} />
-          ) : (
-            <S.MobileDungeonFallback>
-              <AppIcon name="dungeon" size={46} />
-            </S.MobileDungeonFallback>
-          )}
-        </S.MobileDungeonHero>
-
-        <S.MobileDungeonInfo>
-          <S.MobileDungeonTitle>{openDungeon.name}</S.MobileDungeonTitle>
-          <S.MobileMetaTags>
-            {openDungeon.type ? (
-              <AdmMobileTag color={mobileDungeonTypeColor(openDungeon.type)} fill="outline" round>
-                {openDungeon.type}
-              </AdmMobileTag>
-            ) : null}
-            {openDungeon.discovered ? (
-              <AdmMobileTag color="success" fill="outline" round>
-                Discovered
-              </AdmMobileTag>
-            ) : null}
-            {isGM ? (
-              <AdmMobileTag color={isDungeonVisible(openDungeon) ? 'success' : 'danger'} fill="outline" round>
-                {isDungeonVisible(openDungeon) ? 'Visible' : 'Hidden'}
-              </AdmMobileTag>
-            ) : null}
-          </S.MobileMetaTags>
-        </S.MobileDungeonInfo>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Region</S.MobileDetailLabel>
-            <S.MobileDetailValue>{openDungeon.region || 'Unknown'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Linked city</S.MobileDetailLabel>
-            <S.MobileDetailValue>{openCityName || 'Not linked'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Images</S.MobileDetailLabel>
-            <S.MobileDetailValue>{openDungeon.images?.length ?? 0}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-
-      <MobileCard compact title="Description">
-        <S.MobileBodyText>{openDungeon.description?.trim() || 'No description yet.'}</S.MobileBodyText>
-      </MobileCard>
-
-      {(openDungeon.images?.length ?? 0) > 1 ? (
-        <MobileCard compact title="Gallery">
-          <S.MobileImageStrip>
-            {(openDungeon.images ?? []).map((image) => (
-              <S.MobileGalleryThumb key={image.id} alt={image.alt ?? openDungeon.name} src={resolveApiUrl(image.url)} />
-            ))}
-          </S.MobileImageStrip>
-        </MobileCard>
-      ) : null}
-
-      <MobileCard compact title="Tags">
-        <TagSelect entityId={openDungeon.id} entityType="dungeon" readonly={!isGM} />
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
 
   const mobileDungeonGM = openDungeon ? (
     <S.MobileSectionStack>
@@ -711,17 +634,6 @@ export const DungeonsPage: React.FC = () => {
             />
           </MobileForm.Item>
         </MobileForm>
-      </MobileCard>
-
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isDungeonVisible(openDungeon)} onChange={() => void toggleVisible(openDungeon)} />
-        </S.MobileVisibilityRow>
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Marked as discovered</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={openDungeon.discovered} onChange={() => void toggleDiscovered(openDungeon)} />
-        </S.MobileVisibilityRow>
       </MobileCard>
 
       <MobileCard compact title="Images">
@@ -774,6 +686,223 @@ export const DungeonsPage: React.FC = () => {
   ) : null;
 
   // ── Cards ─────────────────────────────────────────────────────────────────
+  const renderDungeonCard = (d: Dungeon) => {
+    const thumb = d.images?.[0];
+    const cname = cityName(d.cityId);
+    return (
+      <EntityCard
+        cover={thumb ? { src: resolveApiUrl(thumb.url), alt: thumb.alt ?? d.name } : null}
+        coverTags={
+          d.type ? (
+            <Tag color={TYPE_COLOR[d.type] ?? 'default'} style={m0}>
+              {d.type}
+            </Tag>
+          ) : null
+        }
+        footer={d.coordinates ? 'On the map' : undefined}
+        icon="dungeon"
+        key={d.id}
+        label={d.region ?? 'Dungeon'}
+        locked={!isGM && !d.discovered ? 'Not discovered yet.' : null}
+        meta={
+          cname ? (
+            <IconLabel gap={6} icon="location">
+              {cname}
+            </IconLabel>
+          ) : null
+        }
+        onClick={() => {
+          setDrawerTab('view');
+          setOpenId(d.id);
+        }}
+        actions={
+          isGM && viewMode === 'admin' ? (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                setDrawerTab('edit');
+                setOpenId(d.id);
+              }}
+              size="small"
+            />
+          ) : null
+        }
+        openText="Open dungeon"
+        seed={d.id}
+        status={isGM ? { visible: !!d.visible, discovered: !!d.discovered } : undefined}
+        summary={d.description}
+        title={d.name}
+      />
+    );
+  };
+
+  const DetailDrawer = openDungeon ? (
+    <EntityDrawer
+      activeKey={dungeonDrawerTab.activeKey}
+      controls={[
+        visibilityControl(!!openDungeon.visible, () => void toggleVisible(openDungeon), 'dungeons'),
+        discoveredControl(!!openDungeon.discovered, () => void toggleDiscovered(openDungeon), 'description and images'),
+      ]}
+      createdAt={openDungeon.createdAt}
+      extra={
+        isGM ? (
+          <Space>
+            <Popconfirm
+              title="Delete dungeon permanently?"
+              okText="Delete"
+              cancelText="Cancel"
+              onConfirm={() => void handleDelete(openDungeon.id)}
+            >
+              <Button danger size="small" icon={<DeleteOutlined />}>
+                Delete
+              </Button>
+            </Popconfirm>
+            {drawerTab === 'edit' && (
+              <Button type="primary" size="small" onClick={() => void saveEdit()}>
+                Save
+              </Button>
+            )}
+          </Space>
+        ) : null
+      }
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          mobileChildren: mobileDungeonGM,
+          children: (
+            <Space orientation="vertical" size={12} style={w100}>
+              <Card density="dense" title="Details">
+                <Space orientation="vertical" size={10} style={w100}>
+                  <div>
+                    <Typography.Text type="secondary" style={textSm}>
+                      Name *
+                    </Typography.Text>
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                  </div>
+                  <div>
+                    <Typography.Text type="secondary" style={textSm}>
+                      Type
+                    </Typography.Text>
+                    <Select
+                      allowClear
+                      style={w100}
+                      value={editType}
+                      onChange={(v) => setEditType(v ?? null)}
+                      options={DUNGEON_TYPES.map((t) => ({ value: t, label: t }))}
+                      placeholder="Select type"
+                    />
+                  </div>
+                  <div>
+                    <Typography.Text type="secondary" style={textSm}>
+                      Region
+                    </Typography.Text>
+                    <Input
+                      value={editRegion}
+                      onChange={(e) => setEditRegion(e.target.value)}
+                      placeholder="Region or area"
+                    />
+                  </div>
+                  <div>
+                    <Typography.Text type="secondary" style={textSm}>
+                      Linked city
+                    </Typography.Text>
+                    <Select
+                      allowClear
+                      style={w100}
+                      value={editCityId ?? undefined}
+                      onChange={(v) => setEditCityId(v ?? null)}
+                      options={cities.map((c) => ({ value: c.id, label: c.name }))}
+                      placeholder="Select city"
+                    />
+                  </div>
+                  <div>
+                    <Typography.Text type="secondary" style={textSm}>
+                      Description
+                    </Typography.Text>
+                    <TextArea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={6} />
+                  </div>
+                </Space>
+              </Card>
+
+              <Card density="dense" title={<IconLabel icon="tags">Tags</IconLabel>}>
+                <TagSelect entityType="dungeon" entityId={openDungeon.id} />
+              </Card>
+
+              <Card density="dense" title={<IconLabel icon="image">Images</IconLabel>}>
+                <DungeonImageCarousel
+                  images={openDungeon.images ?? []}
+                  dungeonId={openDungeon.id}
+                  gm
+                  onDeleted={(imgId) => handleImageDeleted(openDungeon.id, imgId)}
+                />
+              </Card>
+
+              <Button type="primary" block onClick={() => void saveEdit()}>
+                Save Changes
+              </Button>
+            </Space>
+          ),
+        },
+      ]}
+      gmView={isGM}
+      onClose={() => setOpenId(null)}
+      onTabChange={dungeonDrawerTab.onTabChange}
+      open
+      overview={{
+        key: dungeonDrawerTab.overviewKey,
+        image: (
+          <DungeonImageCarousel
+            dungeonId={openDungeon.id}
+            gm={isGM}
+            images={openDungeon.images ?? []}
+            onDeleted={(imgId) => handleImageDeleted(openDungeon.id, imgId)}
+          />
+        ),
+        meta: (
+          <>
+            {openDungeon.type && <Tag color={TYPE_COLOR[openDungeon.type] ?? 'default'}>{openDungeon.type}</Tag>}
+            {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
+            {cityName(openDungeon.cityId) && (
+              <Tag color="geekblue" icon={<AppIcon name="location" />}>
+                {cityName(openDungeon.cityId)}
+              </Tag>
+            )}
+          </>
+        ),
+        sections: [{ title: 'Description', text: openDungeon.description }],
+        children: (
+          <Card density="dense" title="Tags">
+            <TagSelect entityId={openDungeon.id} entityType="dungeon" readonly={!isGM} />
+          </Card>
+        ),
+      }}
+      status={{ visible: !!openDungeon.visible, discovered: !!openDungeon.discovered }}
+      title={openDungeon.name}
+      updatedAt={openDungeon.updatedAt}
+      mobileActiveKey={drawerTab === 'edit' ? 'gm' : 'overview'}
+      mobileFooter={
+        openDungeon && isGM && drawerTab === 'edit' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveEdit()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={() => setDrawerTab('view')}>
+                Back to overview
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onMobileTabChange={(key) => setDrawerTab(key === 'gm' ? 'edit' : 'view')}
+      subtitle={openDungeon.type ?? openDungeon.region ?? undefined}
+    />
+  ) : null;
+
   if (mobileOnly) {
     return (
       <>
@@ -823,82 +952,7 @@ export const DungeonsPage: React.FC = () => {
               <S.MobileEmptyState>No dungeons found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileDungeonsGrid>
-              {mobileItems.map((dungeon) => {
-                const thumb = dungeon.images?.[0] ?? null;
-                const cname = cityName(dungeon.cityId);
-                const gmPanel = isGM && viewMode === 'admin';
-
-                return (
-                  <MobileCard compact key={dungeon.id}>
-                    <S.MobileDungeonCardBody>
-                      <S.MobileDungeonCardMedia>
-                        {thumb ? (
-                          <S.MobileDungeonCardImage alt={thumb.alt ?? dungeon.name} src={resolveApiUrl(thumb.url)} />
-                        ) : (
-                          <S.MobileDungeonFallback>
-                            <AppIcon name="dungeon" size={40} />
-                          </S.MobileDungeonFallback>
-                        )}
-                      </S.MobileDungeonCardMedia>
-
-                      <S.MobileDungeonTitle>{dungeon.name}</S.MobileDungeonTitle>
-                      <S.MobileMetaTags>
-                        {dungeon.type ? (
-                          <AdmMobileTag color={mobileDungeonTypeColor(dungeon.type)} fill="outline" round>
-                            {dungeon.type}
-                          </AdmMobileTag>
-                        ) : null}
-                        {dungeon.discovered ? (
-                          <AdmMobileTag color="success" fill="outline" round>
-                            Discovered
-                          </AdmMobileTag>
-                        ) : null}
-                        {gmPanel ? (
-                          <AdmMobileTag color={isDungeonVisible(dungeon) ? 'success' : 'danger'} fill="outline" round>
-                            {isDungeonVisible(dungeon) ? 'Visible' : 'Hidden'}
-                          </AdmMobileTag>
-                        ) : null}
-                        {cname ? (
-                          <AdmMobileTag fill="outline" round>
-                            {cname}
-                          </AdmMobileTag>
-                        ) : null}
-                      </S.MobileMetaTags>
-
-                      <S.MobileDungeonPreview>
-                        {dungeon.description?.trim() || dungeon.region || 'No description yet.'}
-                      </S.MobileDungeonPreview>
-
-                      <S.MobileActionGrid>
-                        <AdmMobileButton
-                          block
-                          color="primary"
-                          onClick={() => {
-                            setDrawerTab('view');
-                            setOpenId(dungeon.id);
-                          }}
-                        >
-                          Open dungeon
-                        </AdmMobileButton>
-                        {gmPanel ? (
-                          <AdmMobileButton
-                            block
-                            fill="outline"
-                            onClick={() => {
-                              setDrawerTab('edit');
-                              setOpenId(dungeon.id);
-                            }}
-                          >
-                            <SetOutline fontSize={17} /> GM controls
-                          </AdmMobileButton>
-                        ) : null}
-                      </S.MobileActionGrid>
-                    </S.MobileDungeonCardBody>
-                  </MobileCard>
-                );
-              })}
-            </S.MobileDungeonsGrid>
+            <EntityCardGrid>{mobileItems.map((d) => renderDungeonCard(d))}</EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -949,60 +1003,20 @@ export const DungeonsPage: React.FC = () => {
           </MobileFilterSheet>
         ) : null}
 
-        <MobileEntitySheet
-          description={openDungeon ? 'Dungeon overview, linked context and GM controls.' : undefined}
-          footer={
-            openDungeon && isGM && drawerTab === 'edit' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveEdit()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={() => setDrawerTab('view')}>
-                    Back to overview
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={() => {
-            setOpenId(null);
-            setDrawerTab('view');
+        {DetailDrawer}
+        <input
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void uploadMobileImage(file);
+              event.currentTarget.value = '';
+            }
           }}
-          subtitle={openDungeon?.type ?? openDungeon?.region ?? undefined}
-          title={openDungeon?.name ?? 'Dungeon'}
-          visible={Boolean(openDungeon)}
-        >
-          {openDungeon && isGM ? (
-            <MobileTabs
-              activeKey={drawerTab}
-              items={[
-                { key: 'view', title: 'Overview', children: mobileDungeonOverview },
-                { key: 'edit', title: 'GM', children: mobileDungeonGM },
-              ]}
-              onChange={(key) => setDrawerTab(key as DungeonSheetTab)}
-            />
-          ) : (
-            mobileDungeonOverview
-          )}
-
-          <input
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void uploadMobileImage(file);
-                event.currentTarget.value = '';
-              }
-            }}
-            ref={mobileImageInputRef}
-            type="file"
-          />
-        </MobileEntitySheet>
+          ref={mobileImageInputRef}
+          type="file"
+        />
 
         <MobileEntitySheet
           description="Create the dungeon now, then add tags and images from GM controls."
@@ -1114,68 +1128,7 @@ export const DungeonsPage: React.FC = () => {
       <Empty description="No dungeons found." />
     </Card>
   ) : (
-    <S.PublicGrid $mobileOnly={mobileOnly}>
-      {displayItems.map((d) => {
-        const thumb = d.images?.[0];
-        const cname = cityName(d.cityId);
-        return (
-          <S.PublicCard
-            key={d.id}
-            onClick={() => {
-              setDrawerTab('view');
-              setOpenId(d.id);
-            }}
-          >
-            {thumb ? (
-              <img src={resolveApiUrl(thumb.url)} alt={thumb.alt ?? d.name} style={imgCoverH(140)} />
-            ) : (
-              <div style={dungeon404}>
-                <AppIcon name="dungeon" size={42} />
-              </div>
-            )}
-            <div style={S.publicCardBody}>
-              <Space size={6} wrap>
-                {d.type && (
-                  <Tag color={TYPE_COLOR[d.type] ?? 'default'} style={m0}>
-                    {d.type}
-                  </Tag>
-                )}
-                {d.discovered && (
-                  <Tag color="green" style={m0}>
-                    Discovered
-                  </Tag>
-                )}
-                {isGM && (
-                  <Tag color={d.visible ? 'green' : 'red'} style={S.visibleTag}>
-                    {d.visible ? 'Visible' : 'Hidden'}
-                  </Tag>
-                )}
-              </Space>
-              <Typography.Title level={5} style={m0} ellipsis={{ rows: 1 }}>
-                {d.name}
-              </Typography.Title>
-              {d.region && (
-                <Typography.Text type="secondary" style={textSm}>
-                  {d.region}
-                </Typography.Text>
-              )}
-              {cname && (
-                <Typography.Text type="secondary" style={textXs}>
-                  <IconLabel icon="location" gap={6}>
-                    {cname}
-                  </IconLabel>
-                </Typography.Text>
-              )}
-              {d.description && (
-                <Typography.Paragraph style={S.publicDescription} ellipsis={{ rows: 2 }}>
-                  {d.description}
-                </Typography.Paragraph>
-              )}
-            </div>
-          </S.PublicCard>
-        );
-      })}
-    </S.PublicGrid>
+    <EntityCardGrid>{displayItems.map((d) => renderDungeonCard(d))}</EntityCardGrid>
   );
 
   // ── Admin table ────────────────────────────────────────────────────────────
@@ -1277,167 +1230,6 @@ export const DungeonsPage: React.FC = () => {
   );
 
   // ── Drawer ─────────────────────────────────────────────────────────────────
-  const DetailDrawer = openDungeon ? (
-    <Drawer
-      open
-      onClose={() => setOpenId(null)}
-      size={mobileOnly ? '100%' : 680}
-      title={
-        <Space wrap size={8}>
-          <span style={bold800}>{openDungeon.name}</span>
-          {openDungeon.type && <Tag color={TYPE_COLOR[openDungeon.type] ?? 'default'}>{openDungeon.type}</Tag>}
-        </Space>
-      }
-      extra={
-        isGM ? (
-          <Space>
-            <Popconfirm
-              title="Delete dungeon permanently?"
-              okText="Delete"
-              cancelText="Cancel"
-              onConfirm={() => void handleDelete(openDungeon.id)}
-            >
-              <Button danger size="small" icon={<DeleteOutlined />}>
-                Delete
-              </Button>
-            </Popconfirm>
-            {drawerTab === 'edit' && (
-              <Button type="primary" size="small" onClick={() => void saveEdit()}>
-                Save
-              </Button>
-            )}
-          </Space>
-        ) : null
-      }
-    >
-      <Tabs activeKey={drawerTab} onChange={(k) => setDrawerTab(k as 'view' | 'edit')}>
-        <Tabs.TabPane tab={<IconLabel icon="dungeon">Dungeon</IconLabel>} key="view">
-          <Space orientation="vertical" size={16} style={w100}>
-            <DungeonImageCarousel
-              images={openDungeon.images ?? []}
-              dungeonId={openDungeon.id}
-              gm={isGM}
-              onDeleted={(imgId) => handleImageDeleted(openDungeon.id, imgId)}
-            />
-
-            <Space wrap size={6}>
-              {openDungeon.type && <Tag color={TYPE_COLOR[openDungeon.type] ?? 'default'}>{openDungeon.type}</Tag>}
-              {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
-              {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
-              {cityName(openDungeon.cityId) && (
-                <Tag color="geekblue" icon={<AppIcon name="location" />}>
-                  {cityName(openDungeon.cityId)}
-                </Tag>
-              )}
-            </Space>
-
-            {openDungeon.description && (
-              <Card density="dense" title="Description">
-                <Typography.Paragraph style={lineHeight175}>{openDungeon.description}</Typography.Paragraph>
-              </Card>
-            )}
-
-            <div>
-              <Typography.Text type="secondary" style={S.tagsLabel}>
-                Tags
-              </Typography.Text>
-              <TagSelect entityType="dungeon" entityId={openDungeon.id} readonly={!isGM} />
-            </div>
-
-            {isGM && (
-              <Space size={6} wrap>
-                <span style={mutedSm}>Visible:</span>
-                <Switch size="small" checked={!!openDungeon.visible} onChange={() => void toggleVisible(openDungeon)} />
-                <span style={S.discoveredMeta}>Discovered:</span>
-                <Switch
-                  size="small"
-                  checked={!!openDungeon.discovered}
-                  onChange={() => void toggleDiscovered(openDungeon)}
-                />
-              </Space>
-            )}
-          </Space>
-        </Tabs.TabPane>
-
-        {isGM && (
-          <Tabs.TabPane tab={<IconLabel icon="edit">Edit</IconLabel>} key="edit">
-            <Space orientation="vertical" size={12} style={w100}>
-              <Card density="dense" title="Details">
-                <Space orientation="vertical" size={10} style={w100}>
-                  <div>
-                    <Typography.Text type="secondary" style={textSm}>
-                      Name *
-                    </Typography.Text>
-                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
-                  </div>
-                  <div>
-                    <Typography.Text type="secondary" style={textSm}>
-                      Type
-                    </Typography.Text>
-                    <Select
-                      allowClear
-                      style={w100}
-                      value={editType}
-                      onChange={(v) => setEditType(v ?? null)}
-                      options={DUNGEON_TYPES.map((t) => ({ value: t, label: t }))}
-                      placeholder="Select type"
-                    />
-                  </div>
-                  <div>
-                    <Typography.Text type="secondary" style={textSm}>
-                      Region
-                    </Typography.Text>
-                    <Input
-                      value={editRegion}
-                      onChange={(e) => setEditRegion(e.target.value)}
-                      placeholder="Region or area"
-                    />
-                  </div>
-                  <div>
-                    <Typography.Text type="secondary" style={textSm}>
-                      Linked city
-                    </Typography.Text>
-                    <Select
-                      allowClear
-                      style={w100}
-                      value={editCityId ?? undefined}
-                      onChange={(v) => setEditCityId(v ?? null)}
-                      options={cities.map((c) => ({ value: c.id, label: c.name }))}
-                      placeholder="Select city"
-                    />
-                  </div>
-                  <div>
-                    <Typography.Text type="secondary" style={textSm}>
-                      Description
-                    </Typography.Text>
-                    <TextArea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={6} />
-                  </div>
-                </Space>
-              </Card>
-
-              <Card density="dense" title={<IconLabel icon="tags">Tags</IconLabel>}>
-                <TagSelect entityType="dungeon" entityId={openDungeon.id} />
-              </Card>
-
-              <Card density="dense" title={<IconLabel icon="image">Images</IconLabel>}>
-                <DungeonImageCarousel
-                  images={openDungeon.images ?? []}
-                  dungeonId={openDungeon.id}
-                  gm
-                  onDeleted={(imgId) => handleImageDeleted(openDungeon.id, imgId)}
-                />
-              </Card>
-
-              <Button type="primary" block onClick={() => void saveEdit()}>
-                Save Changes
-              </Button>
-            </Space>
-          </Tabs.TabPane>
-        )}
-      </Tabs>
-    </Drawer>
-  ) : null;
-
   return (
     <>
       <PageTitle>Dungeons</PageTitle>

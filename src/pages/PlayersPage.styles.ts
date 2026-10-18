@@ -168,19 +168,6 @@ export const MobileMetaTags = styled.div`
   flex-wrap: wrap;
 `;
 
-export const MobilePlayersGrid = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobilePlayerMedia = styled.div`
-  position: relative;
-  overflow: hidden;
-  border-radius: 14px;
-  aspect-ratio: 16 / 10;
-  background: var(--secondary-background-color);
-`;
-
 export const MobileImageFallback = styled.div`
   width: 100%;
   height: 100%;
@@ -192,63 +179,12 @@ export const MobileImageFallback = styled.div`
     radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 55%), var(--secondary-background-color);
 `;
 
-export const MobilePlayerImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  display: block;
-`;
-
-export const MobilePlayerBody = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobilePlayerHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-`;
-
-export const MobilePlayerIdentity = styled.div`
-  min-width: 0;
-  display: grid;
-  gap: 6px;
-`;
-
-export const MobilePlayerName = styled.div`
-  color: var(--text-main-color);
-  font-weight: 800;
-  font-size: 18px;
-  line-height: 1.1;
-`;
-
-export const MobilePlayerLevel = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.48);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-`;
-
 export const MobilePlayerPreview = styled.p`
   margin: 0;
   color: var(--text-secondary-color);
   font-size: 13px;
   line-height: 1.55;
   white-space: pre-wrap;
-`;
-
-export const MobilePlayerActions = styled.div`
-  display: grid;
-  gap: 8px;
 `;
 
 export const MobilePlayerActionRow = styled.div`

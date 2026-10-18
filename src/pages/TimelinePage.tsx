@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -20,7 +19,7 @@ import {
   setTimelineEventVisibility,
   updateTimelineEvent,
 } from '@app/api/timeline.api';
-import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { Card } from '@app/components/common/Card/Card';
 import {
   MobileActionBar,
@@ -32,19 +31,24 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Table } from '@app/components/common/Table/Table';
-import { Tabs } from '@app/components/common/Tabs/Tabs';
+
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { dividerSm, m0, spaceBetween, tableWrap, textMd, w100 } from '@app/styles/styleUtils';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './TimelinePage.styles';
+
+import EntityDrawer, {
+  useEditableDrawerTab,
+  visibilityControl,
+} from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'timeline' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -74,12 +78,6 @@ function formatDate(value?: string | null) {
   });
 }
 
-function getEventPreview(event: TimelineEvent) {
-  const description = event.description?.trim();
-  if (!description) return 'No timeline description recorded yet.';
-  return description.length > 170 ? `${description.slice(0, 167)}...` : description;
-}
-
 const TimelineDot: React.FC<{ color: string; pulse?: boolean }> = ({ color, pulse }) => (
   <div style={S.timelineDot(color, pulse)} />
 );
@@ -92,29 +90,20 @@ const EventCard: React.FC<{
   onHover: (value: boolean) => void;
   onClick: () => void;
   isGM: boolean;
-}> = ({ event, color, side, hovered, onHover, onClick, isGM }) => (
-  <div
-    onClick={onClick}
-    onMouseEnter={() => onHover(true)}
-    onMouseLeave={() => onHover(false)}
-    style={S.eventCard(color, hovered, side)}
-  >
-    <div style={S.dateBadge(color)}>{formatDate(event.date)}</div>
-
-    {isGM && (
-      <div style={S.marginBottom6}>
-        <Tag color={isTimelineEventVisible(event) ? 'green' : 'red'} style={S.visibleTag}>
-          {isTimelineEventVisible(event) ? <EyeOutlined /> : <EyeInvisibleOutlined />}{' '}
-          {isTimelineEventVisible(event) ? 'Visible' : 'Hidden'}
-        </Tag>
-      </div>
-    )}
-
-    <Typography.Text strong style={S.eventTitle}>
-      {event.title}
-    </Typography.Text>
-
-    {event.description ? <Typography.Text style={S.eventDescription}>{event.description}</Typography.Text> : null}
+}> = ({ event, color, onHover, onClick, isGM }) => (
+  <div onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)}>
+    <EntityCard
+      accent={color}
+      footer={event.date !== formatDate(event.date) ? event.date : undefined}
+      label={formatDate(event.date)}
+      noCover
+      onClick={onClick}
+      openText="Open event"
+      status={isGM ? { visible: isTimelineEventVisible(event) } : undefined}
+      summary={event.description}
+      summaryFallback="No description."
+      title={event.title}
+    />
   </div>
 );
 
@@ -606,126 +595,7 @@ export const TimelinePage: React.FC = () => {
       </div>
     );
 
-  const desktopDrawerItems = openEvent
-    ? [
-        {
-          key: 'view',
-          label: <IconLabel icon="timeline">View</IconLabel>,
-          children: (
-            <Space orientation="vertical" size={14} style={w100}>
-              <div>
-                <Typography.Text style={S.drawerSectionLabel}>Date</Typography.Text>
-                <div>
-                  <Typography.Text strong style={S.drawerDateText}>
-                    {formatDate(openEvent.date)}
-                  </Typography.Text>
-                  {openEvent.date !== formatDate(openEvent.date) && (
-                    <Typography.Text style={S.drawerRawDate}>({openEvent.date})</Typography.Text>
-                  )}
-                </div>
-              </div>
-
-              {isGM && (
-                <div>
-                  <Tag color={isTimelineEventVisible(openEvent) ? 'green' : 'red'}>
-                    {isTimelineEventVisible(openEvent) ? 'Visible to players' : 'Hidden from players'}
-                  </Tag>
-                </div>
-              )}
-
-              <div>
-                <Typography.Text style={S.drawerSectionLabel}>Description</Typography.Text>
-                <Typography.Paragraph style={S.drawerDescription}>
-                  {openEvent.description?.trim() || 'No description.'}
-                </Typography.Paragraph>
-              </div>
-
-              {isGM && (
-                <>
-                  <Divider style={dividerSm} />
-                  <Space>
-                    <Button icon={<EditOutlined />} onClick={() => setDrawerTab('edit')} size="small">
-                      Edit
-                    </Button>
-                    <Popconfirm
-                      cancelText="No"
-                      okText="Yes"
-                      onConfirm={() => void removeCurrentEvent()}
-                      title="Remove this event?"
-                    >
-                      <Button danger icon={<DeleteOutlined />} size="small">
-                        Remove
-                      </Button>
-                    </Popconfirm>
-                  </Space>
-                </>
-              )}
-            </Space>
-          ),
-        },
-        ...(isGM
-          ? [
-              {
-                key: 'edit',
-                label: <IconLabel icon="edit">Edit</IconLabel>,
-                children: (
-                  <Space orientation="vertical" size={12} style={w100}>
-                    <Space style={spaceBetween}>
-                      <Typography.Text style={textMd}>Visible to players</Typography.Text>
-                      <Switch
-                        checked={isTimelineEventVisible(openEvent)}
-                        checkedChildren={<EyeOutlined />}
-                        onChange={() => void toggleVisible(openEvent)}
-                        size="small"
-                        unCheckedChildren={<EyeInvisibleOutlined />}
-                      />
-                    </Space>
-                    <Divider style={dividerSm} />
-                    <S.editForm
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        void saveEdit();
-                      }}
-                    >
-                      <Input
-                        onChange={(event) => setEditTitle(event.target.value)}
-                        placeholder="Title"
-                        value={editTitle}
-                      />
-                      <Input
-                        onChange={(event) => setEditDate(event.target.value)}
-                        placeholder="Date"
-                        value={editDate}
-                      />
-                      <TextArea
-                        onChange={(event) => setEditDesc(event.target.value)}
-                        placeholder="Description"
-                        rows={5}
-                        value={editDesc}
-                      />
-                      <Space>
-                        <Button htmlType="submit" loading={savingEdit} size="small" type="primary">
-                          Save
-                        </Button>
-                        <Button onClick={() => setDrawerTab('view')} size="small">
-                          Cancel
-                        </Button>
-                      </Space>
-                    </S.editForm>
-                  </Space>
-                ),
-              },
-            ]
-          : []),
-      ]
-    : [];
-
-  const detailDrawer =
-    openEvent && !mobileOnly ? (
-      <Drawer destroyOnHidden onClose={closeEventPanels} open size={480} title={openEvent.title}>
-        <Tabs activeKey={drawerTab} items={desktopDrawerItems} onChange={(key) => setDrawerTab(key as DrawerTab)} />
-      </Drawer>
-    ) : null;
+  const drawerTabs = useEditableDrawerTab(drawerTab, setDrawerTab, { view: 'view', edit: 'edit' }, openEvent?.id);
 
   const mobileMeta = (
     <S.MobileMetaTags>
@@ -763,50 +633,8 @@ export const TimelinePage: React.FC = () => {
 
   const mobileDisplayItems = viewMode === 'admin' && isGM ? adminItems : publicItems;
 
-  const mobileOverview = openEvent ? (
-    <S.MobileSectionStack>
-      <MobileCard compact title="Description">
-        <S.MobileBodyText>{openEvent.description?.trim() || 'No description recorded yet.'}</S.MobileBodyText>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Date</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDate(openEvent.date)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Raw date</S.MobileDetailLabel>
-            <S.MobileDetailValue>{openEvent.date}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Visibility</S.MobileDetailLabel>
-            <S.MobileDetailValue>{isTimelineEventVisible(openEvent) ? 'Visible' : 'Hidden'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Event ID</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{openEvent.id}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Created</S.MobileDetailLabel>
-            <S.MobileDetailValue>
-              {(openEvent as any).createdAt ? formatDate((openEvent as any).createdAt) : '-'}
-            </S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileGM = openEvent ? (
     <S.MobileSectionStack>
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isTimelineEventVisible(openEvent)} onChange={() => void toggleVisible(openEvent)} />
-        </S.MobileVisibilityRow>
-      </MobileCard>
-
       <MobileCard compact title="Event data">
         <MobileForm>
           <MobileForm.Item label="Title">
@@ -835,6 +663,99 @@ export const TimelinePage: React.FC = () => {
         </S.MobileDangerZone>
       </MobileCard>
     </S.MobileSectionStack>
+  ) : null;
+
+  const detailDrawer = openEvent ? (
+    <EntityDrawer
+      activeKey={drawerTabs.activeKey}
+      controls={[visibilityControl(isTimelineEventVisible(openEvent), () => void toggleVisible(openEvent), 'events')]}
+      createdAt={openEvent.createdAt}
+      extra={
+        isGM ? (
+          <Popconfirm
+            cancelText="No"
+            okText="Yes"
+            onConfirm={() => void removeCurrentEvent()}
+            title="Remove this event?"
+          >
+            <Button danger icon={<DeleteOutlined />} size="small">
+              Remove
+            </Button>
+          </Popconfirm>
+        ) : null
+      }
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          mobileChildren: mobileGM,
+          children: (
+            <Space orientation="vertical" size={12} style={w100}>
+              <S.editForm
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void saveEdit();
+                }}
+              >
+                <Input onChange={(event) => setEditTitle(event.target.value)} placeholder="Title" value={editTitle} />
+                <Input onChange={(event) => setEditDate(event.target.value)} placeholder="Date" value={editDate} />
+                <TextArea
+                  onChange={(event) => setEditDesc(event.target.value)}
+                  placeholder="Description"
+                  rows={5}
+                  value={editDesc}
+                />
+                <Space>
+                  <Button htmlType="submit" loading={savingEdit} size="small" type="primary">
+                    Save
+                  </Button>
+                  <Button onClick={() => setDrawerTab('view')} size="small">
+                    Cancel
+                  </Button>
+                </Space>
+              </S.editForm>
+            </Space>
+          ),
+        },
+      ]}
+      gmView={isGM}
+      onClose={closeEventPanels}
+      onTabChange={drawerTabs.onTabChange}
+      open
+      overview={{
+        key: drawerTabs.overviewKey,
+        meta: (
+          <Tag color="blue" icon={<AppIcon name="calendar" />}>
+            {formatDate(openEvent.date)}
+            {openEvent.date !== formatDate(openEvent.date) ? ` (${openEvent.date})` : ''}
+          </Tag>
+        ),
+        sections: [{ title: 'Description', text: openEvent.description, fallback: 'No description.' }],
+      }}
+      status={{ visible: isTimelineEventVisible(openEvent) }}
+      title={openEvent.title}
+      updatedAt={(openEvent as { updatedAt?: string }).updatedAt}
+      mobileActiveKey={mobileSheetTab}
+      mobileFooter={
+        openEvent && isGM && mobileSheetTab === 'gm' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={resetEditForm}>
+                Reset
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onMobileTabChange={(key) => setMobileSheetTab(key as TimelineSheetTab)}
+      subtitle={openEvent ? formatDate(openEvent.date) : undefined}
+    />
   ) : null;
 
   if (mobileOnly) {
@@ -888,53 +809,20 @@ export const TimelinePage: React.FC = () => {
               <S.MobileEmptyState>No events on the timeline.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileTimelineRoot>
-              <S.MobileTimelineRail />
-              {mobileDisplayItems.map((event) => {
-                const color = eventColor(event.id);
-
-                return (
-                  <S.MobileTimelineItem key={event.id}>
-                    <S.MobileTimelineDot $color={color} />
-                    <MobileCard compact>
-                      <S.MobileEventBody>
-                        <S.MobileEventDate $color={color}>{formatDate(event.date)}</S.MobileEventDate>
-                        <S.MobileEventTitle>{event.title}</S.MobileEventTitle>
-                        <S.MobileMetaTags>
-                          {isGM && viewMode === 'admin' ? (
-                            <AdmMobileTag
-                              color={isTimelineEventVisible(event) ? 'success' : 'warning'}
-                              fill="outline"
-                              round
-                            >
-                              {isTimelineEventVisible(event) ? 'Visible' : 'Hidden'}
-                            </AdmMobileTag>
-                          ) : null}
-                          <AdmMobileTag fill="outline" round>
-                            #{event.id}
-                          </AdmMobileTag>
-                        </S.MobileMetaTags>
-                        <S.MobileEventPreview>{getEventPreview(event)}</S.MobileEventPreview>
-                        <S.MobileEventActions>
-                          <AdmMobileButton block color="primary" onClick={() => openEventSheet(event, 'overview')}>
-                            Open event
-                          </AdmMobileButton>
-                          {isGM && viewMode === 'admin' ? (
-                            <AdmMobileButton block fill="outline" onClick={() => openEventSheet(event, 'gm')}>
-                              <SetOutline fontSize={17} /> GM controls
-                            </AdmMobileButton>
-                          ) : (
-                            <AdmMobileButton block fill="outline" onClick={() => openEventSheet(event, 'overview')}>
-                              Details
-                            </AdmMobileButton>
-                          )}
-                        </S.MobileEventActions>
-                      </S.MobileEventBody>
-                    </MobileCard>
-                  </S.MobileTimelineItem>
-                );
-              })}
-            </S.MobileTimelineRoot>
+            <EntityCardGrid>
+              {mobileDisplayItems.map((event) => (
+                <EventCard
+                  color={eventColor(event.id)}
+                  event={event}
+                  hovered={false}
+                  isGM={isGM && viewMode === 'admin'}
+                  key={event.id}
+                  onClick={() => openEventSheet(event, 'overview')}
+                  onHover={() => undefined}
+                  side="right"
+                />
+              ))}
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -987,49 +875,7 @@ export const TimelinePage: React.FC = () => {
           </S.MobileSectionStack>
         </MobileFilterSheet>
 
-        <MobileEntitySheet
-          description={
-            openEvent
-              ? isGM
-                ? 'Timeline details and GM controls for this campaign event.'
-                : 'Timeline details for this campaign event.'
-              : undefined
-          }
-          footer={
-            openEvent && isGM && mobileSheetTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetEditForm}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={closeEventPanels}
-          subtitle={openEvent ? formatDate(openEvent.date) : undefined}
-          title={openEvent?.title ?? 'Timeline event'}
-          visible={Boolean(openEvent)}
-        >
-          {openEvent && isGM ? (
-            <MobileTabs
-              activeKey={mobileSheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileOverview },
-                { key: 'gm', title: 'GM', children: mobileGM },
-              ]}
-              onChange={(key) => setMobileSheetTab(key as TimelineSheetTab)}
-            />
-          ) : (
-            mobileOverview
-          )}
-        </MobileEntitySheet>
+        {detailDrawer}
 
         <MobileDialog
           actions={[

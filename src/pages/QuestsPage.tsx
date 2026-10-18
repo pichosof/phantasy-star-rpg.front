@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -34,30 +33,25 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Table } from '@app/components/common/Table/Table';
-import { Tabs } from '@app/components/common/Tabs/Tabs';
+
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
-import {
-  dividerMd,
-  dividerSm,
-  m0,
-  mutedSm,
-  spaceBetween,
-  tableWrap,
-  textMd,
-  textSm,
-  w100,
-} from '@app/styles/styleUtils';
+import { dividerSm, m0, spaceBetween, tableWrap, textMd, textSm, w100 } from '@app/styles/styleUtils';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './QuestsPage.styles';
+import { stripMarkdown } from '@app/components/common/RichText/RichText';
+import EntityDrawer, {
+  useEditableDrawerTab,
+  visibilityControl,
+} from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -81,12 +75,6 @@ const STATUS_STRIP: Record<QuestStatus, string> = {
   active: '#1677ff',
   completed: '#52c41a',
   failed: '#fa541c',
-};
-
-const MOBILE_STATUS_COLOR: Record<QuestStatus, 'primary' | 'success' | 'danger'> = {
-  active: 'primary',
-  completed: 'success',
-  failed: 'danger',
 };
 
 const statusOptions: { value: QuestStatus; label: string }[] = [
@@ -131,13 +119,13 @@ function formatDateTime(value?: string | null) {
 }
 
 function getQuestPreview(quest: Quest) {
-  const description = quest.description?.trim();
+  const description = stripMarkdown(quest.description);
   if (!description) return 'No quest description recorded yet.';
   return description.length > 170 ? `${description.slice(0, 167)}...` : description;
 }
 
 export const QuestsPage: React.FC = () => {
-  const { mobileOnly, isTablet } = useResponsive();
+  const { mobileOnly } = useResponsive();
   const isGM = useGMMode();
 
   const [items, setItems] = React.useState<Quest[]>([]);
@@ -568,6 +556,50 @@ export const QuestsPage: React.FC = () => {
 
   const desktopDisplayItems = viewMode === 'admin' && isGM ? adminItems : publicItems;
 
+  const renderQuestCard = (quest: Quest, onOpen: () => void) => {
+    const status = getQuestStatus(quest);
+    const visible = isQuestVisible(quest);
+    const cities = questCities[quest.id] ?? [];
+    const gmPanel = isGM && viewMode === 'admin';
+
+    return (
+      <EntityCard
+        accent={STATUS_STRIP[status]}
+        actions={gmPanel ? <Switch checked={visible} onChange={() => void toggleVisible(quest)} size="small" /> : null}
+        chips={
+          quest.reward || cities.length ? (
+            <>
+              {quest.reward ? (
+                <Tag color="gold" icon={<AppIcon name="reward" />} style={m0}>
+                  {stripMarkdown(quest.reward)}
+                </Tag>
+              ) : null}
+              {cities.map((city) => (
+                <Tag color="geekblue" icon={<AppIcon name="location" />} key={city.id} style={m0}>
+                  {city.name}
+                </Tag>
+              ))}
+            </>
+          ) : null
+        }
+        footer={formatDate((quest as any).createdAt)}
+        key={quest.id}
+        label={
+          <Tag color={STATUS_COLOR[status]} style={m0}>
+            {STATUS_LABEL[status]}
+          </Tag>
+        }
+        noCover
+        onClick={onOpen}
+        openText="Open quest"
+        status={gmPanel ? { visible } : undefined}
+        summary={quest.description}
+        summaryFallback="No quest description recorded yet."
+        title={quest.title}
+      />
+    );
+  };
+
   const publicView = loading ? (
     <Spinner />
   ) : desktopDisplayItems.length === 0 ? (
@@ -575,60 +607,9 @@ export const QuestsPage: React.FC = () => {
       <Empty description="No quests found." />
     </Card>
   ) : (
-    <S.PublicGrid $tablet={isTablet}>
-      {desktopDisplayItems.map((quest) => {
-        const status = getQuestStatus(quest);
-        const visible = isQuestVisible(quest);
-        const cities = questCities[quest.id] ?? [];
-
-        return (
-          <S.PublicCard key={quest.id} onClick={() => openForView(quest.id)}>
-            <S.StatusStrip $color={STATUS_STRIP[status]} />
-            <S.PublicCardBody>
-              <Space size={6} style={spaceBetween}>
-                <Tag color={STATUS_COLOR[status]} style={m0}>
-                  {STATUS_LABEL[status]}
-                </Tag>
-                {isGM && viewMode === 'admin' && (
-                  <Tag color={visible ? 'green' : 'red'} style={m0}>
-                    {visible ? 'Visible' : 'Hidden'}
-                  </Tag>
-                )}
-              </Space>
-
-              <S.PublicCardTitle>{quest.title}</S.PublicCardTitle>
-              <S.PublicCardDescription>{getQuestPreview(quest)}</S.PublicCardDescription>
-
-              <S.MetaTags>
-                {quest.reward ? (
-                  <Tag color="gold" icon={<AppIcon name="reward" />} style={m0}>
-                    {quest.reward}
-                  </Tag>
-                ) : null}
-                {cities.map((city) => (
-                  <Tag color="geekblue" icon={<AppIcon name="location" />} key={city.id} style={m0}>
-                    {city.name}
-                  </Tag>
-                ))}
-              </S.MetaTags>
-
-              <S.PublicCardSpacer />
-              <Divider style={dividerMd} />
-
-              <S.PublicCardFooter>
-                <S.PublicCardCreated>{formatDate((quest as any).createdAt)}</S.PublicCardCreated>
-                <Space onClick={(event) => event.stopPropagation()} size={6}>
-                  {isGM && viewMode === 'admin' ? (
-                    <Switch checked={visible} onChange={() => void toggleVisible(quest)} size="small" />
-                  ) : null}
-                  <S.PublicCardOpenText>Open quest</S.PublicCardOpenText>
-                </Space>
-              </S.PublicCardFooter>
-            </S.PublicCardBody>
-          </S.PublicCard>
-        );
-      })}
-    </S.PublicGrid>
+    <EntityCardGrid>
+      {desktopDisplayItems.map((quest) => renderQuestCard(quest, () => openForView(quest.id)))}
+    </EntityCardGrid>
   );
 
   const adminDesktopTable = (
@@ -727,192 +708,7 @@ export const QuestsPage: React.FC = () => {
     </Card>
   );
 
-  const desktopDrawerItems = openQuest
-    ? [
-        {
-          key: 'view',
-          label: <IconLabel icon="quest">Quest</IconLabel>,
-          children: (
-            <S.DrawerSectionStack>
-              <Space size={8} wrap>
-                <Tag color={STATUS_COLOR[getQuestStatus(openQuest)]}>{STATUS_LABEL[getQuestStatus(openQuest)]}</Tag>
-                {openQuest.reward ? (
-                  <Tag color="gold" icon={<AppIcon name="reward" />}>
-                    {openQuest.reward}
-                  </Tag>
-                ) : null}
-                {isGM && (
-                  <Space size={6}>
-                    <span style={mutedSm}>Publish:</span>
-                    <Switch
-                      checked={isQuestVisible(openQuest)}
-                      onChange={() => void toggleVisible(openQuest)}
-                      size="small"
-                    />
-                  </Space>
-                )}
-              </Space>
-
-              <Divider style={dividerSm} />
-
-              <Card density="dense" title="Description">
-                <Typography.Paragraph style={S.drawerDescription}>
-                  {openQuest.description?.trim() || 'No description.'}
-                </Typography.Paragraph>
-              </Card>
-
-              {citiesLoading ? (
-                <Spinner />
-              ) : questCities[openQuest.id]?.length ? (
-                <Card density="dense" title={<IconLabel icon="location">Cities</IconLabel>}>
-                  <Space size={6} wrap>
-                    {questCities[openQuest.id].map((city) => (
-                      <Tag color="geekblue" key={city.id}>
-                        {city.name}
-                        {city.region ? ` - ${city.region}` : ''}
-                      </Tag>
-                    ))}
-                  </Space>
-                </Card>
-              ) : null}
-
-              <Typography.Text style={S.drawerTimestamp} type="secondary">
-                Created at: {formatDateTime(openQuest.createdAt)}
-                {'  ·  '}
-                Updated: {formatDateTime(openQuest.updatedAt)}
-              </Typography.Text>
-            </S.DrawerSectionStack>
-          ),
-        },
-        ...(isGM
-          ? [
-              {
-                key: 'edit',
-                label: <IconLabel icon="edit">Edit</IconLabel>,
-                children: (
-                  <S.DrawerSectionStack>
-                    <Card density="dense" title="Quest Data">
-                      <Space orientation="vertical" size={10} style={w100}>
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Title
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditTitle(event.target.value)}
-                            placeholder="Quest title"
-                            value={editTitle}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Status
-                          </Typography.Text>
-                          <Select
-                            onChange={(value) => setEditStatus(value as QuestStatus)}
-                            options={statusOptions}
-                            style={w100}
-                            value={editStatus}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Description
-                          </Typography.Text>
-                          <TextArea
-                            onChange={(event) => setEditDescription(event.target.value)}
-                            placeholder="Quest description"
-                            rows={8}
-                            value={editDescription}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Reward
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditReward(event.target.value)}
-                            placeholder="Reward (optional)"
-                            value={editReward}
-                          />
-                        </div>
-                      </Space>
-                    </Card>
-
-                    <Card density="dense" title="Visibility">
-                      <Space style={spaceBetween}>
-                        <div>
-                          <Typography.Text>Visible to players</Typography.Text>
-                          <br />
-                          <Typography.Text style={textSm} type="secondary">
-                            Hidden quests are only visible to the GM.
-                          </Typography.Text>
-                        </div>
-                        <Switch
-                          checked={isQuestVisible(openQuest)}
-                          checkedChildren={<EyeOutlined />}
-                          onChange={() => void toggleVisible(openQuest)}
-                          unCheckedChildren={<EyeInvisibleOutlined />}
-                        />
-                      </Space>
-                    </Card>
-
-                    <TagSelect entityId={openQuest.id} entityType="quest" />
-
-                    <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
-                      Save Changes
-                    </Button>
-                  </S.DrawerSectionStack>
-                ),
-              },
-            ]
-          : []),
-      ]
-    : [];
-
-  const detailDrawer =
-    openQuest && !mobileOnly ? (
-      <Drawer
-        extra={
-          isGM ? (
-            <Space>
-              <Popconfirm
-                cancelText="Cancel"
-                okText="Remove"
-                onConfirm={() => void removeCurrentQuest()}
-                title="Remove this quest permanently?"
-              >
-                <Button danger icon={<DeleteOutlined />} size="small">
-                  Remove
-                </Button>
-              </Popconfirm>
-              {drawerTab === 'edit' && (
-                <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
-                  Save
-                </Button>
-              )}
-            </Space>
-          ) : null
-        }
-        onClose={closeQuestPanels}
-        open
-        size={640}
-        title={
-          <Space size={8} wrap>
-            <span style={S.drawerTitleText}>{openQuest.title}</span>
-            <Tag color={STATUS_COLOR[getQuestStatus(openQuest)]}>{STATUS_LABEL[getQuestStatus(openQuest)]}</Tag>
-            <Tag color={isQuestVisible(openQuest) ? 'green' : 'red'}>
-              {isQuestVisible(openQuest) ? 'Visible' : 'Hidden'}
-            </Tag>
-            <Badge count={`#${openQuest.id}`} style={S.drawerBadge} />
-          </Space>
-        }
-      >
-        <Tabs activeKey={drawerTab} items={desktopDrawerItems} onChange={(key) => setDrawerTab(key as DrawerTab)} />
-      </Drawer>
-    ) : null;
+  const drawerTabs = useEditableDrawerTab(drawerTab, setDrawerTab, { view: 'view', edit: 'edit' }, openQuest?.id);
 
   const mobileMeta = (
     <S.MobileMetaTags>
@@ -954,49 +750,6 @@ export const QuestsPage: React.FC = () => {
     </>
   );
 
-  const mobileOverview = openQuest ? (
-    <S.MobileSectionStack>
-      <MobileCard compact title="Description">
-        <S.MobileBodyText>{openQuest.description?.trim() || 'No quest description recorded yet.'}</S.MobileBodyText>
-      </MobileCard>
-
-      {openQuest.reward ? (
-        <MobileCard compact title="Reward">
-          <S.MobileBodyText>{openQuest.reward}</S.MobileBodyText>
-        </MobileCard>
-      ) : null}
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Status</S.MobileDetailLabel>
-            <S.MobileDetailValue>{STATUS_LABEL[getQuestStatus(openQuest)]}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Visibility</S.MobileDetailLabel>
-            <S.MobileDetailValue>{isQuestVisible(openQuest) ? 'Visible' : 'Hidden'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Quest ID</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{openQuest.id}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Cities</S.MobileDetailLabel>
-            <S.MobileDetailValue>{questCities[openQuest.id]?.length ?? 0}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Created</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openQuest.createdAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Updated</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openQuest.updatedAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileCities = openQuest ? (
     citiesLoading ? (
       <MobileCard compact>
@@ -1012,7 +765,7 @@ export const QuestsPage: React.FC = () => {
       <MobileList>
         {questCities[openQuest.id].map((city) => (
           <MobileList.Item
-            description={city.description?.trim() || city.region || 'No city summary yet.'}
+            description={stripMarkdown(city.description) || city.region || 'No city summary yet.'}
             extra={
               city.region ? (
                 <AdmMobileTag fill="outline" round>
@@ -1031,13 +784,6 @@ export const QuestsPage: React.FC = () => {
 
   const mobileGM = openQuest ? (
     <S.MobileSectionStack>
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isQuestVisible(openQuest)} onChange={() => void toggleVisible(openQuest)} />
-        </S.MobileVisibilityRow>
-      </MobileCard>
-
       <MobileCard compact title="Quest data">
         <MobileForm>
           <MobileForm.Item label="Title">
@@ -1079,6 +825,185 @@ export const QuestsPage: React.FC = () => {
         </S.MobileDangerZone>
       </MobileCard>
     </S.MobileSectionStack>
+  ) : null;
+
+  const detailDrawer = openQuest ? (
+    <EntityDrawer
+      activeKey={drawerTabs.activeKey}
+      controls={[visibilityControl(isQuestVisible(openQuest), () => void toggleVisible(openQuest), 'quests')]}
+      createdAt={openQuest.createdAt}
+      extra={
+        isGM ? (
+          <Space>
+            <Popconfirm
+              cancelText="Cancel"
+              okText="Remove"
+              onConfirm={() => void removeCurrentQuest()}
+              title="Remove this quest permanently?"
+            >
+              <Button danger icon={<DeleteOutlined />} size="small">
+                Remove
+              </Button>
+            </Popconfirm>
+            {drawerTab === 'edit' && (
+              <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
+                Save
+              </Button>
+            )}
+          </Space>
+        ) : null
+      }
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          mobileChildren: mobileGM,
+          children: (
+            <S.DrawerSectionStack>
+              <Card density="dense" title="Quest Data">
+                <Space orientation="vertical" size={10} style={w100}>
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Title
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      placeholder="Quest title"
+                      value={editTitle}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Status
+                    </Typography.Text>
+                    <Select
+                      onChange={(value) => setEditStatus(value as QuestStatus)}
+                      options={statusOptions}
+                      style={w100}
+                      value={editStatus}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Description
+                    </Typography.Text>
+                    <TextArea
+                      onChange={(event) => setEditDescription(event.target.value)}
+                      placeholder="Quest description"
+                      rows={8}
+                      value={editDescription}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Reward
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditReward(event.target.value)}
+                      placeholder="Reward (optional)"
+                      value={editReward}
+                    />
+                  </div>
+                </Space>
+              </Card>
+
+              <Card density="dense" title="Visibility">
+                <Space style={spaceBetween}>
+                  <div>
+                    <Typography.Text>Visible to players</Typography.Text>
+                    <br />
+                    <Typography.Text style={textSm} type="secondary">
+                      Hidden quests are only visible to the GM.
+                    </Typography.Text>
+                  </div>
+                  <Switch
+                    checked={isQuestVisible(openQuest)}
+                    checkedChildren={<EyeOutlined />}
+                    onChange={() => void toggleVisible(openQuest)}
+                    unCheckedChildren={<EyeInvisibleOutlined />}
+                  />
+                </Space>
+              </Card>
+
+              <TagSelect entityId={openQuest.id} entityType="quest" />
+
+              <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
+                Save Changes
+              </Button>
+            </S.DrawerSectionStack>
+          ),
+        },
+      ]}
+      gmView={isGM}
+      onClose={closeQuestPanels}
+      onTabChange={drawerTabs.onTabChange}
+      open
+      overview={{
+        key: drawerTabs.overviewKey,
+        meta: (
+          <>
+            <Tag color={STATUS_COLOR[getQuestStatus(openQuest)]}>{STATUS_LABEL[getQuestStatus(openQuest)]}</Tag>
+            {openQuest.reward ? (
+              <Tag color="gold" icon={<AppIcon name="reward" />}>
+                {stripMarkdown(openQuest.reward)}
+              </Tag>
+            ) : null}
+          </>
+        ),
+        sections: [
+          { title: 'Description', text: openQuest.description, fallback: 'No description.' },
+          ...(openQuest.reward ? [{ title: 'Reward', text: openQuest.reward }] : []),
+        ],
+      }}
+      status={{ visible: isQuestVisible(openQuest) }}
+      tabs={[
+        {
+          key: 'cities',
+          label: <IconLabel icon="location">Cities</IconLabel>,
+          count: questCities[openQuest.id]?.length ?? 0,
+          children: citiesLoading ? (
+            <Spinner />
+          ) : questCities[openQuest.id]?.length ? (
+            <Space size={6} wrap>
+              {questCities[openQuest.id].map((city) => (
+                <Tag color="geekblue" key={city.id}>
+                  {city.name}
+                  {city.region ? ` - ${city.region}` : ''}
+                </Tag>
+              ))}
+            </Space>
+          ) : (
+            <Empty description="No cities linked to this quest yet." />
+          ),
+          mobileChildren: mobileCities,
+        },
+      ]}
+      title={openQuest.title}
+      updatedAt={openQuest.updatedAt}
+      mobileActiveKey={mobileSheetTab}
+      mobileFooter={
+        openQuest && isGM && mobileSheetTab === 'gm' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={resetEditForm}>
+                Reset
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onMobileTabChange={(key) => setMobileSheetTab(key as QuestSheetTab)}
+      subtitle={openQuest ? STATUS_LABEL[getQuestStatus(openQuest)] : undefined}
+    />
   ) : null;
 
   if (mobileOnly) {
@@ -1136,65 +1061,9 @@ export const QuestsPage: React.FC = () => {
               <S.MobileEmptyState>No quests found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileQuestsGrid>
-              {displayItems.map((quest) => {
-                const status = getQuestStatus(quest);
-                const cities = questCities[quest.id] ?? [];
-
-                return (
-                  <MobileCard compact key={quest.id}>
-                    <S.MobileQuestBody>
-                      <S.MobileQuestHeader>
-                        <S.MobileQuestIdentity>
-                          <S.MobileQuestTitle>{quest.title}</S.MobileQuestTitle>
-                          <S.MobileMetaTags>
-                            <AdmMobileTag color={MOBILE_STATUS_COLOR[status]} fill="outline" round>
-                              {STATUS_LABEL[status]}
-                            </AdmMobileTag>
-                            {isGM && viewMode === 'admin' ? (
-                              <AdmMobileTag color={isQuestVisible(quest) ? 'success' : 'warning'} fill="outline" round>
-                                {isQuestVisible(quest) ? 'Visible' : 'Hidden'}
-                              </AdmMobileTag>
-                            ) : null}
-                            {quest.reward ? (
-                              <AdmMobileTag color="warning" fill="outline" round>
-                                Reward
-                              </AdmMobileTag>
-                            ) : null}
-                            {cities.length ? (
-                              <AdmMobileTag fill="outline" round>
-                                {cities.length} cities
-                              </AdmMobileTag>
-                            ) : null}
-                          </S.MobileMetaTags>
-                        </S.MobileQuestIdentity>
-                      </S.MobileQuestHeader>
-
-                      <S.MobileQuestPreview>{getQuestPreview(quest)}</S.MobileQuestPreview>
-
-                      <S.MobileQuestActions>
-                        <AdmMobileButton block color="primary" onClick={() => openQuestSheet(quest, 'overview')}>
-                          Open quest
-                        </AdmMobileButton>
-                        <AdmMobileButton
-                          block
-                          fill="outline"
-                          onClick={() => openQuestSheet(quest, isGM && viewMode === 'admin' ? 'gm' : 'cities')}
-                        >
-                          {isGM && viewMode === 'admin' ? (
-                            <>
-                              <SetOutline fontSize={17} /> GM controls
-                            </>
-                          ) : (
-                            'Linked cities'
-                          )}
-                        </AdmMobileButton>
-                      </S.MobileQuestActions>
-                    </S.MobileQuestBody>
-                  </MobileCard>
-                );
-              })}
-            </S.MobileQuestsGrid>
+            <EntityCardGrid>
+              {displayItems.map((quest) => renderQuestCard(quest, () => openQuestSheet(quest, 'overview')))}
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -1258,53 +1127,7 @@ export const QuestsPage: React.FC = () => {
           </S.MobileCreateFields>
         </MobileFilterSheet>
 
-        <MobileEntitySheet
-          description={
-            openQuest
-              ? isGM
-                ? 'Overview, linked cities and GM controls for this quest.'
-                : 'Overview and linked campaign locations for this quest.'
-              : undefined
-          }
-          footer={
-            openQuest && isGM && mobileSheetTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetEditForm}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={closeQuestPanels}
-          subtitle={openQuest ? STATUS_LABEL[getQuestStatus(openQuest)] : undefined}
-          title={openQuest?.title ?? 'Quest'}
-          visible={Boolean(openQuest)}
-        >
-          {openQuest && isGM ? (
-            <MobileTabs
-              activeKey={mobileSheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileOverview },
-                { key: 'cities', title: `Cities (${questCities[openQuest.id]?.length ?? 0})`, children: mobileCities },
-                { key: 'gm', title: 'GM', children: mobileGM },
-              ]}
-              onChange={(key) => setMobileSheetTab(key as QuestSheetTab)}
-            />
-          ) : (
-            <S.MobileSectionStack>
-              {mobileOverview}
-              {mobileCities}
-            </S.MobileSectionStack>
-          )}
-        </MobileEntitySheet>
+        {detailDrawer}
 
         <MobileDialog
           actions={[

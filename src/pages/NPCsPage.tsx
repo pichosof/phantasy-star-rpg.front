@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import {
   Avatar,
   Divider,
@@ -13,7 +12,6 @@ import {
   Space,
   Switch,
   Tag,
-  Tooltip,
   Typography,
   Upload,
   message,
@@ -22,7 +20,6 @@ import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -47,7 +44,7 @@ import {
 import type { UploadProps } from 'antd';
 import type { UploadRequestOption as RcCustomRequestOptions } from '@rc-component/upload/lib/interface';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
-import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
@@ -64,7 +61,6 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
@@ -81,6 +77,9 @@ import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textSm, textMd, bold700, spaceBetween, dividerSm, tableWrap } from '@app/styles/styleUtils';
 import * as S from './NPCsPage.styles';
+
+import EntityDrawer, { visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type NpcViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -138,15 +137,6 @@ function getRoleMeta(role?: string | null): { color: string; hex: string } {
     if (key.includes(k)) return v;
   }
   return { color: 'default', hex: '#8c8c8c' };
-}
-
-function mobileRoleColor(role?: string | null): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
-  const color = getRoleMeta(role).color;
-  if (color === 'red' || color === 'volcano') return 'danger';
-  if (color === 'green') return 'success';
-  if (color === 'gold' || color === 'orange') return 'warning';
-  if (color === 'default') return 'default';
-  return 'primary';
 }
 
 function initials(name: string) {
@@ -501,254 +491,133 @@ type CardProps = {
 const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onToggleVisible }) => {
   const meta = getRoleMeta(npc.role);
   const vis = isVisible(npc);
-
   return (
-    <div
-      style={{
-        borderRadius: 10,
-        overflow: 'hidden',
-        background: 'var(--background-color, #fff)',
-        border: `1px solid ${gmMode && !vis ? '#ff4d4f40' : meta.hex + '40'}`,
-        boxShadow: gmMode && !vis ? 'none' : `0 2px 12px ${meta.hex}18, 0 1px 3px rgba(0,0,0,.08)`,
-        transition: 'box-shadow .2s, transform .15s',
-        opacity: gmMode && !vis ? 0.65 : 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-      onMouseEnter={(e) => {
-        if (!gmMode) (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = '';
-      }}
-    >
-      {/* Portrait */}
-      <div style={{ position: 'relative', height: 180, flexShrink: 0, overflow: 'hidden' }}>
-        {npc.imageUrl ? (
-          <img
-            src={resolveApiUrl(npc.imageUrl)}
-            alt={npc.imageAlt ?? npc.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: `linear-gradient(135deg, ${meta.hex}30 0%, ${meta.hex}10 100%)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Avatar
-              size={80}
-              style={{
-                background: meta.hex,
-                fontSize: 28,
-                fontWeight: 700,
-                boxShadow: `0 4px 16px ${meta.hex}60`,
-              }}
-            >
-              {initials(npc.name)}
-            </Avatar>
-          </div>
-        )}
-
-        {/* Role badge */}
-        {npc.role && (
-          <div style={{ position: 'absolute', top: 8, left: 8 }}>
-            <Tag
-              color={meta.color}
-              style={{
-                margin: 0,
-                fontSize: 11,
-                fontWeight: 600,
-                backdropFilter: 'blur(4px)',
-                background: meta.hex + 'dd',
-                border: 'none',
-                color: '#fff',
-              }}
-            >
-              {npc.role}
-            </Tag>
-          </div>
-        )}
-
-        {/* GM status badge */}
-        {gmMode && (
-          <div style={{ position: 'absolute', top: 8, right: 8 }}>
-            <Tooltip title={vis ? 'Visible' : 'Hidden'}>
-              <Tag
-                style={{ margin: 0, cursor: 'pointer', fontSize: 11 }}
-                color={vis ? 'green' : 'red'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleVisible();
-                }}
-              >
-                {vis ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-              </Tag>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '12px 14px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <Typography.Text strong style={{ fontSize: 15, lineHeight: 1.3 }}>
-          {npc.name}
-        </Typography.Text>
-
-        {npc.location && (
-          <Space size={4} style={{ color: '#8c8c8c', fontSize: 12 }}>
+    <EntityCard
+      actions={
+        gmMode ? (
+          <>
+            <Switch
+              checked={vis}
+              checkedChildren={<EyeOutlined />}
+              onChange={() => onToggleVisible()}
+              size="small"
+              unCheckedChildren={<EyeInvisibleOutlined />}
+            />
+            <Button onClick={onAdmin} size="small">
+              Admin
+            </Button>
+          </>
+        ) : null
+      }
+      cover={npc.imageUrl ? { src: resolveApiUrl(npc.imageUrl), alt: npc.imageAlt ?? npc.name } : null}
+      coverTags={
+        npc.role ? (
+          <Tag color={meta.color} style={{ margin: 0, fontWeight: 600 }}>
+            {npc.role}
+          </Tag>
+        ) : null
+      }
+      icon="npc"
+      label="NPC"
+      meta={
+        npc.location ? (
+          <Space size={4}>
             <EnvironmentOutlined />
             <span>{npc.location}</span>
           </Space>
-        )}
-
-        {npc.description && (
-          <Typography.Paragraph
-            style={{ margin: 0, fontSize: 12, color: '#595959', lineHeight: 1.5 }}
-            ellipsis={{ rows: 3 }}
-          >
-            {npc.description}
-          </Typography.Paragraph>
-        )}
-
-        {/* accent line */}
-        <div style={{ height: 2, borderRadius: 2, background: meta.hex + '40', marginTop: 'auto', paddingTop: 8 }} />
-
-        {/* Footer actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-          {!gmMode ? (
-            <Button size="small" type="link" style={{ padding: 0, height: 'auto', color: meta.hex }} onClick={onView}>
-              View profile →
-            </Button>
-          ) : (
-            <Space size={6}>
-              <Button
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAdmin();
-                }}
-              >
-                Admin
-              </Button>
-              <Switch
-                size="small"
-                checked={vis}
-                onChange={() => onToggleVisible()}
-                checkedChildren={<EyeOutlined />}
-                unCheckedChildren={<EyeInvisibleOutlined />}
-              />
-            </Space>
-          )}
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: meta.hex,
-              boxShadow: `0 0 6px ${meta.hex}`,
-            }}
-          />
-        </div>
-      </div>
-    </div>
+        ) : null
+      }
+      onClick={onView}
+      openText="View profile"
+      seed={npc.id}
+      status={gmMode ? { visible: vis } : undefined}
+      summary={npc.description}
+      summaryFallback="No information available."
+      title={npc.name}
+    />
   );
 };
 
 // ── Detail Drawer ─────────────────────────────────────────────────────────────
 
-type DetailProps = { open: boolean; npc: Npc | null; onClose: () => void; isGM?: boolean };
+type DetailProps = {
+  open: boolean;
+  npc: Npc | null;
+  onClose: () => void;
+  isGM?: boolean;
+  /** GM panel view: shows status tags and the GM Actions tab. */
+  gmView?: boolean;
+  onToggleVisible?: (npc: Npc) => void;
+  /** Phone sheet: tab state, footer and the touch versions of the GM tabs. */
+  mobile?: {
+    subtitle?: React.ReactNode;
+    footer?: React.ReactNode;
+    activeKey: string;
+    onTabChange: (key: string) => void;
+    sheet: React.ReactNode;
+    gm: React.ReactNode;
+  };
+};
 
-const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) => {
-  const { mobileOnly } = useResponsive();
-  const meta = npc ? getRoleMeta(npc.role) : { color: 'default' as const, hex: '#8c8c8c' };
+const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM, gmView, onToggleVisible, mobile }) => {
+  if (!npc) return null;
+  const meta = getRoleMeta(npc.role);
 
   return (
-    <Drawer
-      open={open}
+    <EntityDrawer
+      controls={onToggleVisible ? [visibilityControl(isVisible(npc), () => onToggleVisible(npc), 'NPCs')] : []}
+      createdAt={npc.createdAt}
+      gmView={isGM && gmView}
       onClose={onClose}
-      size={mobileOnly ? '100%' : 520}
-      styles={{ body: S.detailDrawerBody }}
-      title={null}
-      closable={false}
-    >
-      {npc && (
-        <>
-          {/* Hero portrait */}
-          <div style={S.detailHeroShell}>
-            {npc.imageUrl ? (
-              <div style={S.detailHeroImageWrap}>
-                <ExpandableImage alt={npc.imageAlt ?? npc.name} src={resolveApiUrl(npc.imageUrl)}>
-                  <img src={resolveApiUrl(npc.imageUrl)} alt={npc.imageAlt ?? npc.name} style={S.detailHeroImage} />
-                </ExpandableImage>
-              </div>
-            ) : (
-              <div style={S.detailHeroFallback(meta.hex)}>
-                <Avatar size={100} style={S.detailHeroAvatar(meta.hex)}>
-                  {initials(npc.name)}
-                </Avatar>
-              </div>
-            )}
-            {/* Close button */}
-            <Button size="small" style={S.detailCloseButton} icon={<AppIcon name="close" />} onClick={onClose} />
-            {/* Gradient fade */}
-            <div style={S.detailHeroFade} />
-          </div>
-
-          {/* Content */}
-          <div style={S.detailContent}>
-            <Space orientation="vertical" size={16} style={w100}>
-              <Space orientation="vertical" size={4} style={S.detailHeaderStack}>
-                <Typography.Title level={3} style={m0}>
-                  {npc.name}
-                </Typography.Title>
-                <Space size={8} wrap>
-                  {npc.role && (
-                    <Tag color={meta.color} style={S.detailRoleTag(meta.hex)}>
-                      {npc.role}
-                    </Tag>
-                  )}
-                  {npc.location && (
-                    <Space size={4} style={S.detailLocationMeta}>
-                      <EnvironmentOutlined />
-                      <span>{npc.location}</span>
-                    </Space>
-                  )}
-                </Space>
-              </Space>
-
-              <div style={S.detailAccent(meta.hex)} />
-
-              {npc.description ? (
-                <Card density="dense" title="Profile">
-                  <Typography.Paragraph style={S.detailParagraph}>{npc.description}</Typography.Paragraph>
-                </Card>
-              ) : (
-                <Typography.Text type="secondary">No information available.</Typography.Text>
+      open={open}
+      overview={{
+        label: 'Profile',
+        image: { src: npc.imageUrl ? resolveApiUrl(npc.imageUrl) : null, alt: npc.imageAlt ?? npc.name },
+        meta:
+          npc.role || npc.location ? (
+            <>
+              {npc.role && (
+                <Tag color={meta.color} style={S.detailRoleTag(meta.hex)}>
+                  {npc.role}
+                </Tag>
               )}
-
-              {isGM && npc.sheetUrl && (
-                <Card density="dense" title="Character Sheet">
-                  <NpcSheetViewer sheetUrl={npc.sheetUrl} />
-                </Card>
-              )}
-            </Space>
-          </div>
-        </>
-      )}
-    </Drawer>
+              {npc.location && <Tag icon={<EnvironmentOutlined />}>{npc.location}</Tag>}
+            </>
+          ) : null,
+        sections: [{ title: 'Profile', text: npc.description, fallback: 'No information available.' }],
+      }}
+      status={{ visible: isVisible(npc) }}
+      gmTabs={mobile ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: mobile.gm }] : []}
+      mobileActiveKey={mobile ? (mobile.activeKey === 'profile' ? 'overview' : mobile.activeKey) : undefined}
+      mobileFooter={mobile?.footer}
+      onMobileTabChange={mobile ? (k) => mobile.onTabChange(k === 'overview' ? 'profile' : k) : undefined}
+      subtitle={mobile?.subtitle}
+      tabs={
+        isGM && (npc.sheetUrl || mobile)
+          ? [
+              {
+                key: 'sheet',
+                label: mobile ? 'Sheet' : 'Character Sheet',
+                children: (
+                  <Card density="comfy" title="Character Sheet">
+                    {npc.sheetUrl ? <NpcSheetViewer sheetUrl={npc.sheetUrl} /> : null}
+                  </Card>
+                ),
+                mobileChildren: mobile?.sheet,
+              },
+            ]
+          : []
+      }
+      title={npc.name}
+      updatedAt={(npc as { updatedAt?: string }).updatedAt}
+    />
   );
 };
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export const NPCsPage: React.FC = () => {
-  const { mobileOnly, isTablet } = useResponsive();
+  const { mobileOnly } = useResponsive();
   const isGM = useGMMode();
   const initialViewModeSyncedRef = React.useRef(false);
   const imageInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -926,7 +795,6 @@ export const NPCsPage: React.FC = () => {
 
   const detailNpc = npcs.find((x) => x.id === openId) ?? null;
   const adminNpc = npcs.find((x) => x.id === adminId) ?? null;
-  const cols = mobileOnly ? 1 : isTablet ? 2 : 3;
 
   React.useEffect(() => {
     if (!detailNpc) return;
@@ -1035,70 +903,6 @@ export const NPCsPage: React.FC = () => {
     </>
   );
 
-  const mobileNpcProfile = detailNpc ? (
-    <S.MobileSectionStack>
-      <MobileCard compact>
-        <S.MobileNpcHero $accent={getRoleMeta(detailNpc.role).hex}>
-          {detailNpc.imageUrl ? (
-            <ExpandableImage alt={detailNpc.imageAlt ?? detailNpc.name} src={resolveApiUrl(detailNpc.imageUrl)}>
-              <S.MobileNpcHeroImage
-                alt={detailNpc.imageAlt ?? detailNpc.name}
-                src={resolveApiUrl(detailNpc.imageUrl)}
-              />
-            </ExpandableImage>
-          ) : (
-            <S.MobileNpcFallback $accent={getRoleMeta(detailNpc.role).hex}>
-              <span>{initials(detailNpc.name)}</span>
-            </S.MobileNpcFallback>
-          )}
-        </S.MobileNpcHero>
-        <S.MobileNpcHeroInfo>
-          <S.MobileNpcTitle>{detailNpc.name}</S.MobileNpcTitle>
-          <S.MobileMetaTags>
-            {detailNpc.role ? (
-              <AdmMobileTag color={mobileRoleColor(detailNpc.role)} fill="outline" round>
-                {detailNpc.role}
-              </AdmMobileTag>
-            ) : null}
-            {detailNpc.location ? (
-              <AdmMobileTag fill="outline" round>
-                {detailNpc.location}
-              </AdmMobileTag>
-            ) : null}
-            {isGM ? (
-              <AdmMobileTag color={isVisible(detailNpc) ? 'success' : 'danger'} fill="outline" round>
-                {isVisible(detailNpc) ? 'Visible' : 'Hidden'}
-              </AdmMobileTag>
-            ) : null}
-          </S.MobileMetaTags>
-        </S.MobileNpcHeroInfo>
-      </MobileCard>
-
-      <MobileCard compact title="Profile">
-        <S.MobileBodyText>{detailNpc.description?.trim() || 'No information available.'}</S.MobileBodyText>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Role</S.MobileDetailLabel>
-            <S.MobileDetailValue>{detailNpc.role || 'Unknown'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Location</S.MobileDetailLabel>
-            <S.MobileDetailValue>{detailNpc.location || 'Unknown'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          {isGM ? (
-            <S.MobileDetailItem>
-              <S.MobileDetailLabel>Sheet</S.MobileDetailLabel>
-              <S.MobileDetailValue>{detailNpc.sheetUrl ? 'Available' : 'Not attached yet'}</S.MobileDetailValue>
-            </S.MobileDetailItem>
-          ) : null}
-        </S.MobileDetailGrid>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileNpcSheet = detailNpc ? (
     <S.MobileSectionStack>
       {detailNpc.sheetUrl ? (
@@ -1154,13 +958,6 @@ export const NPCsPage: React.FC = () => {
             />
           </MobileForm.Item>
         </MobileForm>
-      </MobileCard>
-
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isVisible(detailNpc)} onChange={() => void toggleVisible(detailNpc)} />
-        </S.MobileVisibilityRow>
       </MobileCard>
 
       <MobileCard compact title="Media">
@@ -1256,74 +1053,24 @@ export const NPCsPage: React.FC = () => {
               <S.MobileEmptyState>No NPCs found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileNpcsGrid>
-              {filtered.map((npc) => {
-                const meta = getRoleMeta(npc.role);
-                const gmPanel = isGM && viewMode === 'admin';
-
-                return (
-                  <MobileCard compact key={npc.id}>
-                    <S.MobileNpcCardBody>
-                      <S.MobileNpcCardMedia $accent={meta.hex}>
-                        {npc.imageUrl ? (
-                          <S.MobileNpcCardImage alt={npc.imageAlt ?? npc.name} src={resolveApiUrl(npc.imageUrl)} />
-                        ) : (
-                          <S.MobileNpcFallback $accent={meta.hex}>
-                            <span>{initials(npc.name)}</span>
-                          </S.MobileNpcFallback>
-                        )}
-                      </S.MobileNpcCardMedia>
-
-                      <S.MobileNpcTitle>{npc.name}</S.MobileNpcTitle>
-                      <S.MobileMetaTags>
-                        {npc.role ? (
-                          <AdmMobileTag color={mobileRoleColor(npc.role)} fill="outline" round>
-                            {npc.role}
-                          </AdmMobileTag>
-                        ) : null}
-                        {npc.location ? (
-                          <AdmMobileTag fill="outline" round>
-                            {npc.location}
-                          </AdmMobileTag>
-                        ) : null}
-                        {gmPanel ? (
-                          <AdmMobileTag color={isVisible(npc) ? 'success' : 'danger'} fill="outline" round>
-                            {isVisible(npc) ? 'Visible' : 'Hidden'}
-                          </AdmMobileTag>
-                        ) : null}
-                      </S.MobileMetaTags>
-
-                      <S.MobileNpcPreview>{npc.description?.trim() || 'No information available.'}</S.MobileNpcPreview>
-
-                      <S.MobileActionGrid>
-                        <AdmMobileButton
-                          block
-                          color="primary"
-                          onClick={() => {
-                            setNpcSheetTab('profile');
-                            setOpenId(npc.id);
-                          }}
-                        >
-                          Open profile
-                        </AdmMobileButton>
-                        {gmPanel ? (
-                          <AdmMobileButton
-                            block
-                            fill="outline"
-                            onClick={() => {
-                              setNpcSheetTab('gm');
-                              setOpenId(npc.id);
-                            }}
-                          >
-                            <SetOutline fontSize={17} /> GM controls
-                          </AdmMobileButton>
-                        ) : null}
-                      </S.MobileActionGrid>
-                    </S.MobileNpcCardBody>
-                  </MobileCard>
-                );
-              })}
-            </S.MobileNpcsGrid>
+            <EntityCardGrid>
+              {filtered.map((n) => (
+                <NpcCodexCard
+                  gmMode={isGM && viewMode === 'admin'}
+                  key={n.id}
+                  npc={n}
+                  onAdmin={() => {
+                    setNpcSheetTab('gm');
+                    setOpenId(n.id);
+                  }}
+                  onToggleVisible={() => void toggleVisible(n)}
+                  onView={() => {
+                    setNpcSheetTab('profile');
+                    setOpenId(n.id);
+                  }}
+                />
+              ))}
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -1412,74 +1159,66 @@ export const NPCsPage: React.FC = () => {
           </S.MobileSectionStack>
         </MobileFilterSheet>
 
-        <MobileEntitySheet
-          description={detailNpc ? 'Profile, sheet and GM controls for this NPC.' : undefined}
-          footer={
-            detailNpc && isGM && npcSheetTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveMobileNpc()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
+        <NpcDetailDrawer
+          gmView={isGM}
+          isGM={isGM}
+          mobile={{
+            subtitle: detailNpc?.role ?? detailNpc?.location ?? undefined,
+            footer:
+              detailNpc && isGM && npcSheetTab === 'gm' ? (
+                <MobileActionBar
+                  primary={
+                    <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveMobileNpc()}>
+                      Save changes
+                    </AdmMobileButton>
+                  }
+                  secondary={
+                    <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
+                      Reset
+                    </AdmMobileButton>
+                  }
+                  sticky={false}
+                />
+              ) : undefined,
+            activeKey: npcSheetTab,
+            onTabChange: (key) => setNpcSheetTab(key as NpcSheetTab),
+            sheet: mobileNpcSheet,
+            gm: mobileNpcGM,
+          }}
+          npc={detailNpc}
           onClose={() => {
             setOpenId(null);
             setNpcSheetTab('profile');
           }}
-          subtitle={detailNpc?.role ?? detailNpc?.location ?? undefined}
-          title={detailNpc?.name ?? 'NPC'}
-          visible={Boolean(detailNpc)}
-        >
-          {detailNpc && isGM ? (
-            <MobileTabs
-              activeKey={npcSheetTab}
-              items={[
-                { key: 'profile', title: 'Profile', children: mobileNpcProfile },
-                { key: 'sheet', title: 'Sheet', children: mobileNpcSheet },
-                { key: 'gm', title: 'GM', children: mobileNpcGM },
-              ]}
-              onChange={(key) => setNpcSheetTab(key as NpcSheetTab)}
-            />
-          ) : (
-            mobileNpcProfile
-          )}
-
-          <input
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void uploadMobileNpcImage(file);
-                event.currentTarget.value = '';
-              }
-            }}
-            ref={imageInputRef}
-            type="file"
-          />
-          <input
-            accept="application/pdf"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void uploadMobileNpcSheet(file);
-                event.currentTarget.value = '';
-              }
-            }}
-            ref={sheetInputRef}
-            type="file"
-          />
-        </MobileEntitySheet>
+          onToggleVisible={(n) => void toggleVisible(n)}
+          open={Boolean(detailNpc)}
+        />
+        <input
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void uploadMobileNpcImage(file);
+              event.currentTarget.value = '';
+            }
+          }}
+          ref={imageInputRef}
+          type="file"
+        />
+        <input
+          accept="application/pdf"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void uploadMobileNpcSheet(file);
+              event.currentTarget.value = '';
+            }
+          }}
+          ref={sheetInputRef}
+          type="file"
+        />
 
         <MobileEntitySheet
           description="Create the NPC now, then add portrait, PDF and tags from GM controls."
@@ -1868,13 +1607,7 @@ export const NPCsPage: React.FC = () => {
           />
         </Card>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gap: 16,
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          }}
-        >
+        <EntityCardGrid>
           {filtered.map((n) => (
             <NpcCodexCard
               key={n.id}
@@ -1888,11 +1621,18 @@ export const NPCsPage: React.FC = () => {
               onToggleVisible={() => void toggleVisible(n)}
             />
           ))}
-        </div>
+        </EntityCardGrid>
       )}
 
       {/* ── Drawers — always mounted, driven by open prop ── */}
-      <NpcDetailDrawer open={openId !== null} npc={detailNpc} onClose={() => setOpenId(null)} isGM={isGM} />
+      <NpcDetailDrawer
+        gmView={viewMode === 'admin'}
+        isGM={isGM}
+        npc={detailNpc}
+        onClose={() => setOpenId(null)}
+        onToggleVisible={(n) => void toggleVisible(n)}
+        open={openId !== null}
+      />
       <NpcAdminDrawer
         open={adminOpen}
         npc={adminNpc}

@@ -43,18 +43,16 @@ import {
 import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
-import { m0, w100, textXs, textSm, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
+import { m0, w100, textSm, spaceBetween, dividerSm, dividerMd } from '@app/styles/styleUtils';
 import {
   MobileActionBar,
   MobileCard,
   MobileDialog,
-  MobileEntitySheet,
   MobileFilterSheet,
   MobileForm,
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 
 import {
@@ -84,6 +82,9 @@ import { resolveApiUrl } from '@app/api/http.api';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './MapPage.styles';
+import RichText from '@app/components/common/RichText/RichText';
+import EntityDrawer from '@app/components/common/EntityDrawer/EntityDrawer';
+import { Card } from '@app/components/common/Card/Card';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -113,13 +114,6 @@ function parseCoordinates(s?: string | null): { u: number; v: number } | null {
   const [u, v] = parts;
   if (u < 0 || u > 1 || v < 0 || v > 1) return null;
   return { u, v };
-}
-
-function formatDate(v?: string | null) {
-  if (!v) return '-';
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString();
 }
 
 function isCityVisible(c: City) {
@@ -289,9 +283,9 @@ const WorldAdminDrawer: React.FC<WorldAdminProps> = ({
                         </Space>
                       </Space>
                       {w.description && (
-                        <Typography.Text type="secondary" style={S.worldDescription}>
-                          {w.description}
-                        </Typography.Text>
+                        <Typography.Paragraph type="secondary" style={S.worldDescription}>
+                          <RichText>{w.description}</RichText>
+                        </Typography.Paragraph>
                       )}
                       {w.imageUrl && (
                         <div style={S.worldThumbWrap}>
@@ -917,6 +911,394 @@ export default function MapPage() {
     );
   }
 
+  const mobileCityGM = openCity ? (
+    <>
+      <S.MobileSheetStack>
+        <MobileForm>
+          <MobileForm.Item label="Name">
+            <AdmMobileInput value={editCityName} onChange={setEditCityName} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Region">
+            <AdmMobileInput value={editCityRegion} onChange={setEditCityRegion} />
+          </MobileForm.Item>
+          <MobileForm.Item label="Description">
+            <AdmMobileTextArea autoSize={{ minRows: 4, maxRows: 8 }} value={editCityDesc} onChange={setEditCityDesc} />
+          </MobileForm.Item>
+        </MobileForm>
+        <MobileActionBar
+          primary={
+            <AdmMobileButton block color="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
+              Save
+            </AdmMobileButton>
+          }
+          secondary={
+            <AdmMobileButton block color="danger" fill="outline" onClick={() => confirmDeleteCity(openCity)}>
+              Delete
+            </AdmMobileButton>
+          }
+          sticky={false}
+        />
+        <MobileCard compact>
+          <S.MobileSheetStack>
+            <MobileForm>
+              <S.MobileControlGrid>
+                <MobileForm.Item label="Visible to players">
+                  <AdmMobileSwitch
+                    checked={isCityVisible(openCity)}
+                    checkedText={<EyeOutline />}
+                    uncheckedText={<EyeInvisibleOutline />}
+                    onChange={async (value) => {
+                      await setCityVisible(openCity.id, value);
+                      setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, visible: value } : c)));
+                    }}
+                  />
+                </MobileForm.Item>
+                <MobileForm.Item label="Discovered">
+                  <AdmMobileSwitch
+                    checked={openCity.discovered === true}
+                    onChange={async (value) => {
+                      await setCityDiscovered(openCity.id, value);
+                      setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, discovered: value } : c)));
+                    }}
+                  />
+                </MobileForm.Item>
+              </S.MobileControlGrid>
+            </MobileForm>
+            <AdmMobileButton
+              block
+              color="primary"
+              fill="outline"
+              onClick={() => {
+                setPickingCityId(openCity.id);
+                setPickingDungeonId(null);
+                setOpenCityId(null);
+                setMeasureMode(false);
+                message.info('Tap on the map to position this city.');
+              }}
+            >
+              <LocationFill /> Reposition on map
+            </AdmMobileButton>
+            {openCity.coordinates && (
+              <AdmMobileButton block color="danger" fill="outline" onClick={() => confirmClearCoords(openCity)}>
+                Remove from map
+              </AdmMobileButton>
+            )}
+          </S.MobileSheetStack>
+        </MobileCard>
+        <MobileCard compact>
+          <S.MobileSheetStack>
+            {openCity.imageUrl ? (
+              <div style={S.drawerImageWrap(220)}>
+                <img
+                  src={resolveApiUrl(openCity.imageUrl)}
+                  alt={openCity.imageAlt ?? openCity.name}
+                  style={S.drawerImage(220)}
+                />
+              </div>
+            ) : (
+              <S.MobileWorldDescription>No image.</S.MobileWorldDescription>
+            )}
+            <MobileForm>
+              <MobileForm.Item label="Alt text">
+                <AdmMobileInput value={editCityImgAlt} onChange={setEditCityImgAlt} />
+              </MobileForm.Item>
+            </MobileForm>
+            <Upload {...cityImageUploadProps}>
+              <AdmMobileButton block fill="outline">
+                <PictureOutline /> {openCity.imageUrl ? 'Change image' : 'Upload image'}
+              </AdmMobileButton>
+            </Upload>
+          </S.MobileSheetStack>
+        </MobileCard>
+      </S.MobileSheetStack>
+    </>
+  ) : null;
+
+  const mapCityDrawer = openCity ? (
+    <EntityDrawer
+      createdAt={openCity.createdAt}
+      gmTabs={
+        mobileOnly
+          ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: mobileCityGM }]
+          : [
+              {
+                key: 'controls',
+                label: 'GM Actions',
+                children: (
+                  <Card density="dense" title="Controls">
+                    <Space orientation="vertical" size={16} style={w100}>
+                      {/* Visible */}
+                      <Space style={spaceBetween}>
+                        <div>
+                          <Typography.Text>Visible to players</Typography.Text>
+                          <br />
+                          <Typography.Text type="secondary" style={textSm}>
+                            Hidden cities do not appear on the players&apos; map.
+                          </Typography.Text>
+                        </div>
+                        <Switch
+                          checked={isCityVisible(openCity)}
+                          checkedChildren={<EyeOutlined />}
+                          unCheckedChildren={<EyeInvisibleOutlined />}
+                          onChange={async (v) => {
+                            await setCityVisible(openCity.id, v);
+                            setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, visible: v } : c)));
+                          }}
+                        />
+                      </Space>
+                      {/* Discovered */}
+                      <Space style={spaceBetween}>
+                        <div>
+                          <Typography.Text>Discovered</Typography.Text>
+                          <br />
+                          <Typography.Text type="secondary" style={textSm}>
+                            Unlocks description, image and lores for the players.
+                          </Typography.Text>
+                        </div>
+                        <Switch
+                          checked={openCity.discovered === true}
+                          onChange={async (v) => {
+                            await setCityDiscovered(openCity.id, v);
+                            setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, discovered: v } : c)));
+                          }}
+                        />
+                      </Space>
+                      <Divider style={dividerSm} />
+                      {/* Map position */}
+                      <Typography.Text strong>Map position</Typography.Text>
+                      <Space wrap>
+                        <Button
+                          type="primary"
+                          size="small"
+                          onClick={() => {
+                            setPickingCityId(openCity.id);
+                            message.info('Click on the map to position.');
+                          }}
+                        >
+                          Reposition
+                        </Button>
+                        {openCity.coordinates && (
+                          <Button size="small" danger onClick={() => confirmClearCoords(openCity)}>
+                            Remove from map
+                          </Button>
+                        )}
+                      </Space>
+                      {openCity.coordinates && (
+                        <Typography.Text type="secondary" style={textSm}>
+                          Coords: {openCity.coordinates}
+                        </Typography.Text>
+                      )}
+                    </Space>
+                  </Card>
+                ),
+              },
+              {
+                key: 'admin',
+                label: <IconLabel icon="edit">Edit</IconLabel>,
+                children: (
+                  <Form layout="vertical">
+                    <Form.Item label="Name" required>
+                      <Input value={editCityName} onChange={(e) => setEditCityName(e.target.value)} />
+                    </Form.Item>
+                    <Form.Item label="Region">
+                      <Input
+                        value={editCityRegion}
+                        onChange={(e) => setEditCityRegion(e.target.value)}
+                        placeholder="Ex: Northern Dunes, East Coast…"
+                      />
+                    </Form.Item>
+                    <Form.Item label="Description">
+                      <Input.TextArea
+                        rows={5}
+                        value={editCityDesc}
+                        onChange={(e) => setEditCityDesc(e.target.value)}
+                        placeholder="Descriptive text for the city…"
+                      />
+                    </Form.Item>
+                    <Space>
+                      <Button type="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
+                        Save
+                      </Button>
+                      <Button danger onClick={() => confirmDeleteCity(openCity)}>
+                        Delete city
+                      </Button>
+                    </Space>
+                  </Form>
+                ),
+              },
+              {
+                key: 'image',
+                label: <IconLabel icon="image">Image</IconLabel>,
+                children: (
+                  <Space orientation="vertical" size={12} style={w100}>
+                    {openCity.imageUrl ? (
+                      <div style={S.drawerImageWrap(220)}>
+                        <img
+                          src={resolveApiUrl(openCity.imageUrl)}
+                          alt={openCity.imageAlt ?? openCity.name}
+                          style={S.drawerImage(220)}
+                        />
+                      </div>
+                    ) : (
+                      <Typography.Text type="secondary">No image.</Typography.Text>
+                    )}
+                    <Form.Item label="Alt text" style={S.imageAltFormItem}>
+                      <Input
+                        value={editCityImgAlt}
+                        onChange={(e) => setEditCityImgAlt(e.target.value)}
+                        placeholder={openCity.name}
+                      />
+                    </Form.Item>
+                    <Upload {...cityImageUploadProps}>
+                      <Button icon={<PictureOutlined />}>{openCity.imageUrl ? 'Change image' : 'Upload image'}</Button>
+                    </Upload>
+                  </Space>
+                ),
+              },
+            ]
+      }
+      gmView={isGM}
+      onClose={() => setOpenCityId(null)}
+      open={!!openCity}
+      overview={{
+        image:
+          isGM || openCity.discovered
+            ? {
+                src: openCity.imageUrl ? resolveApiUrl(openCity.imageUrl) : null,
+                alt: openCity.imageAlt ?? openCity.name,
+              }
+            : null,
+        meta: openCity.region ? <Tag>{openCity.region}</Tag> : null,
+        sections: [{ title: 'Description', text: openCity.description, fallback: 'No description.' }],
+        unavailable: isGM || openCity.discovered ? null : 'Information unavailable.',
+      }}
+      status={{ visible: isCityVisible(openCity), discovered: openCity.discovered === true }}
+      tabs={[
+        {
+          key: 'lores',
+          label: 'Lores',
+          count: cityLores.length,
+          children: (
+            <>
+              {!isGM && !openCity.discovered ? (
+                <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
+              ) : linksLoading ? (
+                <Spin />
+              ) : !cityLores.length ? (
+                <Empty description="No lores linked." />
+              ) : (
+                <S.LinkedGrid>
+                  {cityLores.map((l) => (
+                    <S.LinkedCard key={l.id}>
+                      <Space wrap size={8}>
+                        <Typography.Text strong>{l.title}</Typography.Text>
+                        {l.category ? <Tag>{l.category}</Tag> : <Tag>(no category)</Tag>}
+                      </Space>
+                      <RichText fallback="—">{l.content}</RichText>
+                    </S.LinkedCard>
+                  ))}
+                </S.LinkedGrid>
+              )}
+            </>
+          ),
+        },
+        {
+          key: 'quests',
+          label: 'Quests',
+          count: cityQuests.length,
+          children: (
+            <>
+              {!isGM && !openCity.discovered ? (
+                <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
+              ) : linksLoading ? (
+                <Spin />
+              ) : !cityQuests.length ? (
+                <Empty description="No quests linked." />
+              ) : (
+                <S.LinkedGrid>
+                  {cityQuests.map((q) => (
+                    <S.LinkedCard key={q.id}>
+                      <Space wrap size={8}>
+                        <Typography.Text strong>{q.title}</Typography.Text>
+                        {q.status && (
+                          <Tag color={q.status === 'active' ? 'blue' : q.status === 'completed' ? 'green' : 'red'}>
+                            {q.status}
+                          </Tag>
+                        )}
+                        {q.reward && <Tag color="gold">Reward</Tag>}
+                      </Space>
+                      <RichText fallback="—">{q.description}</RichText>
+                      {q.reward && <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>}
+                    </S.LinkedCard>
+                  ))}
+                </S.LinkedGrid>
+              )}
+            </>
+          ),
+        },
+      ]}
+      title={openCity.name}
+      updatedAt={openCity.updatedAt}
+      zIndex={drawerZIndex}
+    />
+  ) : null;
+
+  const mapDungeonDrawer = openDungeon ? (
+    <EntityDrawer
+      gmView={isGM}
+      onClose={() => setOpenDungeonId(null)}
+      open={!!openDungeon}
+      overview={{
+        meta: (
+          <>
+            {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
+            {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
+            <Tag>{openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}</Tag>
+          </>
+        ),
+        sections: [{ title: 'Description', text: openDungeon.description, fallback: 'No description.' }],
+        children: (
+          <>
+            {isGM && (
+              <Space wrap size={8}>
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() => {
+                    setPickingDungeonId(openDungeon.id);
+                    setOpenDungeonId(null);
+                    message.info('Click on the map to position.');
+                  }}
+                >
+                  Reposition
+                </Button>
+                {openDungeon.coordinates && (
+                  <Button
+                    size="small"
+                    danger
+                    onClick={async () => {
+                      await updateDungeon(openDungeon.id, { coordinates: null });
+                      setDungeons((prev) =>
+                        prev.map((d) => (d.id === openDungeon.id ? { ...d, coordinates: null } : d)),
+                      );
+                      setOpenDungeonId(null);
+                      message.success('Removed from map.');
+                    }}
+                  >
+                    Remove from map
+                  </Button>
+                )}
+              </Space>
+            )}
+          </>
+        ),
+      }}
+      status={{ visible: !!openDungeon.visible, discovered: !!openDungeon.discovered }}
+      title={openDungeon.name}
+      zIndex={drawerZIndex}
+    />
+  ) : null;
+
   if (mobileOnly) {
     const pickingLabel = pickingCity?.name ?? pickingDungeon?.name;
 
@@ -979,7 +1361,11 @@ export default function MapPage() {
           <S.MobileMapStack>
             <MobileCard compact>
               <S.MobileWorldTitle>{world.name}</S.MobileWorldTitle>
-              {world.description && <S.MobileWorldDescription>{world.description}</S.MobileWorldDescription>}
+              {world.description && (
+                <S.MobileWorldDescription as="div">
+                  <RichText>{world.description}</RichText>
+                </S.MobileWorldDescription>
+              )}
             </MobileCard>
 
             {pickingLabel && (
@@ -1279,276 +1665,9 @@ export default function MapPage() {
           </S.MobileSheetStack>
         </MobileFilterSheet>
 
-        <MobileEntitySheet
-          description={
-            openCity
-              ? isGM || openCity.discovered
-                ? openCity.region || 'Region not specified'
-                : 'Information unavailable until discovery.'
-              : undefined
-          }
-          onClose={() => setOpenCityId(null)}
-          title={openCity?.name ?? 'City'}
-          visible={!!openCity}
-        >
-          {openCity && (
-            <MobileTabs defaultActiveKey="details">
-              <MobileTabs.Tab key="details" title="Details">
-                <S.MobileSheetStack>
-                  <S.MobileMetaRow>
-                    {openCity.region && <AdmMobileTag fill="outline">{openCity.region}</AdmMobileTag>}
-                    {openCity.visible === false && isGM && (
-                      <AdmMobileTag color="danger" fill="outline">
-                        Hidden
-                      </AdmMobileTag>
-                    )}
-                    <AdmMobileTag color={openCity.discovered ? 'warning' : 'default'} fill="outline">
-                      {openCity.discovered ? 'Discovered' : 'Not discovered'}
-                    </AdmMobileTag>
-                  </S.MobileMetaRow>
-                  {openCity.imageUrl && (isGM || openCity.discovered) && (
-                    <div style={S.drawerImageWrap(220)}>
-                      <img
-                        src={resolveApiUrl(openCity.imageUrl)}
-                        alt={openCity.imageAlt ?? openCity.name}
-                        style={S.drawerImage(220)}
-                      />
-                    </div>
-                  )}
-                  <S.MobileWorldDescription>
-                    {isGM || openCity.discovered
-                      ? openCity.description || 'No description.'
-                      : 'Information unavailable.'}
-                  </S.MobileWorldDescription>
-                  <S.MobileWorldDescription>
-                    Created: {formatDate(openCity.createdAt)}
-                    {openCity.updatedAt ? ` | Updated: ${formatDate(openCity.updatedAt)}` : ''}
-                  </S.MobileWorldDescription>
-                </S.MobileSheetStack>
-              </MobileTabs.Tab>
+        {mapCityDrawer}
 
-              <MobileTabs.Tab key="links" title="Links">
-                <S.MobileSheetStack>
-                  {!isGM && !openCity.discovered ? (
-                    <S.MobileEmptyState>Content unavailable until the city is discovered.</S.MobileEmptyState>
-                  ) : linksLoading ? (
-                    <Spin />
-                  ) : (
-                    <>
-                      <S.MobileWorldDescription>Lores ({cityLores.length})</S.MobileWorldDescription>
-                      <S.MobileLinkedList>
-                        {cityLores.length === 0 ? (
-                          <S.MobileEmptyState>No lores linked.</S.MobileEmptyState>
-                        ) : (
-                          cityLores.map((l) => (
-                            <S.MobileLinkedCard key={l.id}>
-                              <S.MobileLinkedTitle>{l.title}</S.MobileLinkedTitle>
-                              <S.MobileLinkedText>{l.content?.trim() || '-'}</S.MobileLinkedText>
-                            </S.MobileLinkedCard>
-                          ))
-                        )}
-                      </S.MobileLinkedList>
-                      <S.MobileWorldDescription>Quests ({cityQuests.length})</S.MobileWorldDescription>
-                      <S.MobileLinkedList>
-                        {cityQuests.length === 0 ? (
-                          <S.MobileEmptyState>No quests linked.</S.MobileEmptyState>
-                        ) : (
-                          cityQuests.map((q) => (
-                            <S.MobileLinkedCard key={q.id}>
-                              <S.MobileLinkedTitle>{q.title}</S.MobileLinkedTitle>
-                              <S.MobileLinkedText>{q.description?.trim() || '-'}</S.MobileLinkedText>
-                            </S.MobileLinkedCard>
-                          ))
-                        )}
-                      </S.MobileLinkedList>
-                    </>
-                  )}
-                </S.MobileSheetStack>
-              </MobileTabs.Tab>
-
-              {isGM && (
-                <MobileTabs.Tab key="gm" title="GM">
-                  <S.MobileSheetStack>
-                    <MobileForm>
-                      <MobileForm.Item label="Name">
-                        <AdmMobileInput value={editCityName} onChange={setEditCityName} />
-                      </MobileForm.Item>
-                      <MobileForm.Item label="Region">
-                        <AdmMobileInput value={editCityRegion} onChange={setEditCityRegion} />
-                      </MobileForm.Item>
-                      <MobileForm.Item label="Description">
-                        <AdmMobileTextArea
-                          autoSize={{ minRows: 4, maxRows: 8 }}
-                          value={editCityDesc}
-                          onChange={setEditCityDesc}
-                        />
-                      </MobileForm.Item>
-                    </MobileForm>
-                    <MobileActionBar
-                      primary={
-                        <AdmMobileButton block color="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
-                          Save
-                        </AdmMobileButton>
-                      }
-                      secondary={
-                        <AdmMobileButton
-                          block
-                          color="danger"
-                          fill="outline"
-                          onClick={() => confirmDeleteCity(openCity)}
-                        >
-                          Delete
-                        </AdmMobileButton>
-                      }
-                      sticky={false}
-                    />
-                    <MobileCard compact>
-                      <S.MobileSheetStack>
-                        <MobileForm>
-                          <S.MobileControlGrid>
-                            <MobileForm.Item label="Visible to players">
-                              <AdmMobileSwitch
-                                checked={isCityVisible(openCity)}
-                                checkedText={<EyeOutline />}
-                                uncheckedText={<EyeInvisibleOutline />}
-                                onChange={async (value) => {
-                                  await setCityVisible(openCity.id, value);
-                                  setCities((prev) =>
-                                    prev.map((c) => (c.id === openCity.id ? { ...c, visible: value } : c)),
-                                  );
-                                }}
-                              />
-                            </MobileForm.Item>
-                            <MobileForm.Item label="Discovered">
-                              <AdmMobileSwitch
-                                checked={openCity.discovered === true}
-                                onChange={async (value) => {
-                                  await setCityDiscovered(openCity.id, value);
-                                  setCities((prev) =>
-                                    prev.map((c) => (c.id === openCity.id ? { ...c, discovered: value } : c)),
-                                  );
-                                }}
-                              />
-                            </MobileForm.Item>
-                          </S.MobileControlGrid>
-                        </MobileForm>
-                        <AdmMobileButton
-                          block
-                          color="primary"
-                          fill="outline"
-                          onClick={() => {
-                            setPickingCityId(openCity.id);
-                            setPickingDungeonId(null);
-                            setOpenCityId(null);
-                            setMeasureMode(false);
-                            message.info('Tap on the map to position this city.');
-                          }}
-                        >
-                          <LocationFill /> Reposition on map
-                        </AdmMobileButton>
-                        {openCity.coordinates && (
-                          <AdmMobileButton
-                            block
-                            color="danger"
-                            fill="outline"
-                            onClick={() => confirmClearCoords(openCity)}
-                          >
-                            Remove from map
-                          </AdmMobileButton>
-                        )}
-                      </S.MobileSheetStack>
-                    </MobileCard>
-                    <MobileCard compact>
-                      <S.MobileSheetStack>
-                        {openCity.imageUrl ? (
-                          <div style={S.drawerImageWrap(220)}>
-                            <img
-                              src={resolveApiUrl(openCity.imageUrl)}
-                              alt={openCity.imageAlt ?? openCity.name}
-                              style={S.drawerImage(220)}
-                            />
-                          </div>
-                        ) : (
-                          <S.MobileWorldDescription>No image.</S.MobileWorldDescription>
-                        )}
-                        <MobileForm>
-                          <MobileForm.Item label="Alt text">
-                            <AdmMobileInput value={editCityImgAlt} onChange={setEditCityImgAlt} />
-                          </MobileForm.Item>
-                        </MobileForm>
-                        <Upload {...cityImageUploadProps}>
-                          <AdmMobileButton block fill="outline">
-                            <PictureOutline /> {openCity.imageUrl ? 'Change image' : 'Upload image'}
-                          </AdmMobileButton>
-                        </Upload>
-                      </S.MobileSheetStack>
-                    </MobileCard>
-                  </S.MobileSheetStack>
-                </MobileTabs.Tab>
-              )}
-            </MobileTabs>
-          )}
-        </MobileEntitySheet>
-
-        <MobileEntitySheet
-          description={openDungeon?.region || openDungeon?.type || 'Dungeon marker'}
-          onClose={() => setOpenDungeonId(null)}
-          title={openDungeon?.name ?? 'Dungeon'}
-          visible={!!openDungeon}
-        >
-          {openDungeon && (
-            <S.MobileSheetStack>
-              <S.MobileMetaRow>
-                {openDungeon.type && <AdmMobileTag color="primary">{openDungeon.type}</AdmMobileTag>}
-                {openDungeon.discovered && <AdmMobileTag color="success">Discovered</AdmMobileTag>}
-                {isGM && !openDungeon.visible && <AdmMobileTag color="danger">Hidden</AdmMobileTag>}
-              </S.MobileMetaRow>
-              <S.MobileWorldDescription>{openDungeon.description || 'No description.'}</S.MobileWorldDescription>
-              <S.MobileWorldDescription>
-                {openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}
-              </S.MobileWorldDescription>
-              {isGM && (
-                <MobileActionBar
-                  primary={
-                    <AdmMobileButton
-                      block
-                      color="primary"
-                      onClick={() => {
-                        setPickingDungeonId(openDungeon.id);
-                        setPickingCityId(null);
-                        setOpenDungeonId(null);
-                        setMeasureMode(false);
-                        message.info('Tap on the map to position this dungeon.');
-                      }}
-                    >
-                      Reposition
-                    </AdmMobileButton>
-                  }
-                  secondary={
-                    openDungeon.coordinates ? (
-                      <AdmMobileButton
-                        block
-                        color="danger"
-                        fill="outline"
-                        onClick={async () => {
-                          await updateDungeon(openDungeon.id, { coordinates: null });
-                          setDungeons((prev) =>
-                            prev.map((d) => (d.id === openDungeon.id ? { ...d, coordinates: null } : d)),
-                          );
-                          setOpenDungeonId(null);
-                          message.success('Removed from map.');
-                        }}
-                      >
-                        Remove
-                      </AdmMobileButton>
-                    ) : undefined
-                  }
-                  sticky={false}
-                />
-              )}
-            </S.MobileSheetStack>
-          )}
-        </MobileEntitySheet>
+        {mapDungeonDrawer}
 
         <MobileDialog
           actions={[
@@ -1913,309 +2032,9 @@ export default function MapPage() {
           )}
         </div>
 
-        {/* ── City Drawer ── */}
-        <Drawer
-          zIndex={drawerZIndex}
-          open={!!openCity}
-          onClose={() => setOpenCityId(null)}
-          size={mobileOnly ? '100%' : 580}
-          title={
-            openCity ? (
-              <Space wrap size={8}>
-                <span style={S.drawerTitleText}>{openCity.name}</span>
-                {openCity.region ? <Tag>{openCity.region}</Tag> : null}
-                {openCity.visible === false && isGM ? <Tag color="red">Hidden</Tag> : null}
-                {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
-              </Space>
-            ) : (
-              'City'
-            )
-          }
-        >
-          {openCity && (
-            <Tabs defaultActiveKey="details">
-              {/* ── Details ── */}
-              <Tabs.TabPane tab="Details" key="details">
-                <Space orientation="vertical" size="small" style={w100}>
-                  <Typography.Text type="secondary">{openCity.region || 'Region not specified'}</Typography.Text>
-                  {openCity.imageUrl && (isGM || openCity.discovered) && (
-                    <div style={S.drawerImageWrap(180, 8)}>
-                      <img
-                        src={resolveApiUrl(openCity.imageUrl)}
-                        alt={openCity.imageAlt ?? openCity.name}
-                        style={S.drawerImage(180)}
-                      />
-                    </div>
-                  )}
-                  <Typography.Paragraph style={S.drawerParagraph}>
-                    {isGM || openCity.discovered
-                      ? openCity.description || 'No description.'
-                      : 'Information unavailable.'}
-                  </Typography.Paragraph>
-                  <Typography.Text type="secondary" style={textXs}>
-                    Created: {formatDate(openCity.createdAt)}
-                    {openCity.updatedAt ? ` · Updated: ${formatDate(openCity.updatedAt)}` : ''}
-                  </Typography.Text>
-                </Space>
-              </Tabs.TabPane>
+        {mapCityDrawer}
 
-              {/* ── Admin (GM only) ── */}
-              {isGM && (
-                <Tabs.TabPane tab={<IconLabel icon="edit">Admin</IconLabel>} key="admin">
-                  <Form layout="vertical">
-                    <Form.Item label="Name" required>
-                      <Input value={editCityName} onChange={(e) => setEditCityName(e.target.value)} />
-                    </Form.Item>
-                    <Form.Item label="Region">
-                      <Input
-                        value={editCityRegion}
-                        onChange={(e) => setEditCityRegion(e.target.value)}
-                        placeholder="Ex: Northern Dunes, East Coast…"
-                      />
-                    </Form.Item>
-                    <Form.Item label="Description">
-                      <Input.TextArea
-                        rows={5}
-                        value={editCityDesc}
-                        onChange={(e) => setEditCityDesc(e.target.value)}
-                        placeholder="Descriptive text for the city…"
-                      />
-                    </Form.Item>
-                    <Space>
-                      <Button type="primary" loading={savingCity} onClick={() => void saveCityEdit()}>
-                        Save
-                      </Button>
-                      <Button danger onClick={() => confirmDeleteCity(openCity)}>
-                        Delete city
-                      </Button>
-                    </Space>
-                  </Form>
-                </Tabs.TabPane>
-              )}
-
-              {/* ── Image (GM only) ── */}
-              {isGM && (
-                <Tabs.TabPane tab={<IconLabel icon="image">Image</IconLabel>} key="image">
-                  <Space orientation="vertical" size={12} style={w100}>
-                    {openCity.imageUrl ? (
-                      <div style={S.drawerImageWrap(220)}>
-                        <img
-                          src={resolveApiUrl(openCity.imageUrl)}
-                          alt={openCity.imageAlt ?? openCity.name}
-                          style={S.drawerImage(220)}
-                        />
-                      </div>
-                    ) : (
-                      <Typography.Text type="secondary">No image.</Typography.Text>
-                    )}
-                    <Form.Item label="Alt text" style={S.imageAltFormItem}>
-                      <Input
-                        value={editCityImgAlt}
-                        onChange={(e) => setEditCityImgAlt(e.target.value)}
-                        placeholder={openCity.name}
-                      />
-                    </Form.Item>
-                    <Upload {...cityImageUploadProps}>
-                      <Button icon={<PictureOutlined />}>{openCity.imageUrl ? 'Change image' : 'Upload image'}</Button>
-                    </Upload>
-                  </Space>
-                </Tabs.TabPane>
-              )}
-
-              {/* ── Controls (GM only) ── */}
-              {isGM && (
-                <Tabs.TabPane tab={<IconLabel icon="controls">Controls</IconLabel>} key="controls">
-                  <Space orientation="vertical" size={16} style={w100}>
-                    {/* Visible */}
-                    <Space style={spaceBetween}>
-                      <div>
-                        <Typography.Text>Visible to players</Typography.Text>
-                        <br />
-                        <Typography.Text type="secondary" style={textSm}>
-                          Hidden cities do not appear on the players&apos; map.
-                        </Typography.Text>
-                      </div>
-                      <Switch
-                        checked={isCityVisible(openCity)}
-                        checkedChildren={<EyeOutlined />}
-                        unCheckedChildren={<EyeInvisibleOutlined />}
-                        onChange={async (v) => {
-                          await setCityVisible(openCity.id, v);
-                          setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, visible: v } : c)));
-                        }}
-                      />
-                    </Space>
-                    {/* Discovered */}
-                    <Space style={spaceBetween}>
-                      <div>
-                        <Typography.Text>Discovered</Typography.Text>
-                        <br />
-                        <Typography.Text type="secondary" style={textSm}>
-                          Unlocks description, image and lores for the players.
-                        </Typography.Text>
-                      </div>
-                      <Switch
-                        checked={openCity.discovered === true}
-                        onChange={async (v) => {
-                          await setCityDiscovered(openCity.id, v);
-                          setCities((prev) => prev.map((c) => (c.id === openCity.id ? { ...c, discovered: v } : c)));
-                        }}
-                      />
-                    </Space>
-                    <Divider style={dividerSm} />
-                    {/* Map position */}
-                    <Typography.Text strong>Map position</Typography.Text>
-                    <Space wrap>
-                      <Button
-                        type="primary"
-                        size="small"
-                        onClick={() => {
-                          setPickingCityId(openCity.id);
-                          message.info('Click on the map to position.');
-                        }}
-                      >
-                        Reposition
-                      </Button>
-                      {openCity.coordinates && (
-                        <Button size="small" danger onClick={() => confirmClearCoords(openCity)}>
-                          Remove from map
-                        </Button>
-                      )}
-                    </Space>
-                    {openCity.coordinates && (
-                      <Typography.Text type="secondary" style={textSm}>
-                        Coords: {openCity.coordinates}
-                      </Typography.Text>
-                    )}
-                  </Space>
-                </Tabs.TabPane>
-              )}
-
-              {/* ── Lores ── */}
-              <Tabs.TabPane tab={`Lores (${cityLores.length})`} key="lores">
-                {!isGM && !openCity.discovered ? (
-                  <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
-                ) : linksLoading ? (
-                  <Spin />
-                ) : !cityLores.length ? (
-                  <Empty description="No lores linked." />
-                ) : (
-                  <S.LinkedGrid>
-                    {cityLores.map((l) => (
-                      <S.LinkedCard key={l.id}>
-                        <Space wrap size={8}>
-                          <Typography.Text strong>{l.title}</Typography.Text>
-                          {l.category ? <Tag>{l.category}</Tag> : <Tag>(no category)</Tag>}
-                        </Space>
-                        <Typography.Paragraph style={S.linkedParagraph}>
-                          {l.content?.trim() || '—'}
-                        </Typography.Paragraph>
-                      </S.LinkedCard>
-                    ))}
-                  </S.LinkedGrid>
-                )}
-              </Tabs.TabPane>
-
-              {/* ── Quests ── */}
-              <Tabs.TabPane tab={`Quests (${cityQuests.length})`} key="quests">
-                {!isGM && !openCity.discovered ? (
-                  <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
-                ) : linksLoading ? (
-                  <Spin />
-                ) : !cityQuests.length ? (
-                  <Empty description="No quests linked." />
-                ) : (
-                  <S.LinkedGrid>
-                    {cityQuests.map((q) => (
-                      <S.LinkedCard key={q.id}>
-                        <Space wrap size={8}>
-                          <Typography.Text strong>{q.title}</Typography.Text>
-                          {q.status && (
-                            <Tag color={q.status === 'active' ? 'blue' : q.status === 'completed' ? 'green' : 'red'}>
-                              {q.status}
-                            </Tag>
-                          )}
-                          {q.reward && <Tag color="gold">Reward</Tag>}
-                        </Space>
-                        <Typography.Paragraph style={S.linkedParagraph}>
-                          {q.description?.trim() || '—'}
-                        </Typography.Paragraph>
-                        {q.reward && <Typography.Text type="secondary">Reward: {q.reward}</Typography.Text>}
-                      </S.LinkedCard>
-                    ))}
-                  </S.LinkedGrid>
-                )}
-              </Tabs.TabPane>
-            </Tabs>
-          )}
-        </Drawer>
-
-        {/* ── Dungeon Drawer ── */}
-        <Drawer
-          zIndex={drawerZIndex}
-          open={!!openDungeon}
-          onClose={() => setOpenDungeonId(null)}
-          size={mobileOnly ? '100%' : 480}
-          title={
-            openDungeon ? (
-              <Space wrap size={8}>
-                <span style={S.drawerTitleText}>
-                  <IconLabel icon="dungeon">{openDungeon.name}</IconLabel>
-                </span>
-                {openDungeon.type && <Tag color="purple">{openDungeon.type}</Tag>}
-                {openDungeon.discovered && <Tag color="green">Discovered</Tag>}
-                {isGM && !openDungeon.visible && <Tag color="red">Hidden</Tag>}
-              </Space>
-            ) : (
-              'Dungeon'
-            )
-          }
-        >
-          {openDungeon && (
-            <Space orientation="vertical" size={12} style={w100}>
-              {openDungeon.region && <Tag>{openDungeon.region}</Tag>}
-              {openDungeon.description ? (
-                <Typography.Paragraph style={S.drawerCompactParagraph}>{openDungeon.description}</Typography.Paragraph>
-              ) : (
-                <Typography.Text type="secondary">No description.</Typography.Text>
-              )}
-              {isGM && (
-                <Space wrap size={8}>
-                  <Button
-                    size="small"
-                    type="primary"
-                    onClick={() => {
-                      setPickingDungeonId(openDungeon.id);
-                      setOpenDungeonId(null);
-                      message.info('Click on the map to position.');
-                    }}
-                  >
-                    Reposition
-                  </Button>
-                  {openDungeon.coordinates && (
-                    <Button
-                      size="small"
-                      danger
-                      onClick={async () => {
-                        await updateDungeon(openDungeon.id, { coordinates: null });
-                        setDungeons((prev) =>
-                          prev.map((d) => (d.id === openDungeon.id ? { ...d, coordinates: null } : d)),
-                        );
-                        setOpenDungeonId(null);
-                        message.success('Removed from map.');
-                      }}
-                    >
-                      Remove from map
-                    </Button>
-                  )}
-                </Space>
-              )}
-              <Typography.Text type="secondary" style={textXs}>
-                {openDungeon.coordinates ? `Coords: ${openDungeon.coordinates}` : 'Not positioned on map'}
-              </Typography.Text>
-            </Space>
-          )}
-        </Drawer>
+        {mapDungeonDrawer}
 
         {/* ── World Admin Drawer ── */}
         <WorldAdminDrawer

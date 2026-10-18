@@ -1,12 +1,10 @@
 import React from 'react';
-import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tag, Typography, Upload, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -20,7 +18,7 @@ import { Table } from '@app/components/common/Table/Table';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
-import { AppIcon, IconLabel } from '@app/components/common/AppIcon/AppIcon';
+import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import {
   MobileActionBar,
   MobileCard,
@@ -31,7 +29,6 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
@@ -41,22 +38,11 @@ import type { Monster, MonsterForAdmin } from '@app/types/rpg';
 import { BestiaryApi } from '@app/api/bestiary.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
 import { apiErrorMessage } from '../utils/api-error';
-import {
-  m0,
-  w100,
-  textSm,
-  mutedSm,
-  bold700,
-  bold800,
-  spaceBetween,
-  dividerSm,
-  dividerMd,
-  tableWrap,
-  cardGrid2,
-  imgCoverH,
-  preWrap,
-} from '@app/styles/styleUtils';
+import { m0, w100, textSm, bold700, spaceBetween, dividerSm, tableWrap, imgCoverH } from '@app/styles/styleUtils';
 import * as S from './BestiaryPage.styles';
+import { stripMarkdown } from '@app/components/common/RichText/RichText';
+import EntityDrawer, { discoveredControl, visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'players' | 'gm';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -79,15 +65,6 @@ function typeColor(type?: string | null) {
   if (!type) return 'default';
   const key = type.toLowerCase();
   return TYPE_COLORS[key] ?? 'default';
-}
-
-function mobileTypeColor(type?: string | null): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
-  const color = typeColor(type);
-  if (color === 'red' || color === 'volcano') return 'danger';
-  if (color === 'green' || color === 'lime') return 'success';
-  if (color === 'gold' || color === 'orange') return 'warning';
-  if (color === 'default') return 'default';
-  return 'primary';
 }
 
 function isVisible(m: Monster) {
@@ -598,75 +575,6 @@ export const BestiaryPage: React.FC = () => {
     </S.MobileMetaTags>
   );
 
-  const mobileMonsterOverview = openMonster ? (
-    <S.MobileSectionStack>
-      <MobileCard compact>
-        <S.MobileMonsterHero>
-          {mobileCanReadOpen && openMonster.imageUrl ? (
-            <ExpandableImage alt={openMonster.imageAlt ?? openMonster.name} src={resolveApiUrl(openMonster.imageUrl)}>
-              <S.MobileMonsterImage
-                alt={openMonster.imageAlt ?? openMonster.name}
-                src={resolveApiUrl(openMonster.imageUrl)}
-              />
-            </ExpandableImage>
-          ) : (
-            <S.MobileMonsterFallback>
-              <AppIcon name="beast" size={44} />
-            </S.MobileMonsterFallback>
-          )}
-        </S.MobileMonsterHero>
-        <S.MobileMonsterInfo>
-          <S.MobileMonsterTitle>{openMonster.name}</S.MobileMonsterTitle>
-          <S.MobileMetaTags>
-            {openMonster.type ? (
-              <AdmMobileTag color={mobileTypeColor(openMonster.type)} fill="outline" round>
-                {openMonster.type}
-              </AdmMobileTag>
-            ) : null}
-            {openMonster.habitat ? (
-              <AdmMobileTag fill="outline" round>
-                {openMonster.habitat}
-              </AdmMobileTag>
-            ) : null}
-            {isGM ? (
-              <AdmMobileTag color={isVisible(openMonster) ? 'success' : 'danger'} fill="outline" round>
-                {isVisible(openMonster) ? 'Visible' : 'Hidden'}
-              </AdmMobileTag>
-            ) : null}
-            <AdmMobileTag color={openMonster.discovered ? 'warning' : 'default'} fill="outline" round>
-              {openMonster.discovered ? 'Discovered' : 'Unknown'}
-            </AdmMobileTag>
-          </S.MobileMetaTags>
-        </S.MobileMonsterInfo>
-      </MobileCard>
-
-      {mobileCanReadOpen ? (
-        <>
-          <MobileCard compact title="Creature Details">
-            <S.MobileDetailGrid>
-              <S.MobileDetailItem>
-                <S.MobileDetailLabel>Habitat</S.MobileDetailLabel>
-                <S.MobileDetailValue>{openMonster.habitat || 'Unknown'}</S.MobileDetailValue>
-              </S.MobileDetailItem>
-              <S.MobileDetailItem>
-                <S.MobileDetailLabel>Weaknesses / Behavior</S.MobileDetailLabel>
-                <S.MobileDetailValue>{openMonster.weaknesses || 'Not documented yet.'}</S.MobileDetailValue>
-              </S.MobileDetailItem>
-            </S.MobileDetailGrid>
-          </MobileCard>
-
-          <MobileCard compact title="Description">
-            <S.MobileBodyText>{openMonster.description?.trim() || 'No description yet.'}</S.MobileBodyText>
-          </MobileCard>
-        </>
-      ) : (
-        <MobileCard compact title="Unknown creature">
-          <S.MobileBodyText>Information about this creature has not been revealed yet.</S.MobileBodyText>
-        </MobileCard>
-      )}
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileMonsterGM = openMonster ? (
     <S.MobileSectionStack>
       <MobileCard compact title="Profile">
@@ -709,17 +617,6 @@ export const BestiaryPage: React.FC = () => {
         </MobileForm>
       </MobileCard>
 
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isVisible(openMonster)} onChange={() => void toggleVisible(openMonster)} />
-        </S.MobileVisibilityRow>
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Marked as discovered</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={openMonster.discovered} onChange={() => void toggleDiscovered(openMonster)} />
-        </S.MobileVisibilityRow>
-      </MobileCard>
-
       <MobileCard compact title="Image">
         <S.MobileUploadStack>
           <S.MobileFieldLabel htmlFor={`monster-image-alt-${openMonster.id}`}>Image alt text</S.MobileFieldLabel>
@@ -755,6 +652,51 @@ export const BestiaryPage: React.FC = () => {
       </MobileCard>
     </S.MobileSectionStack>
   ) : null;
+
+  const renderMonsterDrawer = (phone?: {
+    footer?: React.ReactNode;
+    activeKey: string;
+    onTabChange: (key: string) => void;
+    gm: React.ReactNode;
+  }) =>
+    openMonster ? (
+      <EntityDrawer
+        onClose={() => setOpenId(null)}
+        open={openId !== null}
+        overview={{
+          image: mobileCanReadOpen
+            ? {
+                src: openMonster.imageUrl ? resolveApiUrl(openMonster.imageUrl) : null,
+                alt: openMonster.imageAlt ?? openMonster.name,
+              }
+            : null,
+          meta: openMonster.type ? <Tag color={typeColor(openMonster.type)}>{openMonster.type}</Tag> : null,
+          sections: [
+            { title: 'Description', text: openMonster.description },
+            ...(openMonster.habitat ? [{ title: 'Habitat', text: openMonster.habitat }] : []),
+            ...(openMonster.weaknesses ? [{ title: 'Weaknesses / Behavior', text: openMonster.weaknesses }] : []),
+          ],
+          unavailable: mobileCanReadOpen ? null : 'Information about this creature has not been revealed yet.',
+        }}
+        title={openMonster.name}
+        controls={
+          phone
+            ? [
+                visibilityControl(isVisible(openMonster), () => void toggleVisible(openMonster), 'creatures'),
+                discoveredControl(Boolean(openMonster.discovered), () => void toggleDiscovered(openMonster), 'details'),
+              ]
+            : []
+        }
+        createdAt={openMonster.createdAt}
+        gmTabs={phone ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: phone.gm }] : []}
+        gmView={Boolean(phone) && isGM}
+        mobileActiveKey={phone?.activeKey}
+        mobileFooter={phone?.footer}
+        onMobileTabChange={phone?.onTabChange}
+        status={{ visible: isVisible(openMonster), discovered: Boolean(openMonster.discovered) }}
+        subtitle={openMonster.type ?? undefined}
+      />
+    ) : null;
 
   if (mobileOnly) {
     return (
@@ -805,79 +747,14 @@ export const BestiaryPage: React.FC = () => {
               <S.MobileEmptyState>No creatures found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileBestiaryGrid>
-              {mobileItems.map((monster) => {
-                const gmPanel = isGM && viewMode === 'gm';
-                const canRead = monster.discovered || gmPanel;
-
-                return (
-                  <MobileCard compact key={monster.id}>
-                    <S.MobileMonsterCardBody>
-                      <S.MobileMonsterCardMedia>
-                        {canRead && monster.imageUrl ? (
-                          <S.MobileMonsterCardImage
-                            alt={monster.imageAlt ?? monster.name}
-                            src={resolveApiUrl(monster.imageUrl)}
-                          />
-                        ) : (
-                          <S.MobileMonsterFallback>
-                            <AppIcon name="beast" size={38} />
-                          </S.MobileMonsterFallback>
-                        )}
-                      </S.MobileMonsterCardMedia>
-
-                      <S.MobileMonsterTitle>{monster.name}</S.MobileMonsterTitle>
-                      <S.MobileMetaTags>
-                        {monster.type ? (
-                          <AdmMobileTag color={mobileTypeColor(monster.type)} fill="outline" round>
-                            {monster.type}
-                          </AdmMobileTag>
-                        ) : null}
-                        {monster.habitat ? (
-                          <AdmMobileTag fill="outline" round>
-                            {monster.habitat}
-                          </AdmMobileTag>
-                        ) : null}
-                        {gmPanel ? (
-                          <AdmMobileTag color={isVisible(monster) ? 'success' : 'danger'} fill="outline" round>
-                            {isVisible(monster) ? 'Visible' : 'Hidden'}
-                          </AdmMobileTag>
-                        ) : null}
-                      </S.MobileMetaTags>
-
-                      <S.MobileMonsterPreview>
-                        {canRead ? monster.description?.trim() || 'No description yet.' : 'Information unavailable.'}
-                      </S.MobileMonsterPreview>
-
-                      <S.MobileActionGrid>
-                        <AdmMobileButton
-                          block
-                          color="primary"
-                          onClick={() => {
-                            setMonsterSheetTab('overview');
-                            setOpenId(monster.id);
-                          }}
-                        >
-                          Open entry
-                        </AdmMobileButton>
-                        {gmPanel ? (
-                          <AdmMobileButton
-                            block
-                            fill="outline"
-                            onClick={() => {
-                              setMonsterSheetTab('gm');
-                              setOpenId(monster.id);
-                            }}
-                          >
-                            <SetOutline fontSize={17} /> GM controls
-                          </AdmMobileButton>
-                        ) : null}
-                      </S.MobileActionGrid>
-                    </S.MobileMonsterCardBody>
-                  </MobileCard>
-                );
-              })}
-            </S.MobileBestiaryGrid>
+            <MonsterCards
+              data={mobileItems}
+              mode={isGM && viewMode === 'gm' ? 'gm' : 'players'}
+              onOpen={(m, tab) => {
+                setMonsterSheetTab(isGM ? tab : 'overview');
+                setOpenId(m.id);
+              }}
+            />
           )}
         </MobilePageScaffold>
 
@@ -928,15 +805,8 @@ export const BestiaryPage: React.FC = () => {
           </MobileFilterSheet>
         ) : null}
 
-        <MobileEntitySheet
-          description={
-            openMonster
-              ? mobileCanReadOpen
-                ? 'Creature profile and campaign-facing details.'
-                : 'This entry is still hidden from the party.'
-              : undefined
-          }
-          footer={
+        {renderMonsterDrawer({
+          footer:
             openMonster && isGM && monsterSheetTab === 'gm' ? (
               <MobileActionBar
                 primary={
@@ -956,43 +826,24 @@ export const BestiaryPage: React.FC = () => {
                 }
                 sticky={false}
               />
-            ) : undefined
-          }
-          onClose={() => {
-            setOpenId(null);
-            setMonsterSheetTab('overview');
+            ) : undefined,
+          activeKey: monsterSheetTab,
+          onTabChange: (key) => setMonsterSheetTab(key as MonsterSheetTab),
+          gm: mobileMonsterGM,
+        })}
+        <input
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void uploadMobileMonsterImage(file);
+              event.currentTarget.value = '';
+            }
           }}
-          subtitle={openMonster?.type ?? undefined}
-          title={openMonster?.name ?? 'Creature'}
-          visible={Boolean(openMonster)}
-        >
-          {openMonster && isGM ? (
-            <MobileTabs
-              activeKey={monsterSheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileMonsterOverview },
-                { key: 'gm', title: 'GM', children: mobileMonsterGM },
-              ]}
-              onChange={(key) => setMonsterSheetTab(key as MonsterSheetTab)}
-            />
-          ) : (
-            mobileMonsterOverview
-          )}
-
-          <input
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void uploadMobileMonsterImage(file);
-                event.currentTarget.value = '';
-              }
-            }}
-            ref={imageInputRef}
-            type="file"
-          />
-        </MobileEntitySheet>
+          ref={imageInputRef}
+          type="file"
+        />
 
         <MobileEntitySheet
           description="Create a creature now, then add image and tags from GM controls."
@@ -1196,7 +1047,15 @@ export const BestiaryPage: React.FC = () => {
   );
 
   // ── Monster Cards ─────────────────────────────────────────────────────────
-  function MonsterCards({ data, mode }: { data: Monster[]; mode: ViewMode }) {
+  function MonsterCards({
+    data,
+    mode,
+    onOpen,
+  }: {
+    data: Monster[];
+    mode: ViewMode;
+    onOpen?: (m: Monster, tab: MonsterSheetTab) => void;
+  }) {
     if (loading) return <Spinner />;
     if (!data.length) {
       return (
@@ -1206,86 +1065,69 @@ export const BestiaryPage: React.FC = () => {
       );
     }
     return (
-      <div style={cardGrid2(mobileOnly)}>
+      <EntityCardGrid>
         {data.map((m) => {
           const playerCanRead = m.discovered === true;
           const vis = isVisible(m);
+          const showCover = mode === 'gm' || playerCanRead;
 
           return (
-            <Card
-              key={m.id}
-              density={mode === 'players' ? 'comfy' : 'dense'}
-              title={
-                <Space size={8} wrap>
-                  <span style={bold700}>{m.name}</span>
-                  {m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
-                  {m.habitat ? <Tag>{m.habitat}</Tag> : null}
-                  {mode === 'gm' && (
-                    <>
-                      <Tag color={vis ? 'green' : 'red'}>{vis ? 'Visible' : 'Hidden'}</Tag>
-                      <Tag color={m.discovered ? 'gold' : 'default'}>
-                        {m.discovered ? 'Discovered' : 'Not discovered'}
-                      </Tag>
-                    </>
-                  )}
-                </Space>
-              }
-              extra={
+            <EntityCard
+              actions={
                 mode === 'gm' ? (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setAdminId(m.id);
-                      setAdminOpen(true);
-                    }}
-                  >
-                    Admin
-                  </Button>
-                ) : (
-                  <Button size="small" onClick={() => setOpenId(m.id)}>
-                    View
-                  </Button>
-                )
+                  <>
+                    <Switch
+                      checked={vis}
+                      checkedChildren={<EyeOutlined />}
+                      onChange={() => void toggleVisible(m)}
+                      size="small"
+                      title="Visible to players"
+                      unCheckedChildren={<EyeInvisibleOutlined />}
+                    />
+                    <Switch
+                      checked={m.discovered}
+                      onChange={() => void toggleDiscovered(m)}
+                      size="small"
+                      title="Discovered"
+                    />
+                    <Button
+                      onClick={() => {
+                        setAdminId(m.id);
+                        setAdminOpen(true);
+                      }}
+                      size="small"
+                    >
+                      Admin
+                    </Button>
+                  </>
+                ) : null
               }
-            >
-              {mode === 'players' && playerCanRead && m.imageUrl && (
-                <div style={S.monsterCardCover}>
-                  <img src={resolveApiUrl(m.imageUrl)} alt={m.imageAlt ?? m.name} style={S.monsterCardCoverImage} />
-                </div>
-              )}
-              <Typography.Paragraph style={m0} ellipsis={{ rows: 3 }}>
-                {mode === 'players'
-                  ? playerCanRead
-                    ? m.description?.trim() || 'No description yet.'
-                    : 'Information unavailable.'
-                  : m.description?.trim() || '—'}
-              </Typography.Paragraph>
-
-              {mode === 'gm' && (
-                <>
-                  <Divider style={dividerMd} />
-                  <Space wrap size={16}>
-                    <Space size={8}>
-                      <span style={mutedSm}>Visible:</span>
-                      <Switch
-                        size="small"
-                        checked={vis}
-                        onChange={() => void toggleVisible(m)}
-                        checkedChildren={<EyeOutlined />}
-                        unCheckedChildren={<EyeInvisibleOutlined />}
-                      />
-                    </Space>
-                    <Space size={8}>
-                      <span style={mutedSm}>Discovered:</span>
-                      <Switch size="small" checked={m.discovered} onChange={() => void toggleDiscovered(m)} />
-                    </Space>
-                  </Space>
-                </>
-              )}
-            </Card>
+              chips={showCover && m.habitat ? <Tag>{m.habitat}</Tag> : null}
+              cover={showCover && m.imageUrl ? { src: resolveApiUrl(m.imageUrl), alt: m.imageAlt ?? m.name } : null}
+              coverTags={m.type ? <Tag color={typeColor(m.type)}>{m.type}</Tag> : null}
+              icon="beast"
+              key={m.id}
+              label="Creature"
+              locked={mode === 'players' && !playerCanRead ? 'Information unavailable.' : null}
+              onClick={() => {
+                if (onOpen) {
+                  onOpen(m, mode === 'gm' ? 'gm' : 'overview');
+                } else if (mode === 'gm') {
+                  setAdminId(m.id);
+                  setAdminOpen(true);
+                } else {
+                  setOpenId(m.id);
+                }
+              }}
+              openText={mode === 'gm' ? 'Manage' : 'Open entry'}
+              seed={m.id}
+              status={mode === 'gm' ? { visible: vis, discovered: Boolean(m.discovered) } : undefined}
+              summary={m.description}
+              title={m.name}
+            />
           );
         })}
-      </div>
+      </EntityCardGrid>
     );
   }
 
@@ -1353,7 +1195,7 @@ export const BestiaryPage: React.FC = () => {
               ellipsis: true,
               render: (_: unknown, m: Monster) => (
                 <Typography.Text type="secondary" style={textSm}>
-                  {m.description?.trim() || '—'}
+                  {stripMarkdown(m.description) || '—'}
                 </Typography.Text>
               ),
             },
@@ -1424,63 +1266,7 @@ export const BestiaryPage: React.FC = () => {
         <>
           {loading ? <Spinner /> : <MonsterCards data={playerItems} mode="players" />}
 
-          <Drawer
-            open={openId !== null}
-            onClose={() => setOpenId(null)}
-            size={mobileOnly ? '100%' : 540}
-            title={
-              openMonster ? (
-                <Space wrap size={8}>
-                  <span style={bold800}>{openMonster.name}</span>
-                  {openMonster.type ? <Tag color={typeColor(openMonster.type)}>{openMonster.type}</Tag> : null}
-                </Space>
-              ) : null
-            }
-          >
-            {openMonster && (
-              <>
-                {openMonster.discovered && openMonster.imageUrl && (
-                  <ExpandableImage
-                    alt={openMonster.imageAlt ?? openMonster.name}
-                    src={resolveApiUrl(openMonster.imageUrl)}
-                    style={S.publicDrawerImagePreview}
-                  >
-                    <img
-                      src={resolveApiUrl(openMonster.imageUrl)}
-                      alt={openMonster.imageAlt ?? openMonster.name}
-                      style={imgCoverH(240)}
-                    />
-                  </ExpandableImage>
-                )}
-
-                {openMonster.discovered ? (
-                  <Space orientation="vertical" size={12} style={w100}>
-                    {openMonster.habitat && (
-                      <Card density="dense" title="Habitat">
-                        <Typography.Text>{openMonster.habitat}</Typography.Text>
-                      </Card>
-                    )}
-                    {openMonster.weaknesses && (
-                      <Card density="dense" title="Weaknesses / Behavior">
-                        <Typography.Text>{openMonster.weaknesses}</Typography.Text>
-                      </Card>
-                    )}
-                    <Card density="comfy" title="Description">
-                      <Typography.Paragraph style={preWrap}>
-                        {openMonster.description?.trim() || 'No description yet.'}
-                      </Typography.Paragraph>
-                    </Card>
-                  </Space>
-                ) : (
-                  <Card density="comfy">
-                    <Typography.Text type="secondary">
-                      Information about this creature has not been revealed yet.
-                    </Typography.Text>
-                  </Card>
-                )}
-              </>
-            )}
-          </Drawer>
+          {renderMonsterDrawer()}
         </>
       )}
     </>

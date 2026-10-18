@@ -61,58 +61,12 @@ export const PublicGrid = styled.div<{ $mobileOnly: boolean }>`
   grid-template-columns: ${(props) => (props.$mobileOnly ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))')};
 `;
 
-export const PublicCard = styled.div`
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  background: var(--background-color, #fff);
-  cursor: pointer;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
-
-  &:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
-    transform: translateY(-2px);
-  }
-`;
-
-export const publicCardBody: CSSProperties = {
-  padding: '12px 14px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
-};
-
-export const visibleTag: CSSProperties = {
-  margin: 0,
-  fontSize: 10,
-};
-
-export const publicDescription: CSSProperties = {
-  margin: 0,
-  fontSize: 12,
-  color: '#595959',
-};
-
 export const tableMinWidth: CSSProperties = {
   minWidth: 800,
 };
 
 export const clickableText: CSSProperties = {
   cursor: 'pointer',
-};
-
-export const tagsLabel: CSSProperties = {
-  fontSize: 12,
-  display: 'block',
-  marginBottom: 6,
-};
-
-export const discoveredMeta: CSSProperties = {
-  fontSize: 12,
-  color: '#8c8c8c',
-  marginLeft: 8,
 };
 
 export const headerSearch: CSSProperties = {
@@ -157,86 +111,6 @@ export const MobileMetaTags = styled.div`
 export const MobileSectionStack = styled.div`
   display: grid;
   gap: 12px;
-`;
-
-export const MobileDungeonsGrid = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileDungeonCardBody = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileDungeonCardMedia = styled.div`
-  height: 184px;
-  overflow: hidden;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(114, 46, 209, 0.28), transparent 36%),
-    linear-gradient(135deg, var(--secondary-background-color), var(--additional-background-color));
-`;
-
-export const MobileDungeonCardImage = styled.img`
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-`;
-
-export const MobileDungeonHero = styled.div`
-  min-height: 230px;
-  overflow: hidden;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(114, 46, 209, 0.28), transparent 36%),
-    linear-gradient(135deg, var(--secondary-background-color), var(--additional-background-color));
-`;
-
-export const MobileDungeonHeroImage = styled.img`
-  width: 100%;
-  height: 230px;
-  display: block;
-  object-fit: cover;
-`;
-
-export const MobileDungeonFallback = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 184px;
-  display: grid;
-  place-items: center;
-  color: var(--text-secondary-color);
-  background:
-    radial-gradient(circle at 26% 24%, rgba(114, 46, 209, 0.2), transparent 34%),
-    linear-gradient(135deg, var(--secondary-background-color), var(--additional-background-color));
-`;
-
-export const MobileDungeonInfo = styled.div`
-  display: grid;
-  gap: 10px;
-  padding-top: 12px;
-`;
-
-export const MobileDungeonTitle = styled.h2`
-  margin: 0;
-  color: var(--text-main-color);
-  font-size: 20px;
-  line-height: 1.12;
-  font-weight: 800;
-`;
-
-export const MobileDungeonPreview = styled.p`
-  display: -webkit-box;
-  margin: 0;
-  color: var(--text-secondary-color);
-  font-size: 14px;
-  line-height: 1.5;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
 `;
 
 export const MobileActionGrid = styled.div`
@@ -292,15 +166,6 @@ export const MobileBodyText = styled.p`
   line-height: 1.6;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-`;
-
-export const MobileImageStrip = styled.div`
-  display: grid;
-  grid-auto-columns: minmax(128px, 46vw);
-  grid-auto-flow: column;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
 `;
 
 export const MobileGalleryThumb = styled.img`

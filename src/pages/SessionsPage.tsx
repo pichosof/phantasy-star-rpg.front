@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
-import { Badge, Divider, Drawer, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -27,29 +26,24 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Spinner } from '@app/components/common/Spinner/Spinner';
 import { Table } from '@app/components/common/Table/Table';
-import { Tabs } from '@app/components/common/Tabs/Tabs';
+
 import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
-import {
-  dividerMd,
-  dividerSm,
-  m0,
-  mutedSm,
-  spaceBetween,
-  tableWrap,
-  textMd,
-  textSm,
-  w100,
-} from '@app/styles/styleUtils';
+import { dividerSm, m0, spaceBetween, tableWrap, textMd, textSm, w100 } from '@app/styles/styleUtils';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './SessionsPage.styles';
+import { stripMarkdown } from '@app/components/common/RichText/RichText';
+import EntityDrawer, {
+  useEditableDrawerTab,
+  visibilityControl,
+} from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'blog' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -98,7 +92,7 @@ function formatDateTime(value?: string | null) {
 }
 
 function getSummaryPreview(session: Session) {
-  const source = (session.summary ?? '').trim();
+  const source = stripMarkdown(session.summary);
   if (!source) return 'No summary recorded yet.';
 
   const normalized = source
@@ -143,7 +137,7 @@ const SessionCover: React.FC<{ session: Session; height?: number; expandable?: b
 };
 
 export const SessionsPage: React.FC = () => {
-  const { mobileOnly, isTablet } = useResponsive();
+  const { mobileOnly } = useResponsive();
   const isGM = useGMMode();
 
   const [items, setItems] = React.useState<Session[]>([]);
@@ -548,6 +542,38 @@ export const SessionsPage: React.FC = () => {
     </Card>
   );
 
+  const renderSessionCard = (session: Session, onOpen: () => void) => (
+    <EntityCard
+      actions={
+        isGM ? (
+          <Switch
+            checked={isSessionVisible(session)}
+            onChange={() => void toggleVisible(session)}
+            size="small"
+            title={isSessionVisible(session) ? 'Hide' : 'Publish'}
+          />
+        ) : null
+      }
+      cover={session.imageUrl ? { src: session.imageUrl, alt: session.imageAlt ?? session.title } : null}
+      footer={formatDateTime(session.createdAt)}
+      icon="star"
+      key={session.id}
+      label={`Session #${sessionNumber(session.id)}`}
+      meta={
+        <IconLabel gap={6} icon="calendar">
+          {formatDate(session.date)}
+        </IconLabel>
+      }
+      onClick={onOpen}
+      openText="Open session"
+      seed={session.id}
+      status={isGM ? { visible: isSessionVisible(session) } : undefined}
+      summary={session.summary}
+      summaryFallback="No summary recorded yet."
+      title={session.title}
+    />
+  );
+
   const blogView = loading ? (
     <Spinner />
   ) : publicItems.length === 0 ? (
@@ -555,55 +581,9 @@ export const SessionsPage: React.FC = () => {
       <Empty description="No sessions found." />
     </Card>
   ) : (
-    <S.PublicGrid $tablet={isTablet}>
-      {publicItems.map((session) => {
-        const number = sessionNumber(session.id);
-
-        return (
-          <S.PublicCard key={session.id} onClick={() => openForView(session.id)}>
-            <SessionCover height={isTablet ? 170 : 190} session={session} />
-
-            <S.PublicCardBody>
-              <S.PublicCardTop>
-                <S.PublicCardLabel>Session #{number}</S.PublicCardLabel>
-                {isGM && (
-                  <Tag color={isSessionVisible(session) ? 'green' : 'red'} style={m0}>
-                    {isSessionVisible(session) ? 'Visible' : 'Hidden'}
-                  </Tag>
-                )}
-              </S.PublicCardTop>
-
-              <S.PublicCardMeta>
-                <IconLabel gap={6} icon="calendar">
-                  {formatDate(session.date)}
-                </IconLabel>
-              </S.PublicCardMeta>
-
-              <S.PublicCardTitle>{session.title}</S.PublicCardTitle>
-              <S.PublicCardSummary>{getSummaryPreview(session)}</S.PublicCardSummary>
-              <S.PublicCardSpacer />
-
-              <Divider style={dividerMd} />
-
-              <S.PublicCardFooter>
-                <S.PublicCardCreated>{formatDateTime(session.createdAt)}</S.PublicCardCreated>
-                <Space onClick={(event) => event.stopPropagation()} size={6}>
-                  {isGM && (
-                    <Switch
-                      checked={isSessionVisible(session)}
-                      onChange={() => void toggleVisible(session)}
-                      size="small"
-                      title={isSessionVisible(session) ? 'Hide' : 'Publish'}
-                    />
-                  )}
-                  <S.PublicCardOpenText>Open session</S.PublicCardOpenText>
-                </Space>
-              </S.PublicCardFooter>
-            </S.PublicCardBody>
-          </S.PublicCard>
-        );
-      })}
-    </S.PublicGrid>
+    <EntityCardGrid>
+      {publicItems.map((session) => renderSessionCard(session, () => openForView(session.id)))}
+    </EntityCardGrid>
   );
 
   const adminDesktopTable = (
@@ -697,207 +677,7 @@ export const SessionsPage: React.FC = () => {
     </Card>
   );
 
-  const desktopDrawerItems = openSession
-    ? [
-        {
-          key: 'view',
-          label: <IconLabel icon="notes">Session</IconLabel>,
-          children: (
-            <S.DrawerSectionStack>
-              <div style={S.previewFrame}>
-                <SessionCover expandable height={240} session={openSession} />
-              </div>
-
-              <Space size={8} wrap>
-                <Tag color="blue" icon={<AppIcon name="calendar" />}>
-                  {formatDate(openSession.date)}
-                </Tag>
-                <Tag color="default">Session #{sessionNumber(openSession.id)}</Tag>
-                {isGM && (
-                  <Space size={6}>
-                    <span style={mutedSm}>Publish:</span>
-                    <Switch
-                      checked={isSessionVisible(openSession)}
-                      onChange={() => void toggleVisible(openSession)}
-                      size="small"
-                    />
-                  </Space>
-                )}
-              </Space>
-
-              <Divider style={dividerSm} />
-
-              {openSession.summary ? (
-                <Card density="dense" title="Summary">
-                  <Typography.Paragraph style={S.detailSummaryText}>{openSession.summary}</Typography.Paragraph>
-                </Card>
-              ) : (
-                <Typography.Text type="secondary">No summary recorded.</Typography.Text>
-              )}
-
-              <Typography.Text style={S.detailTimestamp} type="secondary">
-                Created at: {formatDateTime(openSession.createdAt)}
-                {'  ·  '}
-                Updated: {formatDateTime(openSession.updatedAt)}
-              </Typography.Text>
-            </S.DrawerSectionStack>
-          ),
-        },
-        ...(isGM
-          ? [
-              {
-                key: 'edit',
-                label: <IconLabel icon="edit">Edit</IconLabel>,
-                children: (
-                  <S.DrawerSectionStack>
-                    <Card density="dense" title="Session Data">
-                      <Space orientation="vertical" size={10} style={w100}>
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Title
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditTitle(event.target.value)}
-                            placeholder="Session title"
-                            value={editTitle}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Date
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditDate(event.target.value)}
-                            placeholder="AW 2284, Day 3 or 2025-04-13"
-                            value={editDate}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Summary
-                          </Typography.Text>
-                          <TextArea
-                            onChange={(event) => setEditSummary(event.target.value)}
-                            placeholder="Milestones, key points and campaign fallout."
-                            rows={12}
-                            value={editSummary}
-                          />
-                        </div>
-                      </Space>
-                    </Card>
-
-                    <Card density="dense" title="Cover Image">
-                      <Space orientation="vertical" size={8} style={w100}>
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Image URL
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditImageUrl(event.target.value)}
-                            placeholder="https://example.com/image.jpg"
-                            value={editImageUrl}
-                          />
-                        </div>
-
-                        <div>
-                          <Typography.Text style={S.fieldLabelTextSm} type="secondary">
-                            Alt text
-                          </Typography.Text>
-                          <Input
-                            onChange={(event) => setEditImageAlt(event.target.value)}
-                            placeholder="Image description"
-                            value={editImageAlt}
-                          />
-                        </div>
-
-                        {(editImageUrl || openSession.imageUrl) && (
-                          <div style={S.previewFrame}>
-                            <SessionCover
-                              height={120}
-                              session={{
-                                ...openSession,
-                                imageAlt: editImageAlt || openSession.imageAlt,
-                                imageUrl: editImageUrl || openSession.imageUrl,
-                              }}
-                            />
-                          </div>
-                        )}
-                      </Space>
-                    </Card>
-
-                    <Card density="dense" title="Visibility">
-                      <Space style={spaceBetween}>
-                        <div>
-                          <Typography.Text>Visible to players</Typography.Text>
-                          <br />
-                          <Typography.Text style={textSm} type="secondary">
-                            Hidden sessions remain visible only to the GM.
-                          </Typography.Text>
-                        </div>
-                        <Switch
-                          checked={isSessionVisible(openSession)}
-                          checkedChildren={<EyeOutlined />}
-                          onChange={() => void toggleVisible(openSession)}
-                          unCheckedChildren={<EyeInvisibleOutlined />}
-                        />
-                      </Space>
-                    </Card>
-
-                    <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
-                      Save Changes
-                    </Button>
-                  </S.DrawerSectionStack>
-                ),
-              },
-            ]
-          : []),
-      ]
-    : [];
-
-  const detailDrawer =
-    openSession && !mobileOnly ? (
-      <Drawer
-        extra={
-          isGM ? (
-            <Space>
-              <Popconfirm
-                cancelText="Cancel"
-                okText="Remove"
-                onConfirm={() => void removeCurrentSession()}
-                title="Remove this session permanently?"
-              >
-                <Button danger icon={<DeleteOutlined />} size="small">
-                  Remove
-                </Button>
-              </Popconfirm>
-              {drawerTab === 'edit' && (
-                <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
-                  Save
-                </Button>
-              )}
-            </Space>
-          ) : null
-        }
-        onClose={closeSessionPanels}
-        open
-        size={700}
-        title={
-          <Space size={8} wrap>
-            <span style={S.drawerTitleText}>
-              Session #{sessionNumber(openSession.id)} · {openSession.title}
-            </span>
-            <Tag color={isSessionVisible(openSession) ? 'green' : 'red'}>
-              {isSessionVisible(openSession) ? 'Visible' : 'Hidden'}
-            </Tag>
-            <Badge count={`#${openSession.id}`} style={S.drawerIdBadge} />
-          </Space>
-        }
-      >
-        <Tabs activeKey={drawerTab} items={desktopDrawerItems} onChange={(key) => setDrawerTab(key as DrawerTab)} />
-      </Drawer>
-    ) : null;
+  const drawerTabs = useEditableDrawerTab(drawerTab, setDrawerTab, { view: 'view', edit: 'edit' }, openSession?.id);
 
   const mobileMeta = (
     <S.MobileMetaTags>
@@ -935,56 +715,8 @@ export const SessionsPage: React.FC = () => {
     </>
   );
 
-  const mobileOverview = openSession ? (
-    <S.MobileSectionStack>
-      <MobileCard compact>
-        <SessionCover expandable height={220} session={openSession} />
-      </MobileCard>
-
-      <MobileCard compact title="Summary">
-        <S.MobileBodyText>{openSession.summary?.trim() || 'No summary recorded yet.'}</S.MobileBodyText>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Session number</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{sessionNumber(openSession.id)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Date</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDate(openSession.date)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Visibility</S.MobileDetailLabel>
-            <S.MobileDetailValue>{isSessionVisible(openSession) ? 'Visible' : 'Hidden'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Session ID</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{openSession.id}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Created</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openSession.createdAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Updated</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateTime(openSession.updatedAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobileGM = openSession ? (
     <S.MobileSectionStack>
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={isSessionVisible(openSession)} onChange={() => void toggleVisible(openSession)} />
-        </S.MobileVisibilityRow>
-      </MobileCard>
-
       <MobileCard compact title="Session data">
         <MobileForm>
           <MobileForm.Item label="Title">
@@ -1061,6 +793,184 @@ export const SessionsPage: React.FC = () => {
     </S.MobileSectionStack>
   ) : null;
 
+  const detailDrawer = openSession ? (
+    <EntityDrawer
+      activeKey={drawerTabs.activeKey}
+      controls={[visibilityControl(isSessionVisible(openSession), () => void toggleVisible(openSession), 'sessions')]}
+      createdAt={openSession.createdAt}
+      extra={
+        isGM ? (
+          <Space>
+            <Popconfirm
+              cancelText="Cancel"
+              okText="Remove"
+              onConfirm={() => void removeCurrentSession()}
+              title="Remove this session permanently?"
+            >
+              <Button danger icon={<DeleteOutlined />} size="small">
+                Remove
+              </Button>
+            </Popconfirm>
+            {drawerTab === 'edit' && (
+              <Button loading={savingEdit} onClick={() => void saveEdit()} size="small" type="primary">
+                Save
+              </Button>
+            )}
+          </Space>
+        ) : null
+      }
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          mobileChildren: mobileGM,
+          children: (
+            <S.DrawerSectionStack>
+              <Card density="dense" title="Session Data">
+                <Space orientation="vertical" size={10} style={w100}>
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Title
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      placeholder="Session title"
+                      value={editTitle}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Date
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditDate(event.target.value)}
+                      placeholder="AW 2284, Day 3 or 2025-04-13"
+                      value={editDate}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Summary
+                    </Typography.Text>
+                    <TextArea
+                      onChange={(event) => setEditSummary(event.target.value)}
+                      placeholder="Milestones, key points and campaign fallout."
+                      rows={12}
+                      value={editSummary}
+                    />
+                  </div>
+                </Space>
+              </Card>
+
+              <Card density="dense" title="Cover Image">
+                <Space orientation="vertical" size={8} style={w100}>
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Image URL
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditImageUrl(event.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                      value={editImageUrl}
+                    />
+                  </div>
+
+                  <div>
+                    <Typography.Text style={S.fieldLabelTextSm} type="secondary">
+                      Alt text
+                    </Typography.Text>
+                    <Input
+                      onChange={(event) => setEditImageAlt(event.target.value)}
+                      placeholder="Image description"
+                      value={editImageAlt}
+                    />
+                  </div>
+
+                  {(editImageUrl || openSession.imageUrl) && (
+                    <div style={S.previewFrame}>
+                      <SessionCover
+                        height={120}
+                        session={{
+                          ...openSession,
+                          imageAlt: editImageAlt || openSession.imageAlt,
+                          imageUrl: editImageUrl || openSession.imageUrl,
+                        }}
+                      />
+                    </div>
+                  )}
+                </Space>
+              </Card>
+
+              <Card density="dense" title="Visibility">
+                <Space style={spaceBetween}>
+                  <div>
+                    <Typography.Text>Visible to players</Typography.Text>
+                    <br />
+                    <Typography.Text style={textSm} type="secondary">
+                      Hidden sessions remain visible only to the GM.
+                    </Typography.Text>
+                  </div>
+                  <Switch
+                    checked={isSessionVisible(openSession)}
+                    checkedChildren={<EyeOutlined />}
+                    onChange={() => void toggleVisible(openSession)}
+                    unCheckedChildren={<EyeInvisibleOutlined />}
+                  />
+                </Space>
+              </Card>
+
+              <Button block loading={savingEdit} onClick={() => void saveEdit()} type="primary">
+                Save Changes
+              </Button>
+            </S.DrawerSectionStack>
+          ),
+        },
+      ]}
+      gmView={isGM}
+      onClose={closeSessionPanels}
+      onTabChange={drawerTabs.onTabChange}
+      open
+      overview={{
+        key: drawerTabs.overviewKey,
+        image: <SessionCover expandable height={200} session={openSession} />,
+        meta: (
+          <>
+            <Tag color="blue" icon={<AppIcon name="calendar" />}>
+              {formatDate(openSession.date)}
+            </Tag>
+            <Tag>Session #{sessionNumber(openSession.id)}</Tag>
+          </>
+        ),
+        sections: [{ title: 'Summary', text: openSession.summary, fallback: 'No summary recorded.' }],
+      }}
+      status={{ visible: isSessionVisible(openSession) }}
+      title={openSession.title}
+      updatedAt={openSession.updatedAt}
+      mobileActiveKey={mobileSheetTab}
+      mobileFooter={
+        isGM && mobileSheetTab === 'gm' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={resetEditForm}>
+                Reset
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onMobileTabChange={(key) => setMobileSheetTab(key as SessionSheetTab)}
+      subtitle={formatDate(openSession.date)}
+    />
+  ) : null;
+
   if (mobileOnly) {
     const displayItems = viewMode === 'admin' && isGM ? adminItems : publicItems;
 
@@ -1118,51 +1028,9 @@ export const SessionsPage: React.FC = () => {
               </S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileSessionsGrid>
-              {displayItems.map((session) => (
-                <MobileCard compact key={session.id}>
-                  <S.MobileSessionBody>
-                    <SessionCover height={180} session={session} />
-
-                    <S.MobileSessionHeader>
-                      <S.MobileSessionIdentity>
-                        <S.MobileSessionTitle>{session.title}</S.MobileSessionTitle>
-                        <S.MobileMetaTags>
-                          <AdmMobileTag fill="outline" round>
-                            Session #{sessionNumber(session.id)}
-                          </AdmMobileTag>
-                          <AdmMobileTag color="primary" fill="outline" round>
-                            {formatDate(session.date)}
-                          </AdmMobileTag>
-                          {isGM && viewMode === 'admin' && (
-                            <AdmMobileTag
-                              color={isSessionVisible(session) ? 'success' : 'warning'}
-                              fill="outline"
-                              round
-                            >
-                              {isSessionVisible(session) ? 'Visible' : 'Hidden'}
-                            </AdmMobileTag>
-                          )}
-                        </S.MobileMetaTags>
-                      </S.MobileSessionIdentity>
-                    </S.MobileSessionHeader>
-
-                    <S.MobileSessionPreview>{getSummaryPreview(session)}</S.MobileSessionPreview>
-
-                    <S.MobileSessionActions>
-                      <AdmMobileButton block color="primary" onClick={() => openSessionSheet(session, 'overview')}>
-                        Open session
-                      </AdmMobileButton>
-                      {isGM && viewMode === 'admin' && (
-                        <AdmMobileButton block fill="outline" onClick={() => openSessionSheet(session, 'gm')}>
-                          <SetOutline fontSize={17} /> GM controls
-                        </AdmMobileButton>
-                      )}
-                    </S.MobileSessionActions>
-                  </S.MobileSessionBody>
-                </MobileCard>
-              ))}
-            </S.MobileSessionsGrid>
+            <EntityCardGrid>
+              {displayItems.map((session) => renderSessionCard(session, () => openSessionSheet(session, 'overview')))}
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
@@ -1213,49 +1081,7 @@ export const SessionsPage: React.FC = () => {
           </MobileFilterSheet>
         )}
 
-        <MobileEntitySheet
-          description={
-            openSession
-              ? isGM
-                ? 'Overview and GM controls for this campaign session.'
-                : 'Overview of this campaign session and its recorded aftermath.'
-              : undefined
-          }
-          footer={
-            openSession && isGM && mobileSheetTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={savingEdit} onClick={() => void saveEdit()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetEditForm}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={closeSessionPanels}
-          subtitle={openSession ? formatDate(openSession.date) : undefined}
-          title={openSession?.title ?? 'Session'}
-          visible={Boolean(openSession)}
-        >
-          {openSession && isGM ? (
-            <MobileTabs
-              activeKey={mobileSheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileOverview },
-                { key: 'gm', title: 'GM', children: mobileGM },
-              ]}
-              onChange={(key) => setMobileSheetTab(key as SessionSheetTab)}
-            />
-          ) : (
-            mobileOverview
-          )}
-        </MobileEntitySheet>
+        {detailDrawer}
 
         <MobileDialog
           actions={[

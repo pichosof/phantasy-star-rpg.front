@@ -43,10 +43,6 @@ export const drawerTitleText: CSSProperties = {
   fontWeight: 800,
 };
 
-export const drawerIdBadge: CSSProperties = {
-  backgroundColor: '#595959',
-};
-
 export const summaryPreviewText: CSSProperties = {
   ...textSm,
   display: 'block',
@@ -61,29 +57,10 @@ export const fieldLabelTextSm: CSSProperties = {
   marginBottom: 4,
 };
 
-export const detailSummaryText: CSSProperties = {
-  margin: 0,
-  fontSize: 14,
-  lineHeight: 1.75,
-  whiteSpace: 'pre-wrap',
-};
-
-export const detailTimestamp: CSSProperties = {
-  fontSize: 12,
-  color: 'var(--text-secondary-color)',
-};
-
 export const previewFrame: CSSProperties = {
   borderRadius: 10,
   overflow: 'hidden',
   marginTop: 4,
-};
-
-export const inlineSwitchRow: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
 };
 
 export const PublicGrid = styled.div<{ $tablet: boolean }>`
@@ -91,97 +68,6 @@ export const PublicGrid = styled.div<{ $tablet: boolean }>`
   grid-template-columns: ${({ $tablet }) => ($tablet ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))')};
   gap: 16px;
   align-items: start;
-`;
-
-export const PublicCard = styled.article`
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  background: var(--additional-background-color);
-  box-shadow: var(--box-shadow);
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: rgba(24, 144, 255, 0.35);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-  }
-`;
-
-export const PublicCardBody = styled.div`
-  display: grid;
-  gap: 8px;
-  padding: 14px 16px 12px;
-  min-width: 0;
-`;
-
-export const PublicCardTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-`;
-
-export const PublicCardLabel = styled.span`
-  color: var(--text-secondary-color);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-`;
-
-export const PublicCardMeta = styled.div`
-  color: var(--text-secondary-color);
-  font-size: 12px;
-`;
-
-export const PublicCardTitle = styled.div`
-  color: var(--text-main-color);
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.3;
-`;
-
-export const PublicCardSummary = styled.p`
-  display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
-  color: var(--text-secondary-color);
-  font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-`;
-
-export const PublicCardSpacer = styled.div`
-  min-height: 4px;
-`;
-
-export const PublicCardFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-export const PublicCardCreated = styled.span`
-  color: var(--text-secondary-color);
-  font-size: 11px;
-`;
-
-export const PublicCardOpenText = styled.span`
-  color: var(--primary-color, #1890ff);
-  font-size: 12px;
-  font-weight: 700;
 `;
 
 export const CoverFrame = styled.div<{ $height: number }>`
@@ -252,49 +138,6 @@ export const MobileMetaTags = styled.div`
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-`;
-
-export const MobileSessionsGrid = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileSessionBody = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileSessionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-`;
-
-export const MobileSessionIdentity = styled.div`
-  min-width: 0;
-  display: grid;
-  gap: 6px;
-`;
-
-export const MobileSessionTitle = styled.div`
-  color: var(--text-main-color);
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.1;
-`;
-
-export const MobileSessionPreview = styled.p`
-  margin: 0;
-  color: var(--text-secondary-color);
-  font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-`;
-
-export const MobileSessionActions = styled.div`
-  display: grid;
-  gap: 8px;
 `;
 
 export const MobileSectionStack = styled.div`

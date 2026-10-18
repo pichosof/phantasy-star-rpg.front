@@ -30,6 +30,7 @@ import { type GmNote, createGmNote, deleteGmNote, listGmNotes, updateGmNote } fr
 import { apiErrorMessage } from '../../utils/api-error';
 import { m0, textSm, textMd } from '@app/styles/styleUtils';
 import * as S from './GmNotesPage.styles';
+import RichText, { stripMarkdown } from '@app/components/common/RichText/RichText';
 
 function parseTags(tags?: string | null): string[] {
   if (!tags) return [];
@@ -67,7 +68,7 @@ function NoteCard({ note, active, onClick }: { note: GmNote; active: boolean; on
 
       {note.content && (
         <S.NotePreview type="secondary" ellipsis>
-          {note.content.slice(0, 80)}
+          {stripMarkdown(note.content).slice(0, 80)}
         </S.NotePreview>
       )}
     </S.NoteCardShell>
@@ -563,7 +564,9 @@ export const GmNotesPage: React.FC = () => {
 
       <S.ContentDivider $color={dividerColor} />
       <S.ContentParagraph>
-        {activeNote.content || <Typography.Text type="secondary">No content.</Typography.Text>}
+        <RichText fallback={<Typography.Text type="secondary">No content.</Typography.Text>}>
+          {activeNote.content}
+        </RichText>
       </S.ContentParagraph>
     </div>
   ) : (

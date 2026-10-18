@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Drawer, Empty, Modal, Popconfirm, Space, Switch, Tabs, Tag, Typography, message } from 'antd';
-import type { TabsProps } from 'antd';
+import { Divider, Empty, Modal, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
+
 import {
   DeleteOutlined,
   EditOutlined,
@@ -14,7 +14,6 @@ import {
 import {
   Button as AdmMobileButton,
   SpinLoading,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
   Input as AdmMobileInput,
@@ -38,7 +37,6 @@ import {
   MobilePageScaffold,
   MobileSearchBar,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Input, TextArea } from '@app/components/common/inputs/Input/Input';
@@ -50,9 +48,6 @@ import { useGMMode } from '@app/hooks/useGMMode';
 import { useResponsive } from '@app/hooks/useResponsive';
 import type { City } from '@app/types/rpg';
 import {
-  bold700,
-  bold800,
-  cardGrid2,
   carouselCounterCenter,
   carouselCounterCenterLg,
   carouselNavBtnLeft,
@@ -60,11 +55,8 @@ import {
   carouselNavBtnRight,
   carouselNavBtnRightLg,
   carouselZoomBtn,
-  dividerMd,
   dividerSm,
-  imgThumbTop,
   m0,
-  preWrap,
   spaceBetween,
   tableWrap,
   textMd,
@@ -73,6 +65,9 @@ import {
 } from '@app/styles/styleUtils';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './CitiesPage.styles';
+import RichText, { stripMarkdown } from '@app/components/common/RichText/RichText';
+import EntityDrawer, { discoveredControl, visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type ViewMode = 'players' | 'gm';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -119,19 +114,6 @@ function getCityCover(city: City) {
   }
 
   return null;
-}
-
-function getCitySummary(city: City, mode: ViewMode) {
-  if (mode === 'players' && !city.discovered) {
-    return 'Information unavailable until the city is discovered.';
-  }
-
-  const description = city.description?.trim();
-  if (!description) {
-    return mode === 'players' ? 'No description yet.' : 'No description added yet.';
-  }
-
-  return description.length > 160 ? `${description.slice(0, 157)}...` : description;
 }
 
 function CityImageCarousel({ city }: { city: City }) {
@@ -545,7 +527,16 @@ export const CitiesPage: React.FC = () => {
     </Card>
   );
 
-  const desktopCityCards = ({ data, mode }: { data: City[]; mode: ViewMode }) => {
+  const cityCards = ({
+    data,
+    mode,
+    onOpen,
+  }: {
+    data: City[];
+    mode: ViewMode;
+    /** Phones: open the sheet on a given tab instead of the desktop drawers. */
+    onOpen?: (city: City, tab: CitySheetTab) => void;
+  }) => {
     if (loading) return <Spinner />;
 
     if (!data.length) {
@@ -557,84 +548,56 @@ export const CitiesPage: React.FC = () => {
     }
 
     return (
-      <div style={cardGrid2(mobileOnly)}>
+      <EntityCardGrid>
         {data.map((city) => {
           const region = ((city as any).region as string | null | undefined) ?? null;
           const visible = isCityVisible(city);
           const playerCanRead = city.discovered === true;
           const cover = getCityCover(city);
+          const showCover = mode === 'gm' || playerCanRead;
 
           return (
-            <Card
-              density={mode === 'players' ? 'comfy' : 'dense'}
-              extra={
+            <EntityCard
+              actions={
                 mode === 'gm' ? (
-                  <Button onClick={() => openAdmin(city)} size="small">
-                    Admin
-                  </Button>
-                ) : (
-                  <Button onClick={() => setOpenCityId(city.id)} size="small">
-                    View
-                  </Button>
-                )
+                  <>
+                    <Switch
+                      checked={visible}
+                      checkedChildren={<EyeOutlined />}
+                      onChange={() => void toggleVisible(city)}
+                      size="small"
+                      title="Visible to players"
+                      unCheckedChildren={<EyeInvisibleOutlined />}
+                    />
+                    <Switch
+                      checked={city.discovered}
+                      onChange={() => void toggleDiscovered(city)}
+                      size="small"
+                      title="Discovered"
+                    />
+                    <Button onClick={() => (onOpen ? onOpen(city, 'gm') : openAdmin(city))} size="small">
+                      Admin
+                    </Button>
+                  </>
+                ) : null
               }
+              chips={mode === 'gm' ? isCityMapped(city) ? <Tag color="cyan">Mapped</Tag> : <Tag>Not mapped</Tag> : null}
+              cover={showCover && cover ? { src: cover.src, alt: cover.alt } : null}
+              footer={formatDate((city as any).createdAt)}
+              icon="location"
               key={city.id}
-              title={
-                <Space size={8} wrap>
-                  <span style={bold700}>{city.name}</span>
-                  {region ? <Tag>{region}</Tag> : null}
-                  {mode === 'gm' && (
-                    <>
-                      <Tag color={visible ? 'green' : 'red'}>{visible ? 'Visible' : 'Hidden'}</Tag>
-                      <Tag color={city.discovered ? 'gold' : 'default'}>
-                        {city.discovered ? 'Discovered' : 'Not discovered'}
-                      </Tag>
-                      {isCityMapped(city) ? <Tag color="cyan">Mapped</Tag> : <Tag>Not mapped</Tag>}
-                    </>
-                  )}
-                </Space>
-              }
-            >
-              {mode === 'players' && playerCanRead && cover ? (
-                <div style={imgThumbTop}>
-                  <img alt={cover.alt} src={cover.src} style={S.cityCoverImage} />
-                </div>
-              ) : null}
-
-              <Typography.Paragraph ellipsis={{ rows: 3 }} style={m0}>
-                {mode === 'players'
-                  ? playerCanRead
-                    ? city.description?.trim() || 'No description yet.'
-                    : 'Information unavailable.'
-                  : city.description?.trim() || '-'}
-              </Typography.Paragraph>
-
-              {mode === 'gm' && (
-                <>
-                  <Divider style={dividerMd} />
-                  <Space size={16} wrap>
-                    <Space size={8}>
-                      <span className="rpg-text-sm rpg-muted">Visible:</span>
-                      <Switch
-                        checked={visible}
-                        checkedChildren={<EyeOutlined />}
-                        onChange={() => void toggleVisible(city)}
-                        size="small"
-                        unCheckedChildren={<EyeInvisibleOutlined />}
-                      />
-                    </Space>
-
-                    <Space size={8}>
-                      <span className="rpg-text-sm rpg-muted">Discovered:</span>
-                      <Switch checked={city.discovered} onChange={() => void toggleDiscovered(city)} size="small" />
-                    </Space>
-                  </Space>
-                </>
-              )}
-            </Card>
+              label={region ?? 'City'}
+              locked={mode === 'players' && !playerCanRead ? 'Information unavailable.' : null}
+              onClick={() => (onOpen ? onOpen(city, 'overview') : setOpenCityId(city.id))}
+              openText="Open city"
+              seed={city.id}
+              status={mode === 'gm' ? { visible, discovered: Boolean(city.discovered) } : undefined}
+              summary={city.description}
+              title={city.name}
+            />
           );
         })}
-      </div>
+      </EntityCardGrid>
     );
   };
 
@@ -686,7 +649,7 @@ export const CitiesPage: React.FC = () => {
                   </Space>
 
                   <Typography.Text style={S.tableDescription} type="secondary">
-                    {city.description?.trim() || '-'}
+                    {stripMarkdown(city.description) || '-'}
                   </Typography.Text>
                 </Space>
               ),
@@ -733,155 +696,6 @@ export const CitiesPage: React.FC = () => {
     </Card>
   );
 
-  const cityDrawerTabItems: TabsProps['items'] = openCity
-    ? [
-        {
-          key: 'desc',
-          label: 'Description',
-          children: (
-            <>
-              <CityImageCarousel city={openCity} />
-              <Card density="comfy" title="Description">
-                <Typography.Paragraph style={preWrap}>
-                  {viewMode === 'players'
-                    ? openCity.discovered === true
-                      ? openCity.description?.trim() || 'No description yet.'
-                      : 'Information unavailable.'
-                    : openCity.description?.trim() || 'No description.'}
-                </Typography.Paragraph>
-              </Card>
-            </>
-          ),
-        },
-        {
-          key: 'lores',
-          label: `Lores (${cityLores.length})`,
-          children: !openCity.discovered ? (
-            <Card density="comfy">
-              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
-            </Card>
-          ) : linksLoading ? (
-            <Spinner />
-          ) : !cityLores.length ? (
-            <Card density="comfy">
-              <Empty description="No lores linked to this city." />
-            </Card>
-          ) : (
-            <div style={S.linkedCardsGrid}>
-              {cityLores.map((lore) => (
-                <Card density="comfy" key={lore.id} title={lore.title}>
-                  {lore.category ? <Tag>{lore.category}</Tag> : null}
-                  <Typography.Paragraph style={S.linkedParagraph}>{lore.content?.trim() || '-'}</Typography.Paragraph>
-                </Card>
-              ))}
-            </div>
-          ),
-        },
-        {
-          key: 'quests',
-          label: `Quests (${cityQuests.length})`,
-          children: !openCity.discovered ? (
-            <Card density="comfy">
-              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
-            </Card>
-          ) : linksLoading ? (
-            <Spinner />
-          ) : !cityQuests.length ? (
-            <Card density="comfy">
-              <Empty description="No quests linked to this city." />
-            </Card>
-          ) : (
-            <div style={S.linkedCardsGrid}>
-              {cityQuests.map((quest) => (
-                <Card density="comfy" key={quest.id} title={quest.title}>
-                  {quest.status ? <Tag>{quest.status}</Tag> : null}
-                  {quest.reward ? <Tag color="gold">Reward</Tag> : null}
-                  <Typography.Paragraph style={S.linkedParagraph}>
-                    {quest.description?.trim() || '-'}
-                  </Typography.Paragraph>
-                  {quest.reward ? (
-                    <Typography.Text style={S.rewardText} type="secondary">
-                      Reward: {quest.reward}
-                    </Typography.Text>
-                  ) : null}
-                </Card>
-              ))}
-            </div>
-          ),
-        },
-        ...(isGM && viewMode === 'gm'
-          ? [
-              {
-                key: 'gm',
-                label: 'GM Actions',
-                children: (
-                  <Card density="dense" title="Controls">
-                    <Space orientation="vertical" size={12} style={w100}>
-                      <Space style={spaceBetween}>
-                        <div>
-                          <Typography.Text>Visible to players</Typography.Text>
-                          <br />
-                          <Typography.Text style={textSm} type="secondary">
-                            Hidden cities do not appear in the list.
-                          </Typography.Text>
-                        </div>
-                        <Switch
-                          checked={isCityVisible(openCity)}
-                          checkedChildren={<EyeOutlined />}
-                          onChange={() => void toggleVisible(openCity)}
-                          unCheckedChildren={<EyeInvisibleOutlined />}
-                        />
-                      </Space>
-
-                      <Space style={spaceBetween}>
-                        <div>
-                          <Typography.Text>Marked as discovered</Typography.Text>
-                          <br />
-                          <Typography.Text style={textSm} type="secondary">
-                            Unlocks description, lores and quests for players.
-                          </Typography.Text>
-                        </div>
-                        <Switch checked={openCity.discovered} onChange={() => void toggleDiscovered(openCity)} />
-                      </Space>
-
-                      <Divider style={dividerSm} />
-
-                      <Typography.Text style={textSm} type="secondary">
-                        Created: {formatDate((openCity as any).createdAt)} {'  ·  '} Updated:{' '}
-                        {formatDate((openCity as any).updatedAt)}
-                      </Typography.Text>
-                    </Space>
-                  </Card>
-                ),
-              },
-            ]
-          : []),
-      ]
-    : [];
-
-  const cityDrawer = openCity ? (
-    <Drawer
-      onClose={() => setOpenCityId(null)}
-      open={Boolean(openCity)}
-      size={mobileOnly ? '100%' : 560}
-      title={
-        <Space size={8} wrap>
-          <span style={bold800}>{openCity.name}</span>
-          {isGM && viewMode === 'gm' && (
-            <>
-              <Tag color={isCityVisible(openCity) ? 'green' : 'red'}>
-                {isCityVisible(openCity) ? 'Visible' : 'Hidden'}
-              </Tag>
-              {openCity.discovered ? <Tag color="gold">Discovered</Tag> : <Tag>Not discovered</Tag>}
-            </>
-          )}
-        </Space>
-      }
-    >
-      <Tabs defaultActiveKey="desc" items={cityDrawerTabItems} />
-    </Drawer>
-  ) : null;
-
   const mobileMeta = (
     <div style={S.mobileMetaTags}>
       <AdmMobileTag fill="outline" round>
@@ -923,51 +737,6 @@ export const CitiesPage: React.FC = () => {
     </>
   );
 
-  const mobileOverview = openCity ? (
-    <div style={S.mobileSectionStack}>
-      <CityImageCarousel city={openCity} />
-
-      <MobileCard compact title="Description">
-        <Typography.Paragraph style={preWrap}>
-          {viewMode === 'players'
-            ? openCity.discovered
-              ? openCity.description?.trim() || 'No description yet.'
-              : 'Information unavailable until this city is discovered.'
-            : openCity.description?.trim() || 'No description yet.'}
-        </Typography.Paragraph>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <dl style={S.mobileDetailGrid}>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>City ID</dt>
-            <dd style={S.mobileDetailValue}>#{openCity.id}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Region</dt>
-            <dd style={S.mobileDetailValue}>{((openCity as any).region as string | null | undefined) ?? '-'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Status</dt>
-            <dd style={S.mobileDetailValue}>{openCity.discovered ? 'Discovered' : 'Undiscovered'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Map</dt>
-            <dd style={S.mobileDetailValue}>{isCityMapped(openCity) ? 'Mapped' : 'Not mapped'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Created</dt>
-            <dd style={S.mobileDetailValue}>{formatDate((openCity as any).createdAt)}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Updated</dt>
-            <dd style={S.mobileDetailValue}>{formatDate((openCity as any).updatedAt)}</dd>
-          </div>
-        </dl>
-      </MobileCard>
-    </div>
-  ) : null;
-
   const mobileLores = openCity ? (
     !openCity.discovered ? (
       <MobileCard compact>
@@ -987,7 +756,7 @@ export const CitiesPage: React.FC = () => {
       <MobileList>
         {cityLores.map((lore) => (
           <MobileList.Item
-            description={lore.content?.trim() || 'No lore summary yet.'}
+            description={stripMarkdown(lore.content) || 'No lore summary yet.'}
             extra={
               lore.category ? (
                 <AdmMobileTag fill="outline" round>
@@ -1023,7 +792,7 @@ export const CitiesPage: React.FC = () => {
       <MobileList>
         {cityQuests.map((quest) => (
           <MobileList.Item
-            description={quest.description?.trim() || 'No quest summary yet.'}
+            description={stripMarkdown(quest.description) || 'No quest summary yet.'}
             extra={
               <div style={S.mobileMetaTags}>
                 {quest.status ? (
@@ -1049,40 +818,6 @@ export const CitiesPage: React.FC = () => {
 
   const mobileGM = openCity ? (
     <div style={S.mobileSectionStack}>
-      <MobileCard compact title="Controls">
-        <div style={S.mobileSectionStack}>
-          <div style={S.mobileStatusRow}>
-            <span style={S.mobileInlineLabel}>Visible to players</span>
-            <AdmMobileSwitch checked={isCityVisible(openCity)} onChange={() => void toggleVisible(openCity)} />
-          </div>
-          <div style={S.mobileStatusRow}>
-            <span style={S.mobileInlineLabel}>Marked as discovered</span>
-            <AdmMobileSwitch checked={Boolean(openCity.discovered)} onChange={() => void toggleDiscovered(openCity)} />
-          </div>
-        </div>
-      </MobileCard>
-
-      <MobileCard compact title="Metadata">
-        <dl style={S.mobileDetailGrid}>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Visible</dt>
-            <dd style={S.mobileDetailValue}>{isCityVisible(openCity) ? 'Yes' : 'No'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Discovered</dt>
-            <dd style={S.mobileDetailValue}>{openCity.discovered ? 'Yes' : 'No'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Mapped</dt>
-            <dd style={S.mobileDetailValue}>{isCityMapped(openCity) ? 'Yes' : 'No'}</dd>
-          </div>
-          <div style={S.mobileDetailItem}>
-            <dt style={S.mobileDetailLabel}>Region</dt>
-            <dd style={S.mobileDetailValue}>{((openCity as any).region as string | null | undefined) ?? '-'}</dd>
-          </div>
-        </dl>
-      </MobileCard>
-
       <MobileCard compact title="Admin Editor">
         <Typography.Paragraph style={S.linkedParagraph}>
           Use the full editor to manage city details, tags, images, lores, quests and world links.
@@ -1099,6 +834,99 @@ export const CitiesPage: React.FC = () => {
         </AdmMobileButton>
       </MobileCard>
     </div>
+  ) : null;
+
+  const cityDrawer = openCity ? (
+    <EntityDrawer
+      controls={[
+        visibilityControl(isCityVisible(openCity), () => void toggleVisible(openCity), 'cities'),
+        discoveredControl(
+          Boolean(openCity.discovered),
+          () => void toggleDiscovered(openCity),
+          'description, lores and quests',
+        ),
+      ]}
+      createdAt={(openCity as any).createdAt}
+      gmView={isGM && viewMode === 'gm'}
+      onClose={mobileOnly ? closeCitySheet : () => setOpenCityId(null)}
+      open={Boolean(openCity)}
+      overview={{
+        image: <CityImageCarousel city={openCity} />,
+        sections: [{ title: 'Description', text: openCity.description }],
+        unavailable: viewMode === 'players' && openCity.discovered !== true ? 'Information unavailable.' : null,
+      }}
+      status={{ visible: isCityVisible(openCity), discovered: Boolean(openCity.discovered) }}
+      tabs={[
+        {
+          key: 'lores',
+          label: 'Lores',
+          count: cityLores.length,
+          mobileChildren: mobileLores,
+          children: !openCity.discovered ? (
+            <Card density="comfy">
+              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
+            </Card>
+          ) : linksLoading ? (
+            <Spinner />
+          ) : !cityLores.length ? (
+            <Card density="comfy">
+              <Empty description="No lores linked to this city." />
+            </Card>
+          ) : (
+            <div style={S.linkedCardsGrid}>
+              {cityLores.map((lore) => (
+                <Card density="comfy" key={lore.id} title={lore.title}>
+                  {lore.category ? <Tag>{lore.category}</Tag> : null}
+                  <RichText fallback={<Typography.Paragraph style={S.linkedParagraph}>-</Typography.Paragraph>}>
+                    {lore.content}
+                  </RichText>
+                </Card>
+              ))}
+            </div>
+          ),
+        },
+        {
+          key: 'quests',
+          label: 'Quests',
+          count: cityQuests.length,
+          mobileChildren: mobileQuests,
+          children: !openCity.discovered ? (
+            <Card density="comfy">
+              <Typography.Text type="secondary">Content unavailable until the city is discovered.</Typography.Text>
+            </Card>
+          ) : linksLoading ? (
+            <Spinner />
+          ) : !cityQuests.length ? (
+            <Card density="comfy">
+              <Empty description="No quests linked to this city." />
+            </Card>
+          ) : (
+            <div style={S.linkedCardsGrid}>
+              {cityQuests.map((quest) => (
+                <Card density="comfy" key={quest.id} title={quest.title}>
+                  {quest.status ? <Tag>{quest.status}</Tag> : null}
+                  {quest.reward ? <Tag color="gold">Reward</Tag> : null}
+                  <RichText fallback={<Typography.Paragraph style={S.linkedParagraph}>-</Typography.Paragraph>}>
+                    {quest.description}
+                  </RichText>
+                  {quest.reward ? (
+                    <Typography.Text style={S.rewardText} type="secondary">
+                      Reward: {quest.reward}
+                    </Typography.Text>
+                  ) : null}
+                </Card>
+              ))}
+            </div>
+          ),
+        },
+      ]}
+      title={openCity.name}
+      updatedAt={(openCity as any).updatedAt}
+      gmTabs={mobileOnly ? [{ key: 'admin', label: 'Admin', children: null, mobileChildren: mobileGM }] : []}
+      mobileActiveKey={citySheetTab}
+      onMobileTabChange={(key) => setCitySheetTab(key as CitySheetTab)}
+      subtitle={(openCity as any).region ? `Region: ${(openCity as any).region}` : undefined}
+    />
   ) : null;
 
   if (mobileOnly) {
@@ -1156,70 +984,11 @@ export const CitiesPage: React.FC = () => {
               <Empty description={viewMode === 'players' ? 'No cities visible to players yet.' : 'No cities found.'} />
             </MobileCard>
           ) : (
-            <div style={S.mobileCitiesGrid}>
-              {mobileItems.map((city) => {
-                const cover = getCityCover(city);
-                const region = ((city as any).region as string | null | undefined) ?? null;
-
-                return (
-                  <MobileCard compact key={city.id}>
-                    <div style={S.mobileCityCardBody}>
-                      <div style={S.mobileCityMedia}>
-                        {cover ? (
-                          <img alt={cover.alt} src={cover.src} style={S.mobileCityImage} />
-                        ) : (
-                          <div style={S.mobileImageFallback}>
-                            <IconLabel icon="location">City</IconLabel>
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={S.mobileCityTitleRow}>
-                        <div style={S.mobileCityIdentity}>
-                          <div style={S.mobileCityName}>{city.name}</div>
-                          <div style={S.mobileMetaTags}>
-                            {region ? (
-                              <AdmMobileTag fill="outline" round>
-                                {region}
-                              </AdmMobileTag>
-                            ) : null}
-                            {isGM && viewMode === 'gm' ? (
-                              <>
-                                <AdmMobileTag color={isCityVisible(city) ? 'success' : 'warning'} fill="outline" round>
-                                  {isCityVisible(city) ? 'Visible' : 'Hidden'}
-                                </AdmMobileTag>
-                                <AdmMobileTag color={city.discovered ? 'primary' : 'default'} fill="outline" round>
-                                  {city.discovered ? 'Discovered' : 'Undiscovered'}
-                                </AdmMobileTag>
-                              </>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-
-                      <p style={S.mobileCitySummary}>
-                        {getCitySummary(city, viewMode === 'gm' && isGM ? 'gm' : 'players')}
-                      </p>
-
-                      <div style={S.mobileCityButtons}>
-                        <AdmMobileButton block color="primary" onClick={() => openCitySheet(city, 'overview')}>
-                          Open city
-                        </AdmMobileButton>
-                        {isGM && viewMode === 'gm' ? (
-                          <AdmMobileButton block fill="outline" onClick={() => openCitySheet(city, 'gm')}>
-                            GM controls
-                          </AdmMobileButton>
-                        ) : (
-                          <AdmMobileButton block fill="outline" onClick={() => openCitySheet(city, 'quests')}>
-                            Related content
-                          </AdmMobileButton>
-                        )}
-                      </div>
-                    </div>
-                  </MobileCard>
-                );
-              })}
-            </div>
+            cityCards({
+              data: mobileItems,
+              mode: isGM && viewMode === 'gm' ? 'gm' : 'players',
+              onOpen: (city, tab) => openCitySheet(city, tab),
+            })
           )}
         </MobilePageScaffold>
 
@@ -1270,42 +1039,7 @@ export const CitiesPage: React.FC = () => {
           </MobileFilterSheet>
         )}
 
-        <MobileEntitySheet
-          description={
-            openCity
-              ? isGM
-                ? 'Overview, linked lore, quests and GM controls for this city.'
-                : 'Description and linked campaign content for this city.'
-              : undefined
-          }
-          onClose={closeCitySheet}
-          subtitle={
-            openCity && ((openCity as any).region as string | null | undefined)
-              ? `Region: ${(openCity as any).region}`
-              : undefined
-          }
-          title={openCity?.name ?? 'City'}
-          visible={Boolean(openCity)}
-        >
-          {openCity && isGM ? (
-            <MobileTabs
-              activeKey={citySheetTab}
-              items={[
-                { key: 'overview', title: 'Overview', children: mobileOverview },
-                { key: 'lores', title: `Lores (${cityLores.length})`, children: mobileLores },
-                { key: 'quests', title: `Quests (${cityQuests.length})`, children: mobileQuests },
-                { key: 'gm', title: 'GM', children: mobileGM },
-              ]}
-              onChange={(key) => setCitySheetTab(key as CitySheetTab)}
-            />
-          ) : (
-            <div style={S.mobileSectionStack}>
-              {mobileOverview}
-              {mobileLores}
-              {mobileQuests}
-            </div>
-          )}
-        </MobileEntitySheet>
+        {cityDrawer}
 
         <MobileEntitySheet
           description="Create a city from mobile first, then refine details and links in the admin editor."
@@ -1407,7 +1141,7 @@ export const CitiesPage: React.FC = () => {
         </>
       ) : (
         <>
-          {loading ? <Spinner /> : desktopCityCards({ data: playerItems, mode: 'players' })}
+          {loading ? <Spinner /> : cityCards({ data: playerItems, mode: 'players' })}
           {!mobileOnly ? cityDrawer : null}
         </>
       )}

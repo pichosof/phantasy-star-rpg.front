@@ -41,6 +41,7 @@
     "react-router-hash-link": "^2.4.3",
     "react-slick": "^0.31.0",
     "react-verification-input": "^4.2.2",
+    "remark-breaks": "4.0.0",
     "remark-gfm": "4.0.1",
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.4.1",

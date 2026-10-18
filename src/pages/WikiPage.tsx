@@ -61,8 +61,9 @@ import {
 } from '@app/api/wiki.api';
 import type { WikiPage as WikiPageType } from '@app/api/wiki.api';
 import { apiErrorMessage } from '../utils/api-error';
-import { w100, spaceBetween } from '@app/styles/styleUtils';
+import { w100 } from '@app/styles/styleUtils';
 import * as S from './WikiPage.styles';
+import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 // ── Styled components ────────────────────────────────────────────────────────
 
@@ -87,15 +88,6 @@ function groupByCategory(pages: WikiPageType[]) {
     map.get(key)!.push(p);
   }
   return { pinned, byCategory: map };
-}
-
-function wikiExcerpt(page: WikiPageType, length = 120) {
-  const text = (page.content ?? '')
-    .replace(/[#*`>\n]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (!text) return 'No content yet.';
-  return text.length > length ? `${text.slice(0, length).trim()}...` : text;
 }
 
 // ── Componente principal ─────────────────────────────────────────────────────
@@ -412,43 +404,37 @@ export const WikiPage: React.FC = () => {
   );
 
   // ── Article list (when no article open) ──────────────────────────────────
+  const renderArticleCard = (page: WikiPageType) => (
+    <EntityCard
+      chips={
+        page.pinned ? (
+          <Tag icon={<PushpinFilled />} style={S.categoryTag}>
+            Pinned
+          </Tag>
+        ) : null
+      }
+      footer={page.updatedAt ? new Date(page.updatedAt).toLocaleDateString() : undefined}
+      key={page.id}
+      label={page.category?.trim() || 'General'}
+      noCover
+      onClick={() => {
+        setOpenId(page.id);
+        setEditing(false);
+      }}
+      openText="Read article"
+      status={isGM ? { visible: page.visible !== false } : undefined}
+      summary={page.content}
+      summaryFallback="No content"
+      title={page.title}
+    />
+  );
+
   const ArticleList = (
     <S.listWrap>
       {visible.length === 0 && (
         <Empty description={q ? 'No articles found.' : 'No articles in this category.'} style={S.emptyState} />
       )}
-      {visible.map((page) => (
-        <S.ArticleCard
-          key={page.id}
-          onClick={() => {
-            setOpenId(page.id);
-            setEditing(false);
-          }}
-        >
-          <Space style={spaceBetween} wrap>
-            <Space size={6}>
-              {page.pinned && <PushpinFilled style={S.pinnedIcon} />}
-              <Typography.Text strong style={S.articleTitle}>
-                {page.title}
-              </Typography.Text>
-              {page.category && <Tag style={S.categoryTag}>{page.category}</Tag>}
-              {isGM && !page.visible && (
-                <Tag color="red" style={S.hiddenTag}>
-                  Hidden
-                </Tag>
-              )}
-            </Space>
-            <Typography.Text style={S.articleExcerpt}>
-              {page.content
-                ? `${page.content
-                    .slice(0, 80)
-                    .replace(/[#*`>\n]/g, ' ')
-                    .trim()}…`
-                : 'No content'}
-            </Typography.Text>
-          </Space>
-        </S.ArticleCard>
-      ))}
+      <EntityCardGrid columns={mobileOnly ? 1 : 2}>{visible.map((page) => renderArticleCard(page))}</EntityCardGrid>
     </S.listWrap>
   );
 
@@ -869,33 +855,7 @@ export const WikiPage: React.FC = () => {
               <S.MobileEmptyState>{q ? 'No articles found.' : 'No articles in this category.'}</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobileArticleList>
-              {visible.map((page) => (
-                <MobileCard compact key={page.id} onClick={() => setOpenId(page.id)}>
-                  <S.MobileArticleBody>
-                    <S.MobileMetaTags>
-                      {page.pinned ? (
-                        <AdmMobileTag color="warning" fill="outline" round>
-                          <StarFill fontSize={13} /> Pinned
-                        </AdmMobileTag>
-                      ) : null}
-                      {page.category ? (
-                        <AdmMobileTag fill="outline" round>
-                          {page.category}
-                        </AdmMobileTag>
-                      ) : null}
-                      {isGM && !page.visible ? (
-                        <AdmMobileTag color="danger" fill="outline" round>
-                          Hidden
-                        </AdmMobileTag>
-                      ) : null}
-                    </S.MobileMetaTags>
-                    <S.MobileArticleTitle>{page.title}</S.MobileArticleTitle>
-                    <S.MobileArticleExcerpt>{wikiExcerpt(page)}</S.MobileArticleExcerpt>
-                  </S.MobileArticleBody>
-                </MobileCard>
-              ))}
-            </S.MobileArticleList>
+            <EntityCardGrid>{visible.map((page) => renderArticleCard(page))}</EntityCardGrid>
           )}
         </MobilePageScaffold>
 

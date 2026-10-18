@@ -301,42 +301,9 @@ export const emptyState: CSSProperties = {
   marginTop: 48,
 };
 
-export const ArticleCard = styled.div`
-  padding: 14px 18px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  background: var(--additional-background-color);
-  transition: all 0.15s;
-
-  &:hover {
-    border-color: var(--primary-color);
-  }
-`;
-
-export const pinnedIcon: CSSProperties = {
-  color: 'var(--warning-color)',
-  fontSize: 12,
-};
-
-export const articleTitle: CSSProperties = {
-  color: 'var(--text-main-color)',
-  fontSize: 14,
-};
-
 export const categoryTag: CSSProperties = {
   margin: 0,
   fontSize: 11,
-};
-
-export const hiddenTag: CSSProperties = {
-  margin: 0,
-  fontSize: 11,
-};
-
-export const articleExcerpt: CSSProperties = {
-  fontSize: 12,
-  color: 'var(--text-superLight-color)',
 };
 
 export const articleHeader: CSSProperties = {
@@ -439,10 +406,6 @@ export const previewEmpty: CSSProperties = {
   fontSize: 13,
 };
 
-export const mobileContent: CSSProperties = {
-  padding: '16px',
-};
-
 export const HiddenFileInput = styled.input`
   display: none;
 `;
@@ -462,36 +425,6 @@ export const MobileFilterRow = styled.div`
   > * {
     flex: 1;
   }
-`;
-
-export const MobileArticleList = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileArticleBody = styled.div`
-  display: grid;
-  gap: 10px;
-`;
-
-export const MobileArticleTitle = styled.h2`
-  margin: 0;
-  color: var(--text-main-color);
-  font-size: 1.05rem;
-  line-height: 1.2;
-  font-weight: 800;
-  overflow-wrap: anywhere;
-`;
-
-export const MobileArticleExcerpt = styled.p`
-  margin: 0;
-  color: var(--text-secondary-color);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 `;
 
 export const MobileEmptyState = styled.div`

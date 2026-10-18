@@ -1,5 +1,5 @@
 import React from 'react';
-import { EyeOutlined, IdcardOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { PdfDocumentViewer } from '@app/components/common/pdf/PdfDocumentViewer/PdfDocumentViewer';
 import { Switch } from '@app/components/common/Switch/Switch';
@@ -9,14 +9,19 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import type { Player } from '@app/types/rpg';
 import * as S from './PlayerCard.styles';
+import RichText from '@app/components/common/RichText/RichText';
+import EntityCard from '@app/components/common/EntityCard/EntityCard';
+import { Tag } from 'antd';
 
 type PlayerCardProps = {
   player: Player;
   gm?: boolean;
   onToggleVisible?: (player: Player) => void;
+  /** Replaces the profile modal (phones open the player sheet). */
+  onOpen?: () => void;
 };
 
-export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onToggleVisible }) => {
+export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onToggleVisible, onOpen }) => {
   const { mobileOnly } = useResponsive();
 
   const [openProfile, setOpenProfile] = React.useState(false);
@@ -40,59 +45,36 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
       .finally(() => setSheetLoading(false));
   }
 
-  const renderBackground = (text: string) => {
-    const paragraphs = text.replace(/\r\n/g, '\n').split(/\n{2,}/);
-
-    return (
-      <S.BackgroundParagraphs>
-        {paragraphs.map((paragraph, index) => (
-          <S.BackgroundParagraph key={index}>{paragraph}</S.BackgroundParagraph>
-        ))}
-      </S.BackgroundParagraphs>
-    );
-  };
-
-  const previewBackground =
-    player.background && player.background.length > 120
-      ? `${player.background.slice(0, 120).trimEnd()}`
-      : player.background || '';
-
   return (
     <>
-      <S.Card padding={0} $img={imageUrl}>
-        <S.PlayerImage src={imageUrl} alt={player.imageAlt || player.name} />
-        <S.TopOverlay />
-
-        <S.Info>
-          <S.HeaderRow>
-            <S.Title>{player.name}</S.Title>
-            <S.LevelBadge>LV {player.level}</S.LevelBadge>
-          </S.HeaderRow>
-
-          {!!previewBackground && (
-            <S.BackgroundPreview title={player.background || ''}>{previewBackground}</S.BackgroundPreview>
-          )}
-
-          <S.ActionsRow>
-            <S.ActionButtonsRow>
-              <Button icon={<IdcardOutlined />} onClick={() => setOpenProfile(true)}>
-                Profile
-              </Button>
-
-              <Button disabled={!hasSheet} type="primary" icon={<EyeOutlined />} onClick={openSheet}>
-                {hasSheet ? 'Sheet' : 'No sheet'}
-              </Button>
-            </S.ActionButtonsRow>
-
+      <EntityCard
+        actions={
+          <>
             {gm && (
-              <S.GMRow>
-                <S.VisibleLabel>Visible</S.VisibleLabel>
-                <Switch checked={player.visible ?? true} onChange={() => onToggleVisible?.(player)} />
-              </S.GMRow>
+              <Switch
+                checked={player.visible ?? true}
+                onChange={() => onToggleVisible?.(player)}
+                size="small"
+                title="Visible to players"
+              />
             )}
-          </S.ActionsRow>
-        </S.Info>
-      </S.Card>
+            <Button disabled={!hasSheet} icon={<EyeOutlined />} onClick={openSheet} size="small" type="primary">
+              {hasSheet ? 'Sheet' : 'No sheet'}
+            </Button>
+          </>
+        }
+        cover={player.imageUrl ? { src: imageUrl, alt: player.imageAlt || player.name } : null}
+        coverTags={<Tag color="geekblue">LV {player.level}</Tag>}
+        icon="player"
+        label="Player"
+        onClick={onOpen ?? (() => setOpenProfile(true))}
+        openText="Profile"
+        seed={player.id}
+        status={gm ? { visible: player.visible ?? true } : undefined}
+        summary={player.background}
+        summaryFallback="No background added yet."
+        title={player.name}
+      />
 
       <Modal
         open={openProfile}
@@ -117,7 +99,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
             {player.background && (
               <section>
                 <S.SectionTitle>Story</S.SectionTitle>
-                {renderBackground(player.background)}
+                <S.BackgroundParagraphs>
+                  <RichText>{player.background}</RichText>
+                </S.BackgroundParagraphs>
               </section>
             )}
 

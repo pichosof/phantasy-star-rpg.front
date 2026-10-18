@@ -29,7 +29,6 @@ import {
   MoreOutline,
   PicturesOutline,
   SetOutline,
-  UnorderedListOutline,
   UserAddOutline,
   UserOutline,
 } from 'antd-mobile-icons';
@@ -77,6 +76,8 @@ import { dividerMd, dividerSm, m0, spaceBetween, tableWrap, textMd, textSm, w100
 import type { Player } from '@app/types/rpg';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './PlayersPage.styles';
+import RichText, { stripMarkdown } from '@app/components/common/RichText/RichText';
+import { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 
 type AltMap = Record<number, string>;
 type EditMap = Record<number, { name: string; level: number; background: string }>;
@@ -87,13 +88,6 @@ type PlayerSheetTab = 'overview' | 'notes' | 'gm';
 
 function isPlayerVisible(player: Player) {
   return (player.visible ?? true) === true;
-}
-
-function getPlayerSummary(player: Player) {
-  const background = player.background?.trim();
-  if (!background) return 'Profile, sheet and campaign notes stay together here.';
-  if (background.length <= 160) return background;
-  return `${background.slice(0, 157)}...`;
 }
 
 function formatDateLabel(value?: string | null) {
@@ -275,7 +269,7 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, playe
               {notes.map((note) => (
                 <MobileList.Item
                   key={note.id}
-                  description={note.content || 'No extra details yet.'}
+                  description={stripMarkdown(note.content) || 'No extra details yet.'}
                   extra={
                     <S.MobileNoteExtra>
                       <S.MobileNoteDate>{note.date}</S.MobileNoteDate>
@@ -446,9 +440,9 @@ const PlayerNotesSection: React.FC<PlayerNotesSectionProps> = ({ playerId, playe
               </S.NoteCardHeader>
 
               {note.content && (
-                <Typography.Text style={S.noteContent} type="secondary">
-                  {note.content}
-                </Typography.Text>
+                <Typography.Paragraph style={S.noteContent} type="secondary">
+                  <RichText>{note.content}</RichText>
+                </Typography.Paragraph>
               )}
             </S.NoteCard>
           ))}
@@ -949,7 +943,7 @@ export const PlayersPage: React.FC = () => {
                   <Tag color="geekblue">Lv {player.level}</Tag>
                   {player.background && (
                     <Typography.Text ellipsis style={textSm} type="secondary">
-                      {player.background.slice(0, 60)}
+                      {stripMarkdown(player.background).slice(0, 60)}
                     </Typography.Text>
                   )}
                 </Space>
@@ -1199,7 +1193,9 @@ export const PlayersPage: React.FC = () => {
             )}
           </S.MobileBadgeRow>
 
-          <S.MobileStoryText>{selectedPlayer.background || 'No background added yet.'}</S.MobileStoryText>
+          <S.MobileStoryText>
+            <RichText fallback="No background added yet.">{selectedPlayer.background}</RichText>
+          </S.MobileStoryText>
         </S.MobileHeroContent>
       </MobileCard>
 
@@ -1373,74 +1369,17 @@ export const PlayersPage: React.FC = () => {
               <S.MobileEmptyState>No characters found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <S.MobilePlayersGrid>
+            <EntityCardGrid>
               {displayItems.map((player) => (
-                <MobileCard compact key={player.id}>
-                  <S.MobilePlayerBody>
-                    <S.MobilePlayerMedia>
-                      {player.imageUrl ? (
-                        <S.MobilePlayerImage alt={player.imageAlt ?? player.name} src={player.imageUrl} />
-                      ) : (
-                        <S.MobileImageFallback>
-                          <UserOutline fontSize={42} />
-                        </S.MobileImageFallback>
-                      )}
-                    </S.MobilePlayerMedia>
-
-                    <S.MobilePlayerHeader>
-                      <S.MobilePlayerIdentity>
-                        <S.MobilePlayerName>{player.name}</S.MobilePlayerName>
-                        <S.MobileMetaTags>
-                          <AdmMobileTag color="primary" round fill="outline">
-                            Level {player.level}
-                          </AdmMobileTag>
-                          {isGM && (
-                            <AdmMobileTag color={isPlayerVisible(player) ? 'success' : 'warning'} round fill="outline">
-                              {isPlayerVisible(player) ? 'Visible' : 'Hidden'}
-                            </AdmMobileTag>
-                          )}
-                        </S.MobileMetaTags>
-                      </S.MobilePlayerIdentity>
-                    </S.MobilePlayerHeader>
-
-                    <S.MobilePlayerPreview>{getPlayerSummary(player)}</S.MobilePlayerPreview>
-
-                    <S.MobilePlayerActionRow>
-                      <AdmMobileButton block color="primary" onClick={() => openPlayerSheet(player, 'overview')}>
-                        <UserOutline fontSize={17} /> Open profile
-                      </AdmMobileButton>
-                      <AdmMobileButton
-                        block
-                        fill="outline"
-                        onClick={() => {
-                          if (player.sheetUrl) {
-                            void openPdfPreview(player);
-                          } else {
-                            openPlayerSheet(player, 'notes');
-                          }
-                        }}
-                      >
-                        {player.sheetUrl ? (
-                          <>
-                            <FileOutline fontSize={17} /> Open sheet
-                          </>
-                        ) : (
-                          <>
-                            <UnorderedListOutline fontSize={17} /> Notes
-                          </>
-                        )}
-                      </AdmMobileButton>
-                    </S.MobilePlayerActionRow>
-
-                    {isGM && viewMode === 'admin' && (
-                      <AdmMobileButton block fill="outline" onClick={() => openPlayerSheet(player, 'gm')}>
-                        <SetOutline fontSize={17} /> GM controls
-                      </AdmMobileButton>
-                    )}
-                  </S.MobilePlayerBody>
-                </MobileCard>
+                <PlayerCard
+                  gm={isGM}
+                  key={player.id}
+                  onOpen={() => openPlayerSheet(player, 'overview')}
+                  onToggleVisible={toggleVisible}
+                  player={player}
+                />
               ))}
-            </S.MobilePlayersGrid>
+            </EntityCardGrid>
           )}
         </MobilePageScaffold>
 
