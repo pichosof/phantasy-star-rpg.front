@@ -87,6 +87,9 @@ try {
     for (const k of ['primary', 'success', 'warning', 'error']) {
       check(`textOnColor on ${k}`, t.textOnColor, { [k]: t[k] }, 4.5);
     }
+    // primary buttons are painted with the brand gradient
+    const gStops = gradientStops(t.primaryGradient);
+    check('textOnColor on gradient', t.textOnColor, Object.fromEntries(gStops.map((s, i) => [`stop${i}`, s])), 4.5);
     // borders / component edges (WCAG 1.4.11)
     check('borderStrong', t.borderStrong, surfaces, 3);
     // menu

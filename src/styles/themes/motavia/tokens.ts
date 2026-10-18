@@ -35,7 +35,8 @@ export const motaviaTokens: ThemeTokens = {
   // Núcleo
   primary: '#A44707', // Desert Ember — 4.6:1 as text on every Motavia surface
   primary1: '#FFF0DC', // Areia clara — fundo de hover/badge
-  primaryGradient: 'linear-gradient(211.49deg, #D45A08 15.89%, #B88C18 48.97%)',
+  // primary buttons: white text needs ≥4.5:1 on every stop
+  primaryGradient: 'linear-gradient(211.49deg, #A44707 15.89%, #7D5F10 48.97%)',
   light: '#C0A070', // Areia seca
   secondary: '#7D5F10', // Algol Gold — deepened for text use (4.5:1)
 

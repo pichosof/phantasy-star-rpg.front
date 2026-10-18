@@ -34,7 +34,8 @@ const chartColors = {
 export const dezolisTokens: ThemeTokens = {
   primary: '#00C8E8', // Arctic Cyan — gelo vivo
   primary1: '#5E1ECC', // Crystal Violet — fundo de hover/badge
-  primaryGradient: 'linear-gradient(211.49deg, #00C8E8 15.89%, #7722DD 48.97%)',
+  // primary buttons: dark text needs ≥4.5:1 on every stop (deep violet failed at 2.3:1)
+  primaryGradient: 'linear-gradient(211.49deg, #00C8E8 15.89%, #A88CFF 48.97%)',
   light: '#3A5070',
   secondary: '#22EFC8', // Frost Mint — teal cristalino
 
