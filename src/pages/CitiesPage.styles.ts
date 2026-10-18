@@ -6,7 +6,7 @@ export const carouselFrame: CSSProperties = {
   marginBottom: 12,
   borderRadius: 8,
   overflow: 'hidden',
-  background: '#000',
+  background: '#000', // theme-isolation-ignore: overlay on images/media, dark in every theme
   userSelect: 'none',
 };
 
@@ -25,7 +25,7 @@ export function carouselThumb(active: boolean): CSSProperties {
     borderRadius: 4,
     cursor: 'pointer',
     flexShrink: 0,
-    border: active ? '2px solid #1890ff' : '2px solid transparent',
+    border: active ? '2px solid var(--primary-color)' : '2px solid transparent',
     opacity: active ? 1 : 0.6,
   };
 }

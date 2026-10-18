@@ -52,6 +52,7 @@ import EntityDrawer, {
   visibilityControl,
 } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { QUEST_STATUS_COLORS } from '@app/styles/domain-palette';
 
 type ViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -71,11 +72,7 @@ const STATUS_LABEL: Record<QuestStatus, string> = {
   failed: 'Failed',
 };
 
-const STATUS_STRIP: Record<QuestStatus, string> = {
-  active: '#1677ff',
-  completed: '#52c41a',
-  failed: '#fa541c',
-};
+const STATUS_STRIP = QUEST_STATUS_COLORS;
 
 const statusOptions: { value: QuestStatus; label: string }[] = [
   { value: 'active', label: 'Active' },

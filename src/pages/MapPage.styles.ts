@@ -5,7 +5,7 @@ export const WorldCard = styled.div<{ $active: boolean }>`
   border: 1px solid ${(p) => (p.$active ? 'var(--primary-color)' : 'var(--border-color)')};
   border-radius: 8px;
   padding: 12px;
-  background: ${(p) => (p.$active ? 'rgba(22, 119, 255, 0.1)' : 'transparent')};
+  background: ${(p) => (p.$active ? 'rgba(var(--primary-rgb-color), 0.1)' : 'transparent')};
 `;
 
 export const worldDescription: CSSProperties = {
@@ -71,8 +71,8 @@ export function mapCanvas(presentMode: boolean, isFullscreen: boolean, cursorAct
     margin: presentMode && !isFullscreen ? 0 : '0 auto',
     borderRadius: presentMode ? 0 : 8,
     overflow: 'hidden',
-    background: 'black',
-    boxShadow: presentMode ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
+    background: 'black', // theme-isolation-ignore: overlay on images/media, dark in every theme
+    boxShadow: presentMode ? 'none' : '0 2px 8px rgba(0,0,0,0.15)', // theme-isolation-ignore: overlay on images/media, dark in every theme
     cursor: cursorActive ? 'crosshair' : 'default',
   };
 }
@@ -85,10 +85,10 @@ export const presentToolbar: CSSProperties = {
   display: 'flex',
   gap: 8,
   alignItems: 'center',
-  background: 'rgba(0,0,0,0.55)',
+  background: 'rgba(0,0,0,0.55)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   padding: '8px 10px',
   borderRadius: 10,
-  color: '#fff',
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   backdropFilter: 'blur(2px)',
 };
 
@@ -99,7 +99,7 @@ export function mapImage(presentMode: boolean): CSSProperties {
     height: presentMode ? '100%' : 'auto',
     objectFit: presentMode ? 'contain' : undefined,
     userSelect: 'none',
-    background: 'black',
+    background: 'black', // theme-isolation-ignore: overlay on images/media, dark in every theme
   };
 }
 
@@ -109,8 +109,8 @@ export function markerTooltip(left: string, top: string): CSSProperties {
     left,
     top,
     transform: 'translate(-50%, calc(-100% - 10px))',
-    background: 'rgba(0,0,0,0.75)',
-    color: '#fff',
+    background: 'rgba(0,0,0,0.75)', // theme-isolation-ignore: overlay on images/media, dark in every theme
+    color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
     padding: '4px 8px',
     borderRadius: 6,
     fontSize: 12,
@@ -130,11 +130,11 @@ export function cityMarker(left: string, top: string, bg: string, selected: bool
     height: 18,
     borderRadius: '50%',
     background: bg,
-    border: '2px solid rgba(0,0,0,0.85)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+    border: '2px solid rgba(0,0,0,0.85)', // theme-isolation-ignore: overlay on images/media, dark in every theme
+    boxShadow: '0 1px 4px rgba(0,0,0,0.25)', // theme-isolation-ignore: overlay on images/media, dark in every theme
     cursor: 'pointer',
     zIndex: 10,
-    outline: selected ? '3px solid rgba(255,255,0,0.8)' : 'none',
+    outline: selected ? '3px solid rgba(255,255,0,0.8)' : 'none', // theme-isolation-ignore: overlay on images/media, dark in every theme
     outlineOffset: 2,
   };
 }
@@ -148,11 +148,11 @@ export function dungeonMarker(left: string, top: string, bg: string, selected: b
     width: 14,
     height: 14,
     background: bg,
-    border: '2px solid rgba(0,0,0,0.85)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+    border: '2px solid rgba(0,0,0,0.85)', // theme-isolation-ignore: overlay on images/media, dark in every theme
+    boxShadow: '0 1px 4px rgba(0,0,0,0.35)', // theme-isolation-ignore: overlay on images/media, dark in every theme
     cursor: 'pointer',
     zIndex: 10,
-    outline: selected ? '3px solid rgba(255,255,0,0.8)' : 'none',
+    outline: selected ? '3px solid rgba(255,255,0,0.8)' : 'none', // theme-isolation-ignore: overlay on images/media, dark in every theme
     outlineOffset: 2,
   };
 }
@@ -244,7 +244,7 @@ export const MobileMapViewport = styled.div`
   overflow: auto;
   border-radius: 18px;
   border: 1px solid var(--border-color);
-  background: #050609;
+  background: #050609; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   -webkit-overflow-scrolling: touch;
 `;
 
@@ -253,7 +253,7 @@ export function mobileMapCanvas(presentMode: boolean, isFullscreen: boolean, cur
     ...mapCanvas(presentMode, isFullscreen, cursorActive),
     minWidth: presentMode ? '100%' : 680,
     borderRadius: presentMode ? 0 : 18,
-    boxShadow: presentMode ? 'none' : '0 18px 48px rgba(0,0,0,0.24)',
+    boxShadow: presentMode ? 'none' : '0 18px 48px rgba(0,0,0,0.24)', // theme-isolation-ignore: overlay on images/media, dark in every theme
     touchAction: cursorActive ? 'manipulation' : 'pan-x pan-y',
   };
 }
@@ -264,7 +264,7 @@ export function mobileCityMarker(left: string, top: string, bg: string, selected
     width: 28,
     height: 28,
     borderWidth: 3,
-    boxShadow: '0 4px 12px rgba(0,0,0,0.34)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.34)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   };
 }
 
@@ -274,7 +274,7 @@ export function mobileDungeonMarker(left: string, top: string, bg: string, selec
     width: 24,
     height: 24,
     borderWidth: 3,
-    boxShadow: '0 4px 12px rgba(0,0,0,0.38)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.38)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   };
 }
 

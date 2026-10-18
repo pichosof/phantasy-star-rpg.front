@@ -30,13 +30,13 @@ export const ImageGrid = styled.div<{ $mobileOnly: boolean }>`
 export const ImageCard = styled.div`
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(128, 128, 128, 0.15);
-  background: rgba(128, 128, 128, 0.05);
+  border: 1px solid var(--ink-line);
+  background: var(--ink-faint);
 `;
 
 export const ImageFrame = styled.div`
   height: 140px;
-  background: #111;
+  background: #111; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   position: relative;
   overflow: hidden;
 `;
@@ -113,7 +113,7 @@ export const MobileImageFrame = styled.div`
   min-height: 132px;
   border-radius: 14px;
   overflow: hidden;
-  background: #080b10;
+  background: #080b10; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
 `;
 
 export const MobileImageThumb = styled.img`
@@ -140,7 +140,7 @@ export const MobileImageActions = styled.div`
 export const MobilePreviewFrame = styled.div`
   border-radius: 16px;
   overflow: hidden;
-  background: #080b10;
+  background: #080b10; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
 `;
 
 export const MobilePreviewImage = styled.img`

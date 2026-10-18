@@ -44,6 +44,7 @@ import EntityDrawer, {
   visibilityControl,
 } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { LORE_CATEGORY_COLORS } from '@app/styles/domain-palette';
 
 type ViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -67,13 +68,7 @@ const CATEGORY_LABEL: Record<LoreCategory, string> = {
   myth: 'Myth',
 };
 
-const CATEGORY_STRIP: Record<LoreCategory, string> = {
-  history: '#fa8c16',
-  culture: '#722ed1',
-  tech: '#13c2c2',
-  biology: '#52c41a',
-  myth: '#faad14',
-};
+const CATEGORY_STRIP = LORE_CATEGORY_COLORS;
 
 const categoryOptions: { value: LoreCategory | 'null'; label: string }[] = [
   { value: 'history', label: 'History' },
@@ -518,7 +513,7 @@ export const LoresAdminPage: React.FC = () => {
 
     return (
       <EntityCard
-        accent={category ? CATEGORY_STRIP[category] : '#d9d9d9'}
+        accent={category ? CATEGORY_STRIP[category] : 'var(--border-color)'}
         actions={gmPanel ? <Switch checked={visible} onChange={() => void toggleVisible(lore)} size="small" /> : null}
         footer={formatDate(lore.createdAt)}
         key={lore.id}

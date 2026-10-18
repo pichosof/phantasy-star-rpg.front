@@ -19,6 +19,7 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import type { StarfinderSheetData, SfWeapon, SfEquipmentItem } from '@app/api/character-sheets.api';
 import { w100, textSm, dividerMd } from '@app/styles/styleUtils';
 import * as S from './StarfinderSheetForm.styles';
+import { SHEET_STAT_COLORS } from '@app/styles/domain-palette';
 
 // ── Calculations ──────────────────────────────────────────────────────────────
 
@@ -928,10 +929,10 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
       {/* Combat stats */}
       <Collapse.Panel header="Combat" key="combat">
         <Space wrap size={8} style={S.combatStatsRow}>
-          <CalcBox label="Initiative" value={sign(calc.initiative)} color="#597ef7" />
-          <CalcBox label="EAC" value={calc.eac} color="#36cfc9" />
-          <CalcBox label="KAC" value={calc.kac} color="#73d13d" />
-          <CalcBox label="AC vs CM" value={calc.acvsm} color="#ffc53d" />
+          <CalcBox label="Initiative" value={sign(calc.initiative)} color={SHEET_STAT_COLORS.initiative} />
+          <CalcBox label="EAC" value={calc.eac} color={SHEET_STAT_COLORS.eac} />
+          <CalcBox label="KAC" value={calc.kac} color={SHEET_STAT_COLORS.kac} />
+          <CalcBox label="AC vs CM" value={calc.acvsm} color={SHEET_STAT_COLORS.acVsCm} />
         </Space>
         <div style={S.combatGrid}>
           <LabelInput label="Armor Bonus (EAC)">
@@ -1015,9 +1016,21 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
           <LabelInput label={`BAB`}>
             <InputNumber style={w100} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
           </LabelInput>
-          <CalcBox label={`Melee (${sign(calc.mods.str)} STR)`} value={sign(calc.melee)} color="#ff4d4f" />
-          <CalcBox label={`Ranged (${sign(calc.mods.dex)} DEX)`} value={sign(calc.ranged)} color="#40a9ff" />
-          <CalcBox label={`Thrown (${sign(calc.mods.str)} STR)`} value={sign(calc.thrown)} color="#ffc53d" />
+          <CalcBox
+            label={`Melee (${sign(calc.mods.str)} STR)`}
+            value={sign(calc.melee)}
+            color={SHEET_STAT_COLORS.melee}
+          />
+          <CalcBox
+            label={`Ranged (${sign(calc.mods.dex)} DEX)`}
+            value={sign(calc.ranged)}
+            color={SHEET_STAT_COLORS.ranged}
+          />
+          <CalcBox
+            label={`Thrown (${sign(calc.mods.str)} STR)`}
+            value={sign(calc.thrown)}
+            color={SHEET_STAT_COLORS.thrown}
+          />
           <LabelInput label="Misc Melee">
             <InputNumber style={w100} value={data.meleeMisc ?? 0} onChange={(v) => set({ meleeMisc: v ?? 0 })} />
           </LabelInput>
@@ -1035,9 +1048,9 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
         <div style={S.hpGrid}>
           {(
             [
-              ['Stamina', 'staminaTotal', 'staminaCurrent', '#40a9ff'],
-              ['Hit Points', 'hpTotal', 'hpCurrent', '#73d13d'],
-              ['Resolve', 'resolveTotal', 'resolveCurrent', '#9254de'],
+              ['Stamina', 'staminaTotal', 'staminaCurrent', SHEET_STAT_COLORS.stamina],
+              ['Hit Points', 'hpTotal', 'hpCurrent', SHEET_STAT_COLORS.hp],
+              ['Resolve', 'resolveTotal', 'resolveCurrent', SHEET_STAT_COLORS.resolve],
             ] as const
           ).map(([lbl, tk, ck, color]) => (
             <div key={tk} style={S.hpCard(color)}>

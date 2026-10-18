@@ -29,6 +29,7 @@ import { m0, spaceBetween, textMd, textSm, w100 } from '@app/styles/styleUtils';
 import type { Tag as TagType, TagEntities } from '@app/types/rpg';
 import { apiErrorMessage } from '../utils/api-error';
 import * as S from './TagsPage.styles';
+import { TAG_DEFAULT_COLOR } from '@app/styles/domain-palette';
 
 const ENTITY_META: Record<string, { icon: AppIconName; label: string }> = {
   beasts: { icon: 'beast', label: 'Beasts' },
@@ -172,13 +173,13 @@ export const TagsPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
 
   const [newName, setNewName] = React.useState('');
-  const [newColor, setNewColor] = React.useState('#1677ff');
+  const [newColor, setNewColor] = React.useState(TAG_DEFAULT_COLOR);
   const [creating, setCreating] = React.useState(false);
   const [creatingTag, setCreatingTag] = React.useState(false);
 
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editName, setEditName] = React.useState('');
-  const [editColor, setEditColor] = React.useState('#1677ff');
+  const [editColor, setEditColor] = React.useState(TAG_DEFAULT_COLOR);
 
   const [selectedTag, setSelectedTag] = React.useState<TagType | null>(null);
   const [tagEntities, setTagEntities] = React.useState<TagEntities | null>(null);
@@ -221,7 +222,7 @@ export const TagsPage: React.FC = () => {
 
   function resetCreateForm() {
     setNewName('');
-    setNewColor('#1677ff');
+    setNewColor(TAG_DEFAULT_COLOR);
   }
 
   async function handleCreate() {
@@ -254,7 +255,7 @@ export const TagsPage: React.FC = () => {
   function cancelEdit() {
     setEditingId(null);
     setEditName('');
-    setEditColor('#1677ff');
+    setEditColor(TAG_DEFAULT_COLOR);
   }
 
   async function saveEdit(tag: TagType) {

@@ -43,7 +43,7 @@ export const SearchInput = styled(Search)`
       color: var(--primary-color);
     }
     width: 100%;
-    background-color: rgba(1, 80, 154, 0.05);
+    background-color: var(--ink-faint);
     border: 1px solid var(--border-color);
     color: var(--primary-color);
   }

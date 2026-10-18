@@ -83,7 +83,7 @@ export const SiderLogoDiv = styled.div<{ $isCollapsed?: boolean }>`
   display: flex;
   justify-content: ${(p) => (p.$isCollapsed ? 'center' : 'space-between')};
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--sider-ink-line);
 
   @media only screen and ${media.md} {
     height: ${LAYOUT.desktop.headerHeight};
@@ -107,7 +107,7 @@ export const BrandBlock = styled.div`
 export const BrandName = styled.div`
   font-size: 13px;
   font-weight: 800;
-  color: #fff;
+  color: var(--sider-ink-strong);
   white-space: nowrap;
 `;
 

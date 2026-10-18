@@ -67,7 +67,7 @@ export const CoverFrame = styled.div<{ $height: number }>`
   position: relative;
   height: ${({ $height }) => `${$height}px`};
   overflow: hidden;
-  background: #000;
+  background: #000; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
 `;
 
 export const CoverImage = styled.img`
@@ -80,7 +80,11 @@ export const CoverImage = styled.img`
 export const CoverOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    /* theme-isolation-ignore: overlay on images/media, dark in every theme */ rgba(0, 0, 0, 0.65) 100%
+  );
 `;
 
 export const CoverFallback = styled.div<{ $gradient: string; $height: number }>`
@@ -93,7 +97,7 @@ export const CoverFallback = styled.div<{ $gradient: string; $height: number }>`
 `;
 
 export const CoverWatermark = styled.span`
-  color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.12); /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   user-select: none;
 `;
 
@@ -104,7 +108,7 @@ export const CoverBrand = styled.span`
   bottom: 12px;
   display: flex;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.35); /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 3px;

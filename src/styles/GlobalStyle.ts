@@ -1,7 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
 import { resetCss } from './resetCss';
 import { BREAKPOINTS, FONT_SIZE, FONT_WEIGHT, media } from './themes/constants';
-import { lightThemeVariables, darkThemeVariables, commonThemeVariables } from './themes/themeVariables';
+import { foundationVariables, themeBlocks } from './themes/themeVariables';
 import {
   MOBILE_ACTION_BAR_MIN_HEIGHT,
   MOBILE_CARD_RADIUS,
@@ -9,36 +9,18 @@ import {
   MOBILE_SECTION_GAP,
   MOBILE_SHEET_RADIUS,
 } from './styleUtils';
+import { EDGE_GLOW } from '@app/styles/domain-palette';
 
 export default createGlobalStyle`
 
   ${resetCss}
 
-  [data-theme='light'],
-  :root {
-    ${lightThemeVariables}
-  }
+  /* Colors: one isolated block per world theme (see styles/themes/registry.ts). */
+  ${themeBlocks}
 
-  [data-theme='dark'] {
-    ${darkThemeVariables}
-  }
-
+  /* Foundation: no colors here — a theme can never inherit another theme's values. */
   :root {
-    ${commonThemeVariables};
-    --adm-color-primary: var(--primary-color);
-    --adm-color-success: var(--success-color);
-    --adm-color-warning: var(--warning-color);
-    --adm-color-danger: var(--error-color);
-    --adm-color-text: var(--text-main-color);
-    --adm-color-text-secondary: var(--text-secondary-color);
-    --adm-color-weak: var(--text-light-color);
-    --adm-color-light: var(--text-superLight-color);
-    --adm-color-border: var(--border-color);
-    --adm-color-background: var(--additional-background-color);
-    --adm-color-background-body: var(--background-color);
-    --adm-color-box: var(--secondary-background-color);
-    --adm-color-fill-content: var(--secondary-background-color);
-    --adm-border-color: var(--border-color);
+    ${foundationVariables};
     --adm-font-family: var(--font-main);
     --adm-radius-s: 7px;
     --adm-radius-m: 10px;
@@ -48,8 +30,6 @@ export default createGlobalStyle`
     --psr-mobile-card-radius: ${MOBILE_CARD_RADIUS}px;
     --psr-mobile-sheet-radius: ${MOBILE_SHEET_RADIUS}px;
     --psr-mobile-action-bar-min-height: ${MOBILE_ACTION_BAR_MIN_HEIGHT}px;
-    --psr-mobile-surface-bg: var(--secondary-background-color);
-    --psr-mobile-elevated-bg: var(--additional-background-color);
   } 
 
   [data-no-transition] * {
@@ -97,11 +77,11 @@ export default createGlobalStyle`
 
   @keyframes edge-glow {
     from {
-      box-shadow: 0 0 8px rgba(250,173,20,0.5), 0 0 16px rgba(212,56,13,0.3);
+      box-shadow: ${EDGE_GLOW.from};
     }
 
     to {
-      box-shadow: 0 0 16px rgba(250,173,20,0.9), 0 0 32px rgba(212,56,13,0.6);
+      box-shadow: ${EDGE_GLOW.to};
     }
   }
 
@@ -117,7 +97,7 @@ export default createGlobalStyle`
   .rpg-text-md  { font-size: 13px; }
   .rpg-font-bold      { font-weight: 700; }
   .rpg-font-extrabold { font-weight: 800; }
-  .rpg-muted    { color: #8c8c8c; }
+  .rpg-muted    { color: var(--text-light-color); }
   .rpg-pre-wrap { white-space: pre-wrap; margin: 0; }
   .rpg-overflow-x { overflow-x: auto; }
   .rpg-table-wrap { overflow-x: auto; width: 100%; }
@@ -203,7 +183,7 @@ export default createGlobalStyle`
   }
   
     .description {
-      color: #404040;
+      color: var(--text-main-color);
       font-size: ${FONT_SIZE.md};
       font-weight: ${FONT_WEIGHT.semibold};
       line-height: 1.375rem;

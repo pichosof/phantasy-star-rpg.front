@@ -1,3 +1,4 @@
+/* theme-isolation-ignore-file: demo-mode banner keeps its own yellow branding */
 import React from 'react';
 import styled from 'styled-components';
 import { GithubOutlined } from '@ant-design/icons';

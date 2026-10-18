@@ -68,7 +68,7 @@ export const colorInput: CSSProperties = {
   width: 36,
   height: 28,
   padding: 2,
-  border: '1px solid #d9d9d9',
+  border: '1px solid var(--border-color)',
   borderRadius: 4,
   cursor: 'pointer',
 };
@@ -81,7 +81,7 @@ export function selectedTagRow(active: boolean): CSSProperties {
     padding: '6px 8px',
     borderRadius: 6,
     cursor: 'pointer',
-    background: active ? 'rgba(22,119,255,0.08)' : 'transparent',
+    background: active ? 'rgba(var(--primary-rgb-color), 0.08)' : 'transparent',
     transition: 'background 0.15s',
   };
 }
@@ -90,7 +90,7 @@ export const editColorInput: CSSProperties = {
   width: 28,
   height: 22,
   padding: 1,
-  border: '1px solid #d9d9d9',
+  border: '1px solid var(--border-color)',
   borderRadius: 4,
   cursor: 'pointer',
 };
@@ -98,7 +98,7 @@ export const editColorInput: CSSProperties = {
 export const editNameInput: CSSProperties = {
   flex: 1,
   padding: '2px 6px',
-  border: '1px solid #d9d9d9',
+  border: '1px solid var(--border-color)',
   borderRadius: 4,
   background: 'transparent',
   color: 'inherit',
@@ -126,7 +126,7 @@ export const emptySelectionIcon: CSSProperties = {
 
 export const emptySelectionText: CSSProperties = {
   marginTop: 12,
-  color: '#8c8c8c',
+  color: 'var(--text-light-color)',
 };
 
 export const selectedTagPill: CSSProperties = {
@@ -178,7 +178,7 @@ export const MobileTagName = styled.div`
 export const MobileColorDot = styled.span<{ $color: string }>`
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.42);
+  border: 2px solid rgba(255, 255, 255, 0.42); /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   border-radius: 999px;
   background: ${({ $color }) => $color};
   box-shadow: 0 0 16px ${({ $color }) => `${$color}66`};

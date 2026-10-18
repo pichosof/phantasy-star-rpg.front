@@ -1,3 +1,4 @@
+/* theme-isolation-ignore-file: image stage, blurred backdrop and focus marker sit on the picture */
 import React from 'react';
 import { AimOutlined } from '@ant-design/icons';
 import { message } from 'antd';

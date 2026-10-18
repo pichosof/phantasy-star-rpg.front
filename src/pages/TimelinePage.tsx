@@ -49,13 +49,14 @@ import EntityDrawer, {
   visibilityControl,
 } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { TIMELINE_EVENT_COLORS } from '@app/styles/domain-palette';
 
 type ViewMode = 'timeline' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 type TimelineSheetTab = 'overview' | 'gm';
 type DrawerTab = 'view' | 'edit';
 
-const EVENT_COLORS = ['#00C8E8', '#7722DD', '#FF6B1A', '#FF2244', '#22EFC8', '#C8A020'];
+const EVENT_COLORS = TIMELINE_EVENT_COLORS;
 
 function eventColor(id: number) {
   return EVENT_COLORS[id % EVENT_COLORS.length];

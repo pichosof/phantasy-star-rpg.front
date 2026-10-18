@@ -1,24 +1,111 @@
 import React from 'react';
-import { MoonSunSwitch } from '@app/components/common/MoonSunSwitch/MoonSunSwitch';
-import { ThemeType } from '@app/interfaces/interfaces';
+import { Segmented, Select } from 'antd';
+import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '@app/hooks/reduxHooks';
-import { setTheme } from '@app/store/slices/themeSlice';
-import { setNightMode } from '@app/store/slices/nightModeSlice';
+import { setAutoThemes, setTheme, setThemeMode, type ThemeMode } from '@app/store/slices/themeSlice';
+import { THEME_LIST, type ThemeId } from '@app/styles/themes/registry';
+
+/**
+ * World theme picker. Lists every registered theme (styles/themes/registry.ts), so a new
+ * world shows up here automatically. Swatches use each theme's own tokens.
+ */
+
+const Worlds = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+`;
+
+const WorldButton = styled.button<{ $bg: string; $fg: string; $accent: string; $active: boolean }>`
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  background: ${({ $bg }) => $bg};
+  color: ${({ $fg }) => $fg};
+  border: 2px solid ${({ $active, $accent }) => ($active ? $accent : 'transparent')};
+  box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.35); /* theme-isolation-ignore: swatch outline must read on any theme */
+
+  strong {
+    font-size: 14px;
+  }
+  span {
+    font-size: 11px;
+    opacity: 0.85;
+  }
+  i {
+    display: block;
+    height: 4px;
+    margin-top: 6px;
+    border-radius: 2px;
+    background: ${({ $accent }) => $accent};
+  }
+`;
+
+const Row = styled.div`
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+`;
+
+const MODE_OPTIONS: { label: string; value: ThemeMode }[] = [
+  { label: 'Manual', value: 'manual' },
+  { label: 'System', value: 'system' },
+  { label: 'Schedule', value: 'schedule' },
+];
 
 export const ThemePicker: React.FC = () => {
   const dispatch = useAppDispatch();
-  const theme = useAppSelector((state) => state.theme.theme);
-
-  const handleClickButton = (theme: ThemeType) => {
-    dispatch(setTheme(theme));
-    dispatch(setNightMode(false));
-  };
+  const { theme, mode, dayTheme, nightTheme } = useAppSelector((state) => state.theme);
+  const options = THEME_LIST.map((t) => ({ label: t.name, value: t.id as ThemeId }));
 
   return (
-    <MoonSunSwitch
-      isMoonActive={theme === 'dark'}
-      onClickMoon={() => handleClickButton('dark')}
-      onClickSun={() => handleClickButton('light')}
-    />
+    <>
+      <Worlds>
+        {THEME_LIST.map((t) => (
+          <WorldButton
+            $accent={t.tokens.primary}
+            $active={t.id === theme}
+            $bg={t.tokens.background}
+            $fg={t.tokens.textMain}
+            aria-pressed={t.id === theme}
+            key={t.id}
+            onClick={() => dispatch(setTheme(t.id as ThemeId))}
+            type="button"
+          >
+            <strong>{t.name}</strong>
+            <span>{t.tagline}</span>
+            <i />
+          </WorldButton>
+        ))}
+      </Worlds>
+
+      <Row>
+        <span>Automatic</span>
+        <Segmented block onChange={(v) => dispatch(setThemeMode(v as ThemeMode))} options={MODE_OPTIONS} value={mode} />
+      </Row>
+
+      {mode !== 'manual' && (
+        <Row>
+          <span>{mode === 'system' ? 'World for a light / dark system' : 'World for day / night'}</span>
+          <Select
+            onChange={(v: ThemeId) => dispatch(setAutoThemes({ dayTheme: v, nightTheme }))}
+            options={options}
+            prefix="Day"
+            value={dayTheme}
+          />
+          <Select
+            onChange={(v: ThemeId) => dispatch(setAutoThemes({ dayTheme, nightTheme: v }))}
+            options={options}
+            prefix="Night"
+            value={nightTheme}
+          />
+        </Row>
+      )}
+    </>
   );
 };

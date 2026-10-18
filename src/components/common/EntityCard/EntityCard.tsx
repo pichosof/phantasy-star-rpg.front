@@ -5,6 +5,7 @@ import { AppIcon, type AppIconName } from '@app/components/common/AppIcon/AppIco
 import { type ImageShape, objectPosition, SHAPE_ASPECT, thumbUrl, useImageFocus } from '@app/api/images.api';
 import { stripMarkdown } from '@app/components/common/RichText/RichText';
 import { useResponsive } from '@app/hooks/useResponsive';
+import { COVER_GRADIENTS } from '@app/styles/domain-palette';
 
 /**
  * Common listing card for every domain and screen size, modelled on the Sessions cards:
@@ -20,16 +21,7 @@ import { useResponsive } from '@app/hooks/useResponsive';
  *   └────────────────────────────────────────────────────────────────┘
  */
 
-const GRADIENTS = [
-  'linear-gradient(135deg, #040A18 0%, #0A1C3A 50%, #0E2A58 100%)',
-  'linear-gradient(135deg, #08041C 0%, #1E0A50 50%, #2E0E72 100%)',
-  'linear-gradient(135deg, #1C0A04 0%, #4A1E08 50%, #7A2E06 100%)',
-  'linear-gradient(135deg, #0C0808 0%, #2A0C0C 50%, #180808 100%)',
-  'linear-gradient(135deg, #050C1E 0%, #082240 50%, #0A2A58 100%)',
-  'linear-gradient(135deg, #0A041C 0%, #1E0840 50%, #0C0428 100%)',
-  'linear-gradient(135deg, #04100C 0%, #082820 50%, #0A1E18 100%)',
-  'linear-gradient(135deg, #0C0A10 0%, #1A1428 50%, #22183A 100%)',
-];
+const GRADIENTS = COVER_GRADIENTS;
 
 export const cardGradient = (seed: number) => GRADIENTS[Math.abs(seed) % GRADIENTS.length];
 
@@ -60,8 +52,8 @@ const Article = styled.article<{ $clickable: boolean; $dimmed: boolean }>`
 
   &:hover {
     transform: ${({ $clickable }) => ($clickable ? 'translateY(-2px)' : 'none')};
-    border-color: rgba(24, 144, 255, 0.35);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    border-color: rgba(var(--primary-rgb-color), 0.35);
+    box-shadow: 0 12px 30px var(--shadow-elevated);
   }
 `;
 
@@ -69,7 +61,7 @@ const CoverFrame = styled.div<{ $aspect: string }>`
   position: relative;
   aspect-ratio: ${({ $aspect }) => $aspect};
   overflow: hidden;
-  background: #000;
+  background: #000; /* theme-isolation-ignore: overlay on images/media, dark in every theme */
 `;
 const CoverImage = styled.img<{ $position: string }>`
   width: 100%;
@@ -81,7 +73,11 @@ const CoverImage = styled.img<{ $position: string }>`
 const CoverOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    /* theme-isolation-ignore: overlay on images/media, dark in every theme */ rgba(0, 0, 0, 0.65) 100%
+  );
 `;
 const CoverFallback = styled.div<{ $gradient: string; $aspect: string }>`
   position: relative;
@@ -92,7 +88,7 @@ const CoverFallback = styled.div<{ $gradient: string; $aspect: string }>`
   background: ${({ $gradient }) => $gradient};
 `;
 const CoverWatermark = styled.span`
-  color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.12); /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   user-select: none;
 `;
 const CoverBrand = styled.span`
@@ -102,7 +98,7 @@ const CoverBrand = styled.span`
   bottom: 12px;
   display: flex;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.35); /* theme-isolation-ignore: overlay on images/media, dark in every theme */
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 3px;
@@ -184,7 +180,7 @@ const FooterText = styled.span`
   font-size: 11px;
 `;
 const OpenText = styled.span`
-  color: var(--primary-color, #1890ff);
+  color: var(--primary-color);
   font-size: 12px;
   font-weight: 700;
 `;

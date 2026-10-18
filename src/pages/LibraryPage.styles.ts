@@ -1,16 +1,15 @@
 import type { CSSProperties } from 'react';
 import styled from 'styled-components';
+import { READER, READER_MODES } from '@app/styles/domain-palette';
 
 type ReaderTheme = 'light' | 'sepia' | 'dark';
 
 function tocTextColor(themeVariant: ReaderTheme) {
-  if (themeVariant === 'dark') return '#ccc';
-  if (themeVariant === 'sepia') return '#5b4636';
-  return '#333';
+  return READER_MODES[themeVariant].toc;
 }
 
 function tocHoverColor(themeVariant: ReaderTheme) {
-  return themeVariant === 'dark' ? '#222' : '#f0f0f0';
+  return READER_MODES[themeVariant].tocHover;
 }
 
 export const pdfViewer: CSSProperties = {
@@ -27,7 +26,7 @@ export const DocxRoot = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #ffffff;
+  background: ${READER.paper};
 `;
 
 export const DocxToolbar = styled.div<{ $mobile: boolean }>`
@@ -36,8 +35,8 @@ export const DocxToolbar = styled.div<{ $mobile: boolean }>`
   flex-wrap: wrap;
   gap: ${(p) => (p.$mobile ? '4px' : '8px')};
   padding: ${(p) => (p.$mobile ? '5px 8px' : '6px 12px')};
-  border-bottom: 1px solid #e8e8e8;
-  background: #fafafa;
+  border-bottom: 1px solid ${READER.chromeBorder};
+  background: ${READER.chromeBg};
 `;
 
 export const DocxToolbarSpacer = styled.div`
@@ -49,7 +48,7 @@ export function docxFontSize(): CSSProperties {
     fontSize: 12,
     minWidth: 34,
     textAlign: 'center',
-    color: '#555',
+    color: READER.chromeTextMuted,
   };
 }
 
@@ -66,13 +65,13 @@ export const DocxOutlinePanel = styled.div<{ $mobile: boolean }>`
   left: ${(p) => (p.$mobile ? '0' : 'auto')};
   bottom: ${(p) => (p.$mobile ? '0' : 'auto')};
   z-index: ${(p) => (p.$mobile ? 10 : 'auto')};
-  box-shadow: ${(p) => (p.$mobile ? '2px 0 12px rgba(0,0,0,0.18)' : 'none')};
-  border-right: ${(p) => (p.$mobile ? 'none' : '1px solid #e8e8e8')};
+  box-shadow: ${(p) => (p.$mobile ? `2px 0 12px ${READER.drawerShadow}` : 'none')};
+  border-right: ${(p) => (p.$mobile ? 'none' : `1px solid ${READER.chromeBorder}`)};
   width: ${(p) => (p.$mobile ? '80vw' : '240px')};
   max-width: 320px;
   overflow-y: auto;
   padding: 8px 0;
-  background: #fafafa;
+  background: ${READER.chromeBg};
 `;
 
 export const DocxOutlineItem = styled.div<{ $level: number; $mobile: boolean }>`
@@ -80,21 +79,21 @@ export const DocxOutlineItem = styled.div<{ $level: number; $mobile: boolean }>`
   padding-left: ${(p) => `${(p.$mobile ? 16 : 14) + (p.$level - 1) * 12}px`};
   cursor: pointer;
   font-size: ${(p) => (p.$mobile ? '14px' : '13px')};
-  color: #333;
+  color: ${READER.chromeText};
   transition: background 0.12s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
   &:hover {
-    background: #f0f0f0;
+    background: ${READER.chromeHover};
   }
 `;
 
 export const docxBackdrop: CSSProperties = {
   position: 'absolute',
   inset: 0,
-  background: 'rgba(0,0,0,0.35)',
+  background: READER.backdrop,
   zIndex: 9,
 };
 
@@ -102,8 +101,8 @@ export const DocxContent = styled.div<{ $mobile: boolean; $zoom: number }>`
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  background: #ffffff;
-  color: #000000;
+  background: ${READER.paper};
+  color: ${READER.ink};
   line-height: 1.7;
   padding: ${(p) => (p.$mobile ? '16px' : '24px 40px')};
   font-size: ${(p) => `${(p.$mobile ? 15 : 16) * (p.$zoom / 100)}px`};
@@ -127,11 +126,11 @@ export const DocxContent = styled.div<{ $mobile: boolean; $zoom: number }>`
   th,
   span,
   div {
-    color: #000000;
+    color: ${READER.ink};
   }
 
   a {
-    color: #0958d9;
+    color: ${READER.link};
   }
 
   table {
@@ -141,7 +140,7 @@ export const DocxContent = styled.div<{ $mobile: boolean; $zoom: number }>`
   table,
   th,
   td {
-    border: 1px solid #d9d9d9;
+    border: 1px solid ${READER.tableBorder};
     padding: 4px 8px;
   }
 
@@ -151,8 +150,8 @@ export const DocxContent = styled.div<{ $mobile: boolean; $zoom: number }>`
   }
 
   mark[data-search] {
-    background: #ffd54f;
-    color: #000000;
+    background: ${READER.highlight};
+    color: ${READER.ink};
     padding: 0 1px;
     border-radius: 2px;
   }
@@ -162,43 +161,43 @@ export const SheetBody = styled.div<{ $mobile: boolean; $zoom: number }>`
   flex: 1;
   min-width: 0;
   overflow: auto;
-  background: #ffffff;
-  color: #000000;
+  background: ${READER.paper};
+  color: ${READER.ink};
   padding: ${(p) => (p.$mobile ? '8px' : '12px')};
 
   table {
     border-collapse: collapse;
     font-size: ${(p) => `${(p.$mobile ? 12 : 13) * (p.$zoom / 100)}px`};
-    background: #ffffff;
+    background: ${READER.paper};
   }
 
   thead th {
     position: sticky;
     top: 0;
-    background: #f5f5f5;
-    color: #000000;
+    background: ${READER.tableHeader};
+    color: ${READER.ink};
     font-weight: 600;
     text-align: left;
-    border: 1px solid #d9d9d9;
+    border: 1px solid ${READER.tableBorder};
     padding: 6px 10px;
     white-space: nowrap;
   }
 
   tbody td {
-    border: 1px solid #e8e8e8;
+    border: 1px solid ${READER.chromeBorder};
     padding: 4px 10px;
-    color: #000000;
+    color: ${READER.ink};
     vertical-align: top;
     white-space: pre-wrap;
   }
 
   tbody tr:nth-child(even) td {
-    background: #fafafa;
+    background: ${READER.chromeBg};
   }
 
   mark[data-search] {
-    background: #ffd54f;
-    color: #000000;
+    background: ${READER.highlight};
+    color: ${READER.ink};
     padding: 0 1px;
     border-radius: 2px;
   }
@@ -206,14 +205,14 @@ export const SheetBody = styled.div<{ $mobile: boolean; $zoom: number }>`
 
 export const sheetEmpty: CSSProperties = {
   padding: 24,
-  color: '#666',
+  color: READER.chromeTextFaint,
   textAlign: 'center',
 };
 
 export const pptxContainer: CSSProperties = {
   flex: 1,
   minHeight: 0,
-  background: '#1a1a1a',
+  background: READER.stage,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -222,8 +221,8 @@ export const pptxContainer: CSSProperties = {
 
 export const pptxCanvas: CSSProperties = {
   display: 'block',
-  background: '#ffffff',
-  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+  background: READER.paper,
+  boxShadow: `0 4px 24px ${READER.pageShadow}`,
 };
 
 export const pptxLoading: CSSProperties = {
@@ -245,7 +244,7 @@ export function txtViewer(isMobile: boolean): CSSProperties {
     lineHeight: 1.6,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
-    background: '#fafafa',
+    background: READER.chromeBg,
   };
 }
 
@@ -307,7 +306,7 @@ export const EpubTocPanel = styled.div<{ $mobile: boolean; $border: string; $bar
   left: ${(p) => (p.$mobile ? '0' : 'auto')};
   bottom: ${(p) => (p.$mobile ? '0' : 'auto')};
   z-index: ${(p) => (p.$mobile ? 10 : 'auto')};
-  box-shadow: ${(p) => (p.$mobile ? '2px 0 12px rgba(0,0,0,0.18)' : 'none')};
+  box-shadow: ${(p) => (p.$mobile ? `2px 0 12px ${READER.drawerShadow}` : 'none')};
   border-right: ${(p) => (p.$mobile ? 'none' : `1px solid ${p.$border}`)};
   width: ${(p) => (p.$mobile ? '80vw' : '220px')};
   max-width: 320px;
@@ -345,7 +344,7 @@ export const EpubTocItem = styled.div<{ $mobile: boolean; $themeVariant: ReaderT
 export const epubBackdrop: CSSProperties = {
   position: 'absolute',
   inset: 0,
-  background: 'rgba(0,0,0,0.35)',
+  background: READER.backdrop,
   zIndex: 9,
 };
 

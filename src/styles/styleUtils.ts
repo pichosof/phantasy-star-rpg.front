@@ -42,8 +42,8 @@ export const textSm: CSSProperties = { fontSize: 12 };
 export const textMd: CSSProperties = { fontSize: 13 };
 export const bold700: CSSProperties = { fontWeight: 700 };
 export const bold800: CSSProperties = { fontWeight: 800 };
-export const mutedSm: CSSProperties = { fontSize: 12, color: '#8c8c8c' };
-export const mutedXs: CSSProperties = { fontSize: 11, color: '#8c8c8c' };
+export const mutedSm: CSSProperties = { fontSize: 12, color: 'var(--text-light-color)' };
+export const mutedXs: CSSProperties = { fontSize: 11, color: 'var(--text-light-color)' };
 export const preWrap: CSSProperties = { whiteSpace: 'pre-wrap', margin: 0 };
 export const lineHeight175: CSSProperties = { whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.75 };
 
@@ -137,8 +137,8 @@ export const carouselCounter: CSSProperties = {
   position: 'absolute',
   bottom: 8,
   right: 8,
-  background: 'rgba(0,0,0,0.5)',
-  color: '#fff',
+  background: 'rgba(0,0,0,0.5)', // theme-isolation-ignore: overlay on images/media, dark in every theme
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   fontSize: 11,
   padding: '2px 6px',
   borderRadius: 10,
@@ -187,12 +187,12 @@ export const blackBg: CSSProperties = {
   position: 'relative',
   borderRadius: 6,
   overflow: 'hidden',
-  background: '#000',
+  background: '#000', // theme-isolation-ignore: overlay on images/media, dark in every theme
 };
 
 export const dungeon404: CSSProperties = {
   height: 80,
-  background: 'linear-gradient(135deg,#1a1a2e,#16213e)',
+  background: 'linear-gradient(135deg,#1a1a2e,#16213e)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -206,10 +206,10 @@ export const dividerMd: CSSProperties = { margin: '8px 0' };
 // ── Native HTML carousel buttons ─────────────────────────────────────────────
 const _navBase: CSSProperties = {
   position: 'absolute',
-  background: 'rgba(0,0,0,0.55)',
+  background: 'rgba(0,0,0,0.55)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   border: 'none',
   borderRadius: 6,
-  color: '#fff',
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   cursor: 'pointer',
 };
 
@@ -233,7 +233,7 @@ export const carouselNavBtnRight: CSSProperties = {
 
 export const carouselNavBtnLeftLg: CSSProperties = {
   ..._navBase,
-  background: 'rgba(0,0,0,0.6)',
+  background: 'rgba(0,0,0,0.6)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   top: '50%',
   left: 12,
   transform: 'translateY(-50%)',
@@ -243,7 +243,7 @@ export const carouselNavBtnLeftLg: CSSProperties = {
 
 export const carouselNavBtnRightLg: CSSProperties = {
   ..._navBase,
-  background: 'rgba(0,0,0,0.6)',
+  background: 'rgba(0,0,0,0.6)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   top: '50%',
   right: 12,
   transform: 'translateY(-50%)',
@@ -255,10 +255,10 @@ export const carouselZoomBtn: CSSProperties = {
   position: 'absolute',
   top: 8,
   right: 8,
-  background: 'rgba(0,0,0,0.55)',
+  background: 'rgba(0,0,0,0.55)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   border: 'none',
   borderRadius: 6,
-  color: '#fff',
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   cursor: 'pointer',
   padding: '4px 8px',
   display: 'flex',
@@ -272,10 +272,10 @@ export const carouselCounterCenter: CSSProperties = {
   bottom: 8,
   left: '50%',
   transform: 'translateX(-50%)',
-  background: 'rgba(0,0,0,0.6)',
+  background: 'rgba(0,0,0,0.6)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   borderRadius: 12,
   padding: '2px 10px',
-  color: '#fff',
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   fontSize: 12,
   pointerEvents: 'none',
 };
@@ -285,9 +285,9 @@ export const carouselCounterCenterLg: CSSProperties = {
   bottom: 12,
   left: '50%',
   transform: 'translateX(-50%)',
-  background: 'rgba(0,0,0,0.6)',
+  background: 'rgba(0,0,0,0.6)', // theme-isolation-ignore: overlay on images/media, dark in every theme
   borderRadius: 12,
   padding: '2px 12px',
-  color: '#fff',
+  color: '#fff', // theme-isolation-ignore: overlay on images/media, dark in every theme
   fontSize: 13,
 };

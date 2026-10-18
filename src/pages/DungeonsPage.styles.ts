@@ -30,7 +30,7 @@ export function thumb(isActive: boolean): CSSProperties {
     objectFit: 'cover',
     borderRadius: 4,
     cursor: 'pointer',
-    border: isActive ? '2px solid #1677ff' : '2px solid transparent',
+    border: isActive ? '2px solid var(--primary-color)' : '2px solid transparent',
     opacity: isActive ? 1 : 0.65,
     flexShrink: 0,
   };
@@ -252,7 +252,8 @@ export const MobileCityOption = styled.button<{ $active?: boolean }>`
   padding: 10px 12px;
   border: 1px solid ${({ $active }) => ($active ? 'var(--primary-color)' : 'var(--border-color)')};
   border-radius: 12px;
-  background: ${({ $active }) => ($active ? 'rgba(24, 144, 255, 0.14)' : 'var(--additional-background-color)')};
+  background: ${({ $active }) =>
+    $active ? 'rgba(var(--primary-rgb-color), 0.14)' : 'var(--additional-background-color)'};
   color: var(--text-main-color);
   font: inherit;
   text-align: left;

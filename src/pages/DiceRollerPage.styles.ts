@@ -1,19 +1,26 @@
 import type { CSSProperties } from 'react';
 import styled from 'styled-components';
+import {
+  DICE_OUTCOME,
+  DIE_FACE_TEXT,
+  DIE_FACE_TEXT_SHADOW,
+  DIE_FACE_TEXT_SHADOW_SOFT,
+  tint,
+} from '@app/styles/domain-palette';
 
 export function edgeDie(size: number, shape: string): CSSProperties {
   return {
     width: size,
     height: size,
     clipPath: shape,
-    background: 'linear-gradient(135deg, #faad14, #d4380d, #faad14)',
+    background: `linear-gradient(135deg, ${DICE_OUTCOME.edge}, ${DICE_OUTCOME.edgeDeep}, ${DICE_OUTCOME.edge})`,
     backgroundSize: '200% 200%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transform: 'rotate(45deg)',
     flexShrink: 0,
-    boxShadow: `0 0 ${size / 3}px rgba(250,173,20,0.6)`,
+    boxShadow: `0 0 ${size / 3}px ${tint(DICE_OUTCOME.edge, '60%')}`,
     cursor: 'default',
     animation: 'edge-glow 1.4s ease-in-out infinite alternate',
   };
@@ -23,11 +30,11 @@ export function edgeDieText(size: number): CSSProperties {
   return {
     fontSize: size < 44 ? 13 : 16,
     fontWeight: 900,
-    color: '#fff',
+    color: DIE_FACE_TEXT,
     lineHeight: 1,
     userSelect: 'none',
     transform: 'rotate(-45deg)',
-    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+    textShadow: `0 1px 4px ${DIE_FACE_TEXT_SHADOW}`,
     letterSpacing: 0,
   };
 }
@@ -58,7 +65,7 @@ export function dieFaceText(size: number, textColor: string): CSSProperties {
   };
 }
 
-export function selectorCard(active: boolean, isDark: boolean, color: string): CSSProperties {
+export function selectorCard(active: boolean, color: string): CSSProperties {
   return {
     display: 'flex',
     flexDirection: 'column',
@@ -66,19 +73,19 @@ export function selectorCard(active: boolean, isDark: boolean, color: string): C
     gap: 8,
     padding: '12px 8px',
     borderRadius: 10,
-    background: active ? `${color}18` : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-    border: `1px solid ${active ? `${color}66` : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'}`,
+    background: active ? `${color}18` : 'var(--ink-faint)',
+    border: `1px solid ${active ? `${color}66` : 'var(--ink-line)'}`,
     transition: 'all 0.15s',
     minWidth: 72,
   };
 }
 
-export function selectorDie(active: boolean, isDark: boolean, color: string, shape: string): CSSProperties {
+export function selectorDie(active: boolean, color: string, shape: string): CSSProperties {
   return {
     width: 44,
     height: 44,
     clipPath: shape,
-    background: active ? color : isDark ? `${color}45` : `${color}35`,
+    background: active ? color : tint(color, 'var(--domain-tint-strong)'),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -90,9 +97,9 @@ export function selectorDie(active: boolean, isDark: boolean, color: string, sha
 export const selectorDieText: CSSProperties = {
   fontSize: 11,
   fontWeight: 800,
-  color: '#fff',
+  color: DIE_FACE_TEXT,
   userSelect: 'none',
-  textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+  textShadow: `0 1px 2px ${DIE_FACE_TEXT_SHADOW_SOFT}`,
 };
 
 export const selectorControls: CSSProperties = {
@@ -101,20 +108,14 @@ export const selectorControls: CSSProperties = {
   gap: 6,
 };
 
-export function selectorAdjustButton(disabled: boolean, isDark: boolean): CSSProperties {
+export function selectorAdjustButton(disabled: boolean): CSSProperties {
   return {
     width: 22,
     height: 22,
     borderRadius: 4,
     border: 'none',
-    background: disabled
-      ? isDark
-        ? 'rgba(255,255,255,0.04)'
-        : 'rgba(0,0,0,0.04)'
-      : isDark
-        ? 'rgba(255,255,255,0.1)'
-        : 'rgba(0,0,0,0.07)',
-    color: disabled ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : isDark ? '#fff' : '#000',
+    background: disabled ? 'var(--ink-faint)' : 'var(--ink-soft)',
+    color: disabled ? 'var(--ink-muted)' : 'var(--ink-strong)',
     cursor: disabled ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -126,23 +127,23 @@ export function selectorAdjustButton(disabled: boolean, isDark: boolean): CSSPro
   };
 }
 
-export function selectorCount(active: boolean, isDark: boolean, color: string): CSSProperties {
+export function selectorCount(active: boolean, color: string): CSSProperties {
   return {
     minWidth: 18,
     textAlign: 'center',
     fontWeight: 700,
     fontSize: 15,
-    color: active ? color : isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.22)',
+    color: active ? color : 'var(--ink-muted)',
     transition: 'color 0.15s',
   };
 }
 
-export function historyRow(isDark: boolean): CSSProperties {
+export function historyRow(): CSSProperties {
   return {
     padding: '10px 12px',
     borderRadius: 8,
-    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'}`,
+    background: 'var(--ink-faint)',
+    border: '1px solid var(--ink-line)',
   };
 }
 
@@ -199,14 +200,14 @@ export function historyTotalValue(color: string): CSSProperties {
   };
 }
 
-export function historyReplayButton(isDark: boolean): CSSProperties {
+export function historyReplayButton(): CSSProperties {
   return {
     width: 24,
     height: 24,
     borderRadius: 4,
     border: 'none',
-    background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+    background: 'var(--ink-soft)',
+    color: 'var(--ink-subtle)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -308,10 +309,10 @@ export function resultBannerText(color: string, fontWeight: number): CSSProperti
   };
 }
 
-export function historyBadge(isDark: boolean): CSSProperties {
+export function historyBadge(): CSSProperties {
   return {
-    backgroundColor: 'rgba(128,128,128,0.3)',
-    color: isDark ? '#fff' : '#000',
+    backgroundColor: 'var(--ink-soft)',
+    color: 'var(--ink-strong)',
   };
 }
 
@@ -371,10 +372,10 @@ export const MobileDiceGrid = styled.div`
   }
 `;
 
-export const MobileDieCard = styled.div<{ $active: boolean; $color: string; $isDark: boolean }>`
+export const MobileDieCard = styled.div<{ $active: boolean; $color: string }>`
   min-height: 106px;
   min-width: 0;
-  border: 1px solid ${(p) => (p.$active ? `${p.$color}88` : p.$isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
+  border: 1px solid ${(p) => (p.$active ? `${p.$color}88` : 'var(--ink-line)')};
   border-radius: 18px;
   padding: 10px 8px;
   background: ${(p) => (p.$active ? `${p.$color}20` : 'var(--psr-mobile-elevated-bg)')};
@@ -402,10 +403,10 @@ export const MobileDieShape = styled.span<{ $active: boolean; $color: string; $s
   background: ${(p) => (p.$active ? p.$color : `${p.$color}55`)};
   display: grid;
   place-items: center;
-  color: #fff;
+  color: ${DIE_FACE_TEXT};
   font-size: 0.72rem;
   font-weight: 900;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 3px ${DIE_FACE_TEXT_SHADOW_SOFT};
 
   @media (max-width: 510px) {
     width: 42px;
@@ -420,7 +421,7 @@ export const MobileDieCount = styled.span<{ $active: boolean; $color: string }>`
   border-radius: 999px;
   display: grid;
   place-items: center;
-  color: ${(p) => (p.$active ? '#fff' : 'var(--text-secondary-color)')};
+  color: ${(p) => (p.$active ? DIE_FACE_TEXT : 'var(--text-secondary-color)')};
   background: ${(p) => (p.$active ? p.$color : 'transparent')};
   font-size: 1rem;
   font-weight: 900;
@@ -526,6 +527,6 @@ export const MobileRollDock = styled.div`
   border: 1px solid var(--border-color);
   border-radius: 22px;
   background: color-mix(in srgb, var(--additional-background-color) 88%, transparent);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 18px 42px var(--shadow-elevated);
   backdrop-filter: blur(16px);
 `;

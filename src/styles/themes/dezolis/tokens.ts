@@ -1,7 +1,6 @@
 import { shadeColor } from '@app/utils/utils';
 import { graphic } from 'echarts';
-import { BASE_COLORS } from '../constants';
-import { ITheme } from '../types';
+import type { ThemeTokens } from '../contract';
 
 /** Dezolis Dark — abismo glacial / noite polar / aurora boreal */
 const chartColors = {
@@ -31,7 +30,8 @@ const chartColors = {
   ]),
 };
 
-export const darkColorsTheme: ITheme = {
+/** Dezolis owns every value below; nothing is inherited from another theme. */
+export const dezolisTokens: ThemeTokens = {
   primary: '#00C8E8', // Arctic Cyan — gelo vivo
   primary1: '#5E1ECC', // Crystal Violet — fundo de hover/badge
   primaryGradient: 'linear-gradient(211.49deg, #00C8E8 15.89%, #7722DD 48.97%)',
@@ -62,7 +62,7 @@ export const darkColorsTheme: ITheme = {
   textMain: '#C8E4FF', // Branco gélido azulado
   textLight: '#6A88A8',
   textSuperLight: '#3A5070',
-  textSecondary: BASE_COLORS.white,
+  textSecondary: '#ffffff',
   textDark: '#AACCEE',
   textNftLight: '#567090',
   textSiderPrimary: '#00C8E8', // Ice cyan no menu
@@ -89,7 +89,7 @@ export const darkColorsTheme: ITheme = {
   notificationError: '#280414',
 
   // Layout
-  heading: BASE_COLORS.white,
+  heading: '#ffffff',
   borderBase: '#142038',
   disable: '#2A3E60',
   disabledBg: '#07102A',
@@ -110,6 +110,27 @@ export const darkColorsTheme: ITheme = {
   breadcrumb: '#6A88A8',
   icon: '#4A6888',
   iconHover: '#C8E4FF',
+
+  // White ink on the void
+  ink: {
+    faint: 'rgba(255, 255, 255, 0.04)',
+    soft: 'rgba(255, 255, 255, 0.08)',
+    line: 'rgba(255, 255, 255, 0.10)',
+    muted: 'rgba(255, 255, 255, 0.25)',
+    subtle: 'rgba(255, 255, 255, 0.50)',
+    text: 'rgba(255, 255, 255, 0.85)',
+    strong: '#ffffff',
+  },
+  domainTintSoft: '16%',
+  domainTintStrong: '27%',
+  shadowElevated: 'rgba(0, 0, 0, 0.24)',
+  siderInk: {
+    faint: 'rgba(255, 255, 255, 0.04)',
+    soft: 'rgba(255, 255, 255, 0.08)',
+    line: 'rgba(255, 255, 255, 0.08)',
+    strong: '#ffffff',
+    shadow: 'rgba(0, 0, 0, 0.24)',
+  },
 
   ...chartColors,
 };

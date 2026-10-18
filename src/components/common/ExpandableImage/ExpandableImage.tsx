@@ -1,3 +1,4 @@
+/* theme-isolation-ignore-file: lightbox stage behind the image */
 import React from 'react';
 import { Modal } from 'antd';
 import { FullscreenOutlined } from '@ant-design/icons';

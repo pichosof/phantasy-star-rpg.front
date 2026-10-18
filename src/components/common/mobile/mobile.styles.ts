@@ -46,7 +46,7 @@ export const mobileSelectorStyle: CSSProperties = {
   '--text-color': 'var(--text-main-color)',
   '--checked-text-color': 'var(--primary-color)',
   '--color': 'var(--psr-mobile-elevated-bg)',
-  '--checked-color': 'rgba(24, 144, 255, 0.14)',
+  '--checked-color': 'rgba(var(--primary-rgb-color), 0.14)',
 } as CSSProperties;
 
 export const mobileDialogBodyStyle: CSSProperties = {
@@ -274,7 +274,7 @@ export const MobileFormRoot = styled(AdmForm)`
   && {
     --border-top: none;
     --border-bottom: none;
-    --border-inner: 1px solid rgba(140, 140, 140, 0.16);
+    --border-inner: 1px solid var(--ink-line);
   }
 
   .adm-form-item-label {
@@ -307,7 +307,7 @@ export const MobileSheetHandle = styled.div`
   width: 38px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(140, 140, 140, 0.45);
+  background: var(--ink-muted);
   margin: 4px auto 0;
 `;
 
@@ -418,7 +418,7 @@ export const MobileDismissButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(140, 140, 140, 0.14);
+  background: var(--ink-soft);
   color: var(--text-main-color);
   cursor: pointer;
 `;

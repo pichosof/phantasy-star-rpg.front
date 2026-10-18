@@ -1,3 +1,4 @@
+/* theme-isolation-ignore-file: the remaining colors are overlays on the player portrait */
 // src/components/rpg/PlayerCard/PlayerCard.styles.ts
 import styled from 'styled-components';
 import { Card as BaseCard } from '@app/components/common/Card/Card';
@@ -23,8 +24,8 @@ export const Card = styled(BaseCard)<CardInternalProps>`
     &:hover {
       transform: translateY(-3px);
       box-shadow:
-        0 0 0 1px rgba(0, 200, 232, 0.2),
-        0 8px 32px rgba(0, 200, 232, 0.08);
+        0 0 0 1px rgba(var(--primary-rgb-color), 0.2),
+        0 8px 32px rgba(var(--primary-rgb-color), 0.08);
     }
   }
 `;

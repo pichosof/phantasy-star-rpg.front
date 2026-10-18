@@ -2,9 +2,7 @@ import React from 'react';
 import * as S from './MainSider/MainSider.styles';
 import { RightOutlined } from '@ant-design/icons';
 import { useResponsive } from '@app/hooks/useResponsive';
-import logoMarkDark from '@app/assets/logo-mark-dark.png';
-import logoMarkLight from '@app/assets/logo-mark-light.png';
-import { useAppSelector } from '@app/hooks/reduxHooks';
+import { useActiveTheme } from '@app/hooks/useActiveTheme';
 
 interface SiderLogoProps {
   isSiderCollapsed: boolean;
@@ -13,10 +11,10 @@ interface SiderLogoProps {
 
 export const SiderLogo: React.FC<SiderLogoProps> = ({ isSiderCollapsed, toggleSider }) => {
   const { tabletOnly } = useResponsive();
-  const theme = useAppSelector((state) => state.theme.theme);
+  const activeTheme = useActiveTheme();
 
-  const markSrc = theme === 'dark' ? logoMarkDark : logoMarkLight;
-  const themeName = theme === 'dark' ? 'DEZOLIS' : 'MOTAVIA';
+  const markSrc = activeTheme.logoMark;
+  const themeName = activeTheme.name.toUpperCase();
   const isCollapsed = tabletOnly && isSiderCollapsed;
 
   return (

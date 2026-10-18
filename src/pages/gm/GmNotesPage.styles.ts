@@ -3,13 +3,11 @@ import { Divider, Empty, Input, Tag, Typography } from 'antd';
 
 const { TextArea } = Input;
 
-export const NoteCardShell = styled.div<{ $active: boolean; $isDark: boolean }>`
+export const NoteCardShell = styled.div<{ $active: boolean }>`
   padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
-  border: 1px solid
-    ${({ $active, $isDark }) =>
-      $active ? 'var(--primary-color)' : $isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
+  border: 1px solid ${({ $active }) => ($active ? 'var(--primary-color)' : 'var(--ink-line)')};
   background: ${({ $active }) => ($active ? 'rgba(var(--primary-rgb-color),0.08)' : 'transparent')};
   transition: all 0.12s;
 `;

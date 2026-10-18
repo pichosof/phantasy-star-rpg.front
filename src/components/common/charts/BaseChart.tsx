@@ -3,7 +3,7 @@ import { EChartsOption } from 'echarts-for-react';
 import ReactECharts from 'echarts-for-react';
 import { Loading } from '../Loading';
 import { useAppSelector } from '@app/hooks/reduxHooks';
-import { themeObject } from '@app/styles/themes/themeVariables';
+import { getTheme } from '@app/styles/themes/registry';
 import { ITheme } from '@app/styles/themes/types';
 import { BORDER_RADIUS } from '@app/styles/themes/constants';
 
@@ -54,7 +54,7 @@ export const BaseChart: React.FC<BaseChartProps> = ({ option, width, height, onE
   const chartHeight = height || '400px';
 
   const defaultOption = {
-    color: getChartColors(themeObject[theme]),
+    color: getChartColors(getTheme(theme).tokens),
   };
 
   useEffect(() => {

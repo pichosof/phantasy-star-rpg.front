@@ -48,7 +48,7 @@ export const CreateRow = styled.div`
 export const CreateInput = styled.input`
   flex: 1;
   padding: 4px 8px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   background: transparent;
   color: inherit;
@@ -57,7 +57,7 @@ export const CreateInput = styled.input`
 
 export const CreateButton = styled.button`
   padding: 4px 10px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
   background: transparent;

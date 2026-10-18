@@ -19,7 +19,7 @@ export const calcBoxBase: CSSProperties = {
 export function calcBox(color?: string): CSSProperties {
   return {
     ...calcBoxBase,
-    background: color ? `${color}18` : 'rgba(128,128,128,0.08)',
+    background: color ? `${color}18` : 'var(--ink-faint)',
     border: color ? `1px solid ${color}44` : undefined,
   };
 }
@@ -101,7 +101,7 @@ export const savesGrid: CSSProperties = {
 export const saveCard: CSSProperties = {
   padding: 8,
   borderRadius: 8,
-  background: 'rgba(128,128,128,0.06)',
+  background: 'var(--ink-faint)',
   textAlign: 'center',
 };
 
@@ -178,7 +178,7 @@ export const skillName: CSSProperties = {
 };
 
 export const trainedOnlyMark: CSSProperties = {
-  color: '#ff4d4f',
+  color: 'var(--error-color)',
   fontSize: 10,
 };
 
@@ -205,8 +205,8 @@ export const weaponCard: CSSProperties = {
   marginBottom: 12,
   padding: 10,
   borderRadius: 8,
-  background: 'rgba(128,128,128,0.05)',
-  border: '1px solid rgba(128,128,128,0.1)',
+  background: 'var(--ink-faint)',
+  border: '1px solid var(--ink-line)',
 };
 
 export const weaponCardTitle: CSSProperties = {

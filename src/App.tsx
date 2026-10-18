@@ -1,14 +1,13 @@
 import React from 'react';
-import { App as AntdApp, ConfigProvider, Modal, message, notification, theme as antTheme } from 'antd';
+import { App as AntdApp, ConfigProvider, Modal, message, notification } from 'antd';
 import GlobalStyle from './styles/GlobalStyle';
 import 'typeface-montserrat';
 import 'typeface-lato';
 import { AppRouter } from './components/router/AppRouter';
-import { useAutoNightMode } from './hooks/useAutoNightMode';
+import { useActiveTheme } from './hooks/useActiveTheme';
 import { usePWA } from './hooks/usePWA';
 import { useThemeWatcher } from './hooks/useThemeWatcher';
-import { useAppSelector } from './hooks/reduxHooks';
-import { themeObject } from './styles/themes/themeVariables';
+import { useThemeMode } from './hooks/useThemeMode';
 
 const AntdFeedbackBridge: React.FC = () => {
   const { message: appMessage, notification: appNotification, modal } = AntdApp.useApp();
@@ -47,41 +46,18 @@ const AntdFeedbackBridge: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const theme = useAppSelector((state) => state.theme.theme);
-  const colors = themeObject[theme];
+  // Each world theme owns its antd config (algorithm + tokens); see styles/themes/<world>/index.ts
+  const activeTheme = useActiveTheme();
 
   usePWA();
-  useAutoNightMode();
+  useThemeMode();
   useThemeWatcher();
-
-  const antdTheme = React.useMemo(
-    () => ({
-      algorithm: theme === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
-      token: {
-        colorPrimary: colors.primary,
-        colorInfo: colors.primary,
-        colorSuccess: colors.success,
-        colorWarning: colors.warning,
-        colorError: colors.error,
-        colorTextBase: colors.textMain,
-        colorBgBase: colors.background,
-        colorBorder: colors.border,
-        borderRadius: 7,
-        fontFamily: "'Montserrat', sans-serif",
-        fontSize: 16,
-        controlHeight: 50,
-        controlHeightSM: 32,
-        controlHeightLG: 64,
-      },
-    }),
-    [colors, theme],
-  );
 
   return (
     <>
-      <meta name="theme-color" content={colors.primary} />
+      <meta name="theme-color" content={activeTheme.tokens.primary} />
       <GlobalStyle />
-      <ConfigProvider theme={antdTheme}>
+      <ConfigProvider theme={activeTheme.antd}>
         <AntdApp style={{ minHeight: '100%' }}>
           <AntdFeedbackBridge />
           <AppRouter />

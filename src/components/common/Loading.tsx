@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { GlobalSpinner } from '@app/components/common/GlobalSpinner';
 import { useAppSelector } from '@app/hooks/reduxHooks';
-import { themeObject } from '@app/styles/themes/themeVariables';
+import { getTheme } from '@app/styles/themes/registry';
 
 interface LoadingProps {
   size?: string;
@@ -11,7 +11,7 @@ interface LoadingProps {
 
 export const Loading: React.FC<LoadingProps> = ({ size, color }) => {
   const theme = useAppSelector((state) => state.theme.theme);
-  const spinnerColor = color || themeObject[theme].spinnerBase;
+  const spinnerColor = color || getTheme(theme).tokens.spinnerBase;
 
   return (
     <SpinnerContainer>

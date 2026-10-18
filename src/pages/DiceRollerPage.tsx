@@ -9,9 +9,11 @@ import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { Card } from '@app/components/common/Card/Card';
 import { MobileCard, MobilePageScaffold } from '@app/components/common/mobile';
 import { useResponsive } from '@app/hooks/useResponsive';
-import { useAppSelector } from '@app/hooks/reduxHooks';
+
 import { m0, textSm, textMd, spaceBetween } from '@app/styles/styleUtils';
 import * as S from './DiceRollerPage.styles';
+
+import { DICE_OUTCOME, DIE_COLORS, DIE_FACE_TEXT, tint } from '@app/styles/domain-palette';
 
 // ── Edge config ───────────────────────────────────────────────────────────────
 // Probability (%) that any single die roll edges instead of landing on a face.
@@ -99,34 +101,9 @@ const DIE_SHAPES: Record<DiceType, string> = {
   100: 'circle(48% at 50% 50%)',
 };
 
-const DIE_COLORS: Record<DiceType, string> = {
-  2: '#597ef7',
-  4: '#36cfc9',
-  6: '#73d13d',
-  8: '#ffc53d',
-  10: '#ff7a45',
-  12: '#f759ab',
-  16: '#9254de',
-  20: '#ff4d4f',
-  24: '#13c2c2',
-  30: '#52c41a',
-  60: '#fa8c16',
-  100: '#40a9ff',
-};
-
 // ── DiceFaceDisplay ───────────────────────────────────────────────────────────
 
-function DiceFaceDisplay({
-  type,
-  value,
-  size = 52,
-  isDark,
-}: {
-  type: DiceType;
-  value: DieValue;
-  size?: number;
-  isDark: boolean;
-}) {
+function DiceFaceDisplay({ type, value, size = 52 }: { type: DiceType; value: DieValue; size?: number }) {
   if (value === 'edge') {
     return (
       <div title="EDGED! This die doesn't count." style={S.edgeDie(size, DIE_SHAPES[type])}>
@@ -143,13 +120,13 @@ function DiceFaceDisplay({
 
   if (isMax) {
     bgColor = DIE_COLORS[type];
-    textColor = '#fff';
+    textColor = DIE_FACE_TEXT;
   } else if (isMin) {
-    bgColor = '#ff4d4f';
-    textColor = '#fff';
+    bgColor = DICE_OUTCOME.fumble;
+    textColor = DIE_FACE_TEXT;
   } else {
-    bgColor = isDark ? `${DIE_COLORS[type]}28` : `${DIE_COLORS[type]}22`;
-    textColor = isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+    bgColor = tint(DIE_COLORS[type], 'var(--domain-tint-soft)');
+    textColor = 'var(--ink-text)';
   }
 
   return (
@@ -172,28 +149,26 @@ function DieSelectorCard({
   type,
   count,
   onChange,
-  isDark,
 }: {
   type: DiceType;
   count: number;
   onChange: (delta: number) => void;
-  isDark: boolean;
 }) {
   const color = DIE_COLORS[type];
   const active = count > 0;
 
   return (
-    <div style={S.selectorCard(active, isDark, color)}>
-      <div style={S.selectorDie(active, isDark, color, DIE_SHAPES[type])}>
+    <div style={S.selectorCard(active, color)}>
+      <div style={S.selectorDie(active, color, DIE_SHAPES[type])}>
         <span style={S.selectorDieText}>d{type}</span>
       </div>
 
       <div style={S.selectorControls}>
-        <button onClick={() => onChange(-1)} disabled={count === 0} style={S.selectorAdjustButton(count === 0, isDark)}>
+        <button onClick={() => onChange(-1)} disabled={count === 0} style={S.selectorAdjustButton(count === 0)}>
           −
         </button>
-        <span style={S.selectorCount(active, isDark, color)}>{count}</span>
-        <button onClick={() => onChange(1)} style={S.selectorAdjustButton(false, isDark)}>
+        <span style={S.selectorCount(active, color)}>{count}</span>
+        <button onClick={() => onChange(1)} style={S.selectorAdjustButton(false)}>
           +
         </button>
       </div>
@@ -203,23 +178,15 @@ function DieSelectorCard({
 
 // ── HistoryRow ────────────────────────────────────────────────────────────────
 
-function HistoryRow({
-  entry,
-  onReplay,
-  isDark,
-}: {
-  entry: HistoryEntry;
-  onReplay: (entry: HistoryEntry) => void;
-  isDark: boolean;
-}) {
+function HistoryRow({ entry, onReplay }: { entry: HistoryEntry; onReplay: (entry: HistoryEntry) => void }) {
   const maxes = entry.rolls.reduce((acc, r) => acc + r.values.filter((v) => v === r.type).length, 0);
   const mins = entry.rolls.flatMap((r) => r.values).filter((v) => v === 1).length;
   const edges = countEdges(entry.rolls);
 
-  const totalColor = isDark ? '#fff' : 'rgba(0,0,0,0.85)';
+  const totalColor = 'var(--ink-strong)';
 
   return (
-    <div style={S.historyRow(isDark)}>
+    <div style={S.historyRow()}>
       <div style={S.historyHeader}>
         <div style={S.historyMeta}>
           <Typography.Text type="secondary" style={S.historyTime}>
@@ -246,11 +213,7 @@ function HistoryRow({
         </div>
         <div style={S.historyTotalWrap}>
           <span style={S.historyTotalValue(totalColor)}>{entry.total}</span>
-          <button
-            onClick={() => onReplay(entry)}
-            title="Roll again with the same dice"
-            style={S.historyReplayButton(isDark)}
-          >
+          <button onClick={() => onReplay(entry)} title="Roll again with the same dice" style={S.historyReplayButton()}>
             <RollbackOutlined style={S.historyReplayIcon} />
           </button>
         </div>
@@ -258,9 +221,7 @@ function HistoryRow({
 
       <div style={S.historyDiceWrap}>
         {entry.rolls.flatMap((r) =>
-          r.values.map((v, i) => (
-            <DiceFaceDisplay key={`${r.type}-${i}`} type={r.type} value={v} size={34} isDark={isDark} />
-          )),
+          r.values.map((v, i) => <DiceFaceDisplay key={`${r.type}-${i}`} type={r.type} value={v} size={34} />),
         )}
       </div>
     </div>
@@ -271,8 +232,6 @@ function HistoryRow({
 
 export const DiceRollerPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
-  const theme = useAppSelector((state) => state.theme.theme);
-  const isDark = theme === 'dark';
 
   const [selection, setSelection] = React.useState<Record<DiceType, number>>(
     () => Object.fromEntries(ALL_DICE.map((d) => [d, 0])) as Record<DiceType, number>,
@@ -358,8 +317,8 @@ export const DiceRollerPage: React.FC = () => {
   );
   const historySum = React.useMemo(() => history.reduce((a, e) => a + e.total, 0), [history]);
 
-  const totalLabelColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)';
-  const totalValueColor = isDark ? '#fff' : 'rgba(0,0,0,0.88)';
+  const totalLabelColor = 'var(--ink-subtle)';
+  const totalValueColor = 'var(--ink-strong)';
   const selectedLabel = selectedGroups.length ? buildLabel(selectedGroups) : 'Choose dice to begin';
 
   if (mobileOnly) {
@@ -406,7 +365,7 @@ export const DiceRollerPage: React.FC = () => {
                   const color = DIE_COLORS[d];
 
                   return (
-                    <S.MobileDieCard key={d} $active={active} $color={color} $isDark={isDark}>
+                    <S.MobileDieCard key={d} $active={active} $color={color}>
                       <S.MobileDieShape $active={active} $color={color} $shape={DIE_SHAPES[d]}>
                         d{d}
                       </S.MobileDieShape>
@@ -441,13 +400,7 @@ export const DiceRollerPage: React.FC = () => {
                 <S.MobileDiceCloud>
                   {lastEntry.rolls.flatMap((r) =>
                     r.values.map((v, i) => (
-                      <DiceFaceDisplay
-                        key={`mobile-last-${r.type}-${i}`}
-                        type={r.type}
-                        value={v}
-                        size={44}
-                        isDark={isDark}
-                      />
+                      <DiceFaceDisplay key={`mobile-last-${r.type}-${i}`} type={r.type} value={v} size={44} />
                     )),
                   )}
                 </S.MobileDiceCloud>
@@ -468,32 +421,32 @@ export const DiceRollerPage: React.FC = () => {
 
                   if (allEdged)
                     return (
-                      <div style={S.resultBanner('rgba(250,173,20,0.15)', 'rgba(250,173,20,0.5)')}>
-                        <Typography.Text style={S.resultBannerText('#faad14', 700)}>
+                      <div style={S.resultBanner(tint(DICE_OUTCOME.edge, '15%'), tint(DICE_OUTCOME.edge, '50%'))}>
+                        <Typography.Text style={S.resultBannerText(DICE_OUTCOME.edge, 700)}>
                           <IconLabel icon="alert">TOTAL EDGE. Useless, historic, beautiful.</IconLabel>
                         </Typography.Text>
                       </div>
                     );
                   if (allMax)
                     return (
-                      <div style={S.resultBanner('rgba(255,197,61,0.12)', 'rgba(255,197,61,0.3)')}>
-                        <Typography.Text style={S.resultBannerText('#ffc53d', 700)}>
+                      <div style={S.resultBanner(tint(DICE_OUTCOME.max, '12%'), tint(DICE_OUTCOME.max, '30%'))}>
+                        <Typography.Text style={S.resultBannerText(DICE_OUTCOME.max, 700)}>
                           <IconLabel icon="star">All dice at maximum!</IconLabel>
                         </Typography.Text>
                       </div>
                     );
                   if (allMin)
                     return (
-                      <div style={S.resultBanner('rgba(255,77,79,0.12)', 'rgba(255,77,79,0.3)')}>
-                        <Typography.Text style={S.resultBannerText('#ff4d4f', 700)}>
+                      <div style={S.resultBanner(tint(DICE_OUTCOME.fumble, '12%'), tint(DICE_OUTCOME.fumble, '30%'))}>
+                        <Typography.Text style={S.resultBannerText(DICE_OUTCOME.fumble, 700)}>
                           <IconLabel icon="alert">Total fumble - all dice at minimum!</IconLabel>
                         </Typography.Text>
                       </div>
                     );
                   if (edgeCount > 0)
                     return (
-                      <div style={S.resultBanner('rgba(250,173,20,0.08)', 'rgba(250,173,20,0.25)')}>
-                        <Typography.Text style={S.resultBannerText('#faad14', 600)}>
+                      <div style={S.resultBanner(tint(DICE_OUTCOME.edge, '8%'), tint(DICE_OUTCOME.edge, '25%'))}>
+                        <Typography.Text style={S.resultBannerText(DICE_OUTCOME.edge, 600)}>
                           <IconLabel icon="alert">
                             {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count.
                           </IconLabel>
@@ -526,7 +479,6 @@ export const DiceRollerPage: React.FC = () => {
                     <HistoryRow
                       key={e.id}
                       entry={e}
-                      isDark={isDark}
                       onReplay={(entry) => {
                         const groups: DiceGroup[] = entry.rolls.map((r) => ({ type: r.type, count: r.values.length }));
                         doRoll(groups);
@@ -564,13 +516,7 @@ export const DiceRollerPage: React.FC = () => {
 
           <S.SelectorGrid $mobile={mobileOnly}>
             {ALL_DICE.map((d) => (
-              <DieSelectorCard
-                key={d}
-                type={d}
-                count={selection[d]}
-                onChange={(delta) => changeCount(d, delta)}
-                isDark={isDark}
-              />
+              <DieSelectorCard key={d} type={d} count={selection[d]} onChange={(delta) => changeCount(d, delta)} />
             ))}
           </S.SelectorGrid>
 
@@ -618,7 +564,7 @@ export const DiceRollerPage: React.FC = () => {
             <div style={S.lastDiceWrap}>
               {lastEntry.rolls.flatMap((r) =>
                 r.values.map((v, i) => (
-                  <DiceFaceDisplay key={`last-${r.type}-${i}`} type={r.type} value={v} size={52} isDark={isDark} />
+                  <DiceFaceDisplay key={`last-${r.type}-${i}`} type={r.type} value={v} size={52} />
                 )),
               )}
             </div>
@@ -639,8 +585,8 @@ export const DiceRollerPage: React.FC = () => {
 
               if (allEdged)
                 return (
-                  <div style={S.resultBanner('rgba(250,173,20,0.15)', 'rgba(250,173,20,0.5)')}>
-                    <Typography.Text style={S.resultBannerText('#faad14', 700)}>
+                  <div style={S.resultBanner(tint(DICE_OUTCOME.edge, '15%'), tint(DICE_OUTCOME.edge, '50%'))}>
+                    <Typography.Text style={S.resultBannerText(DICE_OUTCOME.edge, 700)}>
                       <IconLabel icon="alert">
                         TOTAL EDGE - every single die balanced on its edge. Historically useless. Absolutely legendary.
                       </IconLabel>
@@ -649,24 +595,24 @@ export const DiceRollerPage: React.FC = () => {
                 );
               if (allMax)
                 return (
-                  <div style={S.resultBanner('rgba(255,197,61,0.12)', 'rgba(255,197,61,0.3)')}>
-                    <Typography.Text style={S.resultBannerText('#ffc53d', 700)}>
+                  <div style={S.resultBanner(tint(DICE_OUTCOME.max, '12%'), tint(DICE_OUTCOME.max, '30%'))}>
+                    <Typography.Text style={S.resultBannerText(DICE_OUTCOME.max, 700)}>
                       <IconLabel icon="star">All dice at maximum!</IconLabel>
                     </Typography.Text>
                   </div>
                 );
               if (allMin)
                 return (
-                  <div style={S.resultBanner('rgba(255,77,79,0.12)', 'rgba(255,77,79,0.3)')}>
-                    <Typography.Text style={S.resultBannerText('#ff4d4f', 700)}>
+                  <div style={S.resultBanner(tint(DICE_OUTCOME.fumble, '12%'), tint(DICE_OUTCOME.fumble, '30%'))}>
+                    <Typography.Text style={S.resultBannerText(DICE_OUTCOME.fumble, 700)}>
                       <IconLabel icon="alert">Total fumble - all dice at minimum!</IconLabel>
                     </Typography.Text>
                   </div>
                 );
               if (edgeCount > 0)
                 return (
-                  <div style={S.resultBanner('rgba(250,173,20,0.08)', 'rgba(250,173,20,0.25)')}>
-                    <Typography.Text style={S.resultBannerText('#faad14', 600)}>
+                  <div style={S.resultBanner(tint(DICE_OUTCOME.edge, '8%'), tint(DICE_OUTCOME.edge, '25%'))}>
+                    <Typography.Text style={S.resultBannerText(DICE_OUTCOME.edge, 600)}>
                       <IconLabel icon="alert">
                         {edgeCount} {edgeCount > 1 ? 'dice' : 'die'} edged and did not count toward the total.
                       </IconLabel>
@@ -685,7 +631,7 @@ export const DiceRollerPage: React.FC = () => {
             title={
               <Space size={10}>
                 <span>History</span>
-                <Badge count={history.length} style={S.historyBadge(isDark)} />
+                <Badge count={history.length} style={S.historyBadge()} />
                 <Tag style={m0}>
                   Total sum: <span style={S.historySumValue}>{historySum}</span>
                 </Tag>
@@ -702,7 +648,6 @@ export const DiceRollerPage: React.FC = () => {
                 <HistoryRow
                   key={e.id}
                   entry={e}
-                  isDark={isDark}
                   onReplay={(entry) => {
                     const groups: DiceGroup[] = entry.rolls.map((r) => ({ type: r.type, count: r.values.length }));
                     doRoll(groups);

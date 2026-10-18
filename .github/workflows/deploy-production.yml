@@ -49,6 +49,9 @@ jobs:
       - name: Lint
         run: node ./node_modules/eslint/bin/eslint.js "*/**/*.{js,ts,tsx}"
 
+      - name: Theme isolation
+        run: node scripts/check-theme-isolation.mjs --strict
+
       - name: Azure login
         uses: azure/login@v2
         with:

@@ -85,6 +85,7 @@ import * as S from './MapPage.styles';
 import RichText from '@app/components/common/RichText/RichText';
 import EntityDrawer from '@app/components/common/EntityDrawer/EntityDrawer';
 import { Card } from '@app/components/common/Card/Card';
+import { MAP_MARKER } from '@app/styles/domain-palette';
 
 const GM_KEY_STORAGE = 'gm_api_key';
 
@@ -1421,10 +1422,10 @@ export default function MapPage() {
                   const topCss = stage ? `${stage.offsetY + m.v * stage.height}px` : `${m.v * 100}%`;
                   const bg =
                     isGM && m.visible === false
-                      ? 'rgba(255, 70, 70, 0.95)'
+                      ? MAP_MARKER.picking
                       : m.discovered
-                        ? 'rgba(255,255,255,0.95)'
-                        : 'rgba(180,180,180,0.95)';
+                        ? MAP_MARKER.city
+                        : MAP_MARKER.cityUndiscovered;
 
                   return (
                     <div
@@ -1457,10 +1458,10 @@ export default function MapPage() {
                         leftCss,
                         topCss,
                         isGM && !d.visible
-                          ? 'rgba(255,70,70,0.95)'
+                          ? MAP_MARKER.picking
                           : d.discovered
-                            ? 'rgba(180,100,255,0.95)'
-                            : 'rgba(120,60,180,0.8)',
+                            ? MAP_MARKER.dungeon
+                            : MAP_MARKER.dungeonUndiscovered,
                         openDungeonId === d.id,
                       )}
                     />
@@ -1485,7 +1486,7 @@ export default function MapPage() {
                           <line x1={ax} y1={ay} x2={bx} y2={by} stroke="white" strokeWidth={4} opacity={0.85} />
                           <circle cx={ax} cy={ay} r={6} fill="white" opacity={0.95} />
                           <circle cx={bx} cy={by} r={6} fill="white" opacity={0.95} />
-                          <rect x={mx - 90} y={my - 22} width={180} height={28} fill="rgba(0,0,0,0.6)" rx={6} />
+                          <rect x={mx - 90} y={my - 22} width={180} height={28} fill={MAP_MARKER.label} rx={6} />
                           <text x={mx} y={my - 2} fontSize="16" textAnchor="middle" fill="white">
                             {distanceText(measureA, measureB)}
                           </text>
@@ -1934,10 +1935,10 @@ export default function MapPage() {
 
             const bg =
               isGM && m.visible === false
-                ? 'rgba(255, 70, 70, 0.95)'
+                ? MAP_MARKER.picking
                 : m.discovered
-                  ? 'rgba(255,255,255,0.95)'
-                  : 'rgba(180,180,180,0.95)';
+                  ? MAP_MARKER.city
+                  : MAP_MARKER.cityUndiscovered;
 
             return (
               <React.Fragment key={m.id}>
@@ -1991,10 +1992,10 @@ export default function MapPage() {
                       leftCss,
                       topCss,
                       isGM && !d.visible
-                        ? 'rgba(255,70,70,0.95)'
+                        ? MAP_MARKER.picking
                         : d.discovered
-                          ? 'rgba(180,100,255,0.95)'
-                          : 'rgba(120,60,180,0.8)',
+                          ? MAP_MARKER.dungeon
+                          : MAP_MARKER.dungeonUndiscovered,
                       openDungeonId === d.id,
                     )}
                   />
@@ -2021,7 +2022,7 @@ export default function MapPage() {
                     <line x1={ax} y1={ay} x2={bx} y2={by} stroke="white" strokeWidth={4} opacity={0.85} />
                     <circle cx={ax} cy={ay} r={6} fill="white" opacity={0.95} />
                     <circle cx={bx} cy={by} r={6} fill="white" opacity={0.95} />
-                    <rect x={mx - 90} y={my - 22} width={180} height={28} fill="rgba(0,0,0,0.6)" rx={6} />
+                    <rect x={mx - 90} y={my - 22} width={180} height={28} fill={MAP_MARKER.label} rx={6} />
                     <text x={mx} y={my - 2} fontSize="16" textAnchor="middle" fill="white">
                       {distanceText(measureA, measureB)}
                     </text>

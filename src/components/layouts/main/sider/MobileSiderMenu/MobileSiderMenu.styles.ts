@@ -10,7 +10,7 @@ export const MenuSheet = styled.div`
   flex-direction: column;
   background: var(--layout-sider-bg-color);
   color: var(--text-sider-secondary-color);
-  box-shadow: -18px 0 36px rgba(0, 0, 0, 0.24);
+  box-shadow: -18px 0 36px var(--sider-shadow);
 `;
 
 export const MenuHeader = styled.div`
@@ -19,7 +19,7 @@ export const MenuHeader = styled.div`
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.5rem 1rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--sider-ink-soft);
 `;
 
 export const BrandLink = styled(Link)`
@@ -35,9 +35,9 @@ export const LogoMark = styled.img`
   height: 2.5rem;
   border-radius: 0.875rem;
   object-fit: contain;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--sider-ink-soft);
   padding: 0.375rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px var(--sider-ink-soft);
 `;
 
 export const BrandCopy = styled.div`
@@ -54,7 +54,7 @@ export const BrandEyebrow = styled.div`
 `;
 
 export const BrandTitle = styled.div`
-  color: #fff;
+  color: var(--sider-ink-strong);
   font-size: ${FONT_SIZE.lg};
   font-weight: ${FONT_WEIGHT.extraBold};
   line-height: 1.1;
@@ -73,7 +73,7 @@ export const SheetCloseButton = styled(Button)`
     color: var(--text-sider-secondary-color);
     padding: 0.375rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--sider-ink-faint);
   }
 `;
 
@@ -89,8 +89,8 @@ export const MobileSideBar = styled(SideBar)`
   --width: 6.25rem;
   --background-color: transparent;
   padding: 0.75rem 0.75rem 0.75rem 0.5rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border-left: 1px solid var(--sider-ink-soft);
+  background: var(--sider-ink-faint);
 
   .adm-side-bar-item {
     margin-bottom: 0.375rem;
@@ -144,7 +144,7 @@ export const SectionEyebrow = styled.div`
 `;
 
 export const SectionTitle = styled.div`
-  color: #fff;
+  color: var(--sider-ink-strong);
   font-size: ${FONT_SIZE.xl};
   font-weight: ${FONT_WEIGHT.extraBold};
 `;
@@ -158,11 +158,11 @@ export const SectionList = styled(List)`
   && {
     --border-top: none;
     --border-bottom: none;
-    --border-inner: 1px solid rgba(255, 255, 255, 0.08);
-    --background-color: rgba(255, 255, 255, 0.04);
+    --border-inner: 1px solid var(--sider-ink-soft);
+    --background-color: var(--sider-ink-faint);
     border-radius: ${BORDER_RADIUS};
     overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px var(--sider-ink-line);
     backdrop-filter: blur(12px);
   }
 

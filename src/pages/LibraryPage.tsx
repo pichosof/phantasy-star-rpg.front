@@ -81,6 +81,7 @@ import { UPLOAD_MAX_MB } from '@app/config/config';
 import { dividerMd, flexCenterFull, m0, spaceBetween, textMd, textSm, textXs, w100 } from '@app/styles/styleUtils';
 import * as S from './LibraryPage.styles';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { READER_MODES } from '@app/styles/domain-palette';
 
 const CATEGORIES = ['rulebook', 'supplement', 'reference', 'adventure', 'other'];
 
@@ -820,10 +821,7 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
   const THEME_LABELS: Record<EpubTheme, string> = { light: 'Light', sepia: 'Sepia', dark: 'Dark' };
   const THEME_SHORT: Record<EpubTheme, string> = { light: 'L', sepia: 'S', dark: 'D' };
 
-  const bg = { light: '#ffffff', sepia: '#f4ecd8', dark: '#1a1a1a' }[theme];
-  const bar = { light: '#fafafa', sepia: '#ede3c8', dark: '#111111' }[theme];
-  const border = theme === 'dark' ? '#333' : '#e8e8e8';
-  const fgMuted = theme === 'dark' ? '#aaa' : '#555';
+  const { bg, bar, border, muted: fgMuted } = READER_MODES[theme];
 
   function changeFontSize(delta: number) {
     const next = Math.max(70, Math.min(200, fontSize + delta));
@@ -916,9 +914,11 @@ const EpubViewer: React.FC<EpubViewerProps> = ({ url, title, isMobile }) => {
             tocChanged={(t) => setToc(t as { label: string; href: string }[])}
             getRendition={(rendition) => {
               renditionRef.current = rendition;
-              rendition.themes.register('light', { body: { color: '#111', background: '#fff' } });
-              rendition.themes.register('sepia', { body: { color: '#5b4636', background: '#f4ecd8' } });
-              rendition.themes.register('dark', { body: { color: '#ddd', background: '#1a1a1a' } });
+              for (const mode of ['light', 'sepia', 'dark'] as const) {
+                rendition.themes.register(mode, {
+                  body: { color: READER_MODES[mode].text, background: READER_MODES[mode].bg },
+                });
+              }
               rendition.themes.select('light');
               rendition.themes.fontSize(`${fontSize}%`);
             }}

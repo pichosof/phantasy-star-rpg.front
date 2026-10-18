@@ -43,6 +43,6 @@ export const Card = styled(AntCard)<CardInternalProps>`
   }
 
   .ant-card-bordered {
-    border-color: #f0f0f0;
+    border-color: var(--border-color);
   }
 `;

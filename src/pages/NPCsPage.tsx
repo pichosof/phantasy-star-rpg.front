@@ -80,6 +80,7 @@ import * as S from './NPCsPage.styles';
 
 import EntityDrawer, { visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { NPC_ROLE_FALLBACK, NPC_ROLE_META } from '@app/styles/domain-palette';
 
 type NpcViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -105,38 +106,14 @@ export type NpcRole = (typeof NPC_ROLES)[number];
 
 // ── Role colour system ────────────────────────────────────────────────────────
 
-const ROLE_META: Record<string, { color: string; hex: string }> = {
-  aliado: { color: 'green', hex: '#52c41a' },
-  ally: { color: 'green', hex: '#52c41a' },
-  amigo: { color: 'green', hex: '#52c41a' },
-  mercador: { color: 'blue', hex: '#1677ff' },
-  vendor: { color: 'blue', hex: '#1677ff' },
-  comerciante: { color: 'blue', hex: '#1677ff' },
-  contratante: { color: 'gold', hex: '#faad14' },
-  'quest giver': { color: 'gold', hex: '#faad14' },
-  informante: { color: 'purple', hex: '#722ed1' },
-  inimigo: { color: 'red', hex: '#f5222d' },
-  antagonista: { color: 'red', hex: '#f5222d' },
-  enemy: { color: 'red', hex: '#f5222d' },
-  líder: { color: 'orange', hex: '#fa8c16' },
-  lider: { color: 'orange', hex: '#fa8c16' },
-  guia: { color: 'cyan', hex: '#13c2c2' },
-  guide: { color: 'cyan', hex: '#13c2c2' },
-  guardião: { color: 'geekblue', hex: '#2f54eb' },
-  guardiao: { color: 'geekblue', hex: '#2f54eb' },
-  curandeiro: { color: 'volcano', hex: '#fa541c' },
-  mestre: { color: 'magenta', hex: '#eb2f96' },
-  sábio: { color: 'magenta', hex: '#eb2f96' },
-  sabio: { color: 'magenta', hex: '#eb2f96' },
-  neutro: { color: 'default', hex: '#8c8c8c' },
-};
+const ROLE_META = NPC_ROLE_META;
 
 function getRoleMeta(role?: string | null): { color: string; hex: string } {
   const key = (role ?? '').toLowerCase().trim();
   for (const [k, v] of Object.entries(ROLE_META)) {
     if (key.includes(k)) return v;
   }
-  return { color: 'default', hex: '#8c8c8c' };
+  return NPC_ROLE_FALLBACK;
 }
 
 function initials(name: string) {
@@ -202,7 +179,7 @@ const NpcSheetViewer: React.FC<{ sheetUrl: string }> = ({ sheetUrl }) => {
         <Spin size="large" />
       </div>
     );
-  if (!blobUrl) return <div style={{ padding: 16, color: '#8c8c8c' }}>Failed to load sheet.</div>;
+  if (!blobUrl) return <div style={{ padding: 16, color: 'var(--text-light-color)' }}>Failed to load sheet.</div>;
   return (
     <div style={{ height: '70vh' }}>
       <PdfViewer url={blobUrl} />
@@ -237,7 +214,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
     setImgAlt(npc.imageAlt ?? '');
   }, [npc]);
 
-  const meta = npc ? getRoleMeta(npc.role) : { color: 'default' as const, hex: '#8c8c8c' };
+  const meta = npc ? getRoleMeta(npc.role) : NPC_ROLE_FALLBACK;
 
   async function save() {
     if (!npc) return;
@@ -354,7 +331,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               </Form.Item>
               <Form.Item label="Location" extra="City name where this NPC usually appears">
                 <Input
-                  prefix={<EnvironmentOutlined style={{ color: '#8c8c8c' }} />}
+                  prefix={<EnvironmentOutlined style={{ color: 'var(--icon-color)' }} />}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="E.g.: Aiedo, Piata…"
@@ -424,7 +401,9 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
             <Space orientation="vertical" size={12} style={w100}>
               {npc.sheetUrl && <NpcSheetViewer sheetUrl={npc.sheetUrl} />}
               {!npc.sheetUrl && (
-                <div style={{ padding: '24px 0', textAlign: 'center', color: '#8c8c8c' }}>No sheet attached yet.</div>
+                <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-light-color)' }}>
+                  No sheet attached yet.
+                </div>
               )}
               <Upload
                 showUploadList={false}
@@ -1462,7 +1441,7 @@ export const NPCsPage: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ maxWidth: 240 }}
-              prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
+              prefix={<UserOutlined style={{ color: 'var(--icon-color)' }} />}
             />
 
             {/* Role filter — buttons (limited set, coloured) */}
@@ -1562,7 +1541,7 @@ export const NPCsPage: React.FC = () => {
                   />
                 </Space>
                 <Input
-                  prefix={<EnvironmentOutlined style={{ color: '#bfbfbf' }} />}
+                  prefix={<EnvironmentOutlined style={{ color: 'var(--icon-color)' }} />}
                   placeholder="Location (ex: Aiedo)"
                   value={newLoc}
                   onChange={(e) => setNewLoc(e.target.value)}

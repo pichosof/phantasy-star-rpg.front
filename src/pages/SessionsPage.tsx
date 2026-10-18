@@ -44,22 +44,14 @@ import EntityDrawer, {
   visibilityControl,
 } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { COVER_GRADIENTS } from '@app/styles/domain-palette';
 
 type ViewMode = 'blog' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
 type SessionSheetTab = 'overview' | 'gm';
 type DrawerTab = 'view' | 'edit';
 
-const SESSION_GRADIENTS = [
-  'linear-gradient(135deg, #040A18 0%, #0A1C3A 50%, #0E2A58 100%)',
-  'linear-gradient(135deg, #08041C 0%, #1E0A50 50%, #2E0E72 100%)',
-  'linear-gradient(135deg, #1C0A04 0%, #4A1E08 50%, #7A2E06 100%)',
-  'linear-gradient(135deg, #0C0808 0%, #2A0C0C 50%, #180808 100%)',
-  'linear-gradient(135deg, #050C1E 0%, #082240 50%, #0A2A58 100%)',
-  'linear-gradient(135deg, #0A041C 0%, #1E0840 50%, #0C0428 100%)',
-  'linear-gradient(135deg, #04100C 0%, #082820 50%, #0A1E18 100%)',
-  'linear-gradient(135deg, #0C0A10 0%, #1A1428 50%, #22183A 100%)',
-];
+const SESSION_GRADIENTS = COVER_GRADIENTS;
 
 function sessionGradient(id: number) {
   return SESSION_GRADIENTS[id % SESSION_GRADIENTS.length];

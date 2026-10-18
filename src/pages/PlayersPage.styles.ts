@@ -21,10 +21,10 @@ export const NotesGrid = styled.div`
 `;
 
 export const NoteCard = styled.div`
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--ink-faint);
   border-radius: 6px;
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--ink-line);
 `;
 
 export const NoteCardHeader = styled.div`
@@ -54,13 +54,13 @@ export const noteActions: CSSProperties = {
 
 export const noteEditIcon: CSSProperties = {
   cursor: 'pointer',
-  color: '#8c8c8c',
+  color: 'var(--text-light-color)',
   fontSize: 13,
 };
 
 export const noteDeleteIcon: CSSProperties = {
   cursor: 'pointer',
-  color: '#ff4d4f',
+  color: 'var(--error-color)',
   fontSize: 13,
 };
 
@@ -169,8 +169,7 @@ export const MobileImageFallback = styled.div`
   align-items: center;
   justify-content: center;
   color: var(--text-secondary-color);
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 55%), var(--secondary-background-color);
+  background: radial-gradient(circle at top, var(--ink-soft), transparent 55%), var(--secondary-background-color);
 `;
 
 export const MobilePlayerPreview = styled.p`
@@ -300,7 +299,7 @@ export const MobileIconButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(140, 140, 140, 0.12);
+  background: var(--ink-soft);
   color: var(--text-main-color);
   cursor: pointer;
 `;

@@ -1,7 +1,6 @@
 import { shadeColor } from '@app/utils/utils';
 import { graphic } from 'echarts';
-import { BASE_COLORS } from '../constants';
-import { ITheme } from '../types';
+import type { ThemeTokens } from '../contract';
 
 /** Motavia Light — deserto abrasador / areia quente / sol de Algol */
 const chartColors = {
@@ -31,7 +30,8 @@ const chartColors = {
   ]),
 };
 
-export const lightColorsTheme: ITheme = {
+/** Motavia owns every value below; nothing is inherited from another theme. */
+export const motaviaTokens: ThemeTokens = {
   // Núcleo
   primary: '#C45508', // Desert Ember — laranja brasa do sol
   primary1: '#FFF0DC', // Areia clara — fundo de hover/badge
@@ -63,7 +63,7 @@ export const lightColorsTheme: ITheme = {
   textMain: '#2A1608', // Terra queimada profunda
   textLight: '#7A5E38',
   textSuperLight: '#B09870',
-  textSecondary: BASE_COLORS.white,
+  textSecondary: '#ffffff',
   textDark: '#180C04',
   textNftLight: '#9A7A50',
   textSiderPrimary: '#FF6B1A', // Fogo — destaque no sider
@@ -107,10 +107,31 @@ export const lightColorsTheme: ITheme = {
   avatarBg: '#C8B080',
 
   // Ícones/breadcrumb
-  alertTextColor: BASE_COLORS.white,
+  alertTextColor: '#ffffff',
   breadcrumb: 'rgba(42, 22, 8, 0.50)',
   icon: '#9A7A50',
   iconHover: 'rgba(42, 22, 8, 0.80)',
+
+  // Black ink on parchment
+  ink: {
+    faint: 'rgba(0, 0, 0, 0.03)',
+    soft: 'rgba(0, 0, 0, 0.06)',
+    line: 'rgba(0, 0, 0, 0.10)',
+    muted: 'rgba(0, 0, 0, 0.22)',
+    subtle: 'rgba(0, 0, 0, 0.40)',
+    text: 'rgba(0, 0, 0, 0.75)',
+    strong: 'rgba(0, 0, 0, 0.87)',
+  },
+  domainTintSoft: '13%',
+  domainTintStrong: '21%',
+  shadowElevated: 'rgba(0, 0, 0, 0.24)',
+  siderInk: {
+    faint: 'rgba(255, 255, 255, 0.04)',
+    soft: 'rgba(255, 255, 255, 0.08)',
+    line: 'rgba(255, 255, 255, 0.08)',
+    strong: '#ffffff',
+    shadow: 'rgba(0, 0, 0, 0.24)',
+  },
 
   ...chartColors,
 };

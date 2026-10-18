@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import styled from 'styled-components';
+import { TIMELINE_RAIL_GRADIENT } from '@app/styles/domain-palette';
 
 export function timelineDot(color: string, pulse?: boolean): CSSProperties {
   return {
@@ -100,8 +101,7 @@ export const desktopLine: CSSProperties = {
   bottom: 0,
   width: 2,
   transform: 'translateX(-50%)',
-  background:
-    'linear-gradient(180deg, transparent 0%, #00C8E8 5%, #7722DD 30%, #FF6B1A 58%, #FF2244 82%, transparent 100%)',
+  background: TIMELINE_RAIL_GRADIENT,
   borderRadius: 1,
 };
 

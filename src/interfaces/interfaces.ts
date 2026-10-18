@@ -6,7 +6,8 @@ export type ChartData = number[];
 
 export type xData = number[] | string[];
 
-export type ThemeType = 'light' | 'dark';
+/** Id of a registered world theme (motavia, dezolis…). */
+export type { ThemeId as ThemeType } from '@app/styles/themes/registry';
 
 export interface ChartSeries {
   seriesName: string;

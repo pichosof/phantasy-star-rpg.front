@@ -25,7 +25,7 @@ import {
   MobileSelector,
 } from '@app/components/common/mobile';
 import { useResponsive } from '@app/hooks/useResponsive';
-import { useAppSelector } from '@app/hooks/reduxHooks';
+
 import { type GmNote, createGmNote, deleteGmNote, listGmNotes, updateGmNote } from '@app/api/gm-notes.api';
 import { apiErrorMessage } from '../../utils/api-error';
 import { m0, textSm, textMd } from '@app/styles/styleUtils';
@@ -42,11 +42,10 @@ function parseTags(tags?: string | null): string[] {
 }
 
 function NoteCard({ note, active, onClick }: { note: GmNote; active: boolean; onClick: () => void }) {
-  const isDark = useAppSelector((state) => state.theme.theme) === 'dark';
   const tags = parseTags(note.tags);
 
   return (
-    <S.NoteCardShell onClick={onClick} $active={active} $isDark={isDark}>
+    <S.NoteCardShell onClick={onClick} $active={active}>
       <S.NoteCardHeader>
         {note.pinned && (
           <S.NotePin>
@@ -77,7 +76,6 @@ function NoteCard({ note, active, onClick }: { note: GmNote; active: boolean; on
 
 export const GmNotesPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
-  const isDark = useAppSelector((state) => state.theme.theme) === 'dark';
 
   const [notes, setNotes] = React.useState<GmNote[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -214,7 +212,7 @@ export const GmNotesPage: React.FC = () => {
     });
   }
 
-  const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+  const dividerColor = 'var(--ink-line)';
 
   if (loading) return <Spinner />;
 

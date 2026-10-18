@@ -70,4 +70,17 @@ export interface ITheme {
   breadcrumb: string;
   icon: string;
   iconHover: string;
+
+  /**
+   * "Ink" layered on this theme's surfaces (white ink on dark themes, black on light),
+   * from barely visible to full strength. For hover fills, subtle borders, muted labels.
+   */
+  ink: { faint: string; soft: string; line: string; muted: string; subtle: string; text: string; strong: string };
+  /** How strongly domain colors (dice, roles, categories) tint this theme's surfaces. */
+  domainTintSoft: string;
+  domainTintStrong: string;
+  /** Shadow of floating panels (popovers, sheets). */
+  shadowElevated: string;
+  /** Ink on the sider/menu surface (dark in every current world). */
+  siderInk: { faint: string; soft: string; line: string; strong: string; shadow: string };
 }

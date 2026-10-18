@@ -39,13 +39,13 @@ export const statCard: CSSProperties = {
   textAlign: 'center',
   padding: '6px 10px',
   borderRadius: 6,
-  background: 'rgba(128,128,128,0.08)',
+  background: 'var(--ink-faint)',
   minWidth: 60,
 };
 
 export const statLabel: CSSProperties = {
   fontSize: 10,
-  color: 'rgba(128,128,128,0.8)',
+  color: 'var(--ink-subtle)',
   marginBottom: 2,
 };
 

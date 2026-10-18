@@ -3,9 +3,8 @@ import { List, SafeArea, SideBar } from 'antd-mobile';
 import { CloseOutline, LeftOutline } from 'antd-mobile-icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGMMode } from '@app/hooks/useGMMode';
-import { useAppSelector } from '@app/hooks/reduxHooks';
-import logoMarkDark from '@app/assets/logo-mark-dark.png';
-import logoMarkLight from '@app/assets/logo-mark-light.png';
+
+import { useActiveTheme } from '@app/hooks/useActiveTheme';
 import { getSidebarNavigation, SidebarNavigationItem } from '../sidebarNavigation';
 import * as S from './MobileSiderMenu.styles';
 
@@ -16,12 +15,10 @@ interface MobileSiderMenuProps {
 const getSectionForPath = (items: SidebarNavigationItem[], pathname: string): SidebarNavigationItem | undefined =>
   items.find(({ children, url }) => url === pathname || children?.some((child) => child.url === pathname));
 
-const getThemeLabel = (theme: 'light' | 'dark') => (theme === 'dark' ? 'Dezolis' : 'Motavia');
-
 export const MobileSiderMenu: React.FC<MobileSiderMenuProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useAppSelector((state) => state.theme.theme);
+  const activeTheme = useActiveTheme();
   const isGM = useGMMode();
   const sidebarNavigation = React.useMemo(() => getSidebarNavigation(isGM), [isGM]);
   const activeSectionFromPath = React.useMemo(
@@ -41,7 +38,7 @@ export const MobileSiderMenu: React.FC<MobileSiderMenuProps> = ({ onClose }) => 
   const activeSection =
     sidebarNavigation.find((item) => item.key === activeSectionKey) ?? activeSectionFromPath ?? sidebarNavigation[0];
 
-  const markSrc = theme === 'dark' ? logoMarkDark : logoMarkLight;
+  const markSrc = activeTheme.logoMark;
 
   const handleNavigate = (url?: string) => {
     if (!url) return;
@@ -58,7 +55,7 @@ export const MobileSiderMenu: React.FC<MobileSiderMenuProps> = ({ onClose }) => 
           <S.BrandCopy>
             <S.BrandEyebrow>Algol System</S.BrandEyebrow>
             <S.BrandTitle>RPG Companion</S.BrandTitle>
-            <S.BrandSubtitle>{getThemeLabel(theme)}</S.BrandSubtitle>
+            <S.BrandSubtitle>{activeTheme.name}</S.BrandSubtitle>
           </S.BrandCopy>
         </S.BrandLink>
 

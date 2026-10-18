@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { listTags, createTag, getEntityTags, setEntityTags } from '@app/api/tags.api';
 import type { Tag as TagType, EntityTagType } from '@app/types/rpg';
 import * as S from './TagSelect.styles';
+import { TAG_DEFAULT_COLOR } from '@app/styles/domain-palette';
 
 type Props = {
   entityType: EntityTagType;
@@ -93,7 +94,7 @@ export const TagSelect: React.FC<Props> = ({ entityType, entityId, readonly = fa
         tagRender={({ label, value, closable, onClose }) => {
           const tag = allTags.find((entry) => entry.id === (value as number));
           return (
-            <S.SelectedTag color={tag?.color ?? '#1677ff'} closable={closable} onClose={onClose}>
+            <S.SelectedTag color={tag?.color ?? TAG_DEFAULT_COLOR} closable={closable} onClose={onClose}>
               {label}
             </S.SelectedTag>
           );

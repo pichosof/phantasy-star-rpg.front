@@ -1,3 +1,4 @@
+/* theme-isolation-ignore-file: image stage of the city gallery */
 import type { CSSProperties } from 'react';
 
 export const fullWidth: CSSProperties = {
