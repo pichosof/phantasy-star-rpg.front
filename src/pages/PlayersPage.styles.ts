@@ -120,12 +120,6 @@ export const emptyCardState: CSSProperties = {
   alignItems: 'center',
 };
 
-export const PublicGrid = styled.div`
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-`;
-
 export const PlayerStack = styled.div`
   display: grid;
   gap: 8px;

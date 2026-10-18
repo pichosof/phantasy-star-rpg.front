@@ -40,26 +40,11 @@ export const lightboxBody: CSSProperties = {
   padding: 0,
 };
 
-export const lightboxFrame: CSSProperties = {
-  position: 'relative',
-  background: '#000',
-  minHeight: 300,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-
 export const lightboxImage: CSSProperties = {
   maxWidth: '100%',
   maxHeight: '85vh',
   objectFit: 'contain',
 };
-
-export const PublicGrid = styled.div<{ $mobileOnly: boolean }>`
-  display: grid;
-  gap: 16px;
-  grid-template-columns: ${(props) => (props.$mobileOnly ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))')};
-`;
 
 export const tableMinWidth: CSSProperties = {
   minWidth: 800,

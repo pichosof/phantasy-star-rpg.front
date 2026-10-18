@@ -493,6 +493,7 @@ const NpcCodexCard: React.FC<CardProps> = ({ npc, gmMode, onView, onAdmin, onTog
   const vis = isVisible(npc);
   return (
     <EntityCard
+      shape="portrait"
       actions={
         gmMode ? (
           <>
@@ -1053,7 +1054,7 @@ export const NPCsPage: React.FC = () => {
               <S.MobileEmptyState>No NPCs found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <EntityCardGrid>
+            <EntityCardGrid shape="portrait">
               {filtered.map((n) => (
                 <NpcCodexCard
                   gmMode={isGM && viewMode === 'admin'}
@@ -1607,7 +1608,7 @@ export const NPCsPage: React.FC = () => {
           />
         </Card>
       ) : (
-        <EntityCardGrid>
+        <EntityCardGrid shape="portrait">
           {filtered.map((n) => (
             <NpcCodexCard
               key={n.id}

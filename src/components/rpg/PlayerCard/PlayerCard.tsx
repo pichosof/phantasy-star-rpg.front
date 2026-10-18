@@ -48,6 +48,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
   return (
     <>
       <EntityCard
+        shape="portrait"
         actions={
           <>
             {gm && (

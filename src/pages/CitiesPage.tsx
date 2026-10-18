@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Empty, Modal, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 
 import {
   DeleteOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  FullscreenOutlined,
   LeftOutlined,
   RightOutlined,
 } from '@ant-design/icons';
@@ -49,12 +48,8 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import type { City } from '@app/types/rpg';
 import {
   carouselCounterCenter,
-  carouselCounterCenterLg,
   carouselNavBtnLeft,
-  carouselNavBtnLeftLg,
   carouselNavBtnRight,
-  carouselNavBtnRightLg,
-  carouselZoomBtn,
   dividerSm,
   m0,
   spaceBetween,
@@ -68,6 +63,8 @@ import * as S from './CitiesPage.styles';
 import RichText, { stripMarkdown } from '@app/components/common/RichText/RichText';
 import EntityDrawer, { discoveredControl, visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { thumbUrl } from '@app/api/images.api';
+import ContainedImage from '@app/components/common/ContainedImage/ContainedImage';
 
 type ViewMode = 'players' | 'gm';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -116,7 +113,7 @@ function getCityCover(city: City) {
   return null;
 }
 
-function CityImageCarousel({ city }: { city: City }) {
+function CityImageCarousel({ city, editableFocus = false }: { city: City; editableFocus?: boolean }) {
   const images = resolvedImages(city as any);
   const fallback = city.imageUrl
     ? [{ id: -1, src: resolveApiUrl(city.imageUrl) ?? city.imageUrl, alt: city.imageAlt ?? city.name }]
@@ -124,29 +121,23 @@ function CityImageCarousel({ city }: { city: City }) {
   const all = (images.length > 0 ? images : fallback).map((image) => ({ ...image, src: image.src ?? '' }));
 
   const [index, setIndex] = React.useState(0);
-  const [lightbox, setLightbox] = React.useState(false);
 
-  if (!city.discovered || all.length === 0) return null;
+  if (!city.discovered && !editableFocus) return null;
+  if (all.length === 0) return null;
 
   const current = all[Math.min(index, all.length - 1)];
   const prev = () => setIndex((value) => (value - 1 + all.length) % all.length);
   const next = () => setIndex((value) => (value + 1) % all.length);
 
   return (
-    <>
-      <div style={S.carouselFrame}>
-        <img alt={current.alt} src={current.src} style={S.carouselImage} />
-
-        <button onClick={() => setLightbox(true)} style={carouselZoomBtn}>
-          <FullscreenOutlined />
-        </button>
-
+    <div style={S.carouselFrame}>
+      <ContainedImage alt={current.alt} editableFocus={editableFocus} height={300} src={current.src}>
         {all.length > 1 && (
           <>
-            <button onClick={prev} style={carouselNavBtnLeft}>
+            <button onClick={stop(prev)} style={carouselNavBtnLeft} type="button">
               <LeftOutlined />
             </button>
-            <button onClick={next} style={carouselNavBtnRight}>
+            <button onClick={stop(next)} style={carouselNavBtnRight} type="button">
               <RightOutlined />
             </button>
             <div style={carouselCounterCenter}>
@@ -154,48 +145,32 @@ function CityImageCarousel({ city }: { city: City }) {
             </div>
           </>
         )}
-      </div>
+      </ContainedImage>
 
       {all.length > 1 && (
         <div style={S.carouselThumbStrip}>
           {all.map((image, imageIndex) => (
             <img
-              key={image.id}
               alt={image.alt}
+              key={image.id}
+              loading="lazy"
               onClick={() => setIndex(imageIndex)}
-              src={image.src}
+              src={thumbUrl(image.src, 320)}
               style={S.carouselThumb(imageIndex === index)}
             />
           ))}
         </div>
       )}
-
-      <Modal
-        centered
-        destroyOnHidden={false}
-        footer={null}
-        onCancel={() => setLightbox(false)}
-        open={lightbox}
-        styles={{ body: S.carouselLightboxBody }}
-        width="92vw"
-      >
-        <img alt={current.alt} src={current.src} style={S.carouselLightboxImage} />
-        {all.length > 1 && (
-          <>
-            <button onClick={prev} style={carouselNavBtnLeftLg}>
-              <LeftOutlined />
-            </button>
-            <button onClick={next} style={carouselNavBtnRightLg}>
-              <RightOutlined />
-            </button>
-            <div style={carouselCounterCenterLg}>
-              {index + 1} / {all.length}
-            </div>
-          </>
-        )}
-      </Modal>
-    </>
+    </div>
   );
+}
+
+/** Carousel arrows sit on top of the zoomable image: don't let them open the lightbox. */
+function stop(fn: () => void) {
+  return (event: React.MouseEvent) => {
+    event.stopPropagation();
+    fn();
+  };
 }
 
 export const CitiesPage: React.FC = () => {
@@ -851,7 +826,7 @@ export const CitiesPage: React.FC = () => {
       onClose={mobileOnly ? closeCitySheet : () => setOpenCityId(null)}
       open={Boolean(openCity)}
       overview={{
-        image: <CityImageCarousel city={openCity} />,
+        image: <CityImageCarousel city={openCity} editableFocus={isGM && viewMode === 'gm'} />,
         sections: [{ title: 'Description', text: openCity.description }],
         unavailable: viewMode === 'players' && openCity.discovered !== true ? 'Information unavailable.' : null,
       }}

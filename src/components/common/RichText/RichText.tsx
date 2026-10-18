@@ -4,6 +4,7 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { resolveApiUrl } from '@app/api/http.api';
+import { thumbUrl } from '@app/api/images.api';
 
 /**
  * Markdown for entity text fields (descriptions, summaries, backgrounds, notes…).
@@ -130,7 +131,12 @@ const Body = styled.div`
 
 const components = {
   img: ({ src, alt, ...rest }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <img {...rest} alt={alt ?? ''} src={resolveApiUrl(typeof src === 'string' ? src : undefined) ?? src} />
+    <img
+      {...rest}
+      alt={alt ?? ''}
+      loading="lazy"
+      src={thumbUrl(resolveApiUrl(typeof src === 'string' ? src : undefined), 1280) ?? src}
+    />
   ),
   a: ({ href, children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a {...rest} href={href} rel="noopener noreferrer" target="_blank">

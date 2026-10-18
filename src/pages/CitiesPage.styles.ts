@@ -10,13 +10,6 @@ export const carouselFrame: CSSProperties = {
   userSelect: 'none',
 };
 
-export const carouselImage: CSSProperties = {
-  width: '100%',
-  height: 200,
-  objectFit: 'cover',
-  display: 'block',
-};
-
 export const carouselThumbStrip: CSSProperties = {
   display: 'flex',
   gap: 6,
@@ -36,22 +29,6 @@ export function carouselThumb(active: boolean): CSSProperties {
     opacity: active ? 1 : 0.6,
   };
 }
-
-export const carouselLightboxBody: CSSProperties = {
-  padding: 0,
-  background: '#000',
-  borderRadius: 8,
-  overflow: 'hidden',
-  textAlign: 'center',
-  position: 'relative',
-};
-
-export const carouselLightboxImage: CSSProperties = {
-  maxWidth: '100%',
-  maxHeight: '85vh',
-  objectFit: 'contain',
-  display: 'inline-block',
-};
 
 export const searchField: CSSProperties = {
   maxWidth: 360,

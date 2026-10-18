@@ -1065,7 +1065,7 @@ export const BestiaryPage: React.FC = () => {
       );
     }
     return (
-      <EntityCardGrid>
+      <EntityCardGrid shape="square">
         {data.map((m) => {
           const playerCanRead = m.discovered === true;
           const vis = isVisible(m);
@@ -1073,6 +1073,7 @@ export const BestiaryPage: React.FC = () => {
 
           return (
             <EntityCard
+              shape="square"
               actions={
                 mode === 'gm' ? (
                   <>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Divider, Space, Tag } from 'antd';
 import styled from 'styled-components';
 import { AppIcon, type AppIconName } from '@app/components/common/AppIcon/AppIcon';
+import { type ImageShape, objectPosition, SHAPE_ASPECT, thumbUrl, useImageFocus } from '@app/api/images.api';
 import { stripMarkdown } from '@app/components/common/RichText/RichText';
 import { useResponsive } from '@app/hooks/useResponsive';
 
@@ -64,16 +65,17 @@ const Article = styled.article<{ $clickable: boolean; $dimmed: boolean }>`
   }
 `;
 
-const CoverFrame = styled.div<{ $height: number }>`
+const CoverFrame = styled.div<{ $aspect: string }>`
   position: relative;
-  height: ${({ $height }) => `${$height}px`};
+  aspect-ratio: ${({ $aspect }) => $aspect};
   overflow: hidden;
   background: #000;
 `;
-const CoverImage = styled.img`
+const CoverImage = styled.img<{ $position: string }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: ${({ $position }) => $position};
   display: block;
 `;
 const CoverOverlay = styled.div`
@@ -81,12 +83,12 @@ const CoverOverlay = styled.div`
   inset: 0;
   background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
 `;
-const CoverFallback = styled.div<{ $gradient: string; $height: number }>`
+const CoverFallback = styled.div<{ $gradient: string; $aspect: string }>`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: ${({ $height }) => `${$height}px`};
+  aspect-ratio: ${({ $aspect }) => $aspect};
   background: ${({ $gradient }) => $gradient};
 `;
 const CoverWatermark = styled.span`
@@ -189,10 +191,18 @@ const OpenText = styled.span`
 
 // ── Components ───────────────────────────────────────────────────────────────
 
-/** 1 column on phones, 2 from tablet width up (override with `columns`). */
-export const EntityCardGrid: React.FC<{ children: React.ReactNode; columns?: number }> = ({ children, columns }) => {
-  const { mobileOnly } = useResponsive();
-  const cols = columns ?? (mobileOnly ? 1 : 2);
+/**
+ * Landscape/text cards: 1 column on phones, 2 from tablet width up.
+ * Portrait/square cards are taller, so they get more columns: 2 · 3 · 4.
+ */
+export const EntityCardGrid: React.FC<{ children: React.ReactNode; columns?: number; shape?: ImageShape }> = ({
+  children,
+  columns,
+  shape,
+}) => {
+  const { mobileOnly, tabletOnly } = useResponsive();
+  const tall = shape === 'portrait' || shape === 'square';
+  const cols = columns ?? (tall ? (mobileOnly ? 2 : tabletOnly ? 3 : 4) : mobileOnly ? 1 : 2);
   return <Grid $cols={cols}>{children}</Grid>;
 };
 
@@ -204,7 +214,8 @@ export interface EntityCardProps {
   cover?: { src?: string | null; alt?: string } | null;
   icon?: AppIconName;
   seed?: number;
-  coverHeight?: number;
+  /** Frame of the cover: portrait 4:5 (people), square 1:1 (creatures), landscape 16:9 (places). */
+  shape?: ImageShape;
   /** Tags laid over the cover (e.g. type). */
   coverTags?: React.ReactNode;
   /** Hides the cover entirely (e.g. text-only entities). */
@@ -237,7 +248,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   cover,
   icon = 'star',
   seed = 0,
-  coverHeight = 190,
+  shape = 'landscape',
   coverTags,
   noCover,
   accent,
@@ -252,9 +263,8 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   actions,
   openText = 'Open',
 }) => {
-  const { mobileOnly } = useResponsive();
-  // Cards sit in a 2-column grid from tablet width up, so the cover is a bit shorter there.
-  const height = mobileOnly ? coverHeight : Math.round(coverHeight * 0.9);
+  const aspect = SHAPE_ASPECT[shape];
+  const focus = useImageFocus(cover?.src);
   const text = locked ?? (stripMarkdown(summary) || summaryFallback);
 
   return (
@@ -262,13 +272,19 @@ export const EntityCard: React.FC<EntityCardProps> = ({
       {noCover && accent && <AccentStrip $color={accent} />}
       {!noCover &&
         (cover?.src ? (
-          <CoverFrame $height={height}>
-            <CoverImage alt={cover.alt ?? ''} loading="lazy" src={cover.src} />
+          <CoverFrame $aspect={aspect}>
+            <CoverImage
+              $position={objectPosition(focus, shape)}
+              alt={cover.alt ?? ''}
+              decoding="async"
+              loading="lazy"
+              src={thumbUrl(cover.src, 640)}
+            />
             <CoverOverlay />
             {coverTags && <CoverBadge>{coverTags}</CoverBadge>}
           </CoverFrame>
         ) : (
-          <CoverFallback $gradient={cardGradient(seed)} $height={height}>
+          <CoverFallback $aspect={aspect} $gradient={cardGradient(seed)}>
             <CoverWatermark>
               <AppIcon name={icon} size={64} />
             </CoverWatermark>

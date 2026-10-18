@@ -6,7 +6,7 @@ import { Switch as AdmSwitch } from 'antd-mobile';
 import styled from 'styled-components';
 import { MobileCard, MobileEntitySheet, MobileTabs } from '@app/components/common/mobile';
 import { Card } from '@app/components/common/Card/Card';
-import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
+import ContainedImage from '@app/components/common/ContainedImage/ContainedImage';
 import RichText from '@app/components/common/RichText/RichText';
 import { useResponsive } from '@app/hooks/useResponsive';
 import { bold800, dividerSm, spaceBetween, textSm, w100 } from '@app/styles/styleUtils';
@@ -151,7 +151,13 @@ export const EntityDrawer: React.FC<EntityDrawerProps> = ({
   if (mobileOnly) {
     const mobileItems = [
       ...(overview
-        ? [{ key: 'overview', title: overview.label ?? 'Overview', children: <MobileOverview {...overview} /> }]
+        ? [
+            {
+              key: 'overview',
+              title: overview.label ?? 'Overview',
+              children: <MobileOverview {...overview} gmView={gmView} />,
+            },
+          ]
         : []),
       ...tabs.map((t) => ({ key: t.key, title: toTabItem(t).label, children: t.mobileChildren ?? t.children })),
       ...(gmView && (controls?.length || gmTabs.length)
@@ -197,7 +203,7 @@ export const EntityDrawer: React.FC<EntityDrawerProps> = ({
   const items: TabsProps['items'] = [];
   if (overview) {
     const image = isImageSpec(overview.image) ? (
-      <DrawerImage alt={overview.image.alt} src={overview.image.src} />
+      <DrawerImage alt={overview.image.alt} editableFocus={gmView} src={overview.image.src} />
     ) : (
       (overview.image as React.ReactNode)
     );
@@ -280,7 +286,8 @@ const MobileHint = styled.div`
   font-size: 12px;
 `;
 
-const MobileOverview: React.FC<NonNullable<EntityDrawerProps['overview']>> = ({
+const MobileOverview: React.FC<NonNullable<EntityDrawerProps['overview']> & { gmView?: boolean }> = ({
+  gmView,
   image,
   meta,
   sections,
@@ -291,7 +298,7 @@ const MobileOverview: React.FC<NonNullable<EntityDrawerProps['overview']>> = ({
     {isImageSpec(image) ? (
       image.src ? (
         <MobileCard compact>
-          <DrawerImage alt={image.alt} src={image.src} />
+          <DrawerImage alt={image.alt} editableFocus={gmView} height={260} src={image.src} />
         </MobileCard>
       ) : null
     ) : image ? (
@@ -359,22 +366,16 @@ export const EntityStatusTags: React.FC<{ visible?: boolean; discovered?: boolea
   </>
 );
 
-const imageFrame: React.CSSProperties = {
-  position: 'relative',
-  marginBottom: 12,
-  borderRadius: 8,
-  overflow: 'hidden',
-  background: '#000',
-};
-const imageStyle: React.CSSProperties = { width: '100%', height: 200, objectFit: 'cover', display: 'block' };
-
-/** Single cover image with the fullscreen button — same frame as the Cities carousel. */
-export const DrawerImage: React.FC<{ src?: string | null; alt?: string }> = ({ src, alt = '' }) =>
+/** Cover image of a drawer: whole picture over a blurred fill, with the GM focus picker. */
+export const DrawerImage: React.FC<{ src?: string | null; alt?: string; editableFocus?: boolean; height?: number }> = ({
+  src,
+  alt = '',
+  editableFocus,
+  height = 320,
+}) =>
   src ? (
-    <div style={imageFrame}>
-      <ExpandableImage alt={alt} src={src}>
-        <img alt={alt} src={src} style={imageStyle} />
-      </ExpandableImage>
+    <div style={{ marginBottom: 12 }}>
+      <ContainedImage alt={alt} editableFocus={editableFocus} height={height} src={src} />
     </div>
   ) : null;
 

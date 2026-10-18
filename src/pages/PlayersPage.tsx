@@ -1369,7 +1369,7 @@ export const PlayersPage: React.FC = () => {
               <S.MobileEmptyState>No characters found.</S.MobileEmptyState>
             </MobileCard>
           ) : (
-            <EntityCardGrid>
+            <EntityCardGrid shape="portrait">
               {displayItems.map((player) => (
                 <PlayerCard
                   gm={isGM}
@@ -1656,7 +1656,7 @@ export const PlayersPage: React.FC = () => {
           </Space>
         </Card>
       ) : (
-        <S.PublicGrid>
+        <EntityCardGrid shape="portrait">
           {displayItems.map((player) => (
             <S.PlayerStack key={player.id}>
               <PlayerCard player={player} gm={isGM} onToggleVisible={toggleVisible} />
@@ -1784,7 +1784,7 @@ export const PlayersPage: React.FC = () => {
               )}
             </S.PlayerStack>
           ))}
-        </S.PublicGrid>
+        </EntityCardGrid>
       )}
     </>
   );

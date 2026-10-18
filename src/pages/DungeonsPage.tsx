@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Empty, Modal, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
+import { Divider, Empty, Popconfirm, Select, Space, Switch, Tag, Typography, message } from 'antd';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
@@ -13,7 +13,6 @@ import {
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  FullscreenOutlined,
   LeftOutlined,
   PlusOutlined,
   RightOutlined,
@@ -66,15 +65,11 @@ import {
   spaceBetween,
   dividerSm,
   hiddenInput,
-  blackBg,
   carouselLeft,
   carouselRight,
-  carouselLeftLg,
-  carouselRightLg,
   carouselCounter,
   carouselTopRight,
   tableWrap,
-  imgContainH,
 } from '@app/styles/styleUtils';
 import * as S from './DungeonsPage.styles';
 import EntityDrawer, {
@@ -83,6 +78,8 @@ import EntityDrawer, {
   visibilityControl,
 } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import { thumbUrl } from '@app/api/images.api';
+import ContainedImage from '@app/components/common/ContainedImage/ContainedImage';
 
 type CityOption = { id: number; name: string };
 
@@ -166,7 +163,6 @@ const DungeonImageCarousel: React.FC<{
   onDeleted?: (imgId: number) => void;
 }> = ({ images, dungeonId, gm, onDeleted }) => {
   const [idx, setIdx] = React.useState(0);
-  const [lightbox, setLightbox] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
@@ -211,10 +207,8 @@ const DungeonImageCarousel: React.FC<{
 
   return (
     <S.carouselWrap>
-      <div style={blackBg}>
-        <img src={imgUrl} alt={cur.alt ?? ''} style={imgContainH(340)} />
+      <ContainedImage alt={cur.alt ?? ''} editableFocus={gm} height={300} src={imgUrl}>
         <div style={carouselTopRight}>
-          <Button size="small" icon={<FullscreenOutlined />} onClick={() => setLightbox(true)} />
           {gm && (
             <Popconfirm
               title="Delete this image?"
@@ -247,14 +241,14 @@ const DungeonImageCarousel: React.FC<{
         <div style={carouselCounter}>
           {idx + 1}/{images.length}
         </div>
-      </div>
+      </ContainedImage>
 
       {images.length > 1 && (
         <S.thumbsRow>
           {images.map((img, i) => (
             <img
               key={img.id}
-              src={resolveApiUrl(img.url)}
+              src={thumbUrl(resolveApiUrl(img.url), 320)}
               alt={img.alt ?? ''}
               onClick={() => setIdx(i)}
               style={S.thumb(i === idx)}
@@ -277,36 +271,6 @@ const DungeonImageCarousel: React.FC<{
           </Button>
         </div>
       )}
-
-      <Modal
-        open={lightbox}
-        onCancel={() => setLightbox(false)}
-        footer={null}
-        width="90vw"
-        styles={{ body: S.lightboxBody }}
-        centered
-        destroyOnHidden
-      >
-        <div style={S.lightboxFrame}>
-          <img src={imgUrl} alt={cur.alt ?? ''} style={S.lightboxImage} />
-          {images.length > 1 && (
-            <>
-              <Button
-                size="large"
-                icon={<LeftOutlined />}
-                style={carouselLeftLg}
-                onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)}
-              />
-              <Button
-                size="large"
-                icon={<RightOutlined />}
-                style={carouselRightLg}
-                onClick={() => setIdx((i) => (i + 1) % images.length)}
-              />
-            </>
-          )}
-        </div>
-      </Modal>
     </S.carouselWrap>
   );
 };

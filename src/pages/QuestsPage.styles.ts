@@ -57,13 +57,6 @@ export const fieldLabelTextSm: CSSProperties = {
   marginBottom: 4,
 };
 
-export const PublicGrid = styled.div<{ $tablet: boolean }>`
-  display: grid;
-  grid-template-columns: ${({ $tablet }) => ($tablet ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))')};
-  gap: 16px;
-  align-items: start;
-`;
-
 export const DrawerSectionStack = styled.div`
   display: grid;
   gap: 16px;
