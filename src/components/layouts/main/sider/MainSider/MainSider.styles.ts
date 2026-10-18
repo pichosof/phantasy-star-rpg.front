@@ -13,7 +13,7 @@ export const Sider = styled(Layout.Sider)`
   max-height: 100vh;
   background: var(--layout-sider-bg-color) !important;
 
-  color: var(--text-secondary-color);
+  color: var(--sider-ink-strong);
 
   .ant-layout-sider-children {
     background: transparent;
@@ -43,16 +43,16 @@ export const CollapseButton = styled(Button)<{ $isCollapsed: boolean }>`
       right: -1rem;
     `}
 
-  color: var(--text-secondary-color);
+  color: var(--sider-ink-strong);
 
   &:hover {
-    color: var(--text-secondary-color);
+    color: var(--text-on-color);
     background: var(--primary-color);
     border: 1px solid var(--border-color);
   }
 
   &:focus {
-    color: var(--text-secondary-color);
+    color: var(--text-on-color);
     background: var(--primary-color);
     border: 1px solid var(--border-color);
   }

@@ -130,7 +130,7 @@ export const MobileDetailItem = styled.div`
 
 export const MobileDetailLabel = styled.dt`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 700;
 `;
@@ -201,7 +201,7 @@ export const MobileCreateField = styled.div`
 `;
 
 export const MobileFieldLabel = styled.label`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 700;
 `;
@@ -221,7 +221,7 @@ export const MobileCityCurrent = styled.div`
 `;
 
 export const MobileCityCurrentLabel = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -270,14 +270,14 @@ export const MobileCityOptionName = styled.span`
 
 export const MobileCityOptionMeta = styled.span`
   flex-shrink: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 700;
 `;
 
 export const MobileCityHint = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   line-height: 1.4;
 `;

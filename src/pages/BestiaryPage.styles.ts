@@ -90,7 +90,7 @@ export const MobileDetailItem = styled.div`
 
 export const MobileDetailLabel = styled.dt`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 700;
 `;
@@ -142,7 +142,7 @@ export const MobileCreateField = styled.div`
 `;
 
 export const MobileFieldLabel = styled.label`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 700;
 `;

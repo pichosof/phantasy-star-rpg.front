@@ -59,7 +59,7 @@ export const MobileBurger = styled(BurgerIcon)`
   ${(props) =>
     props.isCross &&
     css`
-      color: var(--text-secondary-color);
+      color: var(--sider-ink-strong);
     `};
 `;
 

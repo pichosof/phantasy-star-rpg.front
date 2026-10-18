@@ -168,13 +168,13 @@ export const MobileImageFallback = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   background: radial-gradient(circle at top, var(--ink-soft), transparent 55%), var(--secondary-background-color);
 `;
 
 export const MobilePlayerPreview = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   line-height: 1.55;
   white-space: pre-wrap;
@@ -194,7 +194,7 @@ export const MobileVisibilityRow = styled.div`
 `;
 
 export const MobileInlineLabel = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   font-weight: 600;
 `;
@@ -265,7 +265,7 @@ export const MobileDetailItem = styled.div`
 
 export const MobileDetailLabel = styled.dt`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 600;
 `;
@@ -285,7 +285,7 @@ export const MobileNoteExtra = styled.div`
 `;
 
 export const MobileNoteDate = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   white-space: nowrap;
 `;
@@ -315,7 +315,7 @@ export const MobileNoteField = styled.div`
 `;
 
 export const MobileFieldLabel = styled.label`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 600;
 `;

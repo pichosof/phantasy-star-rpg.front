@@ -351,7 +351,7 @@ export const MobileHeroTitle = styled.h1`
 
 export const MobileHeroText = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.88rem;
   line-height: 1.45;
 `;
@@ -421,7 +421,7 @@ export const MobileDieCount = styled.span<{ $active: boolean; $color: string }>`
   border-radius: 999px;
   display: grid;
   place-items: center;
-  color: ${(p) => (p.$active ? DIE_FACE_TEXT : 'var(--text-secondary-color)')};
+  color: ${(p) => (p.$active ? DIE_FACE_TEXT : 'var(--text-muted-color)')};
   background: ${(p) => (p.$active ? p.$color : 'transparent')};
   font-size: 1rem;
   font-weight: 900;
@@ -463,7 +463,7 @@ export const MobileAdjustButton = styled.button<{ $disabled?: boolean }>`
 `;
 
 export const MobileFormula = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-family: monospace;
   font-size: 0.86rem;
   line-height: 1.45;
@@ -486,7 +486,7 @@ export const MobileResultTotal = styled.div`
 `;
 
 export const MobileResultLabel = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -510,7 +510,7 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   line-height: 1.45;
 `;
 

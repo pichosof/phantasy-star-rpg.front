@@ -63,7 +63,8 @@ export const motaviaTokens: ThemeTokens = {
   textMain: '#2A1608', // Terra queimada profunda
   textLight: '#7A5E38',
   textSuperLight: '#B09870',
-  textSecondary: '#ffffff',
+  textOnColor: '#ffffff',
+  textMuted: '#7A5E38', // 5.2:1 on parchment
   textDark: '#180C04',
   textNftLight: '#9A7A50',
   textSiderPrimary: '#FF6B1A', // Fogo — destaque no sider

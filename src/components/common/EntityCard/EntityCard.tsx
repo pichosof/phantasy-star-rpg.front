@@ -131,14 +131,14 @@ const Top = styled.div`
   gap: 10px;
 `;
 const Label = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
 `;
 const Meta = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   display: flex;
   flex-wrap: wrap;
@@ -155,7 +155,7 @@ const Summary = styled.p<{ $muted: boolean }>`
   display: -webkit-box;
   margin: 0;
   overflow: hidden;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   line-height: 1.55;
   font-style: ${({ $muted }) => ($muted ? 'italic' : 'normal')};
@@ -176,7 +176,7 @@ const Footer = styled.div`
   flex-wrap: wrap;
 `;
 const FooterText = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 11px;
 `;
 const OpenText = styled.span`

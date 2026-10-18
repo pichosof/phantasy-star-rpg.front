@@ -154,7 +154,7 @@ export const MobileNoteTitle = styled.h2`
 
 export const MobileNotePreview = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.875rem;
   line-height: 1.5;
   display: -webkit-box;
@@ -182,7 +182,7 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
 `;
 
 export const MobilePinnedMark = styled.span`

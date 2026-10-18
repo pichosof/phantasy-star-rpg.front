@@ -432,7 +432,7 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
 `;
 
 export const MobileSectionStack = styled.div`

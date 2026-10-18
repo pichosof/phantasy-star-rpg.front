@@ -52,7 +52,7 @@ export const BaseFormItem = styled(Form.Item)<FormItemProps>`
       align-items: center;
       justify-content: center;
       margin: 0 0.25rem;
-      color: var(--text-secondary-color);
+      color: var(--text-on-color);
       background: var(--error-color);
       border-radius: 50%;
       width: 1rem;

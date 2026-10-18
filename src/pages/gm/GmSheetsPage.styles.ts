@@ -98,7 +98,7 @@ export const MobileSheetTitle = styled.h2`
 
 export const MobileSheetMeta = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.82rem;
   line-height: 1.45;
 `;
@@ -114,5 +114,5 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
 `;

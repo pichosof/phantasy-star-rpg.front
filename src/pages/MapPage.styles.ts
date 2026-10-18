@@ -222,7 +222,7 @@ export const MobileWorldTitle = styled.h1`
 
 export const MobileWorldDescription = styled.p`
   margin: 6px 0 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.86rem;
   line-height: 1.45;
 `;
@@ -316,7 +316,7 @@ export const MobilePickerTitle = styled.span`
 `;
 
 export const MobilePickerMeta = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.78rem;
 `;
 
@@ -325,6 +325,6 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   line-height: 1.45;
 `;

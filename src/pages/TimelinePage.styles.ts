@@ -165,7 +165,7 @@ export const MobileDetailItem = styled.div`
 
 export const MobileDetailLabel = styled.dt`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 600;
 `;
@@ -186,14 +186,14 @@ export const MobileVisibilityRow = styled.div`
 `;
 
 export const MobileInlineLabel = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   font-weight: 600;
 `;
 
 export const MobileBodyText = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   line-height: 1.6;
   white-space: pre-wrap;

@@ -98,7 +98,7 @@ export const mobileCreateField: CSSProperties = {
 };
 
 export const mobileFieldLabel: CSSProperties = {
-  color: 'var(--text-secondary-color)',
+  color: 'var(--text-muted-color)',
   fontSize: 12,
   fontWeight: 600,
 };

@@ -489,7 +489,7 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
 `;
 
 export const MobilePanelStack = styled.div`
@@ -515,7 +515,7 @@ export const MobileUploadName = styled.span`
 
 export const MobileHintText = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.82rem;
   line-height: 1.45;
 `;

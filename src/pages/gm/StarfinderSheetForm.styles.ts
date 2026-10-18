@@ -314,7 +314,7 @@ export const MobileStatCard = styled.div`
 `;
 
 export const MobileStatLabel = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.72rem;
   line-height: 1.2;
 `;
@@ -348,7 +348,7 @@ export const MobileListHeader = styled.div`
 `;
 
 export const MobileListMeta = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.76rem;
   font-weight: 600;
 `;
@@ -360,7 +360,7 @@ export const MobileListActions = styled.div`
 
 export const MobileHint = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.82rem;
   line-height: 1.45;
 `;

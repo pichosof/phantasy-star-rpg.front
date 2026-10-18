@@ -207,7 +207,7 @@ export const MobileCreateField = styled.div`
 `;
 
 export const MobileFieldLabel = styled.label`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 600;
 `;
@@ -237,7 +237,7 @@ export const MobileEmptyState = styled.div`
 
 export const MobileEntityPreview = styled.span`
   display: -webkit-box;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 13px;
   line-height: 1.4;
   overflow: hidden;
@@ -260,7 +260,7 @@ export const MobileDetailItem = styled.div`
 
 export const MobileDetailLabel = styled.dt`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
   font-weight: 600;
 `;

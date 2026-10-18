@@ -30,13 +30,13 @@ export const ButtonGroup = styled.div<BtnProps>`
       ? css`
           & > ${Btn}:first-of-type {
             background: var(--primary-color);
-            color: var(--text-secondary-color);
+            color: var(--text-on-color);
           }
         `
       : css`
           & > ${Btn}:last-of-type {
             background: var(--warning-color);
-            color: var(--text-secondary-color);
+            color: var(--text-on-color);
           }
         `}
 

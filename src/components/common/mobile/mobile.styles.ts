@@ -144,7 +144,7 @@ export const MobilePageTitle = styled.h1`
 
 export const MobilePageSubtitle = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.9375rem;
   line-height: 1.45;
 `;
@@ -191,7 +191,7 @@ export const MobileSectionTitle = styled.h2`
 
 export const MobileSectionDescription = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.875rem;
   line-height: 1.45;
 `;
@@ -224,7 +224,7 @@ export const MobileCardRoot = styled(AdmCard)<{ $compact: boolean; $inset: boole
   }
 
   .adm-card-header-extra {
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
   }
 
   .adm-card-body {
@@ -278,7 +278,7 @@ export const MobileFormRoot = styled(AdmForm)`
   }
 
   .adm-form-item-label {
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
     font-size: 0.82rem;
   }
 
@@ -388,7 +388,7 @@ export const MobileSheetTitle = styled.div`
 `;
 
 export const MobileSheetSubtitle = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.875rem;
   line-height: 1.45;
 `;

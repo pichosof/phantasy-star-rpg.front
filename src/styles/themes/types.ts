@@ -21,7 +21,10 @@ export interface ITheme {
   textMain: string;
   textLight: string;
   textSuperLight: string;
-  textSecondary: string;
+  /** Text on solid brand/state colors (buttons, solid tags, badges). */
+  textOnColor: string;
+  /** Secondary text on surfaces: descriptions, labels, meta. Must stay ≥ 4.5:1. */
+  textMuted: string;
   textDark: string;
   textNftLight: string;
   textSiderPrimary: string;

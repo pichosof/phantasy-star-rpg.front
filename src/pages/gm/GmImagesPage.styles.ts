@@ -161,7 +161,7 @@ export const MobileDetailItem = styled.div`
 `;
 
 export const MobileDetailLabel = styled.span`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.78rem;
 `;
 
@@ -176,5 +176,5 @@ export const MobileEmptyState = styled.div`
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
 `;

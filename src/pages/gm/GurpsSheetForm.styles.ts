@@ -165,7 +165,7 @@ export const MobileStatCard = styled.div`
 `;
 
 export const MobileStatLabel = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.72rem;
   line-height: 1.2;
 `;
@@ -213,14 +213,14 @@ export const MobileEncumbranceTable = styled.table`
   }
 
   th {
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
     font-size: 0.75rem;
   }
 `;
 
 export const MobileHint = styled.p`
   margin: 0;
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 0.82rem;
   line-height: 1.45;
 `;

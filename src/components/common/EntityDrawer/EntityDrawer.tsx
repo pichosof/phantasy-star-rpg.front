@@ -282,7 +282,7 @@ const MobileRow = styled.div`
   padding: 6px 0;
 `;
 const MobileHint = styled.div`
-  color: var(--text-secondary-color);
+  color: var(--text-muted-color);
   font-size: 12px;
 `;
 

@@ -62,7 +62,8 @@ export const dezolisTokens: ThemeTokens = {
   textMain: '#C8E4FF', // Branco gélido azulado
   textLight: '#6A88A8',
   textSuperLight: '#3A5070',
-  textSecondary: '#ffffff',
+  textOnColor: '#ffffff',
+  textMuted: '#8AA4C2', // ~7.5:1 on the void, below textMain to keep hierarchy
   textDark: '#AACCEE',
   textNftLight: '#567090',
   textSiderPrimary: '#00C8E8', // Ice cyan no menu

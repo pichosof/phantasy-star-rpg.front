@@ -49,7 +49,8 @@ const themeColorVariables = (def: ThemeDefinition) => {
     --text-main-color: ${t.textMain};
     --text-light-color: ${t.textLight};
     --text-superLight-color: ${t.textSuperLight};
-    --text-secondary-color: ${t.textSecondary};
+    --text-on-color: ${t.textOnColor};
+    --text-muted-color: ${t.textMuted};
     --text-dark-color: ${t.textDark};
     --text-nft-light-color: ${t.textNftLight};
     --text-sider-primary-color: ${t.textSiderPrimary};
@@ -121,7 +122,7 @@ const themeColorVariables = (def: ThemeDefinition) => {
     --adm-color-warning: var(--warning-color);
     --adm-color-danger: var(--error-color);
     --adm-color-text: var(--text-main-color);
-    --adm-color-text-secondary: var(--text-secondary-color);
+    --adm-color-text-secondary: var(--text-muted-color);
     --adm-color-weak: var(--text-light-color);
     --adm-color-light: var(--text-superLight-color);
     --adm-color-border: var(--border-color);
