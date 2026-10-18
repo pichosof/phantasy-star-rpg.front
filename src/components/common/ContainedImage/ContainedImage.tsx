@@ -1,4 +1,4 @@
-/* theme-isolation-ignore-file: image stage, blurred backdrop and focus marker sit on the picture */
+/* theme-isolation-ignore-file: focus marker and buttons are overlays on the picture */
 import React from 'react';
 import { AimOutlined } from '@ant-design/icons';
 import { message } from 'antd';
@@ -7,8 +7,9 @@ import { saveImageFocus, thumbUrl, useImageFocus } from '@app/api/images.api';
 import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 
 /**
- * Shows the whole picture — never cropped — over a blurred, darkened copy of itself that
- * fills the frame, so portraits, squares and panoramas all look intentional.
+ * Shows the whole picture — never cropped, never stretched. Whatever the aspect ratio,
+ * the image keeps its proportions and the empty bands (left/right for portraits,
+ * top/bottom for panoramas) take the theme's surface color.
  * Loads the 1280px thumbnail; the fullscreen button opens the original.
  * With `editableFocus`, the GM can click the main point of the image (face, creature…);
  * cards then use it as their crop centre.
@@ -19,27 +20,21 @@ const Frame = styled.div<{ $height: number }>`
   height: ${({ $height }) => `${$height}px`};
   overflow: hidden;
   border-radius: 8px;
-  background: #000;
+  background: var(--secondary-background-color);
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const Backdrop = styled.img`
-  position: absolute;
-  inset: -24px;
-  width: calc(100% + 48px);
-  height: calc(100% + 48px);
-  object-fit: cover;
-  filter: blur(22px) brightness(0.55) saturate(1.2);
-  pointer-events: none;
-`;
-
-const Picture = styled.img<{ $picking: boolean }>`
-  position: relative;
+/* Explicit pixel max-height + auto sizes: the image can only scale down uniformly.
+   (A % max-height inside a stretching flex wrapper distorted it.) */
+const Picture = styled.img<{ $picking: boolean; $maxHeight: number }>`
   display: block;
+  width: auto;
+  height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: ${({ $maxHeight }) => `${$maxHeight}px`};
+  object-fit: contain;
   cursor: ${({ $picking }) => ($picking ? 'crosshair' : 'default')};
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 `;
@@ -59,11 +54,12 @@ const Marker = styled.span<{ $x: number; $y: number }>`
   pointer-events: none;
 `;
 
+/* Hugs the rendered image so the focus marker's % coordinates match the picture. */
 const PictureWrap = styled.span`
   position: relative;
-  display: inline-flex;
+  display: block;
   max-width: 100%;
-  max-height: 100%;
+  line-height: 0;
 `;
 
 const FocusButton = styled.button<{ $active: boolean }>`
@@ -106,7 +102,6 @@ export const ContainedImage: React.FC<ContainedImageProps> = ({
   if (!src) return null;
 
   const display = thumbUrl(src, 1280);
-  const backdrop = thumbUrl(src, 320);
 
   async function pick(e: React.MouseEvent<HTMLImageElement>) {
     if (!picking || !src) return;
@@ -126,9 +121,9 @@ export const ContainedImage: React.FC<ContainedImageProps> = ({
   return (
     <ExpandableImage alt={alt} src={src}>
       <Frame $height={height}>
-        <Backdrop alt="" aria-hidden src={backdrop} />
         <PictureWrap>
           <Picture
+            $maxHeight={height}
             $picking={picking}
             alt={alt}
             onClick={pick}

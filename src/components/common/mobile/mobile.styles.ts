@@ -33,8 +33,6 @@ export const mobileSearchBarStyle: CSSProperties = {
   '--border-radius': `${MOBILE_CARD_RADIUS}px`,
   '--height': '42px',
   '--padding-left': '14px',
-  border: '1px solid var(--border-color)',
-  boxShadow: 'var(--box-shadow)',
 } as CSSProperties;
 
 export const mobileSelectorStyle: CSSProperties = {
@@ -288,6 +286,13 @@ export const MobileFormRoot = styled(AdmForm)`
 `;
 
 export const MobileSearchBarRoot = styled(AdmSearchBar)<{ $inset: boolean }>`
+  /* The rounded element is the input box (the root also holds the Cancel button),
+     so the edge and shadow go there — on the root they drew a square frame. */
+  .adm-search-bar-input-box {
+    border: 1px solid var(--border-strong-color);
+    box-shadow: var(--box-shadow);
+  }
+
   ${({ $inset }) =>
     $inset &&
     css`

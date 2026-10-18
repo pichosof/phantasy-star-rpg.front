@@ -1,5 +1,5 @@
 import React from 'react';
-import { Segmented, Select } from 'antd';
+import { Select } from 'antd';
 import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '@app/hooks/reduxHooks';
 import { setAutoThemes, setTheme, setThemeMode, type ThemeMode } from '@app/store/slices/themeSlice';
@@ -52,6 +52,24 @@ const Row = styled.div`
   font-size: 13px;
 `;
 
+/** Wraps instead of squeezing: the settings dropdown is narrow on desktop. */
+const Modes = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 6px;
+`;
+
+const ModeButton = styled.button<{ $active: boolean }>`
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: ${({ $active }) => ($active ? 'var(--text-on-color)' : 'var(--text-main-color)')};
+  background: ${({ $active }) => ($active ? 'var(--primary-color)' : 'transparent')};
+  border: 1px solid ${({ $active }) => ($active ? 'var(--primary-color)' : 'var(--border-strong-color)')};
+`;
+
 const MODE_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: 'Manual', value: 'manual' },
   { label: 'System', value: 'system' },
@@ -86,7 +104,20 @@ export const ThemePicker: React.FC = () => {
 
       <Row>
         <span>Automatic</span>
-        <Segmented block onChange={(v) => dispatch(setThemeMode(v as ThemeMode))} options={MODE_OPTIONS} value={mode} />
+        <Modes role="radiogroup">
+          {MODE_OPTIONS.map((o) => (
+            <ModeButton
+              $active={mode === o.value}
+              aria-checked={mode === o.value}
+              key={o.value}
+              onClick={() => dispatch(setThemeMode(o.value))}
+              role="radio"
+              type="button"
+            >
+              {o.label}
+            </ModeButton>
+          ))}
+        </Modes>
       </Row>
 
       {mode !== 'manual' && (

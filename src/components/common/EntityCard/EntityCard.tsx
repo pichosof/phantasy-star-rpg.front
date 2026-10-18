@@ -34,7 +34,37 @@ const Grid = styled.div<{ $cols: number }>`
   align-items: start;
 `;
 
+/** Compact layout for narrow cards (2-column grids on phones). */
+const narrow = `
+  @container (max-width: 260px) {
+    .entity-card-body {
+      gap: 6px;
+      padding: 10px 12px 10px;
+    }
+    .entity-card-label {
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+    .entity-card-title {
+      font-size: 15px;
+    }
+    .entity-card-summary {
+      font-size: 12px;
+      -webkit-line-clamp: 2;
+    }
+    .entity-card-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .entity-card-footer-end {
+      justify-content: space-between;
+    }
+  }
+`;
+
 const Article = styled.article<{ $clickable: boolean; $dimmed: boolean }>`
+  /* Cards adapt to their own width (2-column phone grids are ~170px wide). */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -49,6 +79,8 @@ const Article = styled.article<{ $clickable: boolean; $dimmed: boolean }>`
     transform 0.2s ease,
     box-shadow 0.2s ease,
     border-color 0.2s ease;
+
+  ${narrow}
 
   &:hover {
     transform: ${({ $clickable }) => ($clickable ? 'translateY(-2px)' : 'none')};
@@ -167,7 +199,26 @@ const Chips = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  min-width: 0;
+
+  /* long chips (habitat, region…) truncate instead of overflowing the card */
+  .ant-tag {
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 `;
+
+const FooterEnd = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+`;
+
 const Footer = styled.div`
   display: flex;
   align-items: center;
@@ -289,10 +340,14 @@ export const EntityCard: React.FC<EntityCardProps> = ({
           </CoverFallback>
         ))}
 
-      <Body>
+      <Body className="entity-card-body">
         {(label || status) && (
           <Top>
-            {typeof label === 'string' || typeof label === 'number' ? <Label>{label}</Label> : (label ?? <span />)}
+            {typeof label === 'string' || typeof label === 'number' ? (
+              <Label className="entity-card-label">{label}</Label>
+            ) : (
+              (label ?? <span />)
+            )}
             {status && (
               <Space size={4} wrap>
                 {status.visible !== undefined && (
@@ -311,23 +366,25 @@ export const EntityCard: React.FC<EntityCardProps> = ({
         )}
 
         {meta && <Meta>{meta}</Meta>}
-        <Title>{title}</Title>
-        <Summary $muted={!summary || Boolean(locked)}>{text}</Summary>
+        <Title className="entity-card-title">{title}</Title>
+        <Summary $muted={!summary || Boolean(locked)} className="entity-card-summary">
+          {text}
+        </Summary>
         {chips && <Chips>{chips}</Chips>}
 
         <div style={{ minHeight: 4 }} />
         <Divider style={{ margin: '4px 0' }} />
 
-        <Footer>
+        <Footer className="entity-card-footer">
           <FooterText>{footer}</FooterText>
-          <Space size={6}>
+          <FooterEnd className="entity-card-footer-end">
             {actions && (
-              <span onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', gap: 6 }}>
+              <span onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 6 }}>
                 {actions}
               </span>
             )}
             {onClick && <OpenText>{openText}</OpenText>}
-          </Space>
+          </FooterEnd>
         </Footer>
       </Body>
     </Article>
