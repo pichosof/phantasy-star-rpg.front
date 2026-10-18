@@ -98,6 +98,7 @@ const themeColorVariables = (def: ThemeDefinition) => {
     --sider-ink-line: ${t.siderInk.line};
     --sider-ink-strong: ${t.siderInk.strong};
     --sider-shadow: ${t.siderInk.shadow};
+    --sider-active-bg: ${t.siderActiveBg};
     --box-shadow: ${t.boxShadow};
     --box-shadow-hover: ${t.boxShadowHover};
     --box-shadow-nft-color: ${t.boxShadowNft};

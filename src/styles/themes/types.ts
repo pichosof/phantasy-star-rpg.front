@@ -89,4 +89,6 @@ export interface ITheme {
   shadowElevated: string;
   /** Ink on the sider/menu surface (dark in every current world). */
   siderInk: { faint: string; soft: string; line: string; strong: string; shadow: string };
+  /** Fill behind the active menu item (its text uses textSiderPrimary). */
+  siderActiveBg: string;
 }

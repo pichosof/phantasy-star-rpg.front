@@ -69,7 +69,7 @@ export const dezolisTokens: ThemeTokens = {
   textDark: '#AACCEE',
   textNftLight: '#637FA2',
   textSiderPrimary: '#00C8E8', // Ice cyan no menu
-  textSiderSecondary: '#6A88A8',
+  textSiderSecondary: '#7F9CBE',
   subText: '#6A88A8',
 
   // Sombras
@@ -134,6 +134,7 @@ export const dezolisTokens: ThemeTokens = {
     strong: '#ffffff',
     shadow: 'rgba(0, 0, 0, 0.24)',
   },
+  siderActiveBg: 'rgba(0, 200, 232, 0.12)',
 
   ...chartColors,
 };

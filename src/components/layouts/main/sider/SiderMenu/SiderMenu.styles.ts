@@ -69,7 +69,9 @@ export const Menu = styled(AntMenu)`
   }
 
   && .ant-menu-item-selected {
-    background-color: transparent !important;
+    /* color alone isn't enough on the gradient: the active item gets a fill and a marker */
+    background-color: var(--sider-active-bg) !important;
+    box-shadow: inset 3px 0 0 var(--text-sider-primary-color);
 
     .ant-menu-submenu-expand-icon,
     .ant-menu-submenu-arrow,

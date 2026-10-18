@@ -45,7 +45,7 @@ export const BrandCopy = styled.div`
 `;
 
 export const BrandEyebrow = styled.div`
-  color: var(--primary-color);
+  color: var(--text-sider-primary-color);
   font-size: ${FONT_SIZE.xxs};
   font-weight: ${FONT_WEIGHT.bold};
   letter-spacing: 0.18em;
@@ -99,8 +99,8 @@ export const MobileSideBar = styled(SideBar)`
   }
 
   .adm-side-bar-item-active {
-    background: rgba(var(--primary-rgb-color), 0.12);
-    box-shadow: inset 0 0 0 1px rgba(var(--primary-rgb-color), 0.18);
+    background: var(--sider-active-bg);
+    box-shadow: inset 0 0 0 1px var(--text-sider-primary-color);
   }
 `;
 
@@ -119,7 +119,7 @@ export const SideBarTitle = styled.div`
   }
 
   .adm-side-bar-item-active & {
-    color: var(--primary-color);
+    color: var(--text-sider-primary-color);
   }
 `;
 
@@ -136,7 +136,7 @@ export const SectionMeta = styled.div`
 `;
 
 export const SectionEyebrow = styled.div`
-  color: var(--primary-color);
+  color: var(--text-sider-primary-color);
   font-size: ${FONT_SIZE.xxs};
   font-weight: ${FONT_WEIGHT.bold};
   letter-spacing: 0.16em;
@@ -167,7 +167,7 @@ export const SectionList = styled(List)`
   }
 
   .adm-list-item-content-prefix {
-    color: var(--primary-color);
+    color: var(--text-sider-primary-color);
   }
 
   .adm-list-item {
@@ -175,7 +175,7 @@ export const SectionList = styled(List)`
   }
 
   .adm-list-item:active {
-    background: rgba(var(--primary-rgb-color), 0.08);
+    background: var(--sider-active-bg);
   }
 
   .adm-list-item-content-arrow {

@@ -68,7 +68,7 @@ export const motaviaTokens: ThemeTokens = {
   textMuted: '#7A5E38', // 5.2:1 on parchment
   textDark: '#180C04',
   textNftLight: '#9A7A50',
-  textSiderPrimary: '#FF6B1A', // Fogo — destaque no sider
+  textSiderPrimary: '#FFB27A', // light ember: ≥4.5:1 along the whole sider gradient
   textSiderSecondary: '#F4DDB0', // Areia pálida
   subText: 'rgba(42, 22, 8, 0.65)',
 
@@ -134,6 +134,7 @@ export const motaviaTokens: ThemeTokens = {
     strong: '#ffffff',
     shadow: 'rgba(0, 0, 0, 0.24)',
   },
+  siderActiveBg: 'rgba(255, 107, 26, 0.16)',
 
   ...chartColors,
 };
