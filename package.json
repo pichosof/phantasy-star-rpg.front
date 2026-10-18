@@ -65,7 +65,9 @@
     "format": "prettier --write .",
     "buildThemes": "lessc --clean-css=\"--s1 --advanced\" src/styles/themes/main.less public/themes/main.css",
     "theme:check": "node scripts/check-theme-isolation.mjs",
-    "theme:check:strict": "node scripts/check-theme-isolation.mjs --strict"
+    "theme:check:strict": "node scripts/check-theme-isolation.mjs --strict",
+    "theme:contrast": "node scripts/check-theme-contrast.mjs",
+    "theme:contrast:strict": "node scripts/check-theme-contrast.mjs --strict"
   },
   "browserslist": [
     ">0.2%",

@@ -33,16 +33,16 @@ const chartColors = {
 /** Motavia owns every value below; nothing is inherited from another theme. */
 export const motaviaTokens: ThemeTokens = {
   // Núcleo
-  primary: '#C45508', // Desert Ember — laranja brasa do sol
+  primary: '#A44707', // Desert Ember — 4.6:1 as text on every Motavia surface
   primary1: '#FFF0DC', // Areia clara — fundo de hover/badge
   primaryGradient: 'linear-gradient(211.49deg, #D45A08 15.89%, #B88C18 48.97%)',
   light: '#C0A070', // Areia seca
-  secondary: '#B88C18', // Algol Gold
+  secondary: '#7D5F10', // Algol Gold — deepened for text use (4.5:1)
 
   // Estados
   error: '#B81E2A',
-  warning: '#D4780A',
-  success: '#1E9060',
+  warning: '#955407',
+  success: '#17704B',
 
   // Fundos — pergaminho quente de Motavia
   background: '#F8EDD8',
@@ -62,14 +62,14 @@ export const motaviaTokens: ThemeTokens = {
   // Tipografia
   textMain: '#2A1608', // Terra queimada profunda
   textLight: '#7A5E38',
-  textSuperLight: '#B09870',
+  textSuperLight: '#756140',
   textOnColor: '#ffffff',
   textMuted: '#7A5E38', // 5.2:1 on parchment
   textDark: '#180C04',
   textNftLight: '#9A7A50',
   textSiderPrimary: '#FF6B1A', // Fogo — destaque no sider
   textSiderSecondary: '#F4DDB0', // Areia pálida
-  subText: 'rgba(42, 22, 8, 0.50)',
+  subText: 'rgba(42, 22, 8, 0.65)',
 
   // Sombras
   shadow: 'rgba(60, 30, 5, 0.12)',
@@ -93,7 +93,7 @@ export const motaviaTokens: ThemeTokens = {
   // Layout
   heading: '#3A1804', // Sienna queimado — headings dramáticos
   borderBase: '#D8C8A4',
-  disable: 'rgba(0, 0, 0, 0.28)',
+  disable: 'rgba(0, 0, 0, 0.46)',
   disabledBg: '#D4C4A0',
   layoutBodyBg: '#F8EDD8',
   layoutHeaderBg: 'transparent',
@@ -109,7 +109,7 @@ export const motaviaTokens: ThemeTokens = {
 
   // Ícones/breadcrumb
   alertTextColor: '#ffffff',
-  breadcrumb: 'rgba(42, 22, 8, 0.50)',
+  breadcrumb: 'rgba(42, 22, 8, 0.65)',
   icon: '#9A7A50',
   iconHover: 'rgba(42, 22, 8, 0.80)',
 
@@ -119,7 +119,7 @@ export const motaviaTokens: ThemeTokens = {
     soft: 'rgba(0, 0, 0, 0.06)',
     line: 'rgba(0, 0, 0, 0.10)',
     muted: 'rgba(0, 0, 0, 0.22)',
-    subtle: 'rgba(0, 0, 0, 0.40)',
+    subtle: 'rgba(0, 0, 0, 0.50)',
     text: 'rgba(0, 0, 0, 0.75)',
     strong: 'rgba(0, 0, 0, 0.87)',
   },

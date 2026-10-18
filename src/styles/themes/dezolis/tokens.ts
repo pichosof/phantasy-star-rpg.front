@@ -61,11 +61,11 @@ export const dezolisTokens: ThemeTokens = {
   // Tipografia
   textMain: '#C8E4FF', // Branco gélido azulado
   textLight: '#6A88A8',
-  textSuperLight: '#3A5070',
+  textSuperLight: '#5F7EAC',
   textOnColor: '#ffffff',
   textMuted: '#8AA4C2', // ~7.5:1 on the void, below textMain to keep hierarchy
   textDark: '#AACCEE',
-  textNftLight: '#567090',
+  textNftLight: '#637FA2',
   textSiderPrimary: '#00C8E8', // Ice cyan no menu
   textSiderSecondary: '#6A88A8',
   subText: '#6A88A8',
@@ -92,7 +92,7 @@ export const dezolisTokens: ThemeTokens = {
   // Layout
   heading: '#ffffff',
   borderBase: '#142038',
-  disable: '#2A3E60',
+  disable: '#426297',
   disabledBg: '#07102A',
   layoutBodyBg: '#040A16',
   layoutHeaderBg: '#040A16',
@@ -101,7 +101,7 @@ export const dezolisTokens: ThemeTokens = {
   layoutSiderBg: 'linear-gradient(228deg, #040A16 -20%, #060F24 40%, #091830 80%, #0C2040 120%)',
 
   // Inputs/itens
-  inputPlaceholder: 'rgba(200, 228, 255, 0.40)',
+  inputPlaceholder: 'rgba(200, 228, 255, 0.55)',
   itemHoverBg: '#0A1530',
   backgroundColorBase: '#07102A',
   avatarBg: '#102240',
