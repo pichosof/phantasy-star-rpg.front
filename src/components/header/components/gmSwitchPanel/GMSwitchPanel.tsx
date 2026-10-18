@@ -3,6 +3,7 @@ import { Button as MobileButton, Input as MobileInput } from 'antd-mobile';
 import { Input } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { initGMKeyFromStorage, isGMAuthenticated, loginGM, logoutGM } from '@app/api/http.api';
+import { downloadDatabase } from '@app/api/database.api';
 import * as S from './GMSwitchPanel.styles';
 
 interface GMSwitchPanelProps {
@@ -16,6 +17,8 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [retryAfter, setRetryAfter] = React.useState<number | null>(null);
+  const [downloading, setDownloading] = React.useState(false);
+  const [downloadError, setDownloadError] = React.useState<string | null>(null);
   const isSheet = variant === 'sheet';
 
   React.useEffect(() => {
@@ -69,6 +72,18 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
     onClose?.();
   }
 
+  async function handleDownloadDatabase() {
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadDatabase();
+    } catch {
+      setDownloadError('Database download failed.');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') void apply();
   }
@@ -80,17 +95,27 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
           <S.StatusLabel>GM mode active</S.StatusLabel>
           <S.StatusHint>Admin routes and protected controls are unlocked on this device.</S.StatusHint>
         </S.StatusBlock>
+        <MobileButton block fill="outline" onClick={() => void handleDownloadDatabase()} loading={downloading}>
+          Download database
+        </MobileButton>
+        {downloadError && <S.ErrorText>{downloadError}</S.ErrorText>}
         <MobileButton block color="danger" fill="outline" onClick={clearKey}>
           Exit GM mode
         </MobileButton>
       </S.SheetContent>
     ) : (
-      <S.DesktopActiveRow>
-        <S.DesktopStatusLabel>GM mode active</S.DesktopStatusLabel>
-        <Button onClick={clearKey} danger={true}>
-          Exit GM mode
-        </Button>
-      </S.DesktopActiveRow>
+      <S.DesktopForm>
+        <S.DesktopActiveRow>
+          <S.DesktopStatusLabel>GM mode active</S.DesktopStatusLabel>
+          <Button onClick={() => void handleDownloadDatabase()} loading={downloading}>
+            Download database
+          </Button>
+          <Button onClick={clearKey} danger={true}>
+            Exit GM mode
+          </Button>
+        </S.DesktopActiveRow>
+        {downloadError && <S.DesktopErrorText>{downloadError}</S.DesktopErrorText>}
+      </S.DesktopForm>
     )
   ) : isSheet ? (
     <S.SheetContent>
