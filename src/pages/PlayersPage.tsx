@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Divider, Empty, message, Modal, Popconfirm, Space, Spin, Switch, Tag, Typography } from 'antd';
 import type { UploadProps } from 'antd';
 import {
@@ -1173,7 +1174,9 @@ export const PlayersPage: React.FC = () => {
         <S.MobileHeroContent>
           <S.MobileHeroFrame>
             {selectedPlayer.imageUrl ? (
-              <S.MobileHeroImage alt={selectedPlayer.imageAlt ?? selectedPlayer.name} src={selectedPlayer.imageUrl} />
+              <ExpandableImage alt={selectedPlayer.imageAlt ?? selectedPlayer.name} src={selectedPlayer.imageUrl}>
+                <S.MobileHeroImage alt={selectedPlayer.imageAlt ?? selectedPlayer.name} src={selectedPlayer.imageUrl} />
+              </ExpandableImage>
             ) : (
               <S.MobileImageFallback>
                 <UserOutline fontSize={48} />

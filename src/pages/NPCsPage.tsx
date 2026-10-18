@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import {
   Avatar,
   Divider,
@@ -682,7 +683,9 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM }) =>
           <div style={S.detailHeroShell}>
             {npc.imageUrl ? (
               <div style={S.detailHeroImageWrap}>
-                <img src={resolveApiUrl(npc.imageUrl)} alt={npc.imageAlt ?? npc.name} style={S.detailHeroImage} />
+                <ExpandableImage alt={npc.imageAlt ?? npc.name} src={resolveApiUrl(npc.imageUrl)}>
+                  <img src={resolveApiUrl(npc.imageUrl)} alt={npc.imageAlt ?? npc.name} style={S.detailHeroImage} />
+                </ExpandableImage>
               </div>
             ) : (
               <div style={S.detailHeroFallback(meta.hex)}>
@@ -1037,7 +1040,12 @@ export const NPCsPage: React.FC = () => {
       <MobileCard compact>
         <S.MobileNpcHero $accent={getRoleMeta(detailNpc.role).hex}>
           {detailNpc.imageUrl ? (
-            <S.MobileNpcHeroImage alt={detailNpc.imageAlt ?? detailNpc.name} src={resolveApiUrl(detailNpc.imageUrl)} />
+            <ExpandableImage alt={detailNpc.imageAlt ?? detailNpc.name} src={resolveApiUrl(detailNpc.imageUrl)}>
+              <S.MobileNpcHeroImage
+                alt={detailNpc.imageAlt ?? detailNpc.name}
+                src={resolveApiUrl(detailNpc.imageUrl)}
+              />
+            </ExpandableImage>
           ) : (
             <S.MobileNpcFallback $accent={getRoleMeta(detailNpc.role).hex}>
               <span>{initials(detailNpc.name)}</span>

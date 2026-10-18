@@ -1,4 +1,5 @@
 import React from 'react';
+import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tag, Typography, Upload, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
 import {
@@ -602,10 +603,12 @@ export const BestiaryPage: React.FC = () => {
       <MobileCard compact>
         <S.MobileMonsterHero>
           {mobileCanReadOpen && openMonster.imageUrl ? (
-            <S.MobileMonsterImage
-              alt={openMonster.imageAlt ?? openMonster.name}
-              src={resolveApiUrl(openMonster.imageUrl)}
-            />
+            <ExpandableImage alt={openMonster.imageAlt ?? openMonster.name} src={resolveApiUrl(openMonster.imageUrl)}>
+              <S.MobileMonsterImage
+                alt={openMonster.imageAlt ?? openMonster.name}
+                src={resolveApiUrl(openMonster.imageUrl)}
+              />
+            </ExpandableImage>
           ) : (
             <S.MobileMonsterFallback>
               <AppIcon name="beast" size={44} />
@@ -1437,13 +1440,17 @@ export const BestiaryPage: React.FC = () => {
             {openMonster && (
               <>
                 {openMonster.discovered && openMonster.imageUrl && (
-                  <div style={S.publicDrawerImagePreview}>
+                  <ExpandableImage
+                    alt={openMonster.imageAlt ?? openMonster.name}
+                    src={resolveApiUrl(openMonster.imageUrl)}
+                    style={S.publicDrawerImagePreview}
+                  >
                     <img
                       src={resolveApiUrl(openMonster.imageUrl)}
                       alt={openMonster.imageAlt ?? openMonster.name}
                       style={imgCoverH(240)}
                     />
-                  </div>
+                  </ExpandableImage>
                 )}
 
                 {openMonster.discovered ? (

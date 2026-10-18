@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Badge, Divider, Drawer, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
@@ -110,13 +111,24 @@ function getSummaryPreview(session: Session) {
   return normalized.length > 170 ? `${normalized.slice(0, 167)}...` : normalized;
 }
 
-const SessionCover: React.FC<{ session: Session; height?: number }> = ({ session, height = 180 }) => {
+const SessionCover: React.FC<{ session: Session; height?: number; expandable?: boolean }> = ({
+  session,
+  height = 180,
+  expandable = false,
+}) => {
   if (session.imageUrl) {
-    return (
+    const cover = (
       <S.CoverFrame $height={height}>
         <S.CoverImage alt={session.imageAlt ?? session.title} src={session.imageUrl} />
         <S.CoverOverlay />
       </S.CoverFrame>
+    );
+    return expandable ? (
+      <ExpandableImage alt={session.imageAlt ?? session.title} src={session.imageUrl}>
+        {cover}
+      </ExpandableImage>
+    ) : (
+      cover
     );
   }
 
@@ -693,7 +705,7 @@ export const SessionsPage: React.FC = () => {
           children: (
             <S.DrawerSectionStack>
               <div style={S.previewFrame}>
-                <SessionCover height={240} session={openSession} />
+                <SessionCover expandable height={240} session={openSession} />
               </div>
 
               <Space size={8} wrap>
@@ -926,7 +938,7 @@ export const SessionsPage: React.FC = () => {
   const mobileOverview = openSession ? (
     <S.MobileSectionStack>
       <MobileCard compact>
-        <SessionCover height={220} session={openSession} />
+        <SessionCover expandable height={220} session={openSession} />
       </MobileCard>
 
       <MobileCard compact title="Summary">
