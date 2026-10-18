@@ -52,6 +52,9 @@ jobs:
       - name: Theme isolation
         run: node scripts/check-theme-isolation.mjs --strict
 
+      - name: Theme contrast (WCAG, per theme)
+        run: node scripts/check-theme-contrast.mjs --strict
+
       - name: Azure login
         uses: azure/login@v2
         with:
