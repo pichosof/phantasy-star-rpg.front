@@ -17,7 +17,16 @@ import {
   Typography,
   message,
 } from 'antd';
-import { CopyOutlined, DeleteOutlined, ReloadOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+  ReloadOutlined,
+  SaveOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
+import { Popover } from 'antd';
+import { LOCAL_DESC } from '@app/generators/data/local-desc';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { NpcApi } from '@app/api/npc.api';
@@ -301,6 +310,62 @@ const NpcTab: React.FC = () => {
 
 // ── Shop ──
 
+type ItemInfo = Record<string, { d: string; s: string }>;
+let infoCache: Promise<ItemInfo> | null = null;
+const loadInfo = () =>
+  (infoCache ??= fetch('/data/sf-item-info.json')
+    .then((r) => (r.ok ? (r.json() as Promise<ItemInfo>) : ({} as ItemInfo)))
+    .catch(() => ({}) as ItemInfo));
+
+const aonSearch = (name: string) => `https://www.aonsrd.com/Search.aspx?Query=${encodeURIComponent(name)}`;
+
+/** ⓘ: what the item is and does (AoN summary for Starfinder items, campaign text for Algol goods). */
+const ItemInfoButton: React.FC<{ line: ShopLineView }> = ({ line }) => {
+  const [info, setInfo] = React.useState<{ d: string; s: string } | null | undefined>(undefined);
+  const local = line.source === 'Algol' ? LOCAL_DESC[line.name] : undefined;
+  const content =
+    line.source === 'Algol' ? (
+      <Typography.Paragraph style={{ margin: 0 }}>
+        {local ?? line.note ?? 'Local good of Algol.'}
+        {local && line.note ? (
+          <>
+            <br />
+            <Typography.Text type="secondary">{line.note}</Typography.Text>
+          </>
+        ) : null}
+      </Typography.Paragraph>
+    ) : info === undefined ? (
+      <Typography.Text type="secondary">Loading…</Typography.Text>
+    ) : (
+      <Space orientation="vertical" size={4}>
+        {info?.s && (
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            {info.s}
+          </Typography.Text>
+        )}
+        <Typography.Paragraph style={{ margin: 0 }}>{info?.d || 'No description available.'}</Typography.Paragraph>
+        <Typography.Link href={aonSearch(line.name)} rel="noopener noreferrer" target="_blank" style={{ fontSize: 12 }}>
+          Full rules on Archives of Nethys
+        </Typography.Link>
+      </Space>
+    );
+  return (
+    <Popover
+      content={<div style={{ maxWidth: 360 }}>{content}</div>}
+      onOpenChange={(open) => {
+        if (open && line.source !== 'Algol' && info === undefined)
+          void loadInfo().then((all) => setInfo(all[line.name] ?? null));
+      }}
+      title={line.name}
+      trigger="click"
+    >
+      <Button aria-label={`What is ${line.name}?`} icon={<InfoCircleOutlined />} size="small" type="text" />
+    </Popover>
+  );
+};
+
+type ShopLineView = GeneratedShop['lines'][number];
+
 let itemsCache: Promise<SfItem[]> | null = null;
 const loadItems = () =>
   (itemsCache ??= fetch('/data/sf-items.json')
@@ -412,7 +477,12 @@ const ShopTab: React.FC = () => {
               {
                 title: 'Item',
                 dataIndex: 'name',
-                render: (n: string, l) => (l.note ? <Tooltip title={l.note}>{n} *</Tooltip> : n),
+                render: (n: string, l: ShopLineView) => (
+                  <Space size={2}>
+                    <ItemInfoButton line={l} />
+                    <span>{n}</span>
+                  </Space>
+                ),
               },
               { title: 'Details', dataIndex: 'detail' },
               {
