@@ -82,6 +82,7 @@ import { dividerMd, flexCenterFull, m0, spaceBetween, textMd, textSm, textXs, w1
 import * as S from './LibraryPage.styles';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 import { READER_MODES } from '@app/styles/domain-palette';
+import { PDF_STANDARD_FONTS_URL, PDF_WORKER_URL } from '@app/config/pdf';
 
 const CATEGORIES = ['rulebook', 'supplement', 'reference', 'adventure', 'other'];
 
@@ -136,9 +137,6 @@ const PPT_MIMES = new Set([
 ]);
 
 // ── Per-format viewers ─────────────────────────────────────────────────────────
-
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
 
 const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
   const layoutPlugin = defaultLayoutPlugin();

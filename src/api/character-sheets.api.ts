@@ -94,6 +94,10 @@ export interface GurpsSheetData {
 // ── Starfinder data shape ──────────────────────────────────────────────────────
 
 export interface SfSkill {
+  /** Specialisation shown next to the skill, e.g. the Profession name. */
+  name?: string;
+  /** Ability used by the skill when it varies (Profession: cha, int or wis). */
+  ability?: 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
   ranks?: number;
   classBonus?: boolean;
   miscMod?: number;

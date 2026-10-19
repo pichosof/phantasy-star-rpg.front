@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { Divider, Input, InputNumber, Space, Switch, Typography } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Divider, Input, InputNumber, Modal, Space, Switch, Typography, message } from 'antd';
+import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Collapse as AdmMobileCollapse,
@@ -10,7 +10,7 @@ import {
   Switch as AdmMobileSwitch,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
-import { AddOutline, DeleteOutline } from 'antd-mobile-icons';
+import { AddOutline, DeleteOutline, UploadOutline } from 'antd-mobile-icons';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { Collapse } from '@app/components/common/Collapse/Collapse';
 import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
@@ -19,51 +19,13 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import type { StarfinderSheetData, SfWeapon, SfEquipmentItem } from '@app/api/character-sheets.api';
 import { w100, textSm, dividerMd } from '@app/styles/styleUtils';
 import * as S from './StarfinderSheetForm.styles';
+import { importHephaistosFile } from '@app/utils/hephaistos-import';
 import { SHEET_STAT_COLORS } from '@app/styles/domain-palette';
+import { abilityMod, calcStarfinder, skillBreakdown } from '@app/utils/starfinder-calc';
 
 // ── Calculations ──────────────────────────────────────────────────────────────
 
-export function abilityMod(score: number) {
-  return Math.floor((score - 10) / 2);
-}
-
-export function calcStarfinder(d: StarfinderSheetData) {
-  const str = d.str ?? 10,
-    dex = d.dex ?? 10,
-    con = d.con ?? 10;
-  const intScore = d.int ?? 10,
-    wis = d.wis ?? 10,
-    cha = d.cha ?? 10;
-  const mods = {
-    str: abilityMod(str),
-    dex: abilityMod(dex),
-    con: abilityMod(con),
-    int: abilityMod(intScore),
-    wis: abilityMod(wis),
-    cha: abilityMod(cha),
-  };
-
-  const effectiveDex = d.armorMaxDex !== undefined ? Math.min(mods.dex, d.armorMaxDex) : mods.dex;
-  const eac = 10 + (d.armorBonus ?? 0) + effectiveDex + (d.armorMiscMod ?? 0);
-  const kac = 10 + (d.armorKacBonus ?? 0) + effectiveDex + (d.armorMiscMod ?? 0);
-  const acvsm = 8 + kac;
-
-  const initiative = mods.dex + (d.initiativeMisc ?? 0);
-  const fort = (d.fortBase ?? 0) + mods.con + (d.fortMisc ?? 0);
-  const ref = (d.refBase ?? 0) + mods.dex + (d.refMisc ?? 0);
-  const will = (d.willBase ?? 0) + mods.wis + (d.willMisc ?? 0);
-
-  const bab = d.bab ?? 0;
-  const melee = bab + mods.str + (d.meleeMisc ?? 0);
-  const ranged = bab + mods.dex + (d.rangedMisc ?? 0);
-  const thrown = bab + mods.str + (d.thrownMisc ?? 0);
-
-  const carryUnenc = Math.floor(str / 2);
-  const carryEnc = carryUnenc + 1;
-  const carryOver = carryUnenc + 6;
-
-  return { mods, eac, kac, acvsm, initiative, fort, ref, will, melee, ranged, thrown, carryUnenc, carryEnc, carryOver };
-}
+export { abilityMod, calcStarfinder };
 
 // ── SF Skills list ─────────────────────────────────────────────────────────────
 
@@ -275,9 +237,51 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
     set({ skills: { ...skills, [key]: { ...skills[key], ...patch } } });
   }
 
+  /** "Profession (1)" → "Profession (Krupp Breeder)" when the sheet names it. */
+  const skillLabel = (key: string, label: string) => {
+    const name = skills[key]?.name;
+    return name ? `${label.replace(/\s*\(\d\)$/, '')} (${name})` : label;
+  };
+
+  const importRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    let imported: Awaited<ReturnType<typeof importHephaistosFile>>;
+    try {
+      imported = await importHephaistosFile(file);
+    } catch (err) {
+      message.error((err as Error).message);
+      return;
+    }
+    Modal.confirm({
+      title: 'Import Hephaistos sheet',
+      content: `${imported.name ? `Import "${imported.name}"? ` : ''}This will replace all current sheet data.`,
+      okText: 'Import',
+      cancelText: 'Cancel',
+      onOk: () => {
+        onChange(imported.data);
+        if (imported.warnings.length > 0) imported.warnings.forEach((w) => message.warning(w));
+        else message.success('Sheet imported from Hephaistos.');
+      },
+    });
+  }
+
+  const importInput = (
+    <input accept=".pdf,application/pdf" hidden onChange={handleImport} ref={importRef} type="file" />
+  );
+
   if (mobileOnly) {
     return (
       <S.MobileStack>
+        <MobileCard compact>
+          {importInput}
+          <AdmMobileButton block fill="outline" onClick={() => importRef.current?.click()}>
+            <UploadOutline fontSize={17} /> Import Hephaistos (.pdf)
+          </AdmMobileButton>
+        </MobileCard>
         <AdmMobileCollapse defaultActiveKey={['identity', 'stats']}>
           <AdmMobileCollapse.Panel key="identity" title="Identity">
             <MobileCard compact>
@@ -534,18 +538,14 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
               <S.MobileList>
                 {SF_SKILLS.map((sk) => {
                   const skill = skills[sk.key] ?? {};
-                  const ranks = skill.ranks ?? 0;
-                  const classBonus = skill.classBonus ? 3 : 0;
-                  const misc = skill.miscMod ?? 0;
-                  const attrMod = calc.mods[sk.attr];
-                  const total = ranks + classBonus + attrMod + misc;
+                  const { ranks, ability, misc, attrMod, total } = skillBreakdown(skill, sk.attr, calc.mods);
 
                   return (
                     <S.MobileListItem key={sk.key}>
                       <S.MobileListHeader>
-                        <span>{sk.label}</span>
+                        <span>{skillLabel(sk.key, sk.label)}</span>
                         <S.MobileListMeta>
-                          {sign(total)} | {sk.attr.toUpperCase()} {sign(attrMod)}
+                          {sign(total)} | {ability.toUpperCase()} {sign(attrMod)}
                         </S.MobileListMeta>
                       </S.MobileListHeader>
                       {sk.trainedOnly && <S.MobileHint>Trained only skill.</S.MobileHint>}
@@ -870,631 +870,644 @@ export const StarfinderSheetForm: React.FC<Props> = ({ data, onChange }) => {
   }
 
   return (
-    <Collapse defaultActiveKey={['identity', 'stats']} style={w100}>
-      {/* Identity */}
-      <Collapse.Panel header="Identity" key="identity">
-        <div style={S.identityGrid}>
-          {(
-            [
-              ['description', 'Description'],
-              ['classLevel', 'Class/Level'],
-              ['race', 'Race'],
-              ['theme', 'Theme'],
-              ['size', 'Size'],
-              ['speedFt', 'Speed (ft)'],
-              ['gender', 'Gender'],
-              ['homeWorld', 'Home World'],
-              ['alignment', 'Alignment'],
-              ['deity', 'Deity'],
-              ['player', 'Player'],
-            ] as const
-          ).map(([k, lbl]) => (
-            <LabelInput key={k} label={lbl}>
-              {k === 'speedFt' ? (
-                <InputNumber style={w100} value={(data as any)[k]} onChange={(v) => set({ [k]: v ?? undefined })} />
-              ) : (
-                <Input value={(data as any)[k] ?? ''} onChange={(e) => set({ [k]: e.target.value })} />
-              )}
-            </LabelInput>
-          ))}
-        </div>
-      </Collapse.Panel>
-
-      {/* Ability Scores */}
-      <Collapse.Panel header="Ability Scores" key="stats">
-        <div style={S.abilitiesGrid}>
-          {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((attr) => {
-            const base = data[attr] ?? 10;
-            const upgraded = (data as any)[`${attr}Upgraded`] as number | undefined;
-            const score = upgraded ?? base;
-            const mod = abilityMod(score);
-            return (
-              <div key={attr} style={S.abilityCell}>
-                <div style={S.abilityHeader}>{attr.toUpperCase()}</div>
-                <InputNumber style={w100} value={base} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
-                <div style={S.abilityUpgradeLabel}>Upg:</div>
-                <InputNumber
-                  style={w100}
-                  value={upgraded}
-                  placeholder="—"
-                  onChange={(v) => set({ [`${attr}Upgraded`]: v ?? undefined } as any)}
-                />
-                <div style={S.abilityModValue}>{sign(mod)}</div>
-              </div>
-            );
-          })}
-        </div>
-      </Collapse.Panel>
-
-      {/* Combat stats */}
-      <Collapse.Panel header="Combat" key="combat">
-        <Space wrap size={8} style={S.combatStatsRow}>
-          <CalcBox label="Initiative" value={sign(calc.initiative)} color={SHEET_STAT_COLORS.initiative} />
-          <CalcBox label="EAC" value={calc.eac} color={SHEET_STAT_COLORS.eac} />
-          <CalcBox label="KAC" value={calc.kac} color={SHEET_STAT_COLORS.kac} />
-          <CalcBox label="AC vs CM" value={calc.acvsm} color={SHEET_STAT_COLORS.acVsCm} />
-        </Space>
-        <div style={S.combatGrid}>
-          <LabelInput label="Armor Bonus (EAC)">
-            <InputNumber style={w100} value={data.armorBonus ?? 0} onChange={(v) => set({ armorBonus: v ?? 0 })} />
-          </LabelInput>
-          <LabelInput label="Armor Bonus (KAC)">
-            <InputNumber
-              style={w100}
-              value={data.armorKacBonus ?? 0}
-              onChange={(v) => set({ armorKacBonus: v ?? 0 })}
-            />
-          </LabelInput>
-          <LabelInput label="Max DEX (armor)">
-            <InputNumber
-              style={w100}
-              value={data.armorMaxDex}
-              placeholder="∞"
-              onChange={(v) => set({ armorMaxDex: v ?? undefined })}
-            />
-          </LabelInput>
-          <LabelInput label="Misc Armor Mod">
-            <InputNumber style={w100} value={data.armorMiscMod ?? 0} onChange={(v) => set({ armorMiscMod: v ?? 0 })} />
-          </LabelInput>
-          <LabelInput label="Misc Initiative">
-            <InputNumber
-              style={w100}
-              value={data.initiativeMisc ?? 0}
-              onChange={(v) => set({ initiativeMisc: v ?? 0 })}
-            />
-          </LabelInput>
-          <LabelInput label="DR">
-            <Input value={data.dr ?? ''} onChange={(e) => set({ dr: e.target.value })} />
-          </LabelInput>
-          <LabelInput label="Resistances">
-            <Input value={data.resistances ?? ''} onChange={(e) => set({ resistances: e.target.value })} />
-          </LabelInput>
-        </div>
-        <Divider style={S.sectionDivider} />
-        <Typography.Text strong style={textSm}>
-          Saving Throws
-        </Typography.Text>
-        <div style={S.savesGrid}>
-          {(
-            [
-              ['fort', 'Fortitude', 'con', calc.fort],
-              ['ref', 'Reflex', 'dex', calc.ref],
-              ['will', 'Will', 'wis', calc.will],
-            ] as const
-          ).map(([k, lbl, attr, total]) => (
-            <div key={k} style={S.saveCard}>
-              <div style={S.saveTitle}>
-                {lbl} = {sign(total)}
-              </div>
-              <Space orientation="vertical" size={4} style={w100}>
-                <InputNumber
-                  style={w100}
-                  size="small"
-                  placeholder="Base save"
-                  value={(data as any)[`${k}Base`] ?? 0}
-                  onChange={(v) => set({ [`${k}Base`]: v ?? 0 } as any)}
-                />
-                <div style={S.saveHelper}>
-                  {attr.toUpperCase()} mod: {sign(calc.mods[attr as 'con' | 'dex' | 'wis'])}
-                </div>
-                <InputNumber
-                  style={w100}
-                  size="small"
-                  placeholder="Misc"
-                  value={(data as any)[`${k}Misc`] ?? 0}
-                  onChange={(v) => set({ [`${k}Misc`]: v ?? 0 } as any)}
-                />
-              </Space>
-            </div>
-          ))}
-        </div>
-        <Divider style={S.sectionDivider} />
-        <Typography.Text strong style={textSm}>
-          Attack Bonus
-        </Typography.Text>
-        <div style={S.attacksGrid}>
-          <LabelInput label={`BAB`}>
-            <InputNumber style={w100} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
-          </LabelInput>
-          <CalcBox
-            label={`Melee (${sign(calc.mods.str)} STR)`}
-            value={sign(calc.melee)}
-            color={SHEET_STAT_COLORS.melee}
-          />
-          <CalcBox
-            label={`Ranged (${sign(calc.mods.dex)} DEX)`}
-            value={sign(calc.ranged)}
-            color={SHEET_STAT_COLORS.ranged}
-          />
-          <CalcBox
-            label={`Thrown (${sign(calc.mods.str)} STR)`}
-            value={sign(calc.thrown)}
-            color={SHEET_STAT_COLORS.thrown}
-          />
-          <LabelInput label="Misc Melee">
-            <InputNumber style={w100} value={data.meleeMisc ?? 0} onChange={(v) => set({ meleeMisc: v ?? 0 })} />
-          </LabelInput>
-          <LabelInput label="Misc Ranged">
-            <InputNumber style={w100} value={data.rangedMisc ?? 0} onChange={(v) => set({ rangedMisc: v ?? 0 })} />
-          </LabelInput>
-          <LabelInput label="Misc Thrown">
-            <InputNumber style={w100} value={data.thrownMisc ?? 0} onChange={(v) => set({ thrownMisc: v ?? 0 })} />
-          </LabelInput>
-        </div>
-      </Collapse.Panel>
-
-      {/* HP */}
-      <Collapse.Panel header="Hit Points" key="hp">
-        <div style={S.hpGrid}>
-          {(
-            [
-              ['Stamina', 'staminaTotal', 'staminaCurrent', SHEET_STAT_COLORS.stamina],
-              ['Hit Points', 'hpTotal', 'hpCurrent', SHEET_STAT_COLORS.hp],
-              ['Resolve', 'resolveTotal', 'resolveCurrent', SHEET_STAT_COLORS.resolve],
-            ] as const
-          ).map(([lbl, tk, ck, color]) => (
-            <div key={tk} style={S.hpCard(color)}>
-              <div style={S.hpCardTitle(color)}>{lbl}</div>
-              <Space orientation="vertical" size={4} style={w100}>
-                <InputNumber
-                  style={w100}
-                  placeholder="Total"
-                  value={(data as any)[tk]}
-                  onChange={(v) => set({ [tk]: v ?? undefined } as any)}
-                />
-                <InputNumber
-                  style={w100}
-                  placeholder="Current"
-                  value={(data as any)[ck]}
-                  onChange={(v) => set({ [ck]: v ?? undefined } as any)}
-                />
-              </Space>
-            </div>
-          ))}
-        </div>
-      </Collapse.Panel>
-
-      {/* Skills */}
-      <Collapse.Panel header="Skills" key="skills">
-        <div style={S.skillsHeaderGrid}>
-          <div />
-          <div style={S.skillsHeaderCols}>
-            <span>Ranks</span>
-            <span>Class (+3)</span>
-            <span>Misc</span>
-            <span>Total</span>
-          </div>
-        </div>
-        {SF_SKILLS.map((sk) => {
-          const s = skills[sk.key] ?? {};
-          const ranks = s.ranks ?? 0;
-          const classBonus = s.classBonus ? 3 : 0;
-          const misc = s.miscMod ?? 0;
-          const attrMod = calc.mods[sk.attr];
-          const total = ranks + classBonus + attrMod + misc;
-          return (
-            <div key={sk.key} style={S.skillRow}>
-              <div style={S.skillName}>
-                {sk.trainedOnly && (
-                  <span style={S.trainedOnlyMark}>
-                    <AppIcon name="star" size={12} />{' '}
-                  </span>
+    <div>
+      <div style={{ marginBottom: 12 }}>
+        {importInput}
+        <Button icon={<UploadOutlined />} onClick={() => importRef.current?.click()} size="small">
+          Import Hephaistos (.pdf)
+        </Button>
+      </div>
+      <Collapse defaultActiveKey={['identity', 'stats']} style={w100}>
+        {/* Identity */}
+        <Collapse.Panel header="Identity" key="identity">
+          <div style={S.identityGrid}>
+            {(
+              [
+                ['description', 'Description'],
+                ['classLevel', 'Class/Level'],
+                ['race', 'Race'],
+                ['theme', 'Theme'],
+                ['size', 'Size'],
+                ['speedFt', 'Speed (ft)'],
+                ['gender', 'Gender'],
+                ['homeWorld', 'Home World'],
+                ['alignment', 'Alignment'],
+                ['deity', 'Deity'],
+                ['player', 'Player'],
+              ] as const
+            ).map(([k, lbl]) => (
+              <LabelInput key={k} label={lbl}>
+                {k === 'speedFt' ? (
+                  <InputNumber style={w100} value={(data as any)[k]} onChange={(v) => set({ [k]: v ?? undefined })} />
+                ) : (
+                  <Input value={(data as any)[k] ?? ''} onChange={(e) => set({ [k]: e.target.value })} />
                 )}
-                {sk.label}
-                <span style={S.skillAttr}>
-                  ({sk.attr.toUpperCase()} {sign(attrMod)})
-                </span>
-              </div>
-              <div style={S.skillInputsGrid}>
-                <InputNumber size="small" min={0} value={ranks} onChange={(v) => setSkill(sk.key, { ranks: v ?? 0 })} />
-                <Switch
-                  size="small"
-                  checked={!!s.classBonus}
-                  onChange={(v) => setSkill(sk.key, { classBonus: v })}
-                  checkedChildren="Class"
-                  unCheckedChildren="—"
-                />
-                <InputNumber size="small" value={misc} onChange={(v) => setSkill(sk.key, { miscMod: v ?? 0 })} />
-                <span style={S.skillTotal}>{sign(total)}</span>
-              </div>
-            </div>
-          );
-        })}
-        <Divider style={dividerMd} />
-        <Space size={12}>
-          <LabelInput label="Ranks/Level">
-            <InputNumber
-              value={data.skillRanksPerLevel}
-              onChange={(v) => set({ skillRanksPerLevel: v ?? undefined })}
-              style={S.width80}
-            />
-          </LabelInput>
-          <LabelInput label="Armor Check Penalty">
-            <InputNumber
-              value={data.armorCheckPenalty ?? 0}
-              onChange={(v) => set({ armorCheckPenalty: v ?? 0 })}
-              style={S.width80}
-            />
-          </LabelInput>
-        </Space>
-      </Collapse.Panel>
+              </LabelInput>
+            ))}
+          </div>
+        </Collapse.Panel>
 
-      {/* Weapons */}
-      <Collapse.Panel header="Weapons" key="weapons">
-        {weapons.map((w, i) => (
-          <div key={i} style={S.weaponCard}>
-            <Typography.Text strong style={S.weaponCardTitle}>
-              Weapon {i + 1}
-            </Typography.Text>
-            <div style={S.weaponGrid}>
-              {(
-                [
-                  ['name', 'Name'],
-                  ['level', 'Level'],
-                  ['attackBonus', 'Attack Bonus'],
-                  ['damage', 'Damage'],
-                  ['critical', 'Critical'],
-                  ['range', 'Range'],
-                  ['type', 'Type'],
-                  ['ammoUsage', 'Ammo/Use'],
-                  ['special', 'Special'],
-                ] as const
-              ).map(([k, lbl]) => (
-                <LabelInput key={k} label={lbl}>
-                  <Input
-                    size="small"
-                    value={w[k as keyof SfWeapon] ?? ''}
-                    onChange={(e) => {
-                      const next = [...weapons] as SfWeapon[];
-                      next[i] = { ...next[i], [k]: e.target.value };
-                      set({ weapons: next });
-                    }}
+        {/* Ability Scores */}
+        <Collapse.Panel header="Ability Scores" key="stats">
+          <div style={S.abilitiesGrid}>
+            {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as const).map((attr) => {
+              const base = data[attr] ?? 10;
+              const upgraded = (data as any)[`${attr}Upgraded`] as number | undefined;
+              const score = upgraded ?? base;
+              const mod = abilityMod(score);
+              return (
+                <div key={attr} style={S.abilityCell}>
+                  <div style={S.abilityHeader}>{attr.toUpperCase()}</div>
+                  <InputNumber style={w100} value={base} min={1} onChange={(v) => set({ [attr]: v ?? 10 })} />
+                  <div style={S.abilityUpgradeLabel}>Upg:</div>
+                  <InputNumber
+                    style={w100}
+                    value={upgraded}
+                    placeholder="—"
+                    onChange={(v) => set({ [`${attr}Upgraded`]: v ?? undefined } as any)}
                   />
-                </LabelInput>
-              ))}
+                  <div style={S.abilityModValue}>{sign(mod)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </Collapse.Panel>
+
+        {/* Combat stats */}
+        <Collapse.Panel header="Combat" key="combat">
+          <Space wrap size={8} style={S.combatStatsRow}>
+            <CalcBox label="Initiative" value={sign(calc.initiative)} color={SHEET_STAT_COLORS.initiative} />
+            <CalcBox label="EAC" value={calc.eac} color={SHEET_STAT_COLORS.eac} />
+            <CalcBox label="KAC" value={calc.kac} color={SHEET_STAT_COLORS.kac} />
+            <CalcBox label="AC vs CM" value={calc.acvsm} color={SHEET_STAT_COLORS.acVsCm} />
+          </Space>
+          <div style={S.combatGrid}>
+            <LabelInput label="Armor Bonus (EAC)">
+              <InputNumber style={w100} value={data.armorBonus ?? 0} onChange={(v) => set({ armorBonus: v ?? 0 })} />
+            </LabelInput>
+            <LabelInput label="Armor Bonus (KAC)">
+              <InputNumber
+                style={w100}
+                value={data.armorKacBonus ?? 0}
+                onChange={(v) => set({ armorKacBonus: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="Max DEX (armor)">
+              <InputNumber
+                style={w100}
+                value={data.armorMaxDex}
+                placeholder="∞"
+                onChange={(v) => set({ armorMaxDex: v ?? undefined })}
+              />
+            </LabelInput>
+            <LabelInput label="Misc Armor Mod">
+              <InputNumber
+                style={w100}
+                value={data.armorMiscMod ?? 0}
+                onChange={(v) => set({ armorMiscMod: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="Misc Initiative">
+              <InputNumber
+                style={w100}
+                value={data.initiativeMisc ?? 0}
+                onChange={(v) => set({ initiativeMisc: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="DR">
+              <Input value={data.dr ?? ''} onChange={(e) => set({ dr: e.target.value })} />
+            </LabelInput>
+            <LabelInput label="Resistances">
+              <Input value={data.resistances ?? ''} onChange={(e) => set({ resistances: e.target.value })} />
+            </LabelInput>
+          </div>
+          <Divider style={S.sectionDivider} />
+          <Typography.Text strong style={textSm}>
+            Saving Throws
+          </Typography.Text>
+          <div style={S.savesGrid}>
+            {(
+              [
+                ['fort', 'Fortitude', 'con', calc.fort],
+                ['ref', 'Reflex', 'dex', calc.ref],
+                ['will', 'Will', 'wis', calc.will],
+              ] as const
+            ).map(([k, lbl, attr, total]) => (
+              <div key={k} style={S.saveCard}>
+                <div style={S.saveTitle}>
+                  {lbl} = {sign(total)}
+                </div>
+                <Space orientation="vertical" size={4} style={w100}>
+                  <InputNumber
+                    style={w100}
+                    size="small"
+                    placeholder="Base save"
+                    value={(data as any)[`${k}Base`] ?? 0}
+                    onChange={(v) => set({ [`${k}Base`]: v ?? 0 } as any)}
+                  />
+                  <div style={S.saveHelper}>
+                    {attr.toUpperCase()} mod: {sign(calc.mods[attr as 'con' | 'dex' | 'wis'])}
+                  </div>
+                  <InputNumber
+                    style={w100}
+                    size="small"
+                    placeholder="Misc"
+                    value={(data as any)[`${k}Misc`] ?? 0}
+                    onChange={(v) => set({ [`${k}Misc`]: v ?? 0 } as any)}
+                  />
+                </Space>
+              </div>
+            ))}
+          </div>
+          <Divider style={S.sectionDivider} />
+          <Typography.Text strong style={textSm}>
+            Attack Bonus
+          </Typography.Text>
+          <div style={S.attacksGrid}>
+            <LabelInput label={`BAB`}>
+              <InputNumber style={w100} value={data.bab ?? 0} onChange={(v) => set({ bab: v ?? 0 })} />
+            </LabelInput>
+            <CalcBox
+              label={`Melee (${sign(calc.mods.str)} STR)`}
+              value={sign(calc.melee)}
+              color={SHEET_STAT_COLORS.melee}
+            />
+            <CalcBox
+              label={`Ranged (${sign(calc.mods.dex)} DEX)`}
+              value={sign(calc.ranged)}
+              color={SHEET_STAT_COLORS.ranged}
+            />
+            <CalcBox
+              label={`Thrown (${sign(calc.mods.str)} STR)`}
+              value={sign(calc.thrown)}
+              color={SHEET_STAT_COLORS.thrown}
+            />
+            <LabelInput label="Misc Melee">
+              <InputNumber style={w100} value={data.meleeMisc ?? 0} onChange={(v) => set({ meleeMisc: v ?? 0 })} />
+            </LabelInput>
+            <LabelInput label="Misc Ranged">
+              <InputNumber style={w100} value={data.rangedMisc ?? 0} onChange={(v) => set({ rangedMisc: v ?? 0 })} />
+            </LabelInput>
+            <LabelInput label="Misc Thrown">
+              <InputNumber style={w100} value={data.thrownMisc ?? 0} onChange={(v) => set({ thrownMisc: v ?? 0 })} />
+            </LabelInput>
+          </div>
+        </Collapse.Panel>
+
+        {/* HP */}
+        <Collapse.Panel header="Hit Points" key="hp">
+          <div style={S.hpGrid}>
+            {(
+              [
+                ['Stamina', 'staminaTotal', 'staminaCurrent', SHEET_STAT_COLORS.stamina],
+                ['Hit Points', 'hpTotal', 'hpCurrent', SHEET_STAT_COLORS.hp],
+                ['Resolve', 'resolveTotal', 'resolveCurrent', SHEET_STAT_COLORS.resolve],
+              ] as const
+            ).map(([lbl, tk, ck, color]) => (
+              <div key={tk} style={S.hpCard(color)}>
+                <div style={S.hpCardTitle(color)}>{lbl}</div>
+                <Space orientation="vertical" size={4} style={w100}>
+                  <InputNumber
+                    style={w100}
+                    placeholder="Total"
+                    value={(data as any)[tk]}
+                    onChange={(v) => set({ [tk]: v ?? undefined } as any)}
+                  />
+                  <InputNumber
+                    style={w100}
+                    placeholder="Current"
+                    value={(data as any)[ck]}
+                    onChange={(v) => set({ [ck]: v ?? undefined } as any)}
+                  />
+                </Space>
+              </div>
+            ))}
+          </div>
+        </Collapse.Panel>
+
+        {/* Skills */}
+        <Collapse.Panel header="Skills" key="skills">
+          <div style={S.skillsHeaderGrid}>
+            <div />
+            <div style={S.skillsHeaderCols}>
+              <span>Ranks</span>
+              <span>Class (+3)</span>
+              <span>Misc</span>
+              <span>Total</span>
             </div>
           </div>
-        ))}
-      </Collapse.Panel>
-
-      {/* Armor equipment */}
-      <Collapse.Panel header="Equipped Armor" key="armor">
-        <div style={S.armorGrid}>
-          <LabelInput label="Model">
-            <Input value={data.armorModel ?? ''} onChange={(e) => set({ armorModel: e.target.value })} />
-          </LabelInput>
-          <LabelInput label="Level">
-            <InputNumber style={w100} value={data.armorLevel} onChange={(v) => set({ armorLevel: v ?? undefined })} />
-          </LabelInput>
-          <LabelInput label="EAC Bonus">
-            <InputNumber
-              style={w100}
-              value={data.armorEacBonus ?? 0}
-              onChange={(v) => set({ armorEacBonus: v ?? 0 })}
-            />
-          </LabelInput>
-          <LabelInput label="KAC Bonus">
-            <InputNumber
-              style={w100}
-              value={data.armorKacBonusEq ?? 0}
-              onChange={(v) => set({ armorKacBonusEq: v ?? 0 })}
-            />
-          </LabelInput>
-          <LabelInput label="Max DEX">
-            <InputNumber
-              style={w100}
-              value={data.armorEquipMaxDex}
-              onChange={(v) => set({ armorEquipMaxDex: v ?? undefined })}
-            />
-          </LabelInput>
-          <LabelInput label="Bulk">
-            <Input value={data.armorBulk ?? ''} onChange={(e) => set({ armorBulk: e.target.value })} />
-          </LabelInput>
-          <LabelInput label="Armor Pen.">
-            <InputNumber
-              style={w100}
-              value={data.armorAcPenalty ?? 0}
-              onChange={(v) => set({ armorAcPenalty: v ?? 0 })}
-            />
-          </LabelInput>
-          <LabelInput label="Speed Adj.">
-            <Input value={data.armorSpeedAdj ?? ''} onChange={(e) => set({ armorSpeedAdj: e.target.value })} />
-          </LabelInput>
-          <LabelInput label="Upgrade Slots">
-            <InputNumber
-              style={w100}
-              value={data.armorUpgradeSlots}
-              onChange={(v) => set({ armorUpgradeSlots: v ?? undefined })}
-            />
-          </LabelInput>
-        </div>
-        <div style={S.topMargin8}>
-          <LabelInput label="Armor Notes">
-            <Input.TextArea
-              value={data.armorNotes ?? ''}
-              onChange={(e) => set({ armorNotes: e.target.value })}
-              rows={2}
-            />
-          </LabelInput>
-        </div>
-      </Collapse.Panel>
-
-      {/* Abilities */}
-      <Collapse.Panel header={`Class Abilities (${abilities.length})`} key="abilities">
-        <div style={S.simpleListGrid}>
-          {abilities.map((ab, i) => (
-            <Input.Group compact key={i} style={S.compactGroup}>
-              <Input
-                value={ab}
-                onChange={(e) => {
-                  const n = [...abilities];
-                  n[i] = e.target.value;
-                  set({ abilities: n });
-                }}
-              />
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => set({ abilities: abilities.filter((_, j) => j !== i) })}
-              />
-            </Input.Group>
-          ))}
-          <Button size="small" icon={<PlusOutlined />} onClick={() => set({ abilities: [...abilities, ''] })}>
-            Add ability
-          </Button>
-        </div>
-      </Collapse.Panel>
-
-      {/* Feats */}
-      <Collapse.Panel header={`Feats (${feats.length})`} key="feats">
-        <div style={S.simpleListGrid}>
-          {feats.map((f, i) => (
-            <Input.Group compact key={i} style={S.compactGroup}>
-              <Input
-                value={f}
-                onChange={(e) => {
-                  const n = [...feats];
-                  n[i] = e.target.value;
-                  set({ feats: n });
-                }}
-              />
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => set({ feats: feats.filter((_, j) => j !== i) })}
-              />
-            </Input.Group>
-          ))}
-          <Button size="small" icon={<PlusOutlined />} onClick={() => set({ feats: [...feats, ''] })}>
-            Add feat
-          </Button>
-        </div>
-      </Collapse.Panel>
-
-      {/* Spells */}
-      <Collapse.Panel header="Spells" key="spells">
-        <LabelInput label="Total spells known">
-          <InputNumber
-            value={data.spellsKnownTotal}
-            onChange={(v) => set({ spellsKnownTotal: v ?? undefined })}
-            style={S.width100}
-          />
-        </LabelInput>
-        <Divider style={S.spellsDivider} />
-        <div style={S.spellsLevelsGrid}>
-          {['1st', '2nd', '3rd', '4th', '5th', '6th'].map((lvl) => {
-            const s = spellSlots[lvl] ?? {};
+          {SF_SKILLS.map((sk) => {
+            const s = skills[sk.key] ?? {};
+            const { ranks, ability, misc, attrMod, total } = skillBreakdown(s, sk.attr, calc.mods);
             return (
-              <div key={lvl} style={S.spellLevelRow}>
-                <Typography.Text strong style={S.spellLevelLabel}>
-                  {lvl}
-                </Typography.Text>
-                <LabelInput label="Known">
+              <div key={sk.key} style={S.skillRow}>
+                <div style={S.skillName}>
+                  {sk.trainedOnly && (
+                    <span style={S.trainedOnlyMark}>
+                      <AppIcon name="star" size={12} />{' '}
+                    </span>
+                  )}
+                  {skillLabel(sk.key, sk.label)}
+                  <span style={S.skillAttr}>
+                    ({ability.toUpperCase()} {sign(attrMod)})
+                  </span>
+                </div>
+                <div style={S.skillInputsGrid}>
                   <InputNumber
                     size="small"
-                    style={w100}
-                    value={s.spellsKnown}
-                    onChange={(v) =>
-                      set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsKnown: v ?? undefined } } })
-                    }
+                    min={0}
+                    value={ranks}
+                    onChange={(v) => setSkill(sk.key, { ranks: v ?? 0 })}
                   />
-                </LabelInput>
-                <LabelInput label="Per day">
-                  <InputNumber
+                  <Switch
                     size="small"
-                    style={w100}
-                    value={s.spellsPerDay}
-                    onChange={(v) =>
-                      set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsPerDay: v ?? undefined } } })
-                    }
+                    checked={!!s.classBonus}
+                    onChange={(v) => setSkill(sk.key, { classBonus: v })}
+                    checkedChildren="Class"
+                    unCheckedChildren="—"
                   />
-                </LabelInput>
-                <LabelInput label="Used">
-                  <InputNumber
-                    size="small"
-                    style={w100}
-                    value={s.spellSlotsUsed}
-                    onChange={(v) =>
-                      set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellSlotsUsed: v ?? undefined } } })
-                    }
-                  />
-                </LabelInput>
+                  <InputNumber size="small" value={misc} onChange={(v) => setSkill(sk.key, { miscMod: v ?? 0 })} />
+                  <span style={S.skillTotal}>{sign(total)}</span>
+                </div>
               </div>
             );
           })}
-        </div>
-        <Divider style={S.spellsDivider} />
-        <Typography.Text type="secondary" style={textSm}>
-          Known spells list
-        </Typography.Text>
-        <div style={S.spellsListGrid}>
-          {spellsList.map((sp, i) => (
-            <Input.Group compact key={i} style={S.compactGroup}>
-              <Input
-                value={sp}
-                onChange={(e) => {
-                  const n = [...spellsList];
-                  n[i] = e.target.value;
-                  set({ spellsList: n });
-                }}
+          <Divider style={dividerMd} />
+          <Space size={12}>
+            <LabelInput label="Ranks/Level">
+              <InputNumber
+                value={data.skillRanksPerLevel}
+                onChange={(v) => set({ skillRanksPerLevel: v ?? undefined })}
+                style={S.width80}
               />
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => set({ spellsList: spellsList.filter((_, j) => j !== i) })}
+            </LabelInput>
+            <LabelInput label="Armor Check Penalty">
+              <InputNumber
+                value={data.armorCheckPenalty ?? 0}
+                onChange={(v) => set({ armorCheckPenalty: v ?? 0 })}
+                style={S.width80}
               />
-            </Input.Group>
-          ))}
-          <Button size="small" icon={<PlusOutlined />} onClick={() => set({ spellsList: [...spellsList, ''] })}>
-            Add spell
-          </Button>
-        </div>
-      </Collapse.Panel>
+            </LabelInput>
+          </Space>
+        </Collapse.Panel>
 
-      {/* Equipment */}
-      <Collapse.Panel header={`Equipment (${equipment.length})`} key="equipment">
-        <div style={S.simpleListGrid}>
-          {equipment.map((eq, i) => (
-            <Space wrap key={i} size={4}>
+        {/* Weapons */}
+        <Collapse.Panel header="Weapons" key="weapons">
+          {weapons.map((w, i) => (
+            <div key={i} style={S.weaponCard}>
+              <Typography.Text strong style={S.weaponCardTitle}>
+                Weapon {i + 1}
+              </Typography.Text>
+              <div style={S.weaponGrid}>
+                {(
+                  [
+                    ['name', 'Name'],
+                    ['level', 'Level'],
+                    ['attackBonus', 'Attack Bonus'],
+                    ['damage', 'Damage'],
+                    ['critical', 'Critical'],
+                    ['range', 'Range'],
+                    ['type', 'Type'],
+                    ['ammoUsage', 'Ammo/Use'],
+                    ['special', 'Special'],
+                  ] as const
+                ).map(([k, lbl]) => (
+                  <LabelInput key={k} label={lbl}>
+                    <Input
+                      size="small"
+                      value={w[k as keyof SfWeapon] ?? ''}
+                      onChange={(e) => {
+                        const next = [...weapons] as SfWeapon[];
+                        next[i] = { ...next[i], [k]: e.target.value };
+                        set({ weapons: next });
+                      }}
+                    />
+                  </LabelInput>
+                ))}
+              </div>
+            </div>
+          ))}
+        </Collapse.Panel>
+
+        {/* Armor equipment */}
+        <Collapse.Panel header="Equipped Armor" key="armor">
+          <div style={S.armorGrid}>
+            <LabelInput label="Model">
+              <Input value={data.armorModel ?? ''} onChange={(e) => set({ armorModel: e.target.value })} />
+            </LabelInput>
+            <LabelInput label="Level">
+              <InputNumber style={w100} value={data.armorLevel} onChange={(v) => set({ armorLevel: v ?? undefined })} />
+            </LabelInput>
+            <LabelInput label="EAC Bonus">
+              <InputNumber
+                style={w100}
+                value={data.armorEacBonus ?? 0}
+                onChange={(v) => set({ armorEacBonus: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="KAC Bonus">
+              <InputNumber
+                style={w100}
+                value={data.armorKacBonusEq ?? 0}
+                onChange={(v) => set({ armorKacBonusEq: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="Max DEX">
+              <InputNumber
+                style={w100}
+                value={data.armorEquipMaxDex}
+                onChange={(v) => set({ armorEquipMaxDex: v ?? undefined })}
+              />
+            </LabelInput>
+            <LabelInput label="Bulk">
+              <Input value={data.armorBulk ?? ''} onChange={(e) => set({ armorBulk: e.target.value })} />
+            </LabelInput>
+            <LabelInput label="Armor Pen.">
+              <InputNumber
+                style={w100}
+                value={data.armorAcPenalty ?? 0}
+                onChange={(v) => set({ armorAcPenalty: v ?? 0 })}
+              />
+            </LabelInput>
+            <LabelInput label="Speed Adj.">
+              <Input value={data.armorSpeedAdj ?? ''} onChange={(e) => set({ armorSpeedAdj: e.target.value })} />
+            </LabelInput>
+            <LabelInput label="Upgrade Slots">
+              <InputNumber
+                style={w100}
+                value={data.armorUpgradeSlots}
+                onChange={(v) => set({ armorUpgradeSlots: v ?? undefined })}
+              />
+            </LabelInput>
+          </div>
+          <div style={S.topMargin8}>
+            <LabelInput label="Armor Notes">
+              <Input.TextArea
+                value={data.armorNotes ?? ''}
+                onChange={(e) => set({ armorNotes: e.target.value })}
+                rows={2}
+              />
+            </LabelInput>
+          </div>
+        </Collapse.Panel>
+
+        {/* Abilities */}
+        <Collapse.Panel header={`Class Abilities (${abilities.length})`} key="abilities">
+          <div style={S.simpleListGrid}>
+            {abilities.map((ab, i) => (
+              <Input.Group compact key={i} style={S.compactGroup}>
+                <Input
+                  value={ab}
+                  onChange={(e) => {
+                    const n = [...abilities];
+                    n[i] = e.target.value;
+                    set({ abilities: n });
+                  }}
+                />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => set({ abilities: abilities.filter((_, j) => j !== i) })}
+                />
+              </Input.Group>
+            ))}
+            <Button size="small" icon={<PlusOutlined />} onClick={() => set({ abilities: [...abilities, ''] })}>
+              Add ability
+            </Button>
+          </div>
+        </Collapse.Panel>
+
+        {/* Feats */}
+        <Collapse.Panel header={`Feats (${feats.length})`} key="feats">
+          <div style={S.simpleListGrid}>
+            {feats.map((f, i) => (
+              <Input.Group compact key={i} style={S.compactGroup}>
+                <Input
+                  value={f}
+                  onChange={(e) => {
+                    const n = [...feats];
+                    n[i] = e.target.value;
+                    set({ feats: n });
+                  }}
+                />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => set({ feats: feats.filter((_, j) => j !== i) })}
+                />
+              </Input.Group>
+            ))}
+            <Button size="small" icon={<PlusOutlined />} onClick={() => set({ feats: [...feats, ''] })}>
+              Add feat
+            </Button>
+          </div>
+        </Collapse.Panel>
+
+        {/* Spells */}
+        <Collapse.Panel header="Spells" key="spells">
+          <LabelInput label="Total spells known">
+            <InputNumber
+              value={data.spellsKnownTotal}
+              onChange={(v) => set({ spellsKnownTotal: v ?? undefined })}
+              style={S.width100}
+            />
+          </LabelInput>
+          <Divider style={S.spellsDivider} />
+          <div style={S.spellsLevelsGrid}>
+            {['1st', '2nd', '3rd', '4th', '5th', '6th'].map((lvl) => {
+              const s = spellSlots[lvl] ?? {};
+              return (
+                <div key={lvl} style={S.spellLevelRow}>
+                  <Typography.Text strong style={S.spellLevelLabel}>
+                    {lvl}
+                  </Typography.Text>
+                  <LabelInput label="Known">
+                    <InputNumber
+                      size="small"
+                      style={w100}
+                      value={s.spellsKnown}
+                      onChange={(v) =>
+                        set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsKnown: v ?? undefined } } })
+                      }
+                    />
+                  </LabelInput>
+                  <LabelInput label="Per day">
+                    <InputNumber
+                      size="small"
+                      style={w100}
+                      value={s.spellsPerDay}
+                      onChange={(v) =>
+                        set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellsPerDay: v ?? undefined } } })
+                      }
+                    />
+                  </LabelInput>
+                  <LabelInput label="Used">
+                    <InputNumber
+                      size="small"
+                      style={w100}
+                      value={s.spellSlotsUsed}
+                      onChange={(v) =>
+                        set({ spellSlots: { ...spellSlots, [lvl]: { ...s, spellSlotsUsed: v ?? undefined } } })
+                      }
+                    />
+                  </LabelInput>
+                </div>
+              );
+            })}
+          </div>
+          <Divider style={S.spellsDivider} />
+          <Typography.Text type="secondary" style={textSm}>
+            Known spells list
+          </Typography.Text>
+          <div style={S.spellsListGrid}>
+            {spellsList.map((sp, i) => (
+              <Input.Group compact key={i} style={S.compactGroup}>
+                <Input
+                  value={sp}
+                  onChange={(e) => {
+                    const n = [...spellsList];
+                    n[i] = e.target.value;
+                    set({ spellsList: n });
+                  }}
+                />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => set({ spellsList: spellsList.filter((_, j) => j !== i) })}
+                />
+              </Input.Group>
+            ))}
+            <Button size="small" icon={<PlusOutlined />} onClick={() => set({ spellsList: [...spellsList, ''] })}>
+              Add spell
+            </Button>
+          </div>
+        </Collapse.Panel>
+
+        {/* Equipment */}
+        <Collapse.Panel header={`Equipment (${equipment.length})`} key="equipment">
+          <div style={S.simpleListGrid}>
+            {equipment.map((eq, i) => (
+              <Space wrap key={i} size={4}>
+                <Input
+                  placeholder="Name"
+                  value={eq.name ?? ''}
+                  onChange={(e) => {
+                    const n = [...equipment];
+                    n[i] = { ...n[i], name: e.target.value };
+                    set({ equipment: n });
+                  }}
+                  style={S.width200}
+                />
+                <Input
+                  placeholder="Level"
+                  value={eq.level ?? ''}
+                  onChange={(e) => {
+                    const n = [...equipment];
+                    n[i] = { ...n[i], level: e.target.value };
+                    set({ equipment: n });
+                  }}
+                  style={S.width70}
+                />
+                <Input
+                  placeholder="Bulk"
+                  value={eq.bulk ?? ''}
+                  onChange={(e) => {
+                    const n = [...equipment];
+                    n[i] = { ...n[i], bulk: e.target.value };
+                    set({ equipment: n });
+                  }}
+                  style={S.width70}
+                />
+                <Button
+                  danger
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  onClick={() => set({ equipment: equipment.filter((_, j) => j !== i) })}
+                />
+              </Space>
+            ))}
+            <Button size="small" icon={<PlusOutlined />} onClick={() => set({ equipment: [...equipment, {}] })}>
+              Add item
+            </Button>
+          </div>
+          <Divider style={S.spellsDivider} />
+          <Space wrap size={12}>
+            <LabelInput label="Credits">
+              <InputNumber value={data.credits} onChange={(v) => set({ credits: v ?? undefined })} />
+            </LabelInput>
+            <LabelInput label="Other wealth">
               <Input
-                placeholder="Name"
-                value={eq.name ?? ''}
-                onChange={(e) => {
-                  const n = [...equipment];
-                  n[i] = { ...n[i], name: e.target.value };
-                  set({ equipment: n });
-                }}
+                value={data.otherWealth ?? ''}
+                onChange={(e) => set({ otherWealth: e.target.value })}
                 style={S.width200}
               />
-              <Input
-                placeholder="Level"
-                value={eq.level ?? ''}
-                onChange={(e) => {
-                  const n = [...equipment];
-                  n[i] = { ...n[i], level: e.target.value };
-                  set({ equipment: n });
-                }}
-                style={S.width70}
-              />
-              <Input
-                placeholder="Bulk"
-                value={eq.bulk ?? ''}
-                onChange={(e) => {
-                  const n = [...equipment];
-                  n[i] = { ...n[i], bulk: e.target.value };
-                  set({ equipment: n });
-                }}
-                style={S.width70}
-              />
-              <Button
-                danger
-                size="small"
-                icon={<DeleteOutlined />}
-                onClick={() => set({ equipment: equipment.filter((_, j) => j !== i) })}
-              />
-            </Space>
-          ))}
-          <Button size="small" icon={<PlusOutlined />} onClick={() => set({ equipment: [...equipment, {}] })}>
-            Add item
-          </Button>
-        </div>
-        <Divider style={S.spellsDivider} />
-        <Space wrap size={12}>
-          <LabelInput label="Credits">
-            <InputNumber value={data.credits} onChange={(v) => set({ credits: v ?? undefined })} />
-          </LabelInput>
-          <LabelInput label="Other wealth">
-            <Input
-              value={data.otherWealth ?? ''}
-              onChange={(e) => set({ otherWealth: e.target.value })}
-              style={S.width200}
-            />
-          </LabelInput>
-          <div>
-            <Typography.Text type="secondary" style={S.backPacksLabel}>
-              Backpacks
-            </Typography.Text>
-            <Space>
-              <Switch
-                size="small"
-                checked={!!data.backpacksCommercial}
-                onChange={(v) => set({ backpacksCommercial: v })}
-              />{' '}
-              <span style={textSm}>Commercial</span>
-              <Switch
-                size="small"
-                checked={!!data.backpacksIndustrial}
-                onChange={(v) => set({ backpacksIndustrial: v })}
-              />{' '}
-              <span style={textSm}>Industrial</span>
-            </Space>
+            </LabelInput>
+            <div>
+              <Typography.Text type="secondary" style={S.backPacksLabel}>
+                Backpacks
+              </Typography.Text>
+              <Space>
+                <Switch
+                  size="small"
+                  checked={!!data.backpacksCommercial}
+                  onChange={(v) => set({ backpacksCommercial: v })}
+                />{' '}
+                <span style={textSm}>Commercial</span>
+                <Switch
+                  size="small"
+                  checked={!!data.backpacksIndustrial}
+                  onChange={(v) => set({ backpacksIndustrial: v })}
+                />{' '}
+                <span style={textSm}>Industrial</span>
+              </Space>
+            </div>
+          </Space>
+          <Divider style={S.carryDivider} />
+          <Space wrap size={12}>
+            <CalcBox label="Unencumbered (Bulk)" value={calcStarfinder(data).carryUnenc} />
+            <CalcBox label="Encumbered (Bulk)" value={calcStarfinder(data).carryEnc} />
+            <CalcBox label="Overloaded (Bulk)" value={calcStarfinder(data).carryOver} />
+          </Space>
+        </Collapse.Panel>
+
+        {/* Languages */}
+        <Collapse.Panel header={`Languages (${languages.length})`} key="languages">
+          <div style={S.simpleListGrid}>
+            {languages.map((l, i) => (
+              <Input.Group compact key={i} style={S.compactGroup}>
+                <Input
+                  value={l}
+                  onChange={(e) => {
+                    const n = [...languages];
+                    n[i] = e.target.value;
+                    set({ languages: n });
+                  }}
+                />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => set({ languages: languages.filter((_, j) => j !== i) })}
+                />
+              </Input.Group>
+            ))}
+            <Button size="small" icon={<PlusOutlined />} onClick={() => set({ languages: [...languages, ''] })}>
+              Add language
+            </Button>
           </div>
-        </Space>
-        <Divider style={S.carryDivider} />
-        <Space wrap size={12}>
-          <CalcBox label="Unencumbered (Bulk)" value={calcStarfinder(data).carryUnenc} />
-          <CalcBox label="Encumbered (Bulk)" value={calcStarfinder(data).carryEnc} />
-          <CalcBox label="Overloaded (Bulk)" value={calcStarfinder(data).carryOver} />
-        </Space>
-      </Collapse.Panel>
+        </Collapse.Panel>
 
-      {/* Languages */}
-      <Collapse.Panel header={`Languages (${languages.length})`} key="languages">
-        <div style={S.simpleListGrid}>
-          {languages.map((l, i) => (
-            <Input.Group compact key={i} style={S.compactGroup}>
-              <Input
-                value={l}
-                onChange={(e) => {
-                  const n = [...languages];
-                  n[i] = e.target.value;
-                  set({ languages: n });
-                }}
-              />
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => set({ languages: languages.filter((_, j) => j !== i) })}
-              />
-            </Input.Group>
-          ))}
-          <Button size="small" icon={<PlusOutlined />} onClick={() => set({ languages: [...languages, ''] })}>
-            Add language
-          </Button>
-        </div>
-      </Collapse.Panel>
-
-      {/* XP */}
-      <Collapse.Panel header="Experience" key="xp">
-        <Space size={16}>
-          <LabelInput label="XP Earned">
-            <InputNumber value={data.xpEarned} onChange={(v) => set({ xpEarned: v ?? undefined })} />
-          </LabelInput>
-          <LabelInput label="Next Level">
-            <InputNumber value={data.xpNextLevel} onChange={(v) => set({ xpNextLevel: v ?? undefined })} />
-          </LabelInput>
-        </Space>
-      </Collapse.Panel>
-    </Collapse>
+        {/* XP */}
+        <Collapse.Panel header="Experience" key="xp">
+          <Space size={16}>
+            <LabelInput label="XP Earned">
+              <InputNumber value={data.xpEarned} onChange={(v) => set({ xpEarned: v ?? undefined })} />
+            </LabelInput>
+            <LabelInput label="Next Level">
+              <InputNumber value={data.xpNextLevel} onChange={(v) => set({ xpNextLevel: v ?? undefined })} />
+            </LabelInput>
+          </Space>
+        </Collapse.Panel>
+      </Collapse>
+    </div>
   );
 };

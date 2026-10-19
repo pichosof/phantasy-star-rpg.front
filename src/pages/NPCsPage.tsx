@@ -81,6 +81,7 @@ import * as S from './NPCsPage.styles';
 import EntityDrawer, { visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
 import EntityCard, { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
 import { NPC_ROLE_FALLBACK, NPC_ROLE_META } from '@app/styles/domain-palette';
+import { PDF_STANDARD_FONTS_URL, PDF_WORKER_URL } from '@app/config/pdf';
 
 type NpcViewMode = 'public' | 'admin';
 type VisibilityFilter = 'all' | 'visible' | 'hidden';
@@ -129,9 +130,6 @@ function isVisible(n: Npc) {
 }
 
 // ── PDF Viewer ────────────────────────────────────────────────────────────────
-
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
 
 const PdfViewer: React.FC<{ url: string }> = ({ url }) => {
   const layoutPlugin = defaultLayoutPlugin();

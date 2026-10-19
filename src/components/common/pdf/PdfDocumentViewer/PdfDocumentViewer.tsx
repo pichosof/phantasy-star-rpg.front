@@ -5,8 +5,9 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import * as S from './PdfDocumentViewer.styles';
 
-export const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-export const PDF_STANDARD_FONTS_URL = `https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/`;
+import { PDF_STANDARD_FONTS_URL, PDF_WORKER_URL } from '@app/config/pdf';
+
+export { PDF_STANDARD_FONTS_URL, PDF_WORKER_URL };
 
 interface PdfDocumentViewerProps {
   url: string;
