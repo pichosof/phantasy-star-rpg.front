@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { PlayerProgressPanel } from '@app/components/rpg/Player/PlayerProgressPanel';
 import React from 'react';
 import { Divider, Empty, message, Modal, Popconfirm, Space, Spin, Switch, Tag, Typography } from 'antd';
 import type { UploadProps } from 'antd';
@@ -1398,6 +1399,11 @@ export const PlayersPage: React.FC = () => {
       status={{ visible: isPlayerVisible(selectedPlayer) }}
       subtitle={`Level ${selectedPlayer.level}`}
       tabs={[
+        {
+          key: 'progress',
+          label: 'Progress',
+          children: <PlayerProgressPanel playerId={Number(selectedPlayer.id)} />,
+        },
         {
           key: 'notes',
           label: 'Notes',

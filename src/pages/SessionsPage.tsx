@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { SessionRewardsPanel } from '@app/components/rpg/Session/SessionRewardsPanel';
 import { SessionDiaryPanel } from '@app/components/rpg/Session/SessionDiaryPanel';
 import React from 'react';
 import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
@@ -824,6 +825,11 @@ export const SessionsPage: React.FC = () => {
         ) : null
       }
       gmTabs={[
+        {
+          key: 'rewards',
+          label: 'Rewards',
+          children: <SessionRewardsPanel sessionId={openSession.id} />,
+        },
         {
           key: 'diary',
           label: 'Diary',
