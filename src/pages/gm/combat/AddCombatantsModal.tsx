@@ -16,7 +16,7 @@ import {
   Typography,
 } from 'antd';
 import type { Combatant, CombatantKind } from '@app/api/encounters.api';
-import { BestiaryApi } from '@app/api/bestiary.api';
+import { BestiaryApi, type StatBlock, listStatBlocks } from '@app/api/bestiary.api';
 import { PlayersApi } from '@app/api/rpg.api';
 import { type CharacterSheet, type StarfinderSheetData, listCharacterSheets } from '@app/api/character-sheets.api';
 import { thumbUrl } from '@app/api/images.api';
@@ -92,6 +92,40 @@ const fromStats = (v: StatsForm) => ({
   initBonus: v.initBonus ?? 0,
 });
 
+const signed = (n?: number | null) => (n === null || n === undefined ? '—' : `${n >= 0 ? '+' : ''}${n}`);
+
+/** Compact text kept on the combatant card: attacks and special abilities. */
+function statBlockNotes(b: StatBlock): string {
+  const attacks = b.attacks
+    .map(
+      (a) =>
+        `${a.name}${a.bonus !== null && a.bonus !== undefined ? ` ${signed(a.bonus)}` : ''}${a.damage ? ` (${a.damage})` : ''}`,
+    )
+    .join('; ');
+  const abilities = b.abilities.map((a) => a.name).join(', ');
+  return [`CR ${b.cr}`, attacks, abilities].filter(Boolean).join(' · ').slice(0, 2000);
+}
+
+const StatBlockPreview: React.FC<{ block: StatBlock }> = ({ block: b }) => (
+  <Typography.Paragraph style={{ margin: 0 }} type="secondary">
+    <b>
+      CR {b.cr}
+      {b.xp ? ` · XP ${b.xp}` : ''}
+    </b>
+    {b.size ? ` · ${b.size}` : ''}
+    {b.type ? ` · ${b.type}` : ''} · Fort {signed(b.fort)} · Ref {signed(b.ref)} · Will {signed(b.will)}
+    {b.speed ? ` · ${b.speed}` : ''}
+    <br />
+    {b.attacks.map((a) => `${a.name} ${signed(a.bonus)}${a.damage ? ` (${a.damage})` : ''}`).join(' · ')}
+    {b.abilities.length > 0 && (
+      <>
+        <br />
+        {b.abilities.map((a) => a.name).join(' · ')}
+      </>
+    )}
+  </Typography.Paragraph>
+);
+
 export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
   open,
   onClose,
@@ -107,6 +141,8 @@ export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
   const [monsters, setMonsters] = React.useState<Monster[]>([]);
   const [picked, setPicked] = React.useState<number[]>([]);
   const [monsterId, setMonsterId] = React.useState<number | null>(null);
+  const [statBlocks, setStatBlocks] = React.useState<Map<number, StatBlock[]>>(new Map());
+  const [stage, setStage] = React.useState<number | 'last' | 'manual'>('manual');
   const [count, setCount] = React.useState(1);
   const [kind, setKind] = React.useState<CombatantKind>('npc');
   const [monsterForm] = Form.useForm<StatsForm>();
@@ -117,8 +153,14 @@ export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
     setPicked([]);
     setError(null);
     setLoading(true);
-    Promise.all([listCharacterSheets('starfinder'), BestiaryApi.list(), PlayersApi.list().catch(() => [])])
-      .then(([s, m, players]) => {
+    Promise.all([
+      listCharacterSheets('starfinder'),
+      BestiaryApi.list(),
+      PlayersApi.list().catch(() => []),
+      listStatBlocks().catch(() => []),
+    ])
+      .then(([s, m, players, blocks]) => {
+        setStatBlocks(new Map(blocks.map((b) => [b.monsterId, b.blocks])));
         setSheets(s);
         setMonsters([...m].sort((a, b) => a.name.localeCompare(b.name)));
         const map = new Map<string, string>();
@@ -129,12 +171,34 @@ export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
       .finally(() => setLoading(false));
   }, [open]);
 
-  // Prefill the monster stats with what was used last time.
+  const stages = monsterId !== null ? (statBlocks.get(monsterId) ?? []) : [];
+  const block = typeof stage === 'number' ? stages[stage] : undefined;
+
+  // Default stage when a creature is picked: its book stat block, else the last fight's stats.
   React.useEffect(() => {
     if (monsterId === null) return;
-    const last = monsterHistory.get(monsterId);
-    monsterForm.setFieldsValue(last ? { ...last } : DEFAULT_STATS);
-  }, [monsterId, monsterHistory, monsterForm]);
+    if ((statBlocks.get(monsterId) ?? []).length) setStage(0);
+    else setStage(monsterHistory.has(monsterId) ? 'last' : 'manual');
+  }, [monsterId, statBlocks, monsterHistory]);
+
+  // Fill the stat fields from the chosen stage.
+  React.useEffect(() => {
+    if (monsterId === null) return;
+    if (block) {
+      monsterForm.setFieldsValue({
+        hp: block.hp,
+        sp: block.sp ?? 0,
+        rp: block.rp ?? 0,
+        eac: block.eac,
+        kac: block.kac,
+        initBonus: block.initiative,
+      });
+    } else if (stage === 'last' && monsterHistory.has(monsterId)) {
+      monsterForm.setFieldsValue({ ...monsterHistory.get(monsterId) });
+    } else {
+      monsterForm.setFieldsValue(DEFAULT_STATS);
+    }
+  }, [monsterId, stage, block, monsterHistory, monsterForm]);
 
   const portraitOf = (name: string) => portraits.get(name.trim().toLowerCase()) ?? null;
 
@@ -148,12 +212,14 @@ export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
       if (!monster) return setError('Pick a creature.');
       const stats = await monsterForm.validateFields();
       const n = Math.max(1, Math.min(20, count));
+      const base = block && stages.length > 1 ? `${monster.name} (${block.label})` : monster.name;
       const list = Array.from({ length: n }, (_, i) =>
         newCombatant({
           kind: 'monster',
-          name: n > 1 ? `${monster.name} ${i + 1}` : monster.name,
+          name: n > 1 ? `${base} ${i + 1}` : base,
           refId: Number(monster.id),
           imageUrl: monster.imageUrl ?? null,
+          notes: block ? statBlockNotes(block) : null,
           ...fromStats(stats),
         }),
       );
@@ -229,11 +295,27 @@ export const AddCombatantsModal: React.FC<AddCombatantsModalProps> = ({
       </Space>
       {monsterId !== null && (
         <>
-          <Typography.Text type="secondary">
-            {monsterHistory.has(monsterId)
-              ? 'Stats from the last fight against this creature.'
-              : 'The bestiary has no combat stats: fill them in once, they are remembered next time.'}
-          </Typography.Text>
+          <Select
+            onChange={(v) => setStage(v)}
+            options={[
+              ...stages.map((b, i) => ({ value: i, label: `${b.label} · CR ${b.cr} · ${b.hp} HP` })),
+              ...(monsterHistory.has(monsterId)
+                ? [{ value: 'last' as const, label: 'Stats from the last fight' }]
+                : []),
+              { value: 'manual' as const, label: 'Enter manually' },
+            ]}
+            style={{ minWidth: 280 }}
+            value={stage}
+          />
+          {block ? (
+            <StatBlockPreview block={block} />
+          ) : (
+            <Typography.Text type="secondary">
+              {stage === 'last'
+                ? 'Stats from the last fight against this creature.'
+                : 'No book stat block for this creature: fill them in once, they are remembered next time.'}
+            </Typography.Text>
+          )}
           <Form form={monsterForm} initialValues={DEFAULT_STATS} layout="vertical">
             <StatsFields />
           </Form>

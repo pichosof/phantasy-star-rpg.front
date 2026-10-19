@@ -36,3 +36,36 @@ export const BestiaryApi = {
     await http.delete(`/api/bestiary/${id}`);
   },
 };
+
+/** Starfinder stat block of one stage/variant of a bestiary entry (GM only). */
+export interface StatBlock {
+  label: string;
+  cr: string;
+  xp?: number | null;
+  size?: string | null;
+  type?: string | null;
+  initiative: number;
+  senses?: string | null;
+  hp: number;
+  sp?: number | null;
+  rp?: number | null;
+  eac: number;
+  kac: number;
+  fort?: number | null;
+  ref?: number | null;
+  will?: number | null;
+  speed?: string | null;
+  attacks: { name: string; bonus?: number | null; damage?: string | null }[];
+  abilities: { name: string; text: string }[];
+  skills?: string | null;
+  mods?: Record<string, number | null> | null;
+  source?: string | null;
+}
+
+export async function listStatBlocks(): Promise<{ monsterId: number; blocks: StatBlock[] }[]> {
+  return (await http.get('/api/gm/bestiary/stat-blocks')).data;
+}
+
+export async function setStatBlocks(monsterId: number, blocks: StatBlock[]): Promise<void> {
+  await http.put(`/api/gm/bestiary/${monsterId}/stat-blocks`, { blocks });
+}
