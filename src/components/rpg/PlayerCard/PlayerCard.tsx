@@ -9,7 +9,6 @@ import { useResponsive } from '@app/hooks/useResponsive';
 import { resolveApiUrl, fetchBlobUrl } from '@app/api/http.api';
 import type { Player } from '@app/types/rpg';
 import * as S from './PlayerCard.styles';
-import RichText from '@app/components/common/RichText/RichText';
 import EntityCard from '@app/components/common/EntityCard/EntityCard';
 import { Tag } from 'antd';
 
@@ -17,14 +16,13 @@ type PlayerCardProps = {
   player: Player;
   gm?: boolean;
   onToggleVisible?: (player: Player) => void;
-  /** Replaces the profile modal (phones open the player sheet). */
+  /** Opens the player drawer (profile, notes, sheet, GM). */
   onOpen?: () => void;
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onToggleVisible, onOpen }) => {
   const { mobileOnly } = useResponsive();
 
-  const [openProfile, setOpenProfile] = React.useState(false);
   const [openPdf, setOpenPdf] = React.useState(false);
   const [sheetBlobUrl, setSheetBlobUrl] = React.useState<string | null>(null);
   const [sheetLoading, setSheetLoading] = React.useState(false);
@@ -68,7 +66,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         coverTags={<Tag color="geekblue">LV {player.level}</Tag>}
         icon="player"
         label="Player"
-        onClick={onOpen ?? (() => setOpenProfile(true))}
+        onClick={onOpen}
         openText="Profile"
         seed={player.id}
         status={gm ? { visible: player.visible ?? true } : undefined}
@@ -76,61 +74,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, gm = false, onTo
         summaryFallback="No background added yet."
         title={player.name}
       />
-
-      <Modal
-        open={openProfile}
-        onCancel={() => setOpenProfile(false)}
-        footer={null}
-        width={mobileOnly ? '96vw' : '760px'}
-        styles={{ body: { padding: 0 } }}
-        destroyOnHidden
-        title={`Profile - ${player.name}`}
-      >
-        <S.ProfileContent>
-          <S.ProfileHero $height={mobileOnly ? 220 : 260}>
-            <S.ProfileHeroImage src={imageUrl} alt={player.imageAlt || player.name} />
-            <S.ProfileHeroOverlay />
-            <S.ProfileHeroMeta>
-              <S.ProfileHeroName $mobile={mobileOnly}>{player.name}</S.ProfileHeroName>
-              <S.ProfileHeroLevel>LV {player.level}</S.ProfileHeroLevel>
-            </S.ProfileHeroMeta>
-          </S.ProfileHero>
-
-          <S.ProfileSections>
-            {player.background && (
-              <section>
-                <S.SectionTitle>Story</S.SectionTitle>
-                <S.BackgroundParagraphs>
-                  <RichText>{player.background}</RichText>
-                </S.BackgroundParagraphs>
-              </section>
-            )}
-
-            <S.DetailsSection>
-              <S.SectionTitle>Details</S.SectionTitle>
-              <S.DetailsList>
-                <div>
-                  <b>Name:</b> {player.name}
-                </div>
-                <div>
-                  <b>Level:</b> {player.level}
-                </div>
-                {player.imageAlt && (
-                  <div>
-                    <b>Image (alt):</b> {player.imageAlt}
-                  </div>
-                )}
-                <div>
-                  <b>Created:</b> {new Date(player.createdAt).toLocaleString()}
-                </div>
-                <div>
-                  <b>Updated:</b> {new Date(player.updatedAt).toLocaleString()}
-                </div>
-              </S.DetailsList>
-            </S.DetailsSection>
-          </S.ProfileSections>
-        </S.ProfileContent>
-      </Modal>
 
       <Modal
         open={openPdf}

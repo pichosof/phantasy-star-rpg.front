@@ -178,13 +178,6 @@ export const MobileDetailValue = styled.dd`
   overflow-wrap: anywhere;
 `;
 
-export const MobileVisibilityRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-`;
-
 export const MobileInlineLabel = styled.span`
   color: var(--text-muted-color);
   font-size: 13px;

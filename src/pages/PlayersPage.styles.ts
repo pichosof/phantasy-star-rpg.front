@@ -120,11 +120,6 @@ export const emptyCardState: CSSProperties = {
   alignItems: 'center',
 };
 
-export const PlayerStack = styled.div`
-  display: grid;
-  gap: 8px;
-`;
-
 export const editNameInput: CSSProperties = {
   minWidth: 180,
 };
@@ -162,16 +157,6 @@ export const MobileMetaTags = styled.div`
   flex-wrap: wrap;
 `;
 
-export const MobileImageFallback = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted-color);
-  background: radial-gradient(circle at top, var(--ink-soft), transparent 55%), var(--secondary-background-color);
-`;
-
 export const MobilePlayerPreview = styled.p`
   margin: 0;
   color: var(--text-muted-color);
@@ -186,13 +171,6 @@ export const MobilePlayerActionRow = styled.div`
   grid-template-columns: repeat(2, minmax(0, 1fr));
 `;
 
-export const MobileVisibilityRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-`;
-
 export const MobileInlineLabel = styled.span`
   color: var(--text-muted-color);
   font-size: 13px;
@@ -202,52 +180,6 @@ export const MobileInlineLabel = styled.span`
 export const MobileSectionStack = styled.div`
   display: grid;
   gap: 12px;
-`;
-
-export const MobileHeroFrame = styled.div`
-  overflow: hidden;
-  border-radius: 14px;
-  background: var(--secondary-background-color);
-  aspect-ratio: 4 / 3;
-`;
-
-export const MobileHeroImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  display: block;
-`;
-
-export const MobileHeroContent = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const MobileHeroTitleRow = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-`;
-
-export const MobileHeroName = styled.div`
-  color: var(--text-main-color);
-  font-size: 24px;
-  line-height: 1.05;
-  font-weight: 800;
-`;
-
-export const MobileBadgeRow = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-export const MobileStoryText = styled.div`
-  color: var(--text-main-color);
-  line-height: 1.7;
-  white-space: pre-wrap;
 `;
 
 export const MobileDetailGrid = styled.dl`

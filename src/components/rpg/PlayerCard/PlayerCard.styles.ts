@@ -58,78 +58,9 @@ export const PdfFrameWrapper = styled.div`
   max-height: 80vh;
 `;
 
-export const BackgroundParagraphs = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
-export const ProfileContent = styled.div`
-  display: grid;
-`;
-
-export const ProfileHero = styled.div<{ $height: number }>`
-  position: relative;
-  height: ${({ $height }) => `${$height}px`};
-`;
-
-export const ProfileHeroImage = styled.img`
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-`;
-
-export const ProfileHeroOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0) 100%);
-`;
-
-export const ProfileHeroMeta = styled.div`
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  color: #fff;
-`;
-
-export const ProfileHeroName = styled.div<{ $mobile: boolean }>`
-  font-weight: 800;
-  font-size: ${({ $mobile }) => ($mobile ? '18px' : '22px')};
-`;
-
-export const ProfileHeroLevel = styled.div`
-  font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.45);
-  font-size: 12px;
-`;
-
-export const ProfileSections = styled.div`
-  padding: 16px;
-  display: grid;
-  gap: 16px;
-`;
-
 export const SectionTitle = styled.div`
   font-weight: 700;
   margin-bottom: 8px;
-`;
-
-export const DetailsSection = styled.section`
-  display: grid;
-  gap: 8px;
-`;
-
-export const DetailsList = styled.div`
-  display: grid;
-  gap: 6px;
 `;
 
 export const LoadingShell = styled.div`

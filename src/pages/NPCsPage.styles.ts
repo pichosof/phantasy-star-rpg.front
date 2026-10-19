@@ -116,14 +116,6 @@ export const MobileActionGrid = styled.div`
   }
 `;
 
-export const MobileVisibilityRow = styled.div`
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-`;
-
 export const MobileInlineLabel = styled.span`
   color: var(--text-main-color);
   font-size: 14px;

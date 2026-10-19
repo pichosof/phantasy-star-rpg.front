@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Divider, Empty, message, Modal, Popconfirm, Space, Spin, Switch, Tag, Typography } from 'antd';
 import type { UploadProps } from 'antd';
 import {
@@ -17,7 +16,6 @@ import {
   Input as AdmMobileInput,
   SpinLoading,
   Stepper as AdmMobileStepper,
-  Switch as AdmMobileSwitch,
   Tag as AdmMobileTag,
   TextArea as AdmMobileTextArea,
 } from 'antd-mobile';
@@ -43,7 +41,7 @@ import {
 } from '@app/api/playerNotes.api';
 import { PlayersApi } from '@app/api/rpg.api';
 import { Card } from '@app/components/common/Card/Card';
-import { Collapse } from '@app/components/common/Collapse/Collapse';
+
 import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import {
   MobileActionBar,
@@ -58,7 +56,6 @@ import {
   MobileSearchBar,
   MobileSectionHeader,
   MobileSelector,
-  MobileTabs,
 } from '@app/components/common/mobile';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { PdfDocumentViewer } from '@app/components/common/pdf/PdfDocumentViewer/PdfDocumentViewer';
@@ -78,6 +75,8 @@ import { apiErrorMessage } from '../utils/api-error';
 import * as S from './PlayersPage.styles';
 import RichText, { stripMarkdown } from '@app/components/common/RichText/RichText';
 import { EntityCardGrid } from '@app/components/common/EntityCard/EntityCard';
+import EntityDrawer, { visibilityControl } from '@app/components/common/EntityDrawer/EntityDrawer';
+import { FilePdfOutlined } from '@ant-design/icons';
 
 type AltMap = Record<number, string>;
 type EditMap = Record<number, { name: string; level: number; background: string }>;
@@ -90,14 +89,32 @@ function isPlayerVisible(player: Player) {
   return (player.visible ?? true) === true;
 }
 
-function formatDateLabel(value?: string | null) {
-  if (!value) return 'Unknown';
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-
-  return parsed.toLocaleDateString();
-}
+/** PDF sheet inside the drawer: fetched with the GM token as a blob URL. */
+const PlayerSheetViewer: React.FC<{ sheetUrl: string }> = ({ sheetUrl }) => {
+  const [url, setUrl] = React.useState<string | null>(null);
+  const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    let created: string | null = null;
+    fetchBlobUrl(sheetUrl)
+      .then((u) => {
+        created = u;
+        if (alive) setUrl(u);
+      })
+      .catch(() => alive && setFailed(true));
+    return () => {
+      alive = false;
+      if (created) URL.revokeObjectURL(created);
+    };
+  }, [sheetUrl]);
+  if (failed) return <Typography.Text type="secondary">Failed to load the sheet.</Typography.Text>;
+  if (!url) return <Spin />;
+  return (
+    <div style={{ height: '70vh' }}>
+      <PdfDocumentViewer url={url} />
+    </div>
+  );
+};
 
 interface PlayerNotesSectionProps {
   playerId: number;
@@ -1162,78 +1179,6 @@ export const PlayersPage: React.FC = () => {
     />
   );
 
-  const mobilePlayerOverview = selectedPlayer ? (
-    <S.MobileSectionStack>
-      <MobileCard compact>
-        <S.MobileHeroContent>
-          <S.MobileHeroFrame>
-            {selectedPlayer.imageUrl ? (
-              <ExpandableImage alt={selectedPlayer.imageAlt ?? selectedPlayer.name} src={selectedPlayer.imageUrl}>
-                <S.MobileHeroImage alt={selectedPlayer.imageAlt ?? selectedPlayer.name} src={selectedPlayer.imageUrl} />
-              </ExpandableImage>
-            ) : (
-              <S.MobileImageFallback>
-                <UserOutline fontSize={48} />
-              </S.MobileImageFallback>
-            )}
-          </S.MobileHeroFrame>
-
-          <S.MobileHeroTitleRow>
-            <S.MobileHeroName>{selectedPlayer.name}</S.MobileHeroName>
-          </S.MobileHeroTitleRow>
-
-          <S.MobileBadgeRow>
-            <AdmMobileTag color="primary" round fill="outline">
-              Level {selectedPlayer.level}
-            </AdmMobileTag>
-            {isGM && (
-              <AdmMobileTag color={isPlayerVisible(selectedPlayer) ? 'success' : 'warning'} round fill="outline">
-                {isPlayerVisible(selectedPlayer) ? 'Visible' : 'Hidden'}
-              </AdmMobileTag>
-            )}
-          </S.MobileBadgeRow>
-
-          <S.MobileStoryText>
-            <RichText fallback="No background added yet.">{selectedPlayer.background}</RichText>
-          </S.MobileStoryText>
-        </S.MobileHeroContent>
-      </MobileCard>
-
-      <MobileCard compact title="Details">
-        <S.MobileDetailGrid>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Character ID</S.MobileDetailLabel>
-            <S.MobileDetailValue>#{selectedPlayer.id}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Created</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateLabel(selectedPlayer.createdAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Updated</S.MobileDetailLabel>
-            <S.MobileDetailValue>{formatDateLabel(selectedPlayer.updatedAt)}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-          <S.MobileDetailItem>
-            <S.MobileDetailLabel>Sheet</S.MobileDetailLabel>
-            <S.MobileDetailValue>{selectedPlayer.sheetUrl ? 'Available' : 'Not uploaded yet'}</S.MobileDetailValue>
-          </S.MobileDetailItem>
-        </S.MobileDetailGrid>
-      </MobileCard>
-
-      <MobileCard compact title="Character Sheet">
-        <AdmMobileButton
-          block
-          color="primary"
-          disabled={!selectedPlayer.sheetUrl}
-          fill={selectedPlayer.sheetUrl ? 'solid' : 'outline'}
-          onClick={() => void openPdfPreview(selectedPlayer)}
-        >
-          <FileOutline fontSize={17} /> {selectedPlayer.sheetUrl ? 'Open sheet preview' : 'No PDF uploaded yet'}
-        </AdmMobileButton>
-      </MobileCard>
-    </S.MobileSectionStack>
-  ) : null;
-
   const mobilePlayerGM = selectedPlayer ? (
     <S.MobileGMStack>
       <MobileCard compact title="Profile">
@@ -1262,13 +1207,6 @@ export const PlayersPage: React.FC = () => {
             />
           </MobileForm.Item>
         </MobileForm>
-      </MobileCard>
-
-      <MobileCard compact title="Visibility">
-        <S.MobileVisibilityRow>
-          <S.MobileInlineLabel>Visible to players</S.MobileInlineLabel>
-          <AdmMobileSwitch checked={mobileDraft.visible} onChange={(value) => syncMobileField('visible', value)} />
-        </S.MobileVisibilityRow>
       </MobileCard>
 
       <MobileCard compact title="Media">
@@ -1320,6 +1258,171 @@ export const PlayersPage: React.FC = () => {
         </S.MobileDangerZone>
       </MobileCard>
     </S.MobileGMStack>
+  ) : null;
+
+  const renderPlayerManage = (player: Player) => (
+    <Space orientation="vertical" size={10} style={w100}>
+      {editingSet[player.id] ? (
+        <Space orientation="vertical" size={8} style={w100}>
+          <Space size={8} wrap>
+            <Input
+              onChange={(event) =>
+                setEditById((prev) => ({
+                  ...prev,
+                  [player.id]: { ...prev[player.id], name: event.target.value },
+                }))
+              }
+              placeholder="Name *"
+              style={S.editNameInput}
+              value={editById[player.id]?.name ?? ''}
+            />
+            <Space size={4}>
+              <Typography.Text style={textSm} type="secondary">
+                Level:
+              </Typography.Text>
+              <InputNumber
+                min={1}
+                onChange={(value) =>
+                  setEditById((prev) => ({
+                    ...prev,
+                    [player.id]: { ...prev[player.id], level: Number(value) || 1 },
+                  }))
+                }
+                style={S.levelInput}
+                value={editById[player.id]?.level ?? 1}
+              />
+            </Space>
+          </Space>
+          <TextArea
+            onChange={(event) =>
+              setEditById((prev) => ({
+                ...prev,
+                [player.id]: { ...prev[player.id], background: event.target.value },
+              }))
+            }
+            placeholder="Background"
+            rows={3}
+            value={editById[player.id]?.background ?? ''}
+          />
+          <TagSelect entityId={player.id} entityType="player" />
+          <Space size={6}>
+            <Button onClick={() => void saveEdit(player.id)} size="small" type="primary">
+              Save
+            </Button>
+            <Button onClick={() => cancelEdit(player.id)} size="small">
+              Cancel
+            </Button>
+          </Space>
+        </Space>
+      ) : (
+        <Button onClick={() => startEdit(player)} size="small">
+          Edit name / level / background
+        </Button>
+      )}
+
+      <Divider style={dividerSm} />
+      <S.mediaRow>
+        <Input
+          onChange={(event) => setAlt(player.id, event.target.value)}
+          placeholder="Image alt text"
+          style={S.altInput}
+          value={altById[player.id] ?? ''}
+        />
+        <Upload {...imageProps(player)}>
+          <Button size="small">Upload image</Button>
+        </Upload>
+      </S.mediaRow>
+      <S.mediaRow>
+        <Upload {...sheetProps(player)}>
+          <Button size="small">Upload PDF</Button>
+        </Upload>
+      </S.mediaRow>
+      <Divider style={dividerMd} />
+      <Popconfirm
+        cancelText="Cancel"
+        okButtonProps={{ danger: true }}
+        okText="Delete"
+        onConfirm={() => void deletePlayer(player)}
+        title={`Delete "${player.name}"? This permanently removes the image, sheet, notes and quest links.`}
+      >
+        <Button block danger icon={<DeleteOutlined />} size="small">
+          Delete player
+        </Button>
+      </Popconfirm>
+    </Space>
+  );
+
+  const playerDrawer = selectedPlayer ? (
+    <EntityDrawer
+      controls={[
+        visibilityControl(isPlayerVisible(selectedPlayer), () => void toggleVisible(selectedPlayer), 'characters'),
+      ]}
+      createdAt={selectedPlayer.createdAt}
+      gmTabs={[
+        {
+          key: 'edit',
+          label: <IconLabel icon="edit">Edit</IconLabel>,
+          children: renderPlayerManage(selectedPlayer),
+          mobileChildren: mobilePlayerGM,
+        },
+      ]}
+      gmView={isGM}
+      mobileActiveKey={selectedTab}
+      mobileFooter={
+        selectedPlayer && isGM && selectedTab === 'gm' ? (
+          <MobileActionBar
+            primary={
+              <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveMobilePlayer()}>
+                Save changes
+              </AdmMobileButton>
+            }
+            secondary={
+              <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
+                Reset
+              </AdmMobileButton>
+            }
+            sticky={false}
+          />
+        ) : undefined
+      }
+      onClose={closePlayerSheet}
+      onMobileTabChange={(key) => setSelectedTab(key as PlayerSheetTab)}
+      open={Boolean(selectedPlayer)}
+      overview={{
+        label: 'Profile',
+        image: { src: selectedPlayer.imageUrl, alt: selectedPlayer.imageAlt || selectedPlayer.name },
+        meta: <Tag color="geekblue">Level {selectedPlayer.level}</Tag>,
+        sections: [{ title: 'Story', text: selectedPlayer.background, fallback: 'No background added yet.' }],
+      }}
+      status={{ visible: isPlayerVisible(selectedPlayer) }}
+      subtitle={`Level ${selectedPlayer.level}`}
+      tabs={[
+        {
+          key: 'notes',
+          label: 'Notes',
+          children: <PlayerNotesSection isGM={isGM} playerId={selectedPlayer.id} playerName={selectedPlayer.name} />,
+          mobileChildren: (
+            <PlayerNotesSection isGM={isGM} mobile playerId={selectedPlayer.id} playerName={selectedPlayer.name} />
+          ),
+        },
+        ...(selectedPlayer.sheetUrl
+          ? [
+              {
+                key: 'sheet',
+                label: 'Character Sheet',
+                children: <PlayerSheetViewer sheetUrl={selectedPlayer.sheetUrl} />,
+                mobileChildren: (
+                  <Button block icon={<FilePdfOutlined />} onClick={() => void openPdfPreview(selectedPlayer)}>
+                    Open PDF sheet
+                  </Button>
+                ),
+              },
+            ]
+          : []),
+      ]}
+      title={selectedPlayer.name}
+      updatedAt={selectedPlayer.updatedAt}
+    />
   ) : null;
 
   if (mobileOnly) {
@@ -1430,104 +1533,31 @@ export const PlayersPage: React.FC = () => {
           </MobileFilterSheet>
         )}
 
-        <MobileEntitySheet
-          description={
-            selectedPlayer
-              ? isGM
-                ? 'Overview, notes and GM controls in one mobile sheet.'
-                : 'Overview and campaign notes for this character.'
-              : undefined
-          }
-          extra={
-            selectedPlayer?.sheetUrl ? (
-              <AdmMobileButton fill="none" onClick={() => void openPdfPreview(selectedPlayer)} size="small">
-                <FileOutline fontSize={18} />
-              </AdmMobileButton>
-            ) : null
-          }
-          footer={
-            selectedPlayer && isGM && selectedTab === 'gm' ? (
-              <MobileActionBar
-                primary={
-                  <AdmMobileButton block color="primary" loading={mobileSaving} onClick={() => void saveMobilePlayer()}>
-                    Save changes
-                  </AdmMobileButton>
-                }
-                secondary={
-                  <AdmMobileButton block fill="outline" onClick={resetMobileDraft}>
-                    Reset
-                  </AdmMobileButton>
-                }
-                sticky={false}
-              />
-            ) : undefined
-          }
-          onClose={closePlayerSheet}
-          subtitle={selectedPlayer ? `Level ${selectedPlayer.level}` : undefined}
-          title={selectedPlayer?.name ?? 'Character'}
-          visible={Boolean(selectedPlayer)}
-        >
-          {selectedPlayer && isGM ? (
-            <MobileTabs
-              activeKey={selectedTab}
-              items={[
-                {
-                  key: 'overview',
-                  title: 'Overview',
-                  children: mobilePlayerOverview,
-                },
-                {
-                  key: 'notes',
-                  title: 'Notes',
-                  children: (
-                    <PlayerNotesSection
-                      isGM={isGM}
-                      mobile
-                      playerId={selectedPlayer.id}
-                      playerName={selectedPlayer.name}
-                    />
-                  ),
-                },
-                {
-                  key: 'gm',
-                  title: 'GM',
-                  children: mobilePlayerGM,
-                },
-              ]}
-              onChange={(key) => setSelectedTab(key as PlayerSheetTab)}
-            />
-          ) : selectedPlayer ? (
-            <S.MobileSectionStack>
-              {mobilePlayerOverview}
-              <PlayerNotesSection isGM={isGM} mobile playerId={selectedPlayer.id} playerName={selectedPlayer.name} />
-            </S.MobileSectionStack>
-          ) : null}
-
-          <input
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void handleMobileImageUpload(file);
-              }
-            }}
-            ref={imageInputRef}
-            type="file"
-          />
-          <input
-            accept="application/pdf"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) {
-                void handleMobileSheetUpload(file);
-              }
-            }}
-            ref={sheetInputRef}
-            type="file"
-          />
-        </MobileEntitySheet>
+        {playerDrawer}
+        <input
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void handleMobileImageUpload(file);
+            }
+          }}
+          ref={imageInputRef}
+          type="file"
+        />
+        <input
+          accept="application/pdf"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void handleMobileSheetUpload(file);
+            }
+          }}
+          ref={sheetInputRef}
+          type="file"
+        />
 
         <MobileDialog
           actions={[
@@ -1658,134 +1688,17 @@ export const PlayersPage: React.FC = () => {
       ) : (
         <EntityCardGrid shape="portrait">
           {displayItems.map((player) => (
-            <S.PlayerStack key={player.id}>
-              <PlayerCard player={player} gm={isGM} onToggleVisible={toggleVisible} />
-
-              <Card density="dense">
-                <PlayerNotesSection isGM={isGM} playerId={player.id} playerName={player.name} />
-              </Card>
-
-              {isGM && (
-                <Collapse>
-                  <Collapse.Panel
-                    header={
-                      <Space size={8}>
-                        <span>Manage</span>
-                        <Tag color={isPlayerVisible(player) ? 'green' : 'red'} style={m0}>
-                          {isPlayerVisible(player) ? 'Visible' : 'Hidden'}
-                        </Tag>
-                      </Space>
-                    }
-                    key={`gm-${player.id}`}
-                  >
-                    <Space orientation="vertical" size={10} style={w100}>
-                      <Space style={spaceBetween}>
-                        <Typography.Text style={textMd}>Visible to players</Typography.Text>
-                        <Switch
-                          checked={isPlayerVisible(player)}
-                          checkedChildren={<EyeOutlined />}
-                          onChange={() => void toggleVisible(player)}
-                          size="small"
-                          unCheckedChildren={<EyeInvisibleOutlined />}
-                        />
-                      </Space>
-                      <Divider style={dividerSm} />
-
-                      {editingSet[player.id] ? (
-                        <Space orientation="vertical" size={8} style={w100}>
-                          <Space size={8} wrap>
-                            <Input
-                              onChange={(event) =>
-                                setEditById((prev) => ({
-                                  ...prev,
-                                  [player.id]: { ...prev[player.id], name: event.target.value },
-                                }))
-                              }
-                              placeholder="Name *"
-                              style={S.editNameInput}
-                              value={editById[player.id]?.name ?? ''}
-                            />
-                            <Space size={4}>
-                              <Typography.Text style={textSm} type="secondary">
-                                Level:
-                              </Typography.Text>
-                              <InputNumber
-                                min={1}
-                                onChange={(value) =>
-                                  setEditById((prev) => ({
-                                    ...prev,
-                                    [player.id]: { ...prev[player.id], level: Number(value) || 1 },
-                                  }))
-                                }
-                                style={S.levelInput}
-                                value={editById[player.id]?.level ?? 1}
-                              />
-                            </Space>
-                          </Space>
-                          <TextArea
-                            onChange={(event) =>
-                              setEditById((prev) => ({
-                                ...prev,
-                                [player.id]: { ...prev[player.id], background: event.target.value },
-                              }))
-                            }
-                            placeholder="Background"
-                            rows={3}
-                            value={editById[player.id]?.background ?? ''}
-                          />
-                          <TagSelect entityId={player.id} entityType="player" />
-                          <Space size={6}>
-                            <Button onClick={() => void saveEdit(player.id)} size="small" type="primary">
-                              Save
-                            </Button>
-                            <Button onClick={() => cancelEdit(player.id)} size="small">
-                              Cancel
-                            </Button>
-                          </Space>
-                        </Space>
-                      ) : (
-                        <Button onClick={() => startEdit(player)} size="small">
-                          Edit name / level / background
-                        </Button>
-                      )}
-
-                      <Divider style={dividerSm} />
-                      <S.mediaRow>
-                        <Input
-                          onChange={(event) => setAlt(player.id, event.target.value)}
-                          placeholder="Image alt text"
-                          style={S.altInput}
-                          value={altById[player.id] ?? ''}
-                        />
-                        <Upload {...imageProps(player)}>
-                          <Button size="small">Upload image</Button>
-                        </Upload>
-                      </S.mediaRow>
-                      <S.mediaRow>
-                        <Upload {...sheetProps(player)}>
-                          <Button size="small">Upload PDF</Button>
-                        </Upload>
-                      </S.mediaRow>
-                      <Divider style={dividerMd} />
-                      <Popconfirm
-                        cancelText="Cancel"
-                        okButtonProps={{ danger: true }}
-                        okText="Delete"
-                        onConfirm={() => void deletePlayer(player)}
-                        title={`Delete "${player.name}"? This permanently removes the image, sheet, notes and quest links.`}
-                      >
-                        <Button block danger icon={<DeleteOutlined />} size="small">
-                          Delete player
-                        </Button>
-                      </Popconfirm>
-                    </Space>
-                  </Collapse.Panel>
-                </Collapse>
-              )}
-            </S.PlayerStack>
+            <PlayerCard
+              gm={isGM}
+              key={player.id}
+              onOpen={() => openPlayerSheet(player, 'overview')}
+              onToggleVisible={toggleVisible}
+              player={player}
+            />
           ))}
         </EntityCardGrid>
       )}
+      {playerDrawer}
     </>
   );
 };

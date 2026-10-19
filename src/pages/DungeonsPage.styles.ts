@@ -162,18 +162,6 @@ export const MobileGalleryThumb = styled.img`
   border: 1px solid var(--border-color);
 `;
 
-export const MobileVisibilityRow = styled.div`
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  & + & {
-    margin-top: 10px;
-  }
-`;
-
 export const MobileInlineLabel = styled.span`
   color: var(--text-main-color);
   font-size: 14px;
