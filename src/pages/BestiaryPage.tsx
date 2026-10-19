@@ -1,6 +1,29 @@
+import { StatBlocksEditor } from '@app/components/bestiary/StatBlocksEditor';
 import React from 'react';
-import { Divider, Drawer, Empty, Form, Input, Popconfirm, Space, Switch, Tag, Typography, Upload, message } from 'antd';
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
+import {
+  Divider,
+  Drawer,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Space,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
+  Upload,
+  message,
+} from 'antd';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  PictureOutlined,
+  ThunderboltOutlined,
+} from '@ant-design/icons';
 import {
   Button as AdmMobileButton,
   Input as AdmMobileInput,
@@ -296,6 +319,7 @@ const MonsterAdminDrawer: React.FC<AdminDrawerProps> = ({ open, monster, onClose
 export const BestiaryPage: React.FC = () => {
   const { mobileOnly } = useResponsive();
   const isGM = useGMMode();
+  const [statsFor, setStatsFor] = React.useState<Monster | null>(null);
   const imageInputRef = React.useRef<HTMLInputElement | null>(null);
   const initialViewModeSyncedRef = React.useRef(false);
 
@@ -678,6 +702,17 @@ export const BestiaryPage: React.FC = () => {
           ],
           unavailable: mobileCanReadOpen ? null : 'Information about this creature has not been revealed yet.',
         }}
+        tabs={
+          isGM
+            ? [
+                {
+                  key: 'combat',
+                  label: 'Combat stats',
+                  children: <StatBlocksEditor monsterId={Number(openMonster.id)} />,
+                },
+              ]
+            : []
+        }
         title={openMonster.name}
         controls={
           phone
@@ -1214,9 +1249,17 @@ export const BestiaryPage: React.FC = () => {
             {
               title: 'Actions',
               key: 'actions',
-              width: 90,
+              width: 120,
               render: (_: unknown, m: Monster) => (
                 <Space size={4}>
+                  <Tooltip title="Combat stats">
+                    <Button
+                      aria-label="Combat stats"
+                      icon={<ThunderboltOutlined />}
+                      onClick={() => setStatsFor(m)}
+                      size="small"
+                    />
+                  </Tooltip>
                   <Button
                     size="small"
                     icon={<EditOutlined />}
@@ -1253,6 +1296,16 @@ export const BestiaryPage: React.FC = () => {
       {viewMode === 'gm' && isGM ? (
         <>
           {loading ? <Spinner /> : mobileOnly ? <MonsterCards data={gmItems} mode="gm" /> : DesktopAdminTable}
+          <Modal
+            destroyOnHidden
+            footer={null}
+            onCancel={() => setStatsFor(null)}
+            open={Boolean(statsFor)}
+            title={statsFor ? `${statsFor.name} · Combat stats` : ''}
+            width={760}
+          >
+            {statsFor && <StatBlocksEditor monsterId={Number(statsFor.id)} />}
+          </Modal>
           <MonsterAdminDrawer
             open={adminOpen}
             monster={adminMonster}
