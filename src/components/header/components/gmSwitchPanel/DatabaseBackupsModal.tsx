@@ -104,7 +104,7 @@ export const DatabaseBackupsModal: React.FC<DatabaseBackupsModalProps> = ({ open
         }
         width={560}
       >
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={12} style={{ width: '100%' }}>
           <Space wrap>
             <Button icon={<SaveOutlined />} loading={backingUp} onClick={() => void handleBackupNow()}>
               Back up now
@@ -152,7 +152,7 @@ export const DatabaseBackupsModal: React.FC<DatabaseBackupsModalProps> = ({ open
         open={Boolean(target)}
         title="Restore database?"
       >
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={12} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0 }}>
             Every change made after <b>{targetLabel}</b> will be replaced. A backup of the current database is taken
             first, so this can be undone by restoring it.

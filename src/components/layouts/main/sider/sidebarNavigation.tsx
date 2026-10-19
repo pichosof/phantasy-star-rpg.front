@@ -109,6 +109,7 @@ export const getSidebarNavigation = (isGM = isGMMode()): SidebarNavigationItem[]
         { title: 'Notes', key: 'gm-notes', url: ROUTES.GM_NOTES, icon: <FileTextOutlined /> },
         { title: 'Images', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
         { title: 'Sheets', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
+        { title: 'Combat', key: 'gm-combat', url: ROUTES.GM_COMBAT, icon: <ThunderboltOutlined /> },
       ],
     });
   }

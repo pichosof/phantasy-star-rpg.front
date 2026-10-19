@@ -24,6 +24,7 @@ const DiceRollerPageComponent = React.lazy(() => import('@app/pages/DiceRollerPa
 const GmNotesPageComponent = React.lazy(() => import('@app/pages/gm/GmNotesPage'));
 const GmImagesPageComponent = React.lazy(() => import('@app/pages/gm/GmImagesPage'));
 const GmSheetsPageComponent = React.lazy(() => import('@app/pages/gm/GmSheetsPage'));
+const CombatTrackerPageComponent = React.lazy(() => import('@app/pages/gm/combat/CombatTrackerPage'));
 const LibraryPageComponent = React.lazy(() => import('@app/pages/LibraryPage'));
 const DungeonsPageComponent = React.lazy(() => import('@app/pages/DungeonsPage'));
 const TagsPageComponent = React.lazy(() => import('@app/pages/TagsPage'));
@@ -52,6 +53,7 @@ const DiceRoller = withLoading(DiceRollerPageComponent);
 const GmNotes = withLoading(GmNotesPageComponent);
 const GmImages = withLoading(GmImagesPageComponent);
 const GmSheets = withLoading(GmSheetsPageComponent);
+const CombatTracker = withLoading(CombatTrackerPageComponent);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = <MainLayout />;
@@ -109,6 +111,14 @@ export const AppRouter: React.FC = () => {
             element={
               <RequireGMRoute>
                 <GmSheets />
+              </RequireGMRoute>
+            }
+          />
+          <Route
+            path={ROUTES.GM_COMBAT}
+            element={
+              <RequireGMRoute>
+                <CombatTracker />
               </RequireGMRoute>
             }
           />
