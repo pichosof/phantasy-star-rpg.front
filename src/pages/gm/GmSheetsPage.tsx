@@ -41,23 +41,23 @@ function SheetCard({ sheet, onOpen, onDelete }: { sheet: CharacterSheet; onOpen:
     <S.TitleCard
       density="dense"
       title={
-        <Space size={8}>
-          <S.SheetCardTitle>{sheet.name}</S.SheetCardTitle>
+        <S.SheetCardHeader>
+          <S.SheetCardTitle title={sheet.name}>{sheet.name}</S.SheetCardTitle>
           <Tag color={sheet.type === 'gurps' ? 'gold' : 'blue'}>{sheet.type === 'gurps' ? 'GURPS' : 'Starfinder'}</Tag>
-        </Space>
+        </S.SheetCardHeader>
       }
-      extra={
+    >
+      <S.SheetCardFooter>
+        <Typography.Text type="secondary">
+          Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '-'}
+        </Typography.Text>
         <Space size={4}>
           <Button size="small" onClick={onOpen}>
             Open
           </Button>
-          <Button size="small" danger icon={<DeleteOutlined />} onClick={onDelete} />
+          <Button aria-label="Delete sheet" size="small" danger icon={<DeleteOutlined />} onClick={onDelete} />
         </Space>
-      }
-    >
-      <Typography.Text type="secondary">
-        Updated: {sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleString() : '-'}
-      </Typography.Text>
+      </S.SheetCardFooter>
     </S.TitleCard>
   );
 }

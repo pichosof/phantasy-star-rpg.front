@@ -3,8 +3,27 @@ import { Input, Space, Typography } from 'antd';
 import { Card } from '@app/components/common/Card/Card';
 import { Tabs } from '@app/components/common/Tabs/Tabs';
 
+export const SheetCardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+`;
+
 export const SheetCardTitle = styled.span`
   font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const SheetCardFooter = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 `;
 
 export const TitleCard = styled(Card)`
