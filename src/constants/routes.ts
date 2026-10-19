@@ -19,6 +19,7 @@ export const ROUTES = {
   GM_IMAGES: '/gm/images',
   GM_SHEETS: '/gm/sheets',
   GM_COMBAT: '/gm/combat',
+  GM_GENERATORS: '/gm/generators',
   FORBIDDEN: '/403',
   SERVER_ERROR: '/server-error',
 } as const;

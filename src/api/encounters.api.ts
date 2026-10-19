@@ -78,7 +78,11 @@ export async function getEncounter(id: number): Promise<Encounter> {
   return (await http.get<Encounter>(`/api/gm/encounters/${id}`)).data;
 }
 
-export async function createEncounter(body: { name: string; sessionId?: number | null }): Promise<Encounter> {
+export async function createEncounter(body: {
+  name: string;
+  sessionId?: number | null;
+  state?: EncounterState;
+}): Promise<Encounter> {
   return (await http.post<Encounter>('/api/gm/encounters', body)).data;
 }
 
