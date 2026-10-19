@@ -4,6 +4,7 @@ import { Input } from '@app/components/common/inputs/Input/Input';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { initGMKeyFromStorage, isGMAuthenticated, loginGM, logoutGM } from '@app/api/http.api';
 import { downloadDatabase } from '@app/api/database.api';
+import { DatabaseBackupsModal } from './DatabaseBackupsModal';
 import * as S from './GMSwitchPanel.styles';
 
 interface GMSwitchPanelProps {
@@ -19,6 +20,7 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
   const [retryAfter, setRetryAfter] = React.useState<number | null>(null);
   const [downloading, setDownloading] = React.useState(false);
   const [downloadError, setDownloadError] = React.useState<string | null>(null);
+  const [backupsOpen, setBackupsOpen] = React.useState(false);
   const isSheet = variant === 'sheet';
 
   React.useEffect(() => {
@@ -98,6 +100,9 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
         <MobileButton block fill="outline" onClick={() => void handleDownloadDatabase()} loading={downloading}>
           Download database
         </MobileButton>
+        <MobileButton block fill="outline" onClick={() => setBackupsOpen(true)}>
+          Backups &amp; restore
+        </MobileButton>
         {downloadError && <S.ErrorText>{downloadError}</S.ErrorText>}
         <MobileButton block color="danger" fill="outline" onClick={clearKey}>
           Exit GM mode
@@ -110,6 +115,7 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
           <Button onClick={() => void handleDownloadDatabase()} loading={downloading}>
             Download database
           </Button>
+          <Button onClick={() => setBackupsOpen(true)}>Backups &amp; restore</Button>
           <Button onClick={clearKey} danger={true}>
             Exit GM mode
           </Button>
@@ -165,11 +171,23 @@ const GMSwitchPanel: React.FC<GMSwitchPanelProps> = ({ variant = 'card', onClose
     </S.DesktopForm>
   );
 
+  const backups = <DatabaseBackupsModal onClose={() => setBackupsOpen(false)} open={backupsOpen} />;
+
   if (isSheet) {
-    return content;
+    return (
+      <>
+        {content}
+        {backups}
+      </>
+    );
   }
 
-  return <S.PanelCard title="GM Mode">{content}</S.PanelCard>;
+  return (
+    <>
+      <S.PanelCard title="GM Mode">{content}</S.PanelCard>
+      {backups}
+    </>
+  );
 };
 
 export default GMSwitchPanel;
