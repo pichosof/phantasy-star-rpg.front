@@ -46,15 +46,68 @@ import {
   generateNpc,
   generateShop,
   npcToMarkdown,
+  settingFor,
 } from '@app/generators/generators';
+import { MOTAVIA_PLACES } from '@app/generators/data/places';
 import { newCombatant, fullPool } from '@app/pages/gm/combat/combat-engine';
 
-const SETTINGS: { value: Setting; label: string }[] = [
+type World = 'motavia' | 'kolian' | 'dezolis';
+const WORLDS: { value: World; label: string }[] = [
   { value: 'motavia', label: 'Motavia' },
-  { value: 'piata', label: 'Piata' },
   { value: 'kolian', label: 'Kolian lands' },
   { value: 'dezolis', label: 'Dezolis' },
 ];
+
+const isKolian = (name: string) => /^Ko[lr]-/.test(name);
+const CITY_OPTIONS: Record<World, { value: string; label: string }[]> = {
+  motavia: MOTAVIA_PLACES.filter((p) => !isKolian(p.name) && (p.pop > 0 || p.vocation))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((p) => ({ value: p.name, label: `${p.name} — ${p.desc}` })),
+  kolian: MOTAVIA_PLACES.filter((p) => isKolian(p.name)).map((p) => ({
+    value: p.name,
+    label: `${p.name} — ${p.desc}`,
+  })),
+  dezolis: [],
+};
+
+/** World + optional city (empty = anywhere in that world). Remembered per tab. */
+function useWhere(key: string, initial: { world: World; city?: string }) {
+  const [where, setWhere] = React.useState<{ world: World; city?: string }>(() => {
+    try {
+      const raw = localStorage.getItem(`picho.gen.where.${key}`);
+      return raw ? JSON.parse(raw) : initial;
+    } catch {
+      return initial;
+    }
+  });
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(`picho.gen.where.${key}`, JSON.stringify(where));
+    } catch {
+      // only a convenience
+    }
+  }, [key, where]);
+  const setting: Setting = settingFor(where.world, where.city);
+  const controls = (
+    <>
+      <Segmented onChange={(v) => setWhere({ world: v as World })} options={WORLDS} value={where.world} />
+      {CITY_OPTIONS[where.world].length > 0 && (
+        <Select
+          allowClear
+          onChange={(city?: string) => setWhere((w) => ({ ...w, city }))}
+          optionFilterProp="label"
+          options={CITY_OPTIONS[where.world]}
+          placeholder={where.world === 'kolian' ? 'Any Kolian city' : 'Any city'}
+          popupMatchSelectWidth={false}
+          showSearch
+          style={{ width: 220 }}
+          value={where.city}
+        />
+      )}
+    </>
+  );
+  return { setting, city: where.city, controls };
+}
 
 const copy = (text: string) => {
   void navigator.clipboard?.writeText(text).then(() => message.success('Copied.'));
@@ -196,14 +249,14 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
 };
 
 const NpcTab: React.FC = () => {
-  const [setting, setSetting] = React.useState<Setting>('piata');
+  const { setting, city, controls } = useWhere('npc', { world: 'motavia', city: 'Piata' });
   const [race, setRace] = React.useState<Race | undefined>();
   const [sector, setSector] = React.useState<string | undefined>();
   const { results, run, clear, history } = useResults<GeneratedNpc>('npc', (n) => `${n.name}|${n.profession}`);
   return (
     <Space orientation="vertical" size={12} style={{ width: '100%' }}>
       <Space wrap>
-        <Segmented onChange={(v) => setSetting(v as Setting)} options={SETTINGS} value={setting} />
+        {controls}
         <Select
           allowClear
           onChange={setRace}
@@ -225,7 +278,7 @@ const NpcTab: React.FC = () => {
         />
         <Button
           icon={<ReloadOutlined />}
-          onClick={() => run((rng) => generateNpc(rng, setting, { race, sector }), 3)}
+          onClick={() => run((rng) => generateNpc(rng, setting, { race, sector, city }), 3)}
           type="primary"
         >
           3 NPCs
@@ -280,7 +333,7 @@ const shopMarkdown = (s: GeneratedShop) =>
   ].join('\n');
 
 const ShopTab: React.FC = () => {
-  const [setting, setSetting] = React.useState<Setting>('motavia');
+  const { setting, city, controls } = useWhere('shop', { world: 'motavia' });
   const [typeKey, setTypeKey] = React.useState<string | undefined>();
   const [items, setItems] = React.useState<SfItem[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -305,7 +358,7 @@ const ShopTab: React.FC = () => {
   return (
     <Space orientation="vertical" size={12} style={{ width: '100%' }}>
       <Space wrap>
-        <Segmented onChange={(v) => setSetting(v as Setting)} options={SETTINGS} value={setting} />
+        {controls}
         <Select
           allowClear
           onChange={setTypeKey}
@@ -317,7 +370,7 @@ const ShopTab: React.FC = () => {
         <Button
           disabled={!items}
           icon={<ReloadOutlined />}
-          onClick={() => items && run((rng) => generateShop(rng, setting, items, { typeKey }))}
+          onClick={() => items && run((rng) => generateShop(rng, setting, items, { typeKey, place: city }))}
           type="primary"
         >
           New shop
@@ -569,7 +622,7 @@ const contractMarkdown = (c: GeneratedContract) =>
   ].join('\n');
 
 const ContractsTab: React.FC = () => {
-  const [setting, setSetting] = React.useState<Setting>('motavia');
+  const { setting, city, controls } = useWhere('contracts', { world: 'motavia' });
   const [kind, setKind] = React.useState<string | undefined>();
   const [size, setSize] = React.useState(4);
   const { results, run, clear, history } = useResults<GeneratedContract>('contract', (c) => c.text);
@@ -584,7 +637,7 @@ const ContractsTab: React.FC = () => {
   return (
     <Space orientation="vertical" size={12} style={{ width: '100%' }}>
       <Space wrap>
-        <Segmented onChange={(v) => setSetting(v as Setting)} options={SETTINGS} value={setting} />
+        {controls}
         <Select
           allowClear
           onChange={setKind}
@@ -599,7 +652,7 @@ const ContractsTab: React.FC = () => {
         </Space>
         <Button
           icon={<ReloadOutlined />}
-          onClick={() => run((rng) => generateContract(rng, setting, size, { kind }), 3)}
+          onClick={() => run((rng) => generateContract(rng, setting, size, { kind, city }), 3)}
           type="primary"
         >
           3 contracts

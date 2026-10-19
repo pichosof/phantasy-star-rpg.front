@@ -23,8 +23,40 @@ const RACE_CULTURE: Record<NPC.Race, Culture> = {
   Andróide: 'android',
 };
 
-const placesFor = (setting: Setting): string[] => {
+/** Maps the UI choice (world + optional city) to a setting; Piata keeps its districts. */
+export function settingFor(world: 'motavia' | 'kolian' | 'dezolis', city?: string): Setting {
+  return world === 'motavia' && city === 'Piata' ? 'piata' : world;
+}
+
+const cityPlace = (city?: string) => (city ? MOTAVIA_PLACES.find((p) => p.name === city) : undefined);
+
+/** Who you meet: follows the city's population (Cidades_de_Motavia.csv). */
+function raceWeights(setting: Setting, city?: string): readonly (readonly [NPC.Race, number])[] {
+  const people = cityPlace(city)?.people ?? '';
+  if (setting === 'motavia' && /^Motavian/.test(people)) {
+    return [
+      ['Motaviano', 78],
+      ['Palmaniano', 16],
+      ['Esper', 2],
+      ['Andróide', 2],
+      ['Dezoliano', 2],
+    ];
+  }
+  if (setting === 'motavia' && /^Palmanian/.test(people)) {
+    return [
+      ['Palmaniano', 78],
+      ['Motaviano', 16],
+      ['Esper', 2],
+      ['Andróide', 2],
+      ['Dezoliano', 2],
+    ];
+  }
+  return NPC.RACE_WEIGHTS[setting];
+}
+
+const placesFor = (setting: Setting, city?: string): string[] => {
   if (setting === 'piata') return [...PIATA_DISTRICTS, ...PIATA_SPOTS];
+  if (city) return [city];
   if (setting === 'dezolis') return DEZOLIS_SPOTS;
   if (setting === 'kolian') return MOTAVIA_PLACES.filter((p) => /^Ko[lr]-/.test(p.name)).map((p) => p.name);
   return MOTAVIA_PLACES.filter((p) => p.pop !== 0 || p.vocation).map((p) => p.name);
@@ -63,16 +95,21 @@ export interface GeneratedNpc {
   location: string;
 }
 
-export function generateNpc(rng: Rng, setting: Setting, opts: { race?: NPC.Race; sector?: string } = {}): GeneratedNpc {
-  const race = opts.race ?? rng.weighted(NPC.RACE_WEIGHTS[setting]);
+export function generateNpc(
+  rng: Rng,
+  setting: Setting,
+  opts: { race?: NPC.Race; sector?: string; city?: string } = {},
+): GeneratedNpc {
+  const race = opts.race ?? rng.weighted(raceWeights(setting, opts.city));
   const sector = opts.sector ?? rng.pick(NPC.PROFESSION_SECTORS_BY_SETTING[setting]);
-  const places = placesFor(setting);
-  const location = rng.pick(places);
+  const places = placesFor(setting, opts.city);
+  const location = setting === 'piata' ? `Piata — ${rng.pick(places)}` : rng.pick(places);
+  const elsewhere = placesFor(setting === 'piata' ? 'motavia' : setting);
   const values = {
-    place: places,
+    place: elsewhere,
     item: ['um mapa', 'um caderno de expedição', 'uma caixa lacrada', 'uma peça antiga', 'um anel de família'],
     creature: CREATURE_POOL,
-    person: (r: Rng) => generateName(r, RACE_CULTURE[r.weighted(NPC.RACE_WEIGHTS[setting])]),
+    person: (r: Rng) => generateName(r, RACE_CULTURE[r.weighted(raceWeights(setting, opts.city))]),
   };
   return {
     name: generateName(rng, RACE_CULTURE[race]),
@@ -230,7 +267,13 @@ export function generateShop(
     const it = rng.weighted(candidates.map((c) => [c, 1 / (1 + c.level / 2)] as const));
     seen.add(it.name);
     i += 1;
-    const scarce = it.tier !== 'common' ? 1.15 : 1;
+    // Firearms, ammunition, explosives and artifacts are scarce in Algol: legal shops rarely
+    // stock them and charge a lot; the grey market has them, still expensive.
+    const firearm =
+      it.kind === 'weapon' && ['SmallArms', 'Longarms', 'Sniper', 'Heavy', 'Ammo', 'Grenade'].includes(it.group);
+    const artifact = it.kind === 'hybrid' || it.tier === 'rare';
+    if ((firearm || artifact) && type.key !== 'grey' && type.key !== 'fragments' && rng.chance(0.5)) continue;
+    const scarce = (firearm || artifact ? (type.key === 'grey' ? 2 : 3) : 1) * (it.tier !== 'common' ? 1.15 : 1);
     lines.push({
       name: it.name,
       detail: [
@@ -238,6 +281,7 @@ export function generateShop(
         `lvl ${it.level}`,
         it.damage && `dmg ${it.damage}`,
         it.tier === 'rare' && 'raro',
+        scarce >= 2 && 'escasso',
       ]
         .filter(Boolean)
         .join(' · '),
@@ -276,7 +320,10 @@ export function generateShop(
     });
   }
 
-  const owner = generateNpc(rng, setting, { sector: type.key === 'fragments' ? 'Submundo' : 'Comércio' });
+  const owner = generateNpc(rng, setting, {
+    sector: type.key === 'fragments' || type.key === 'grey' ? 'Submundo' : 'Comércio',
+    city: setting === 'piata' ? undefined : placeObj?.name,
+  });
   const name = rng.chance(0.5)
     ? `${rng.pick(type.names)} ${rng.chance(0.5) ? 'de' : 'da'} ${owner.name.split(' ')[0]}`
     : `${rng.pick(type.names)} ${rng.chance(0.5) ? 'A' : 'O'} ${rng.pick(SHOP_ADJ)} ${rng.pick(SHOP_NOUN)}`.replace(
@@ -395,12 +442,12 @@ export function generateContract(
   rng: Rng,
   setting: Setting,
   partySize: number,
-  opts: { kind?: string } = {},
+  opts: { kind?: string; city?: string } = {},
 ): GeneratedContract {
   const kind = opts.kind && C.KINDS[opts.kind] ? opts.kind : rng.pick(Object.keys(C.KINDS));
   const places = placesFor(setting === 'piata' ? 'motavia' : setting);
   const values = {
-    place: setting === 'piata' ? ['Piata', ...places] : places,
+    place: setting === 'piata' ? ['Piata'] : opts.city ? [opts.city] : places,
     place2: places,
     cargo: C.CARGO,
     site: C.SITES,
@@ -420,7 +467,8 @@ export function generateContract(
     kind,
     access: rng.weighted(C.ACCESS),
     text,
-    contractor: generateNpc(rng, setting === 'kolian' || setting === 'dezolis' ? setting : 'motavia', {
+    contractor: generateNpc(rng, setting, {
+      city: setting === 'piata' ? undefined : opts.city,
       sector: rng.pick(['Comércio', 'Universidade', 'Governo', 'Caravanas', 'Campo', 'Guilda']),
     }),
     band,
