@@ -708,6 +708,7 @@ export const DungeonsPage: React.FC = () => {
         discoveredControl(!!openDungeon.discovered, () => void toggleDiscovered(openDungeon), 'description and images'),
       ]}
       createdAt={openDungeon.createdAt}
+      linkRef={{ type: 'dungeon', id: Number(openDungeon.id) }}
       extra={
         isGM ? (
           <Space>

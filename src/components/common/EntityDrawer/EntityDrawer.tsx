@@ -1,3 +1,5 @@
+import type { LinkEntityType } from '@app/api/links.api';
+import { entityLinkTabs, useEntityLinks } from '@app/components/common/EntityLinks/EntityLinks';
 import React from 'react';
 import { Divider, Drawer, Space, Switch, Tabs, Tag, Typography } from 'antd';
 import type { TabsProps } from 'antd';
@@ -83,6 +85,9 @@ export interface EntityDrawerProps {
   /** Related-content tabs, shown after Overview. */
   tabs?: DrawerTab[];
 
+  /** Adds the "Appears in" and "History" tabs (wiki links / mentions of this entity). */
+  linkRef?: { type: LinkEntityType; id: number } | null;
+
   /** GM Actions tab. */
   controls?: DrawerControl[];
   createdAt?: string | Date | null;
@@ -133,7 +138,8 @@ export const EntityDrawer: React.FC<EntityDrawerProps> = ({
   gmView,
   status,
   overview,
-  tabs = [],
+  tabs: tabsProp = [],
+  linkRef,
   controls,
   createdAt,
   updatedAt,
@@ -147,6 +153,8 @@ export const EntityDrawer: React.FC<EntityDrawerProps> = ({
   onMobileTabChange,
 }) => {
   const { mobileOnly } = useResponsive();
+  const links = useEntityLinks(open && linkRef ? linkRef : null);
+  const tabs: DrawerTab[] = linkRef ? [...tabsProp, ...entityLinkTabs(links.data, links.error)] : tabsProp;
 
   if (mobileOnly) {
     const mobileItems = [

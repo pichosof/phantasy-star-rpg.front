@@ -5,6 +5,8 @@ import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { resolveApiUrl } from '@app/api/http.api';
 import { thumbUrl } from '@app/api/images.api';
+import { useLinkIndex } from '@app/hooks/useLinkIndex';
+import { LINK_RE, linkifyWikiLinks, openEntity, parseEntityHref } from '@app/utils/wiki-links';
 
 /**
  * Markdown for entity text fields (descriptions, summaries, backgrounds, notes…).
@@ -127,6 +129,13 @@ const Body = styled.div`
     max-width: 100%;
     border-radius: 6px;
   }
+
+  a.entity-link {
+    color: var(--primary-color);
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
 `;
 
 const components = {
@@ -138,11 +147,31 @@ const components = {
       src={thumbUrl(resolveApiUrl(typeof src === 'string' ? src : undefined), 1280) ?? src}
     />
   ),
-  a: ({ href, children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a {...rest} href={href} rel="noopener noreferrer" target="_blank">
-      {children}
-    </a>
-  ),
+  a: ({ href, children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    const entity = parseEntityHref(href);
+    if (entity) {
+      // Wiki link: opens the entity preview drawer in place.
+      return (
+        <a
+          {...rest}
+          className="entity-link"
+          href={href}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openEntity(entity.type, entity.id);
+          }}
+        >
+          {children}
+        </a>
+      );
+    }
+    return (
+      <a {...rest} href={href} rel="noopener noreferrer" target="_blank">
+        {children}
+      </a>
+    );
+  },
 };
 
 interface RichTextProps {
@@ -154,7 +183,10 @@ interface RichTextProps {
 }
 
 export const RichText: React.FC<RichTextProps> = ({ children, fallback = null, className, style }) => {
-  const text = children?.trim();
+  const raw = children?.trim() ?? '';
+  const hasLinks = raw.includes('[[');
+  const { resolve } = useLinkIndex(hasLinks);
+  const text = React.useMemo(() => (hasLinks ? linkifyWikiLinks(raw, resolve) : raw), [raw, hasLinks, resolve]);
   if (!text) return <>{fallback}</>;
   return (
     <Body className={className} style={style}>
@@ -171,6 +203,7 @@ export function stripMarkdown(md: string | null | undefined): string {
   return (
     md
       .replace(/```[\s\S]*?```/g, ' ')
+      .replace(LINK_RE, (_m, target: string, label?: string) => label ?? target.replace(/^\w+:/, ''))
       .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
       .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
       .replace(/^\s{0,3}#{1,6}\s+/gm, '')

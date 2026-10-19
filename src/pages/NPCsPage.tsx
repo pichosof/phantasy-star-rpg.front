@@ -545,6 +545,7 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM, gmVi
     <EntityDrawer
       controls={onToggleVisible ? [visibilityControl(isVisible(npc), () => onToggleVisible(npc), 'NPCs')] : []}
       createdAt={npc.createdAt}
+      linkRef={{ type: 'npc', id: Number(npc.id) }}
       gmView={isGM && gmView}
       onClose={onClose}
       open={open}

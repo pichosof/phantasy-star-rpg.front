@@ -723,6 +723,7 @@ export const BestiaryPage: React.FC = () => {
             : []
         }
         createdAt={openMonster.createdAt}
+        linkRef={{ type: 'beast', id: Number(openMonster.id) }}
         gmTabs={phone ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: phone.gm }] : []}
         gmView={Boolean(phone) && isGM}
         mobileActiveKey={phone?.activeKey}

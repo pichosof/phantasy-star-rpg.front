@@ -829,6 +829,7 @@ export const QuestsPage: React.FC = () => {
       activeKey={drawerTabs.activeKey}
       controls={[visibilityControl(isQuestVisible(openQuest), () => void toggleVisible(openQuest), 'quests')]}
       createdAt={openQuest.createdAt}
+      linkRef={{ type: 'quest', id: Number(openQuest.id) }}
       extra={
         isGM ? (
           <Space>

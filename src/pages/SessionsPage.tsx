@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { SessionDiaryPanel } from '@app/components/rpg/Session/SessionDiaryPanel';
 import React from 'react';
 import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableImage';
 import { Divider, Empty, Popconfirm, Space, Switch, Tag, Typography, message } from 'antd';
@@ -331,6 +332,16 @@ export const SessionsPage: React.FC = () => {
       message.error(apiErrorMessage(error, 'Failed to change visibility.'));
       await load();
     }
+  }
+
+  /** Diary → session summary (keeps the edit form in sync). */
+  async function applyDiarySummary(summary: string) {
+    if (!openSession) return;
+    await updateSession(openSession.id, { summary: summary || null });
+    setItems((prev) =>
+      prev.map((entry) => (entry.id === openSession.id ? { ...entry, summary: summary || null } : entry)),
+    );
+    setEditSummary(summary);
   }
 
   async function saveEdit() {
@@ -790,6 +801,7 @@ export const SessionsPage: React.FC = () => {
       activeKey={drawerTabs.activeKey}
       controls={[visibilityControl(isSessionVisible(openSession), () => void toggleVisible(openSession), 'sessions')]}
       createdAt={openSession.createdAt}
+      linkRef={{ type: 'session', id: Number(openSession.id) }}
       extra={
         isGM ? (
           <Space>
@@ -812,6 +824,17 @@ export const SessionsPage: React.FC = () => {
         ) : null
       }
       gmTabs={[
+        {
+          key: 'diary',
+          label: 'Diary',
+          children: (
+            <SessionDiaryPanel
+              currentSummary={openSession.summary}
+              onApply={applyDiarySummary}
+              sessionId={openSession.id}
+            />
+          ),
+        },
         {
           key: 'edit',
           label: <IconLabel icon="edit">Edit</IconLabel>,

@@ -1018,6 +1018,7 @@ export default function MapPage() {
   const mapCityDrawer = openCity ? (
     <EntityDrawer
       createdAt={openCity.createdAt}
+      linkRef={{ type: 'city', id: Number(openCity.id) }}
       gmTabs={
         mobileOnly
           ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: mobileCityGM }]

@@ -722,6 +722,7 @@ export const LoresAdminPage: React.FC = () => {
       activeKey={drawerTabs.activeKey}
       controls={[visibilityControl(isLoreVisible(openLore), () => void toggleVisible(openLore), 'lores')]}
       createdAt={openLore.createdAt}
+      linkRef={{ type: 'lore', id: Number(openLore.id) }}
       extra={
         isGM ? (
           <Space>

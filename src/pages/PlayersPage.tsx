@@ -1358,6 +1358,7 @@ export const PlayersPage: React.FC = () => {
         visibilityControl(isPlayerVisible(selectedPlayer), () => void toggleVisible(selectedPlayer), 'characters'),
       ]}
       createdAt={selectedPlayer.createdAt}
+      linkRef={{ type: 'player', id: Number(selectedPlayer.id) }}
       gmTabs={[
         {
           key: 'edit',

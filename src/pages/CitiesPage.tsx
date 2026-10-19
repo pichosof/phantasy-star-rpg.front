@@ -822,6 +822,7 @@ export const CitiesPage: React.FC = () => {
         ),
       ]}
       createdAt={(openCity as any).createdAt}
+      linkRef={{ type: 'city', id: Number(openCity.id) }}
       gmView={isGM && viewMode === 'gm'}
       onClose={mobileOnly ? closeCitySheet : () => setOpenCityId(null)}
       open={Boolean(openCity)}

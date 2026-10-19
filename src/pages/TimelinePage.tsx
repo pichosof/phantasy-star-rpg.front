@@ -671,6 +671,7 @@ export const TimelinePage: React.FC = () => {
       activeKey={drawerTabs.activeKey}
       controls={[visibilityControl(isTimelineEventVisible(openEvent), () => void toggleVisible(openEvent), 'events')]}
       createdAt={openEvent.createdAt}
+      linkRef={{ type: 'timeline', id: Number(openEvent.id) }}
       extra={
         isGM ? (
           <Popconfirm
