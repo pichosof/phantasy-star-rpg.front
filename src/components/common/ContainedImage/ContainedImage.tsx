@@ -9,7 +9,7 @@ import ExpandableImage from '@app/components/common/ExpandableImage/ExpandableIm
 /**
  * Shows the whole picture — never cropped, never stretched. Whatever the aspect ratio,
  * the image keeps its proportions and the empty bands (left/right for portraits,
- * top/bottom for panoramas) take the theme's surface color.
+ * top/bottom for panoramas) are transparent, showing the parent surface.
  * Loads the 1280px thumbnail; the fullscreen button opens the original.
  * With `editableFocus`, the GM can click the main point of the image (face, creature…);
  * cards then use it as their crop centre.
@@ -20,7 +20,8 @@ const Frame = styled.div<{ $height: number }>`
   height: ${({ $height }) => `${$height}px`};
   overflow: hidden;
   border-radius: 8px;
-  background: var(--secondary-background-color);
+  /* empty bands show whatever surface the image sits on (drawer, card, sheet) */
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
