@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, NavBar, SafeArea } from 'antd-mobile';
-import { CloseOutline, SetOutline, UnorderedListOutline, UserCircleOutline } from 'antd-mobile-icons';
+import { CloseOutline, SearchOutline, SetOutline, UnorderedListOutline, UserCircleOutline } from 'antd-mobile-icons';
+import { openSearch } from '@app/components/common/EntityLinks/SearchPaletteHost';
 import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { SettingsOverlay } from '../components/settingsDropdown/settingsOverlay/SettingsOverlay/SettingsOverlay';
 import { useGMMode } from '@app/hooks/useGMMode';
@@ -24,6 +25,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ toggleSider, isSider
           back={null}
           right={
             <S.MobileActionCluster>
+              <S.MobileIconButton fill="none" onClick={openSearch} aria-label="Search" $isActive={false}>
+                <SearchOutline />
+              </S.MobileIconButton>
               <S.MobileIconButton
                 fill="none"
                 onClick={() => setSettingsOpen(true)}

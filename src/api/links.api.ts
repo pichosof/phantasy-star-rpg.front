@@ -85,3 +85,15 @@ export async function saveSessionDiary(sessionId: number, notes: string): Promis
 export async function summarizeSessionDiary(sessionId: number, notes: string): Promise<{ markdown: string }> {
   return (await http.post(`/api/gm/sessions/${sessionId}/diary/summarize`, { notes }, { timeout: 90_000 })).data;
 }
+
+export interface SearchHit {
+  type: LinkEntityType;
+  id: number;
+  name: string;
+  subtitle: string | null;
+  snippet: string;
+}
+
+export async function searchEntities(q: string): Promise<SearchHit[]> {
+  return (await http.get<SearchHit[]>('/api/search', { params: { q } })).data;
+}

@@ -6,6 +6,9 @@ import { Popover } from '@app/components/common/Popover/Popover';
 import GMSwitchPanel from '../components/gmSwitchPanel/GMSwitchPanel';
 import { Button } from '@app/components/common/buttons/Button/Button';
 import { IS_DEMO } from '@app/demo/demoMode';
+import { SearchOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+import { openSearch } from '@app/components/common/EntityLinks/SearchPaletteHost';
 
 interface DesktopHeaderProps {
   isTwoColumnsLayout: boolean;
@@ -29,7 +32,11 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ isTwoColumnsLayout
         <Row align="middle" justify="end" gutter={[10, 10]}>
           <Col>
             <Row gutter={[{ xxl: 10 }, { xxl: 10 }]}>
-              <Col></Col>
+              <Col>
+                <Tooltip title="Search (Ctrl+K)">
+                  <Button aria-label="Search" icon={<SearchOutlined />} onClick={openSearch} size="small" />
+                </Tooltip>
+              </Col>
 
               <Col>
                 <SettingsDropdown />

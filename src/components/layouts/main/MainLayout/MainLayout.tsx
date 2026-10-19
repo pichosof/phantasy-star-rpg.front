@@ -9,6 +9,7 @@ import { Outlet } from 'react-router-dom';
 import { DemoBanner } from '@app/demo/DemoBanner';
 import { EntityPeekHost } from '@app/components/common/EntityLinks/EntityPeekHost';
 import { LinkAutocompleteHost } from '@app/components/common/EntityLinks/LinkAutocompleteHost';
+import { SearchPaletteHost } from '@app/components/common/EntityLinks/SearchPaletteHost';
 
 const MainLayout: React.FC = () => {
   const [siderCollapsed, setSiderCollapsed] = useState(true);
@@ -35,6 +36,7 @@ const MainLayout: React.FC = () => {
       </S.LayoutMain>
       <EntityPeekHost />
       <LinkAutocompleteHost />
+      <SearchPaletteHost />
     </S.LayoutMaster>
   );
 };
