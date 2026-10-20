@@ -20,6 +20,7 @@ import {
   IdcardOutlined,
   TagOutlined,
   ThunderboltOutlined,
+  ShoppingOutlined,
 } from '@ant-design/icons';
 import { AppIcon } from '@app/components/common/AppIcon/AppIcon';
 import { ROUTES } from '@app/constants/routes';
@@ -64,6 +65,7 @@ export const getSidebarNavigation = (isGM = isGMMode()): SidebarNavigationItem[]
       children: [
         { title: 'Worlds', key: 'worlds', url: ROUTES.WORLDS, icon: <AppIcon name="world" /> },
         { title: 'Dungeons', key: 'dungeons', url: ROUTES.DUNGEONS, icon: <ThunderboltOutlined /> },
+        { title: 'Items', key: 'items', url: ROUTES.ITEMS, icon: <ShoppingOutlined /> },
         { title: 'Map Markers', key: 'map-markers', url: ROUTES.MAP_MARKERS, icon: <AimOutlined /> },
       ],
     },
@@ -110,6 +112,7 @@ export const getSidebarNavigation = (isGM = isGMMode()): SidebarNavigationItem[]
         { title: 'Images', key: 'gm-images', url: ROUTES.GM_IMAGES, icon: <PictureOutlined /> },
         { title: 'Sheets', key: 'gm-sheets', url: ROUTES.GM_SHEETS, icon: <IdcardOutlined /> },
         { title: 'Combat', key: 'gm-combat', url: ROUTES.GM_COMBAT, icon: <ThunderboltOutlined /> },
+        { title: 'Items catalogue', key: 'gm-items', url: ROUTES.GM_ITEMS, icon: <ShoppingOutlined /> },
         { title: 'Generators', key: 'gm-generators', url: ROUTES.GM_GENERATORS, icon: <ExperimentOutlined /> },
       ],
     });

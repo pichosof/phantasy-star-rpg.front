@@ -24,6 +24,7 @@ const PAGE: Partial<Record<LinkEntityType, string>> = {
   beast: ROUTES.MONSTERS,
   timeline: ROUTES.TIMELINE,
   gmNote: ROUTES.GM_NOTES,
+  item: ROUTES.ITEMS,
 };
 
 type Ref = { type: LinkEntityType; id: number };

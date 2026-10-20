@@ -29,6 +29,10 @@ const GeneratorsPageComponent = React.lazy(() => import('@app/pages/gm/generator
 const LibraryPageComponent = React.lazy(() => import('@app/pages/LibraryPage'));
 const DungeonsPageComponent = React.lazy(() => import('@app/pages/DungeonsPage'));
 const TagsPageComponent = React.lazy(() => import('@app/pages/TagsPage'));
+const ItemsPageComponent = React.lazy(() => import('@app/pages/ItemsPage'));
+const GmItemsPageComponent = React.lazy(() => import('@app/pages/gm/items/GmItemsPage'));
+const Items = withLoading(ItemsPageComponent);
+const GmItems = withLoading(GmItemsPageComponent);
 const Library = withLoading(LibraryPageComponent);
 const Dungeons = withLoading(DungeonsPageComponent);
 const Tags = withLoading(TagsPageComponent);
@@ -92,6 +96,15 @@ export const AppRouter: React.FC = () => {
           <Route path={ROUTES.DICE} element={<DiceRoller />} />
           <Route path={ROUTES.DUNGEONS} element={<Dungeons />} />
           <Route path={ROUTES.TAGS} element={<Tags />} />
+          <Route path={ROUTES.ITEMS} element={<Items />} />
+          <Route
+            path={ROUTES.GM_ITEMS}
+            element={
+              <RequireGMRoute>
+                <GmItems />
+              </RequireGMRoute>
+            }
+          />
           <Route
             path={ROUTES.GM_NOTES}
             element={

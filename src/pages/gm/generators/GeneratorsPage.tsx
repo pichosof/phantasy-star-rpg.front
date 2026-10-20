@@ -26,7 +26,7 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import { Popover } from 'antd';
-import { LOCAL_DESC } from '@app/generators/data/local-desc';
+import { ACCESS_LABEL, type GmItem, LOOT_LABEL, listGmItems } from '@app/api/items.api';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { IconLabel } from '@app/components/common/AppIcon/AppIcon';
 import { NpcApi } from '@app/api/npc.api';
@@ -47,13 +47,19 @@ import {
   type GeneratedContract,
   type GeneratedEncounter,
   type GeneratedNpc,
+  type GeneratedLoot,
   type GeneratedShop,
+  type LootSite,
+  type LootSize,
   type Setting,
-  type SfItem,
+  type ShopLine,
   generateContract,
   generateEncounter,
+  generateLoot,
   generateNpc,
   generateShop,
+  roundPrice,
+  shopLine,
   npcToMarkdown,
   settingFor,
 } from '@app/generators/generators';
@@ -308,82 +314,58 @@ const NpcTab: React.FC = () => {
   );
 };
 
-// ── Shop ──
+// ── Shop & loot (both read the item catalogue: /api/gm/items) ──
 
-type ItemInfo = Record<string, { d: string; s: string }>;
-let infoCache: Promise<ItemInfo> | null = null;
-const loadInfo = () =>
-  (infoCache ??= fetch('/data/sf-item-info.json')
-    .then((r) => (r.ok ? (r.json() as Promise<ItemInfo>) : ({} as ItemInfo)))
-    .catch(() => ({}) as ItemInfo));
+/** Loads the GM catalogue once for the shop and loot tabs. */
+function useCatalogue() {
+  const [items, setItems] = React.useState<GmItem[] | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    listGmItems()
+      .then(setItems)
+      .catch((e) => setError(apiErrorMessage(e, 'Could not load the item catalogue.')));
+  }, []);
+  const byId = React.useMemo(() => new Map((items ?? []).map((i) => [i.id, i])), [items]);
+  return { items, byId, error };
+}
 
-const aonSearch = (name: string) => `https://www.aonsrd.com/Search.aspx?Query=${encodeURIComponent(name)}`;
-
-/** ⓘ: what the item is and does (AoN summary for Starfinder items, campaign text for Algol goods). */
-const ItemInfoButton: React.FC<{ line: ShopLineView }> = ({ line }) => {
-  const [info, setInfo] = React.useState<{ d: string; s: string } | null | undefined>(undefined);
-  const local = line.source === 'Algol' ? LOCAL_DESC[line.name] : undefined;
-  const content =
-    line.source === 'Algol' ? (
-      <Typography.Paragraph style={{ margin: 0 }}>
-        {local ?? line.note ?? 'Local good of Algol.'}
-        {local && line.note ? (
-          <>
-            <br />
-            <Typography.Text type="secondary">{line.note}</Typography.Text>
-          </>
-        ) : null}
-      </Typography.Paragraph>
-    ) : info === undefined ? (
-      <Typography.Text type="secondary">Loading…</Typography.Text>
-    ) : (
-      <Space orientation="vertical" size={4}>
-        {info?.s && (
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            {info.s}
-          </Typography.Text>
-        )}
-        <Typography.Paragraph style={{ margin: 0 }}>{info?.d || 'No description available.'}</Typography.Paragraph>
-        <Typography.Link href={aonSearch(line.name)} rel="noopener noreferrer" target="_blank" style={{ fontSize: 12 }}>
-          Full rules on Archives of Nethys
-        </Typography.Link>
-      </Space>
-    );
+/** ⓘ: what the item is and does, from the catalogue (player text, rules, and GM channel). */
+const ItemInfoButton: React.FC<{ item?: GmItem }> = ({ item }) => {
+  if (!item) return null;
+  const title = item.localName ?? item.name;
   return (
     <Popover
-      content={<div style={{ maxWidth: 360 }}>{content}</div>}
-      onOpenChange={(open) => {
-        if (open && line.source !== 'Algol' && info === undefined)
-          void loadInfo().then((all) => setInfo(all[line.name] ?? null));
-      }}
-      title={line.name}
+      content={
+        <Space orientation="vertical" size={4} style={{ maxWidth: 380 }}>
+          {item.localName && <Typography.Text type="secondary">Catalogue: {item.name}</Typography.Text>}
+          <Typography.Text style={{ fontSize: 12 }}>
+            <b>Access:</b> {ACCESS_LABEL[item.access]}
+            {item.channel ? ` — ${item.channel}` : ''}
+          </Typography.Text>
+          {item.rules && (
+            <Typography.Text style={{ fontSize: 12 }} type="secondary">
+              {item.rules}
+            </Typography.Text>
+          )}
+          <Typography.Paragraph style={{ margin: 0 }}>{item.description || 'No description yet.'}</Typography.Paragraph>
+          {item.sourceUrl && (
+            <Typography.Link href={item.sourceUrl} rel="noopener noreferrer" style={{ fontSize: 12 }} target="_blank">
+              Full rules on Archives of Nethys
+            </Typography.Link>
+          )}
+        </Space>
+      }
+      title={title}
       trigger="click"
     >
-      <Button aria-label={`What is ${line.name}?`} icon={<InfoCircleOutlined />} size="small" type="text" />
+      <Button aria-label={`What is ${title}?`} icon={<InfoCircleOutlined />} size="small" type="text" />
     </Popover>
   );
 };
 
-type ShopLineView = GeneratedShop['lines'][number];
+const SOURCE_COLOR: Record<string, string | undefined> = { Algol: 'gold', Homebrew: 'purple' };
 
-let itemsCache: Promise<SfItem[]> | null = null;
-const loadItems = () =>
-  (itemsCache ??= fetch('/data/sf-items.json')
-    .then((r) => r.json())
-    .then((d: { items: [string, string, string, string, number, number, string, SfItem['tier']][] }) =>
-      d.items.map(([name, kind, group, category, level, price, damage, tier]) => ({
-        name,
-        kind,
-        group,
-        category,
-        level,
-        price,
-        damage,
-        tier,
-      })),
-    ));
-
-const shopMarkdown = (s: GeneratedShop) =>
+const shopMarkdown = (s: GeneratedShop, lines: ShopLine[], mult: number) =>
   [
     `## ${s.name}`,
     `*${s.type.label} — ${s.place}* · dono(a): **${s.owner.name}** (${s.owner.race})`,
@@ -392,34 +374,44 @@ const shopMarkdown = (s: GeneratedShop) =>
     '',
     `| Item | Detalhe | Preço (cr) |`,
     `|---|---|---:|`,
-    ...s.lines.map((l) => `| ${l.name} | ${l.detail}${l.note ? ` — ${l.note}` : ''} | ${l.price} |`),
+    ...lines.map((l) => `| ${l.name} | ${l.detail} | ${roundPrice(l.price * mult)} |`),
     '',
-    `*${s.priceNote}*`,
+    `*${s.priceNote}${mult !== 1 ? ` · ajuste do mestre ×${mult}` : ''}*`,
   ].join('\n');
 
 const ShopTab: React.FC = () => {
   const { setting, city, controls } = useWhere('shop', { world: 'motavia' });
   const [typeKey, setTypeKey] = React.useState<string | undefined>();
-  const [items, setItems] = React.useState<SfItem[] | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const { items, byId, error } = useCatalogue();
   const { results, run, clear, history } = useResults<GeneratedShop>('shop', (s) => s.name);
+  const current = results[0];
+  // The GM can drop or add lines and scale prices before saving.
+  const [lines, setLines] = React.useState<ShopLine[]>([]);
+  const [mult, setMult] = React.useState(1);
   React.useEffect(() => {
-    loadItems()
-      .then(setItems)
-      .catch(() => setError('Could not load the Starfinder item list.'));
-  }, []);
-  const current = results[0]?.value;
+    setLines(current?.value.lines ?? []);
+    setMult(1);
+  }, [current?.seed, current?.value]);
+
+  const addOptions = React.useMemo(
+    () =>
+      (items ?? [])
+        .filter((i) => i.access !== 'none')
+        .map((i) => ({ value: i.id, label: `${i.localName ?? i.name} · ${ACCESS_LABEL[i.access]}` })),
+    [items],
+  );
 
   const saveNote = async (s: GeneratedShop) => {
     try {
-      await createGmNote({ title: `Loja: ${s.name}`, content: shopMarkdown(s), tags: 'loja, gerador' });
+      await createGmNote({ title: `Loja: ${s.name}`, content: shopMarkdown(s, lines, mult), tags: 'loja, gerador' });
       void message.success('Saved to GM notes.');
     } catch (e) {
       void message.error(apiErrorMessage(e, 'Could not save.'));
     }
   };
 
-  if (error) return <Alert showIcon type="error" message={error} />;
+  if (error) return <Alert showIcon type="error" title={error} />;
+  const shop = current?.value;
   return (
     <Space orientation="vertical" size={12} style={{ width: '100%' }}>
       <Space wrap>
@@ -435,6 +427,7 @@ const ShopTab: React.FC = () => {
         <Button
           disabled={!items}
           icon={<ReloadOutlined />}
+          loading={!items}
           onClick={() => items && run((rng) => generateShop(rng, setting, items, { typeKey, place: city }))}
           type="primary"
         >
@@ -442,18 +435,18 @@ const ShopTab: React.FC = () => {
         </Button>
       </Space>
       <Typography.Text type="secondary">
-        Starfinder 1e base prices, curated for Algol (no Pact Worlds gear, magic items or starship tech), plus local
-        goods. Local price follows the Motavia economy: specialty cities are cheaper; small or isolated places pay
-        freight.
+        Stock comes from the item catalogue (canon v1.0): common goods anywhere, made-to-order goods in big cities and
+        specialist shops, occasional offers only on the grey market. Institutional items and relics never reach a shop.
+        Prices are your estimate: the reference price plus freight and scarcity.
       </Typography.Text>
-      {!current ? (
+      {!shop ? (
         <Empty description="Generate a shop." image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <Card
           extra={
             <Space size={4}>
-              <Button icon={<CopyOutlined />} onClick={() => copy(shopMarkdown(current))} size="small" />
-              <Button icon={<SaveOutlined />} onClick={() => void saveNote(current)} size="small">
+              <Button icon={<CopyOutlined />} onClick={() => copy(shopMarkdown(shop, lines, mult))} size="small" />
+              <Button icon={<SaveOutlined />} onClick={() => void saveNote(shop)} size="small">
                 GM note
               </Button>
             </Space>
@@ -461,26 +454,58 @@ const ShopTab: React.FC = () => {
           size="small"
           title={
             <Space orientation="vertical" size={0}>
-              <span>{current.name}</span>
+              <span>{shop.name}</span>
               <Typography.Text style={{ fontSize: 12, fontWeight: 400 }} type="secondary">
-                {current.type.label} · {current.place}
-                {current.placeInfo ? ` — ${current.placeInfo}` : ''}
+                {shop.type.label} · {shop.place}
+                {shop.placeInfo ? ` — ${shop.placeInfo}` : ''}
               </Typography.Text>
             </Space>
           }
         >
           <Typography.Paragraph>
-            {current.flavor} Run by <b>{current.owner.name}</b> ({current.owner.race}, {current.owner.traits[0]}).
+            {shop.flavor} Run by <b>{shop.owner.name}</b> ({shop.owner.race}, {shop.owner.traits[0]}).
           </Typography.Paragraph>
+          <Space style={{ marginBottom: 8 }} wrap>
+            <Tooltip title="Scales every price before you save or copy">
+              <span>
+                Price multiplier{' '}
+                <InputNumber
+                  max={10}
+                  min={0.1}
+                  onChange={(v) => setMult(v ?? 1)}
+                  size="small"
+                  step={0.1}
+                  style={{ width: 80 }}
+                  value={mult}
+                />
+              </span>
+            </Tooltip>
+            <Select
+              onChange={(id: number) => {
+                const it = byId.get(id);
+                if (it && !lines.some((l) => l.itemId === id))
+                  setLines((ls) => [...ls, shopLine(it, 1, 1, ['adicionado'])]);
+              }}
+              optionFilterProp="label"
+              options={addOptions}
+              placeholder="Add an item…"
+              popupMatchSelectWidth={false}
+              showSearch
+              size="small"
+              style={{ width: 260 }}
+              value={null}
+            />
+          </Space>
           <Table
             columns={[
               {
                 title: 'Item',
                 dataIndex: 'name',
-                render: (n: string, l: ShopLineView) => (
+                render: (n: string, l: ShopLine) => (
                   <Space size={2}>
-                    <ItemInfoButton line={l} />
+                    <ItemInfoButton item={byId.get(l.itemId)} />
                     <span>{n}</span>
+                    {l.proposal && <Tag color="purple">proposal</Tag>}
                   </Space>
                 ),
               },
@@ -489,27 +514,39 @@ const ShopTab: React.FC = () => {
                 title: 'Price (cr)',
                 dataIndex: 'price',
                 align: 'right' as const,
-                render: (p: number, l) => (
-                  <Tooltip title={`Base ${l.base} cr`}>
-                    <b>{p.toLocaleString()}</b>
+                render: (p: number, l: ShopLine) => (
+                  <Tooltip title={`Reference ${l.base} cr · estimate ${p} cr`}>
+                    <b>{roundPrice(p * mult).toLocaleString()}</b>
                   </Tooltip>
                 ),
               },
               {
                 title: '',
                 dataIndex: 'source',
-                width: 90,
-                render: (s: string) => <Tag color={s === 'Algol' ? 'gold' : undefined}>{s}</Tag>,
+                width: 120,
+                render: (s: string, l: ShopLine) => (
+                  <Space size={2}>
+                    <Tag color={SOURCE_COLOR[s]}>{s}</Tag>
+                    <Button
+                      aria-label={`Remove ${l.name}`}
+                      icon={<DeleteOutlined />}
+                      onClick={() => setLines((ls) => ls.filter((x) => x.itemId !== l.itemId))}
+                      size="small"
+                      type="text"
+                    />
+                  </Space>
+                ),
               },
             ]}
-            dataSource={current.lines}
+            dataSource={lines}
             pagination={false}
-            rowKey="name"
-            scroll={{ x: 520 }}
+            rowKey="itemId"
+            scroll={{ x: 560 }}
             size="small"
           />
           <Typography.Paragraph style={{ marginTop: 8, marginBottom: 0 }} type="secondary">
-            {current.priceNote}
+            {shop.priceNote}
+            {mult !== 1 ? ` · ajuste ×${mult}` : ''}
           </Typography.Paragraph>
         </Card>
       )}
@@ -520,6 +557,159 @@ const ShopTab: React.FC = () => {
             .slice(1, 6)
             .map((r) => r.value.name)
             .join(' · ')}{' '}
+          <Button icon={<DeleteOutlined />} onClick={clear} size="small" type="text" />
+        </Typography.Text>
+      )}
+      <HistoryNote history={history} onReset={() => history.clear()} />
+    </Space>
+  );
+};
+
+// ── Loot ──
+
+const LOOT_SIZES: { value: LootSize; label: string }[] = [
+  { value: 'small', label: 'Small' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'large', label: 'Hoard' },
+];
+
+const lootMarkdown = (l: GeneratedLoot) =>
+  [
+    `## Loot — ${l.title}`,
+    `*Encontrado ${l.spot}.*`,
+    '',
+    `| Item | Detalhe | Estado | Ref. (cr) |`,
+    `|---|---|---|---:|`,
+    ...l.lines.map((x) => `| ${x.name} | ${x.detail} | ${x.condition} | ${x.base || '—'} |`),
+    '',
+    ...l.valuables.map((v) => `- ${v}`),
+    '',
+    `**Perigo:** ${l.hazard}`,
+    '',
+    `*${l.gmNote}*`,
+  ].join('\n');
+
+const LootTab: React.FC = () => {
+  const [site, setSite] = React.useState<LootSite>('cave');
+  const [level, setLevel] = React.useState(2);
+  const [size, setSize] = React.useState<LootSize>('medium');
+  const { items, byId, error } = useCatalogue();
+  const { results, run, clear, history } = useResults<GeneratedLoot>('loot', (l) =>
+    l.lines.map((x) => x.itemId).join(','),
+  );
+  const current = results[0]?.value;
+
+  const saveNote = async (l: GeneratedLoot) => {
+    try {
+      await createGmNote({ title: `Loot: ${l.title}`, content: lootMarkdown(l), tags: 'loot, gerador' });
+      void message.success('Saved to GM notes.');
+    } catch (e) {
+      void message.error(apiErrorMessage(e, 'Could not save.'));
+    }
+  };
+
+  if (error) return <Alert showIcon type="error" title={error} />;
+  return (
+    <Space orientation="vertical" size={12} style={{ width: '100%' }}>
+      <Space wrap>
+        <Select
+          onChange={setSite}
+          options={(Object.keys(LOOT_LABEL) as LootSite[]).map((k) => ({ value: k, label: LOOT_LABEL[k] }))}
+          style={{ minWidth: 240 }}
+          value={site}
+        />
+        <span>
+          Party level{' '}
+          <InputNumber max={20} min={1} onChange={(v) => setLevel(v ?? 1)} style={{ width: 70 }} value={level} />
+        </span>
+        <Segmented onChange={(v) => setSize(v as LootSize)} options={LOOT_SIZES} value={size} />
+        <Button
+          disabled={!items}
+          icon={<ThunderboltOutlined />}
+          loading={!items}
+          onClick={() => items && run((rng) => generateLoot(rng, site, items, { level, size }))}
+          type="primary"
+        >
+          Roll loot
+        </Button>
+      </Space>
+      <Typography.Text type="secondary">
+        Each catalogue item lists the sites where it can turn up. Wonder-age facilities and orbital wrecks hold
+        institutional tech and possible relics; caves and old cellars hold what people carried, kept or lost.
+      </Typography.Text>
+      {!current ? (
+        <Empty description="Roll some loot." image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Card
+          extra={
+            <Space size={4}>
+              <Button icon={<CopyOutlined />} onClick={() => copy(lootMarkdown(current))} size="small" />
+              <Button icon={<SaveOutlined />} onClick={() => void saveNote(current)} size="small">
+                GM note
+              </Button>
+            </Space>
+          }
+          size="small"
+          title={
+            <Space orientation="vertical" size={0}>
+              <span>{current.title}</span>
+              <Typography.Text style={{ fontSize: 12, fontWeight: 400 }} type="secondary">
+                Found {current.spot}
+              </Typography.Text>
+            </Space>
+          }
+        >
+          <Table
+            columns={[
+              {
+                title: 'Item',
+                dataIndex: 'name',
+                render: (n: string, l: GeneratedLoot['lines'][number]) => (
+                  <Space size={2}>
+                    <ItemInfoButton item={byId.get(l.itemId)} />
+                    <span>{n}</span>
+                  </Space>
+                ),
+              },
+              { title: 'Details', dataIndex: 'detail' },
+              { title: 'Condition', dataIndex: 'condition' },
+              {
+                title: 'Access',
+                dataIndex: 'access',
+                render: (a: GmItem['access']) => (
+                  <Tag color={a === 'relic' ? 'magenta' : a === 'institutional' ? 'blue' : undefined}>
+                    {ACCESS_LABEL[a]}
+                  </Tag>
+                ),
+              },
+              {
+                title: 'Ref. (cr)',
+                dataIndex: 'base',
+                align: 'right' as const,
+                render: (b: number) => (b ? b.toLocaleString() : '—'),
+              },
+            ]}
+            dataSource={current.lines}
+            locale={{ emptyText: 'Nothing fits this site at this level.' }}
+            pagination={false}
+            rowKey="itemId"
+            scroll={{ x: 640 }}
+            size="small"
+          />
+          <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
+            {current.valuables.map((v) => (
+              <li key={v}>{v}</li>
+            ))}
+          </ul>
+          <Typography.Paragraph style={{ marginBottom: 4 }}>
+            <b>Hazard:</b> {current.hazard}
+          </Typography.Paragraph>
+          <Typography.Text type="secondary">{current.gmNote}</Typography.Text>
+        </Card>
+      )}
+      {results.length > 1 && (
+        <Typography.Text type="secondary">
+          Earlier: {results.length - 1} roll(s){' '}
           <Button icon={<DeleteOutlined />} onClick={clear} size="small" type="text" />
         </Typography.Text>
       )}
@@ -791,6 +981,7 @@ export const GeneratorsPage: React.FC = () => (
             { key: 'npc', label: 'NPC', children: <NpcTab /> },
             { key: 'names', label: 'Names', children: <NamesTab /> },
             { key: 'shop', label: 'Shop', children: <ShopTab /> },
+            { key: 'loot', label: 'Loot', children: <LootTab /> },
             { key: 'encounter', label: 'Encounter', children: <EncounterTab /> },
             { key: 'contracts', label: 'Guild board', children: <ContractsTab /> },
           ]}

@@ -5,7 +5,7 @@ sensors, electronics, tools, terminals, local comms; recovered/experimental tech
 Lúmen crystals), PSIV bible §2.4 (cities have power, meds, firearms; outside: nomad villages and
 ruins; magic = survival toolkit, psionics real), Economia v3.0 (SF base prices).
 How to rebuild: save AoN listing pages as HTML next to parse.py, run parse.py (-> items.json),
-then this script. Output: public/data/sf-items.json with a `tier` per item:
+then this script. Output: scripts/generators/data/sf-items.json with a `tier` per item:
   common  = found in towns (level <= 4)
   city    = big cities / Piata / Aerodyn (5-8)
   rare    = experimental / Era das Maravilhas finds (9-12, only antiquities & Piata labs)
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from families import FAMILIES
 
 SRC = os.environ.get('AON_ITEMS', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'items.json'))
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'public', 'data', 'sf-items.json')
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'sf-items.json')
 items = json.load(io.open(SRC, encoding='utf8'))
 
 # Pact Worlds / Golarion / space-faring things that cannot exist in Algol.

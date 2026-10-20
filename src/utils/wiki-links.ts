@@ -17,6 +17,7 @@ const TYPES: LinkEntityType[] = [
   'beast',
   'timeline',
   'gmNote',
+  'item',
 ];
 
 /** Order in which types win when two entities share a name (same as the API). */
@@ -33,6 +34,7 @@ const PRIORITY: LinkEntityType[] = [
   'session',
   'timeline',
   'gmNote',
+  'item',
 ];
 
 export const LINK_RE = /\[\[([^[\]|\n]{1,120})(?:\|([^[\]\n]{1,120}))?\]\]/g;

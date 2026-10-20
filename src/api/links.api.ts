@@ -12,7 +12,8 @@ export type LinkEntityType =
   | 'wiki'
   | 'beast'
   | 'timeline'
-  | 'gmNote';
+  | 'gmNote'
+  | 'item';
 
 export interface LinkIndexEntry {
   type: LinkEntityType;
@@ -58,6 +59,7 @@ export const ENTITY_TYPE_LABEL: Record<LinkEntityType, string> = {
   beast: 'Creature',
   timeline: 'Timeline',
   gmNote: 'GM note',
+  item: 'Item',
 };
 
 export async function getLinkIndex(): Promise<LinkIndexEntry[]> {

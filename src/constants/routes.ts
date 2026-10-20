@@ -15,11 +15,13 @@ export const ROUTES = {
   LIBRARY: '/library',
   DUNGEONS: '/dungeons',
   TAGS: '/tags',
+  ITEMS: '/items',
   GM_NOTES: '/gm/notes',
   GM_IMAGES: '/gm/images',
   GM_SHEETS: '/gm/sheets',
   GM_COMBAT: '/gm/combat',
   GM_GENERATORS: '/gm/generators',
+  GM_ITEMS: '/gm/items',
   FORBIDDEN: '/403',
   SERVER_ERROR: '/server-error',
 } as const;

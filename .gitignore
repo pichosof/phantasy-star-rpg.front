@@ -139,3 +139,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 build/
 demo-build/
+
+# GM-only curation (channels and notes); the repo is public.
+scripts/generators/data/item-curation.json
+scripts/generators/items-curadoria.csv

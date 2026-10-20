@@ -8,7 +8,7 @@ import * as E from './data/encounters';
 import { type Culture } from './data/names';
 import * as NPC from './data/npc';
 import { DEZOLIS_SPOTS, MOTAVIA_PLACES, PIATA_DISTRICTS, PIATA_SPOTS, SAYINGS } from './data/places';
-import { LOCAL_GOODS, type LocalGood, SHOP_TYPES, type ShopType } from './data/shops';
+import { SHOP_TYPES, type ShopType } from './data/shops';
 import { type Rng, capitalize, fill } from './engine';
 import { generateName } from './names';
 
@@ -145,27 +145,53 @@ export function npcToMarkdown(n: GeneratedNpc): string {
   ].join('\n');
 }
 
-// ── Shop ──
+// ── Items (from the catalogue: /api/gm/items) ──
 
-export interface SfItem {
+/** The catalogue entry the generators need (a subset of the GM item). */
+export interface GenItem {
+  id: number;
+  code: string;
   name: string;
+  localName: string | null;
+  origin: 'starfinder' | 'algol' | 'homebrew';
   kind: string;
-  group: string;
-  category: string;
+  group: string | null;
+  category: string | null;
   level: number;
-  price: number;
-  damage: string;
-  tier: 'common' | 'city' | 'rare';
+  damage: string | null;
+  unit: string | null;
+  region: 'motavia' | 'dezolis' | 'kolian';
+  refPrice: number | null;
+  access: 'free' | 'order' | 'spot' | 'institutional' | 'relic' | 'none';
+  channel: string | null;
+  tags: string[];
+  shops: string[];
+  loot: Array<'seed' | 'orbital' | 'cave' | 'cellar'>;
+  status: 'proposal' | 'approved' | 'published';
 }
 
+const displayName = (i: GenItem) => i.localName ?? i.name;
+const FIREARM_GROUPS = ['SmallArms', 'Longarms', 'Sniper', 'Heavy', 'Grenade'];
+const ENERGY = ['Laser', 'Plasma', 'Shock', 'Sonic', 'Cryo', 'Flame', 'Acid'];
+
+// ── Shop ──
+
+/** Hubs that make advanced goods; prices for scarce goods climb with distance from them. */
+const TECH_HUBS = ['Piata', 'Aerodyn'];
+
 export interface ShopLine {
+  itemId: number;
   name: string;
+  /** Catalogue name when the shop shows the Motávia name. */
+  ref?: string;
+  channel?: string;
   detail: string;
   base: number;
+  /** Estimated local price before the GM's multiplier. */
   price: number;
   unit?: string;
-  note?: string;
-  source: 'Starfinder' | 'Algol';
+  source: 'Starfinder' | 'Algol' | 'Homebrew';
+  proposal?: boolean;
 }
 
 export interface GeneratedShop {
@@ -197,17 +223,49 @@ const SHOP_NOUN = [
   'Chave',
 ];
 
-const round = (n: number) =>
+export const roundPrice = (n: number) =>
   n < 20 ? Math.max(1, Math.round(n)) : n < 200 ? Math.round(n / 5) * 5 : Math.round(n / 10) * 10;
 
+const SOURCE: Record<GenItem['origin'], ShopLine['source']> = {
+  starfinder: 'Starfinder',
+  algol: 'Algol',
+  homebrew: 'Homebrew',
+};
+
+/** Shop line for an item; the price is the GM's estimate (canon: local prices are not fixed). */
+export function shopLine(it: GenItem, factor: number, scarce: number, extra: (string | false | null)[] = []): ShopLine {
+  const base = it.refPrice ?? 0;
+  return {
+    itemId: it.id,
+    name: displayName(it),
+    ref: it.localName ? it.name : undefined,
+    channel: it.channel ?? undefined,
+    detail: [
+      it.origin === 'algol' ? it.unit : it.category || it.group,
+      it.origin !== 'algol' && `lvl ${it.level}`,
+      it.damage && `dmg ${it.damage}`,
+      ...extra,
+    ]
+      .filter(Boolean)
+      .join(' · '),
+    base,
+    price: roundPrice(base * factor * scarce),
+    unit: it.unit ?? undefined,
+    source: SOURCE[it.origin],
+    proposal: it.status === 'proposal' && it.origin === 'homebrew',
+  };
+}
+
 /**
- * Economia v3.0: local price = base + acquisition/transport/scarcity. Cities whose vocation
- * matches the shop sell cheaper; small or isolated places pay transport and stock less.
+ * Canon v1.0: only what a channel really sells. Free goods anywhere, made-to-order goods in
+ * big cities or specialist shops, occasional offers only on the grey market; institutional,
+ * relic and unavailable items never reach a shop. Prices are the GM's estimate: reference
+ * price + transport and scarcity, dearer far from Piata/Aerodyn.
  */
 export function generateShop(
   rng: Rng,
   setting: Setting,
-  items: SfItem[],
+  items: GenItem[],
   opts: { typeKey?: string; place?: string } = {},
 ): GeneratedShop {
   const types = SHOP_TYPES.filter((t) =>
@@ -239,89 +297,105 @@ export function generateShop(
   const favored =
     type.favoredBy.some((f) => vocationText.toLowerCase().includes(f.toLowerCase())) || setting === 'piata';
 
-  // Tech reach by size: Piata/Aerodyn-level cities reach "city" tier; rare finds only in antiquities.
-  const maxTier = pop >= 25000 || setting === 'piata' ? 'city' : 'common';
-  const rareOk = type.key === 'fragments' || type.key === 'tech';
+  const bigCity = pop >= 25000 || setting === 'piata';
   const isolated = pop < 5000 || setting === 'dezolis';
   const factor = (favored ? 0.85 : 1) * (isolated ? 1.25 : 1) * (0.92 + rng.next() * 0.2);
+  const hub = setting === 'piata' || TECH_HUBS.includes(placeObj?.name ?? '');
+  const remote = hub
+    ? 1
+    : setting === 'kolian' || setting === 'dezolis'
+      ? 2
+      : pop >= 25000
+        ? 1.25
+        : pop >= 5000
+          ? 1.5
+          : 2;
+  const underground = type.key === 'grey' || type.key === 'fragments';
+  // Small towns do not stock high-level gear; big cities and the hubs can.
+  const maxLevel = bigCity || hub ? 20 : pop >= 5000 ? 9 : 5;
 
-  const pool = (rule: (typeof type.stock)[number]) =>
-    items.filter(
-      (i) =>
-        i.kind === rule.kind &&
-        (!rule.groups || rule.groups.includes(i.group) || (rule.groups.includes('__rare__') && i.tier !== 'common')) &&
-        (i.tier === 'common' ||
-          (i.tier === 'city' && maxTier === 'city') ||
-          (i.tier === 'rare' && rareOk && rng.chance(0.15))),
-    );
+  // A specialist shop takes commissions for its own trade anywhere; other shops only in big
+  // cities. Occasional offers only appear underground.
+  const offered = (it: GenItem, specialist: boolean) =>
+    it.access === 'free' ||
+    (it.access === 'order' && (bigCity || favored || underground || specialist)) ||
+    (it.access === 'spot' && underground);
+  const region = (it: GenItem) =>
+    setting === 'dezolis'
+      ? it.region === 'dezolis' || (it.region === 'motavia' && it.origin !== 'algol')
+      : setting === 'kolian'
+        ? it.region !== 'dezolis'
+        : it.region === 'motavia';
+  const sellable = items.filter((it) => ['free', 'order', 'spot'].includes(it.access) && region(it));
+
+  const ruleMatch = (it: GenItem, rule: (typeof type.stock)[number]) =>
+    it.origin !== 'algol' &&
+    it.kind === rule.kind &&
+    (!rule.groups ||
+      rule.groups.includes(it.group ?? '') ||
+      (rule.groups.includes('__rare__') && it.access === 'spot'));
+  const forced = (it: GenItem) => it.shops.includes(type.key);
 
   const lines: ShopLine[] = [];
-  const seen = new Set<string>();
+  const seen = new Set<number>();
   const [nOfficial, nLocal] = type.size;
   const count = nOfficial === 0 ? 0 : Math.max(1, Math.round(nOfficial * (isolated ? 0.6 : 1) * (favored ? 1.3 : 1)));
   for (let i = 0, guard = 0; i < count && guard < count * 6; guard += 1) {
     const rule = rng.weighted(type.stock.map((r) => [r, r.weight] as const));
-    const candidates = pool(rule).filter((x) => !seen.has(x.name));
+    const candidates = sellable.filter(
+      (x) =>
+        !seen.has(x.id) &&
+        x.level <= maxLevel &&
+        (ruleMatch(x, rule) || (forced(x) && x.origin !== 'algol')) &&
+        offered(x, true),
+    );
     if (!candidates.length) continue;
     // Everyday gear is common; higher levels show up less often.
     const it = rng.weighted(candidates.map((c) => [c, 1 / (1 + c.level / 2)] as const));
-    seen.add(it.name);
+    seen.add(it.id);
+    // Small places take fewer commissions at once.
+    if (it.access === 'order' && !bigCity && rng.chance(0.35)) continue;
     i += 1;
-    // Firearms, ammunition, explosives and artifacts are scarce in Algol: legal shops rarely
-    // stock them and charge a lot; the grey market has them, still expensive.
-    const firearm =
-      it.kind === 'weapon' && ['SmallArms', 'Longarms', 'Sniper', 'Heavy', 'Ammo', 'Grenade'].includes(it.group);
-    const artifact = it.kind === 'hybrid' || it.tier === 'rare';
-    if ((firearm || artifact) && type.key !== 'grey' && type.key !== 'fragments' && rng.chance(0.5)) continue;
-    const scarce = (firearm || artifact ? (type.key === 'grey' ? 2 : 3) : 1) * (it.tier !== 'common' ? 1.15 : 1);
-    lines.push({
-      name: it.name,
-      detail: [
-        it.category || it.group,
-        `lvl ${it.level}`,
-        it.damage && `dmg ${it.damage}`,
-        it.tier === 'rare' && 'raro',
+    const scarceGear =
+      it.kind === 'weapon' && (FIREARM_GROUPS.includes(it.group ?? '') || ENERGY.includes(it.category ?? ''));
+    // Distance from Piata/Aerodyn only weighs on technology; a blade or an artisan armour costs
+    // the commission, not the freight.
+    const crafted =
+      it.origin === 'homebrew' || (it.kind === 'weapon' && ['', '—'].includes(it.category ?? '') && !scarceGear);
+    const scarce =
+      it.access === 'spot' || scarceGear
+        ? (underground ? 2 : 3) * remote
+        : it.access === 'order'
+          ? 1.15 * (crafted ? 1 : remote)
+          : 1;
+    lines.push(
+      shopLine(it, factor, scarce, [
         scarce >= 2 && 'escasso',
-      ]
-        .filter(Boolean)
-        .join(' · '),
-      base: it.price,
-      price: round(it.price * factor * scarce),
-      source: 'Starfinder',
-    });
+        it.access === 'order' && 'por encomenda',
+        it.access === 'spot' && 'procedência incerta',
+      ]),
+    );
   }
-  // Regional goods: Dezolis sells Dezolian goods, Kolian lands their own, Motávia neither.
-  const regional = (g: LocalGood) =>
-    setting === 'dezolis'
-      ? g.tags.includes('dezolis') || g.tags.includes('mate')
-      : setting === 'kolian'
-        ? !g.tags.includes('dezolis') && !g.name.includes('da Baixa')
-        : !g.tags.includes('dezolis') && !g.tags.includes('kolian');
-  const locals: LocalGood[] = LOCAL_GOODS.filter(
+  const locals = sellable.filter(
     (g) =>
-      regional(g) &&
-      g.tags.some(
-        (t) =>
-          type.local.includes(t) ||
-          (setting === 'dezolis' &&
-            type.local.some((l) => ['meal', 'drink', 'lodging', 'food'].includes(l)) &&
-            t === 'dezolis'),
-      ),
+      g.origin === 'algol' &&
+      offered(g, true) &&
+      (forced(g) ||
+        g.tags.some(
+          (t) =>
+            type.local.includes(t) ||
+            (setting === 'dezolis' &&
+              type.local.some((l) => ['meal', 'drink', 'lodging', 'food'].includes(l)) &&
+              t === 'dezolis'),
+        )),
   );
   for (const g of rng.sample(locals, nLocal)) {
-    lines.push({
-      name: g.name,
-      detail: g.unit,
-      base: g.price,
-      price: round(g.price * factor),
-      unit: g.unit,
-      note: g.note,
-      source: 'Algol',
-    });
+    const scarce = g.access === 'spot' ? (underground ? 1.5 : 2) * remote : 1;
+    lines.push(shopLine(g, factor, scarce, [g.access === 'order' && 'por encomenda']));
   }
 
   const owner = generateNpc(rng, setting, {
-    sector: type.key === 'fragments' || type.key === 'grey' ? 'Submundo' : 'Comércio',
+    sector: underground ? 'Submundo' : 'Comércio',
     city: setting === 'piata' ? undefined : placeObj?.name,
   });
   const name = rng.chance(0.5)
@@ -339,8 +413,195 @@ export function generateShop(
     placeInfo: placeObj ? `${placeObj.desc}${placeObj.pop ? ` · ~${placeObj.pop.toLocaleString()} hab.` : ''}` : '',
     owner,
     flavor: rng.pick(type.flavor),
-    priceNote: `${pct >= 0 ? '+' : ''}${pct}% sobre o preço-base${favored ? ' · especialidade local (mais barato e mais estoque)' : ''}${isolated ? ' · lugar pequeno/isolado (frete e escassez)' : ''}`,
+    priceNote: `Estimativa do mestre (preço local não fixado no cânone): ${pct >= 0 ? '+' : ''}${pct}% sobre a referência${favored ? ' · especialidade local' : ''}${isolated ? ' · lugar pequeno/isolado' : ''}${remote > 1 ? ` · itens escassos ×${remote} pela distância de Piata/Aerodyn` : ''}`,
     lines: lines.sort((a, b) => (a.source === b.source ? a.price - b.price : a.source === 'Algol' ? 1 : -1)),
+  };
+}
+
+// ── Loot ──
+
+export type LootSite = 'seed' | 'orbital' | 'cave' | 'cellar';
+export type LootSize = 'small' | 'medium' | 'large';
+
+export interface LootLine {
+  itemId: number;
+  name: string;
+  ref?: string;
+  detail: string;
+  condition: string;
+  base: number;
+  access: GenItem['access'];
+  source: ShopLine['source'];
+}
+
+export interface GeneratedLoot {
+  site: LootSite;
+  title: string;
+  spot: string;
+  lines: LootLine[];
+  valuables: string[];
+  hazard: string;
+  gmNote: string;
+}
+
+const LOOT_SITES: Record<
+  LootSite,
+  {
+    title: string;
+    spots: string[];
+    conditions: string[];
+    hazards: string[];
+    access: Partial<Record<GenItem['access'], number>>;
+  }
+> = {
+  seed: {
+    title: 'Instalação da Era das Maravilhas',
+    spots: [
+      'num armário de manutenção lacrado há séculos',
+      'em cápsulas de estase de uma enfermaria esquecida',
+      'num depósito de segurança com a porta emperrada',
+      'junto aos restos de um posto de controle do sistema',
+      'numa bancada de laboratório coberta de pó fino',
+    ],
+    conditions: ['funcional', 'inerte, sem energia', 'danificado (broken)', 'selado em estase', 'incompleto'],
+    hazards: [
+      'Sistemas de defesa ainda respondem a movimento.',
+      'O ar é rarefeito; filtros recomendados.',
+      'Uma porta de contenção fecha atrás do grupo.',
+      'Energia residual instável: tocar o painel errado dispara alarme.',
+    ],
+    access: { relic: 4, institutional: 3, none: 1, order: 0.5 },
+  },
+  orbital: {
+    title: 'Satélite orbital esquecido',
+    spots: [
+      'num compartimento de carga sem gravidade',
+      'num módulo de habitação despressurizado',
+      'presos a um rack de manutenção externo',
+      'num cofre de emergência ao lado das cápsulas de fuga',
+    ],
+    conditions: ['funcional', 'congelado, funciona após aquecer', 'danificado por radiação', 'sem carga', 'intacto'],
+    hazards: [
+      'Vácuo: sem proteção ambiental, cada rodada conta.',
+      'Detritos em órbita atravessam o casco em intervalos.',
+      'A rotação do satélite muda a gravidade aparente.',
+      'Radiação acima do normal no módulo central.',
+    ],
+    access: { institutional: 4, relic: 2, none: 1, order: 0.5 },
+  },
+  cave: {
+    title: 'Caverna',
+    spots: [
+      'entre os restos de uma expedição perdida',
+      'no ninho de uma criatura, misturado a ossos',
+      'num esconderijo de contrabandistas atrás de uma rocha',
+      'numa mochila presa numa fenda estreita',
+      'num acampamento abandonado às pressas',
+    ],
+    conditions: ['gasto', 'úmido', 'intacto', 'roído pela fauna', 'funcional'],
+    hazards: [
+      'O dono do ninho volta antes do esperado.',
+      'Teto instável: barulho alto provoca desabamento.',
+      'Esporos no ar; sem máscara, teste contra doença.',
+      'A água do fundo esconde sanguessugas de lodo.',
+    ],
+    access: { free: 3, order: 2, spot: 1.5, institutional: 0.3 },
+  },
+  cellar: {
+    title: 'Porão antigo de cidade',
+    spots: [
+      'em baús sob uma escada desabada',
+      'atrás de uma parede falsa de tijolos',
+      'num depósito de uma loja fechada há gerações',
+      'entre caixas de um arquivo municipal esquecido',
+      'num cofre doméstico ainda trancado',
+    ],
+    conditions: ['empoeirado, funcional', 'velho, precisa de reparo', 'intacto', 'incompleto', 'gasto'],
+    hazards: [
+      'Ratos de kelp em grande número.',
+      'O dono do imóvel acima não sabia do porão — e vai querer a parte dele.',
+      'Uma fechadura antiga com armadilha simples.',
+      'Infiltração: o piso cede perto da parede norte.',
+    ],
+    access: { free: 3, order: 2, spot: 2, institutional: 0.5 },
+  },
+};
+
+const LOOT_COUNT: Record<LootSize, [number, number]> = { small: [2, 3], medium: [4, 6], large: [7, 10] };
+
+/**
+ * Loot that fits the place (canon v1.0): wonder-age facilities and orbital wrecks hold
+ * institutional tech and possible relics; caves and old cellars hold what people carried,
+ * stored or lost. Items come from the catalogue's `loot` sites, near the party level.
+ */
+export function generateLoot(
+  rng: Rng,
+  site: LootSite,
+  items: GenItem[],
+  opts: { level: number; size: LootSize },
+): GeneratedLoot {
+  const cfg = LOOT_SITES[site];
+  const maxLevel = opts.level + (site === 'seed' || site === 'orbital' ? 4 : 2);
+  const pool = items.filter((i) => i.loot.includes(site) && i.level <= maxLevel && (cfg.access[i.access] ?? 0) > 0);
+  const [lo, hi] = LOOT_COUNT[opts.size];
+  const n = lo + Math.floor(rng.next() * (hi - lo + 1));
+  const lines: LootLine[] = [];
+  const seen = new Set<number>();
+  for (let k = 0, guard = 0; k < n && guard < n * 8; guard += 1) {
+    const candidates = pool.filter((i) => !seen.has(i.id));
+    if (!candidates.length) break;
+    const it = rng.weighted(
+      candidates.map((c) => [c, (cfg.access[c.access] ?? 0) / (1 + Math.abs(c.level - opts.level))] as const),
+    );
+    seen.add(it.id);
+    k += 1;
+    lines.push({
+      itemId: it.id,
+      name: displayName(it),
+      ref: it.localName ? it.name : undefined,
+      detail: [
+        it.origin === 'algol' ? it.unit : it.category || it.group || it.kind,
+        it.origin !== 'algol' && `lvl ${it.level}`,
+        it.damage && `dmg ${it.damage}`,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      condition: rng.pick(cfg.conditions),
+      base: it.refPrice ?? 0,
+      access: it.access,
+      source: SOURCE[it.origin],
+    });
+  }
+
+  const valuables: string[] = [];
+  if (site === 'cave' || site === 'cellar') {
+    const coins = roundPrice(
+      (5 + rng.next() * 25) * Math.max(1, opts.level) * (opts.size === 'large' ? 3 : opts.size === 'medium' ? 2 : 1),
+    );
+    valuables.push(`${coins} cr em moedas regionais misturadas`);
+    if (rng.chance(0.3))
+      valuables.push(
+        site === 'cellar' ? 'Livro-caixa antigo (talvez com Selo de Integridade Espe)' : 'Pepita de minério bruto',
+      );
+  } else {
+    valuables.push(
+      `Componentes recuperáveis (vale ~${roundPrice(40 * Math.max(1, opts.level))} cr para a Universidade)`,
+    );
+    if (rng.chance(0.25)) valuables.push('Registro de dados ilegível sem equipamento de Piata');
+  }
+
+  const relics = lines.filter((l) => l.access === 'relic' || l.access === 'institutional').length;
+  return {
+    site,
+    title: cfg.title,
+    spot: rng.pick(cfg.spots),
+    lines,
+    valuables,
+    hazard: rng.pick(cfg.hazards),
+    gmNote:
+      relics > 0
+        ? `${relics} achado(s) fora do comércio (institucional/relíquia): sem preço local, a Custódia de Piata pode reclamar; condição e funcionamento a critério do mestre.`
+        : 'Achados comuns: valem o preço de referência só como estimativa.',
   };
 }
 
@@ -461,7 +722,7 @@ export function generateContract(
   const band =
     kind === 'Urgente' ? C.PAY_BANDS[1] : risky ? rng.pick(C.PAY_BANDS.slice(2)) : rng.pick(C.PAY_BANDS.slice(0, 4));
   const days = rng.int(band.days[0], band.days[1]);
-  const payPerHunter = round(rng.int(band.pay[0], band.pay[1]));
+  const payPerHunter = roundPrice(rng.int(band.pay[0], band.pay[1]));
   return {
     title: `${kind}: ${text.split('.')[0].slice(0, 70)}`,
     kind,

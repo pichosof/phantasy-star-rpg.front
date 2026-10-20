@@ -12,7 +12,7 @@ const isWordChar = (c: string | undefined) => Boolean(c && /[\p{L}\p{N}]/u.test(
 /** Links the first occurrence of every known entity name in `text`. */
 export function linkNames(text: string, index: LinkIndexEntry[]): { text: string; found: LinkIndexEntry[] } {
   const names = index
-    .filter((e) => e.type !== 'gmNote' && e.type !== 'session' && e.name.trim().length >= 3)
+    .filter((e) => e.type !== 'gmNote' && e.type !== 'session' && e.type !== 'item' && e.name.trim().length >= 3)
     .sort((a, b) => b.name.length - a.name.length);
   let out = text;
   const found: LinkIndexEntry[] = [];

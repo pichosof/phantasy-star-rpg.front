@@ -1,15 +1,15 @@
 """
 Fetches the short description of each curated item from Archives of Nethys (OGL content).
 Needs the AoN listing pages (*.html, same folder as parse.py) to find each item's page.
-Output: public/data/sf-item-info.json = {name: {"d": description, "s": stats line}}.
+Output: scripts/generators/data/sf-item-info.json = {name: {"d": description, "s": stats line}}.
 Polite: one request at a time with a pause; resumable (skips names already fetched).
 """
 import glob, html, io, json, os, re, sys, time, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAGES = os.environ.get('AON_PAGES', HERE)
-ITEMS = os.path.join(HERE, '..', '..', 'public', 'data', 'sf-items.json')
-OUT = os.path.join(HERE, '..', '..', 'public', 'data', 'sf-item-info.json')
+ITEMS = os.path.join(HERE, 'data', 'sf-items.json')
+OUT = os.path.join(HERE, 'data', 'sf-item-info.json')
 
 hrefs = {}
 for path in glob.glob(os.path.join(PAGES, '*.html')):
