@@ -232,7 +232,7 @@ export const NpcPortraitGenerator: React.FC<{ npc: Npc; onChanged: () => Promise
                       textAlign: 'center',
                       padding: 8,
                       borderRadius: 6,
-                      background: 'var(--background-base-color, rgba(0,0,0,0.04))',
+                      background: 'var(--secondary-background-color)',
                     }}
                   >
                     {job.status === 'pending' ? (
