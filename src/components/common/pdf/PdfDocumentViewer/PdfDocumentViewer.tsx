@@ -25,6 +25,7 @@ export const PdfDocumentViewer: React.FC<PdfDocumentViewerProps> = ({ url }) => 
           transformGetDocumentParams={(options) => ({
             ...options,
             standardFontDataUrl: PDF_STANDARD_FONTS_URL,
+            isEvalSupported: false,
             verbosity: 0,
           })}
         />
