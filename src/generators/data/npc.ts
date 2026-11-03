@@ -11,6 +11,9 @@ const lines = (s: string) =>
 
 export type Race = 'Palmaniano' | 'Motaviano' | 'Koliano' | 'Dezoliano' | 'Esper' | 'Andróide';
 
+/** Every race, in display order (also the keys of the portrait profiles). */
+export const RACES: readonly Race[] = ['Palmaniano', 'Motaviano', 'Koliano', 'Dezoliano', 'Esper', 'Andróide'];
+
 /** Who you meet where. */
 export const RACE_WEIGHTS: Record<'motavia' | 'piata' | 'kolian' | 'dezolis', readonly (readonly [Race, number])[]> = {
   motavia: [

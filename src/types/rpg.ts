@@ -110,6 +110,8 @@ export type Npc = WithVisibility & {
   role?: string | null;
   description?: string | null;
   location?: string | null;
+  /** As the generators name it (e.g. "Motaviano"); picks the portrait profile. */
+  race?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
   sheetUrl?: string | null;
@@ -123,6 +125,7 @@ export type CreateNpcDTO = {
   role?: string | null;
   description?: string | null;
   location?: string | null;
+  race?: string | null;
 };
 
 export type CreateMonsterDTO = {

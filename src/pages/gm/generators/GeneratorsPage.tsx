@@ -206,10 +206,11 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
         name: npc.name,
         role: npc.profession,
         location: npc.location,
+        race: npc.race,
         description: npcToMarkdown(npc),
       });
       setSaved(true);
-      void message.success(`${npc.name} saved as a hidden NPC.`);
+      void message.success(`${npc.name} saved as a hidden NPC. Its portrait can be generated on the NPC page.`);
     } catch (e) {
       void message.error(apiErrorMessage(e, 'Could not save the NPC.'));
     } finally {

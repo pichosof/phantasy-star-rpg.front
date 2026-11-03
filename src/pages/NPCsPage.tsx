@@ -74,6 +74,8 @@ import { Spin } from 'antd';
 import type { Npc, CreateNpcDTO } from '@app/types/rpg';
 import { NpcApi } from '@app/api/npc.api';
 import { TagSelect } from '@app/components/rpg/TagSelect/TagSelect';
+import { NpcPortraitGenerator } from '@app/components/rpg/NpcPortrait/NpcPortraitGenerator';
+import { RACES } from '@app/generators/data/npc';
 import { apiErrorMessage } from '../utils/api-error';
 import { m0, w100, textSm, textMd, bold700, spaceBetween, dividerSm, tableWrap } from '@app/styles/styleUtils';
 import * as S from './NPCsPage.styles';
@@ -199,6 +201,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
   const [name, setName] = React.useState('');
   const [role, setRole] = React.useState('');
   const [location, setLocation] = React.useState('');
+  const [race, setRace] = React.useState('');
   const [desc, setDesc] = React.useState('');
   const [imgAlt, setImgAlt] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -208,6 +211,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
     setName(npc.name ?? '');
     setRole(npc.role ?? '');
     setLocation(npc.location ?? '');
+    setRace(npc.race ?? '');
     setDesc(npc.description ?? '');
     setImgAlt(npc.imageAlt ?? '');
   }, [npc]);
@@ -223,6 +227,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
         name: name.trim(),
         role: role.trim() || null,
         location: location.trim() || null,
+        race: race || null,
         description: desc.trim() || null,
       });
       await onChanged();
@@ -335,6 +340,16 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   placeholder="E.g.: Aiedo, Piata…"
                 />
               </Form.Item>
+              <Form.Item label="Race" extra="Picks the portrait profile">
+                <Select
+                  value={race || undefined}
+                  onChange={(v) => setRace(v ?? '')}
+                  placeholder="Select a race…"
+                  allowClear
+                  style={w100}
+                  options={RACES.map((r) => ({ value: r, label: r }))}
+                />
+              </Form.Item>
               <Form.Item label="Description / Background">
                 <Input.TextArea
                   rows={6}
@@ -391,6 +406,8 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
               <Upload {...uploadProps}>
                 <Button icon={<PictureOutlined />}>{npc.imageUrl ? 'Change portrait' : 'Upload portrait'}</Button>
               </Upload>
+              <Divider style={dividerSm}>Generate with AI</Divider>
+              <NpcPortraitGenerator npc={npc} onChanged={onChanged} />
             </Space>
           </Tabs.TabPane>
 
@@ -628,6 +645,7 @@ export const NPCsPage: React.FC = () => {
   const [mobileName, setMobileName] = React.useState('');
   const [mobileRole, setMobileRole] = React.useState('');
   const [mobileLocation, setMobileLocation] = React.useState('');
+  const [mobileRace, setMobileRace] = React.useState('');
   const [mobileDesc, setMobileDesc] = React.useState('');
   const [mobileImgAlt, setMobileImgAlt] = React.useState('');
   const [mobileSaving, setMobileSaving] = React.useState(false);
@@ -780,6 +798,7 @@ export const NPCsPage: React.FC = () => {
     setMobileName(detailNpc.name ?? '');
     setMobileRole(detailNpc.role ?? '');
     setMobileLocation(detailNpc.location ?? '');
+    setMobileRace(detailNpc.race ?? '');
     setMobileDesc(detailNpc.description ?? '');
     setMobileImgAlt(detailNpc.imageAlt ?? '');
   }, [detailNpc]);
@@ -789,6 +808,7 @@ export const NPCsPage: React.FC = () => {
     setMobileName(detailNpc.name ?? '');
     setMobileRole(detailNpc.role ?? '');
     setMobileLocation(detailNpc.location ?? '');
+    setMobileRace(detailNpc.race ?? '');
     setMobileDesc(detailNpc.description ?? '');
     setMobileImgAlt(detailNpc.imageAlt ?? '');
   }
@@ -807,6 +827,7 @@ export const NPCsPage: React.FC = () => {
         name: n,
         role: mobileRole.trim() || null,
         location: mobileLocation.trim() || null,
+        race: mobileRace || null,
         description: mobileDesc.trim() || null,
       });
       await load();
@@ -928,6 +949,15 @@ export const NPCsPage: React.FC = () => {
               value={mobileLocation}
             />
           </MobileForm.Item>
+          <MobileForm.Item label="Race">
+            <MobileSelector<string>
+              columns={3}
+              inset={false}
+              onChange={(values) => setMobileRace((values[0] as string | undefined) ?? '')}
+              options={RACES.map((r) => ({ label: r, value: r }))}
+              value={mobileRace ? [mobileRace] : []}
+            />
+          </MobileForm.Item>
           <MobileForm.Item label="Description / Background">
             <AdmMobileTextArea
               autoSize={{ minRows: 4, maxRows: 8 }}
@@ -968,6 +998,10 @@ export const NPCsPage: React.FC = () => {
             </AdmMobileButton>
           </S.MobileActionGrid>
         </S.MobileUploadStack>
+      </MobileCard>
+
+      <MobileCard compact title="AI portrait">
+        <NpcPortraitGenerator npc={detailNpc} onChanged={load} />
       </MobileCard>
 
       <MobileCard compact title="Tags">
