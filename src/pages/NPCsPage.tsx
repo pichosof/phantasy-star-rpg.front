@@ -203,6 +203,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
   const [location, setLocation] = React.useState('');
   const [race, setRace] = React.useState('');
   const [desc, setDesc] = React.useState('');
+  const [secret, setSecret] = React.useState('');
   const [imgAlt, setImgAlt] = React.useState('');
   const [saving, setSaving] = React.useState(false);
 
@@ -213,6 +214,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
     setLocation(npc.location ?? '');
     setRace(npc.race ?? '');
     setDesc(npc.description ?? '');
+    setSecret(npc.gmSecret ?? '');
     setImgAlt(npc.imageAlt ?? '');
   }, [npc]);
 
@@ -229,6 +231,7 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
         location: location.trim() || null,
         race: race || null,
         description: desc.trim() || null,
+        gmSecret: secret.trim() || null,
       });
       await onChanged();
       message.success('NPC updated');
@@ -356,6 +359,15 @@ const NpcAdminDrawer: React.FC<AdminProps> = ({ open, npc, onClose, onChanged })
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                   placeholder="History, motivations, behavior…"
+                />
+              </Form.Item>
+              <Form.Item label="🔒 GM secret" extra="Never shown to players">
+                <Input.TextArea
+                  autoSize={{ minRows: 2, maxRows: 6 }}
+                  maxLength={2000}
+                  value={secret}
+                  onChange={(e) => setSecret(e.target.value)}
+                  placeholder="What the players must not know…"
                 />
               </Form.Item>
               <Form.Item label={<IconLabel icon="tags">Tags</IconLabel>}>
@@ -580,7 +592,10 @@ const NpcDetailDrawer: React.FC<DetailProps> = ({ open, npc, onClose, isGM, gmVi
               {npc.location && <Tag icon={<EnvironmentOutlined />}>{npc.location}</Tag>}
             </>
           ) : null,
-        sections: [{ title: 'Profile', text: npc.description, fallback: 'No information available.' }],
+        sections: [
+          { title: 'Profile', text: npc.description, fallback: 'No information available.' },
+          ...(isGM && gmView && npc.gmSecret ? [{ title: '🔒 GM secret', text: npc.gmSecret }] : []),
+        ],
       }}
       status={{ visible: isVisible(npc) }}
       gmTabs={mobile ? [{ key: 'edit', label: 'Edit', children: null, mobileChildren: mobile.gm }] : []}
@@ -647,6 +662,7 @@ export const NPCsPage: React.FC = () => {
   const [mobileLocation, setMobileLocation] = React.useState('');
   const [mobileRace, setMobileRace] = React.useState('');
   const [mobileDesc, setMobileDesc] = React.useState('');
+  const [mobileSecret, setMobileSecret] = React.useState('');
   const [mobileImgAlt, setMobileImgAlt] = React.useState('');
   const [mobileSaving, setMobileSaving] = React.useState(false);
   const [mobileUploadingImage, setMobileUploadingImage] = React.useState(false);
@@ -800,6 +816,7 @@ export const NPCsPage: React.FC = () => {
     setMobileLocation(detailNpc.location ?? '');
     setMobileRace(detailNpc.race ?? '');
     setMobileDesc(detailNpc.description ?? '');
+    setMobileSecret(detailNpc.gmSecret ?? '');
     setMobileImgAlt(detailNpc.imageAlt ?? '');
   }, [detailNpc]);
 
@@ -810,6 +827,7 @@ export const NPCsPage: React.FC = () => {
     setMobileLocation(detailNpc.location ?? '');
     setMobileRace(detailNpc.race ?? '');
     setMobileDesc(detailNpc.description ?? '');
+    setMobileSecret(detailNpc.gmSecret ?? '');
     setMobileImgAlt(detailNpc.imageAlt ?? '');
   }
 
@@ -829,6 +847,7 @@ export const NPCsPage: React.FC = () => {
         location: mobileLocation.trim() || null,
         race: mobileRace || null,
         description: mobileDesc.trim() || null,
+        gmSecret: mobileSecret.trim() || null,
       });
       await load();
       message.success('NPC updated');
@@ -964,6 +983,14 @@ export const NPCsPage: React.FC = () => {
               onChange={setMobileDesc}
               placeholder="History, motivations, behavior..."
               value={mobileDesc}
+            />
+          </MobileForm.Item>
+          <MobileForm.Item label="🔒 GM secret (never shown to players)">
+            <AdmMobileTextArea
+              autoSize={{ minRows: 2, maxRows: 6 }}
+              onChange={setMobileSecret}
+              placeholder="What the players must not know..."
+              value={mobileSecret}
             />
           </MobileForm.Item>
         </MobileForm>

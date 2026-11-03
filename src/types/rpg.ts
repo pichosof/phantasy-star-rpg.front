@@ -112,6 +112,8 @@ export type Npc = WithVisibility & {
   location?: string | null;
   /** As the generators name it (e.g. "Motaviano"); picks the portrait profile. */
   race?: string | null;
+  /** GM only: the API never sends it to players. */
+  gmSecret?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
   sheetUrl?: string | null;
@@ -126,6 +128,7 @@ export type CreateNpcDTO = {
   description?: string | null;
   location?: string | null;
   race?: string | null;
+  gmSecret?: string | null;
 };
 
 export type CreateMonsterDTO = {

@@ -82,6 +82,9 @@ export interface GeneratedNpc {
   race: NPC.Race;
   profession: string;
   sector: string;
+  sex: NPC.Sex;
+  /** Race as written for this sex ("Motaviana"); `race` stays the profile key. */
+  raceLabel: string;
   age: string;
   appearance: string[];
   traits: string[];
@@ -92,7 +95,29 @@ export interface GeneratedNpc {
   saying: string;
   hook: string;
   relation: string;
+  carries: string;
+  fear: string;
+  rumor: string;
+  mood: string;
   location: string;
+}
+
+function npcAge(rng: Rng, race: NPC.Race, sex: NPC.Sex): string {
+  if (race === 'Andróide') return rng.pick(NPC.ANDROID_AGES);
+  const pool = race === 'Motaviano' && rng.chance(0.15) ? NPC.MOTAVIAN_AGES : NPC.AGES;
+  return rng.pick(pool)[sex === 'm' ? 0 : 1];
+}
+
+/** Motavians: weighted plumage colour (brown common, blue rare, green very rare) + traits. */
+function npcAppearance(rng: Rng, race: NPC.Race, sex: NPC.Sex): string[] {
+  const bySex = NPC.APPEARANCE_BY_SEX[race]?.[sex] ?? [];
+  if (race !== 'Motaviano') return rng.sample([...NPC.APPEARANCE[race], ...bySex], 2);
+  const plumes = rng.chance(sex === 'f' ? 0.7 : 0.3) ? [rng.pick(bySex)] : [];
+  return [
+    rng.weighted(NPC.MOTAVIAN_PLUMAGE),
+    ...plumes,
+    ...rng.sample(NPC.APPEARANCE.Motaviano, 2 - plumes.length).map((t) => fill(rng, t)),
+  ];
 }
 
 export function generateNpc(
@@ -107,17 +132,33 @@ export function generateNpc(
   const elsewhere = placesFor(setting === 'piata' ? 'motavia' : setting);
   const values = {
     place: elsewhere,
-    item: ['um mapa', 'um caderno de expedição', 'uma caixa lacrada', 'uma peça antiga', 'um anel de família'],
+    item: [
+      'um mapa',
+      'um caderno de expedição',
+      'uma caixa lacrada',
+      'uma peça antiga',
+      'um anel de família',
+      'um cilindro de dados da Era das Maravilhas',
+      'uma carta de crédito assinada',
+      'um filtro de aquífero',
+      'um selo da Ordem Espe',
+      'um diário de caravana',
+      'uma lâmina de quitina gravada',
+      'um fragmento de vidro antigo',
+    ],
     creature: CREATURE_POOL,
     person: (r: Rng) => generateName(r, RACE_CULTURE[r.weighted(raceWeights(setting, opts.city))]),
   };
+  const sex: NPC.Sex = rng.chance(0.5) ? 'f' : 'm';
   return {
     name: generateName(rng, RACE_CULTURE[race]),
     race,
     profession: rng.pick(NPC.PROFESSIONS[sector] ?? NPC.PROFESSIONS.Comércio),
     sector,
-    age: rng.pick(NPC.AGES),
-    appearance: rng.sample(NPC.APPEARANCE[race], 2),
+    sex,
+    raceLabel: NPC.RACE_LABEL[race][sex],
+    age: npcAge(rng, race, sex),
+    appearance: npcAppearance(rng, race, sex),
     traits: rng.sample(NPC.TRAITS, 2),
     motivation: rng.pick(NPC.MOTIVATIONS),
     quirk: rng.pick(NPC.QUIRKS),
@@ -126,22 +167,27 @@ export function generateNpc(
     saying: rng.pick(SAYINGS),
     hook: capitalize(fill(rng, rng.pick(NPC.HOOKS), values)),
     relation: rng.pick(NPC.RELATION),
+    carries: fill(rng, rng.pick(NPC.CARRIES), values),
+    fear: fill(rng, rng.pick(NPC.FEARS), values),
+    rumor: capitalize(fill(rng, rng.pick(NPC.RUMORS), values)),
+    mood: fill(rng, rng.pick(NPC.MOODS), values),
     location,
   };
 }
 
-/** Markdown description for "Save as NPC". */
+/** Markdown description for "Save as NPC" (player-safe: the secret is saved apart, GM only). */
 export function npcToMarkdown(n: GeneratedNpc): string {
   return [
-    `**${n.race}**, ${n.age}. ${capitalize(n.appearance.join('; '))}.`,
+    `**${n.raceLabel}**, ${n.age}. ${capitalize(n.appearance.join('; '))}.`,
     '',
     `**Personalidade:** ${n.traits.join('; ')}. ${capitalize(n.voice)}.`,
     `**Mania:** ${n.quirk}.`,
+    `**Leva consigo:** ${n.carries}.`,
+    `**Teme:** ${n.fear}.`,
     `**Quer:** ${n.motivation}.`,
     `**Gancho:** ${n.hook}.`,
+    `**Ouviu dizer:** ${n.rumor}.`,
     `**Fala típica:** “${n.saying}”`,
-    '',
-    `> **Segredo (GM):** ${n.secret}.`,
   ].join('\n');
 }
 

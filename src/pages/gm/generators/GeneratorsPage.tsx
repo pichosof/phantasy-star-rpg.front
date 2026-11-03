@@ -208,6 +208,7 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
         location: npc.location,
         race: npc.race,
         description: npcToMarkdown(npc),
+        gmSecret: `${npc.secret}.`,
       });
       setSaved(true);
       void message.success(`${npc.name} saved as a hidden NPC. Its portrait can be generated on the NPC page.`);
@@ -224,7 +225,11 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
           <Tooltip title="Copy as Markdown">
             <Button
               icon={<CopyOutlined />}
-              onClick={() => copy(`## ${npc.name}\n*${npc.profession} — ${npc.location}*\n\n${npcToMarkdown(npc)}`)}
+              onClick={() =>
+                copy(
+                  `## ${npc.name}\n*${npc.profession} — ${npc.location}*\n\n${npcToMarkdown(npc)}\n\n> **Segredo (GM):** ${npc.secret}.`,
+                )
+              }
               size="small"
             />
           </Tooltip>
@@ -240,7 +245,7 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
         <Space orientation="vertical" size={0}>
           <span>{npc.name}</span>
           <Typography.Text style={{ fontSize: 12, fontWeight: 400 }} type="secondary">
-            {npc.race} · {npc.profession} · {npc.location}
+            {npc.raceLabel} · {npc.profession} · {npc.location}
           </Typography.Text>
         </Space>
       }
@@ -252,7 +257,13 @@ const NpcCard: React.FC<{ npc: GeneratedNpc; seed: number }> = ({ npc, seed }) =
         <b>Personality:</b> {npc.traits.join('; ')}. {npc.voice}. <b>Quirk:</b> {npc.quirk}.
       </Typography.Paragraph>
       <Typography.Paragraph style={{ marginBottom: 6 }}>
+        <b>Carries:</b> {npc.carries}. <b>Fears:</b> {npc.fear}. <b>Today:</b> {npc.mood}.
+      </Typography.Paragraph>
+      <Typography.Paragraph style={{ marginBottom: 6 }}>
         <b>Wants:</b> {npc.motivation}. <b>Hook:</b> {npc.hook}.
+      </Typography.Paragraph>
+      <Typography.Paragraph style={{ marginBottom: 6 }}>
+        <b>Heard:</b> {npc.rumor}.
       </Typography.Paragraph>
       <Typography.Paragraph style={{ marginBottom: 6 }}>
         <b>Says:</b> “{npc.saying}” <Typography.Text type="secondary">({npc.relation})</Typography.Text>
